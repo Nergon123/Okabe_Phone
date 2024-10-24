@@ -12,6 +12,7 @@ struct Contact
 struct Message
 {
     int index;
+    int status;
     Contact contact;
     String subject;
     String content;

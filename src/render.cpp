@@ -175,8 +175,7 @@ void blueScreen(char *reason)
   tft.println("=)");
   tft.setTextSize(1);
   tft.println(String("\n\n\nThere a problem with your device\nYou can fix it by yourself i guess\nThere some details for you:\n\n\nReason:" + String(reason)));
-  while (true)
-    ;
+  while (true);
 }
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file)
