@@ -12,16 +12,87 @@ void messages()
     ;
   lol2.close();
 }
+void knipka(){
 
+          blemouse.begin();
+          changeFont(0);
+          tft.fillScreen(0x0);
+          drawStatusBar();
+          tft.setTextColor(0xffff);
+            bool isConnected = true;
+  
+          while (digitalRead(37) == HIGH)
+          {
+
+            if (isConnected != blemouse.isConnected())
+            {
+              tft.fillScreen(0x0);
+              tft.setCursor(0, 50);
+              tft.setTextSize(5);
+              tft.print("Knipka\n");
+              tft.setTextSize(2);
+              tft.println(String("CONNECTED?" + String(blemouse.isConnected())));
+              isConnected = blemouse.isConnected();
+
+            }
+            if (digitalRead(0) == LOW && blemouse.isConnected())
+            {
+              while (digitalRead(0) == LOW)
+                ;
+              blemouse.move(0, 0, -1);
+            }
+          };
+          blemouse.end();
+}
 void e()
 {
+#ifdef DEVMODE
   File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
   tft.fillScreen(0x0000);
   drawStatusBar();
-  while (digitalRead(0) == HIGH)
-    ;
+  int choice = -1;
+  while (choice != -2)
+  {
+    String debug[] = {"Emulate incoming call", "Emulate outgoing call", "Emulate recieving message", "Set battery level", "Set signal level", "BLUETOOTH", "WI-FI"};
+    choice = listMenu(debug, ArraySize(debug), false, 2, "DEV MODE");
+    String levels[] = {"0", "1", "2", "3"};
+    String btMenu[] = {"BT Mouse", "BT Keyboard"};
+    String btMouse[] = {"SCROLLDOWN"};
+    switch (choice)
+    {
+    case 0:
+      break;
+    case 3:
+      charge_d = choiceMenu(levels, ArraySize(levels), true);
+      drawStatusBar();
+      break;
+    case 4:
+      signallevel_d = choiceMenu(levels, ArraySize(levels), true);
+      drawStatusBar();
+      break;
+    case 5:
+      int btChoice = listMenu(btMenu, ArraySize(btMenu), false, 2, "BLUETOOTH");
+      switch (btChoice)
+      {
+      case -1:
+        break;
+      case 0:
+        int btMChoice = listMenu(btMouse, ArraySize(btMouse), false, 2, "BT Mouse");
+        switch (btMChoice)
+        {
+        case 0:
+                knipka();
+          break;
+        }
+        break;
+      }
+      break;
+    }
+  }
   lol2.close();
+#endif
 }
+
 
 bool settings()
 {
@@ -49,8 +120,11 @@ bool settings()
       break;
     case 0:
       pic = gallery();
-      exit = true;
-      return false;
+      if (pic == -1)
+      {
+        exit = true;
+        return false;
+      }
       break;
     default:
       blueScreen("DOESN'T_EXIST");

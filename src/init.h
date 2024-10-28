@@ -2,6 +2,10 @@
 #define INITT_H
 
 #include "file_include.h"
+#ifdef DEVMODE
+extern int charge_d;
+extern int signallevel_d;
+#endif
 
 struct Contact
 {
@@ -22,6 +26,7 @@ struct Message
 extern int contactCount;
 extern IP5306 chrg;
 extern TFT_eSPI tft;
+extern BleMouse blemouse;
 extern uint32_t ima;
 
 extern Preferences preferences;

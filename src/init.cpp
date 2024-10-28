@@ -8,7 +8,12 @@ uint32_t ima = 0;
 Preferences preferences;
 
 Contact contacts[MAX_CONTACTS];
-
+#ifdef DEVMODE
+int charge_d = 3;
+int signallevel_d = 3;
+#endif
+bool havenewmessages = false;
+BleMouse blemouse("OkabePhone","DEVELOPER",chrg.getBatteryLevel());
 void setup()
 {
   // WIRE.begin();

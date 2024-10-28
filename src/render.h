@@ -9,7 +9,7 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
 void writeText(int x, int y, char *str);
 void drawStatusBar();
 void rendermenu(int choice, bool right);
-void blueScreen(char *reason);
+void blueScreen(const char *reason);
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file);
 int listMenu(const String choices[], int icount, bool images, int type, String label);
 void listMenu_sub(String label, int type, int page, int pages);

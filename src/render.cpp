@@ -97,18 +97,14 @@ void writeText(int x, int y, char *str)
 void drawStatusBar()
 {
   File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
-  int charge = chrg.getBatteryLevel();
-  int toIcon = (charge / 25) - 1;
-  if (toIcon > 3)
-    toIcon = 3;
-  if (toIcon < 0)
-    toIcon = 0;
   if (!lol2.available())
     blueScreen("SD_CARD_NOT_AVAILABLE");
-  drawFromSd(0X5A708D, 0, 0, 240, 26, lol2); // statusbar
-  drawFromSd(0x5AD47D, 0, 0, 37, 26, lol2);  // no_signal
-  // drawFromSd(0x5ABC1D+ (0x618)*3,0,0,30,26,lol2); //signal
-  drawFromSd(0X5AA14D + (0x6B4) * toIcon, 207, 0, 33, 26, lol2); // battery
+
+  drawFromSd(0X5A708D, 0, 0, 240, 26, lol2);    // statusbar  
+  if(getSignalLevel()==1)                         
+  drawFromSd(0x5AD47D, 0, 0, 37, 26, lol2);                                // no_signal
+  drawFromSd(0x5ABC1D + (0x618) * getSignalLevel(), 0, 0, 30, 26, lol2);   // signal
+  drawFromSd(0X5AA14D + (0x6B4) * getChargeLevel(), 207, 0, 33, 26, lol2); // battery
   //  tft.print(String(charge) + String("%"));
   lol2.close();
 }
@@ -165,17 +161,18 @@ void rendermenu(int choice, bool right)
   }
   lol2.close();
 }
-void blueScreen(char *reason)
+void blueScreen(const char *reason)
 {
   tft.fillScreen(0x0019);
   tft.setCursor(10, 40);
   tft.setTextColor(0xFFFF);
   tft.setTextFont(1);
   tft.setTextSize(4);
-  tft.println("=)");
+  tft.println(":(");
   tft.setTextSize(1);
   tft.println(String("\n\n\nThere a problem with your device\nYou can fix it by yourself i guess\nThere some details for you:\n\n\nReason:" + String(reason)));
-  while (true);
+  while (true)
+    ;
 }
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file)
@@ -209,23 +206,43 @@ void listMenu_sub(String label, int type, int page, int pages)
 
 int listMenu(const String choices[], int icount, bool images, int type, String label)
 {
+  /*
 
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
-  int scale = 7;
-  int x = 10;
+
+  int icount
+  I know I just can count here with ArraySize but whatever
+  Length counts wrong with causes OutOfBounds panic thing
+  This is Application for ESP32 writed within arduino environment
+
+  label = Title of Menu
+
+  bool images = Is it images? (Is it wallpaper choice will be more correct)
+
+  int type
+  0 = MESSAGES
+  1 = CONTACTS
+  2 = SETTINGS
+
+  */
+  if (icount == 0)
+    return -1; // exit if list empty
+
+  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ); // load file with graphical resources
+  int scale = 7;                                         // downscale multiplier for images
+  int x = 10;                                            // coordinates where begin to render text
   int y = 65;
-  int mult = 20;
+  int mult = 20; // spacing beetween
   if (images)
   {
     mult = (294 / scale) + 1;
     x = 55;
   }
-  drawFromSd(0x5DAF1F, 0, 26, 240, 25, lol2);
-  if (type >= 0 && type < 3)
+  drawFromSd(0x5DAF1F, 0, 26, 240, 25, lol2); // bluebar TODO: just draw rectangle instead of loading a whole image
+  if (type >= 0 && type < 3)                  // with icon to draw...
     drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25, lol2);
-  int items_per_page = 269 / mult;
+  int items_per_page = 269 / mult; // max items per page (empty space height divided by spacing)
   int count = icount;
-  int pages = (icount + items_per_page - 1) / items_per_page - 1; // Calculate pages correctly, accounting for partial pages
+  int pages = (icount + items_per_page - 1) / items_per_page - 1;
   int page = 0;
   int icon_addr;
 
@@ -268,7 +285,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
     {
       while (digitalRead(37) == LOW)
         ;
-
+      lol2.close();
       return items_per_page * page + choice;
     }
     if (digitalRead(38) == LOW)
@@ -429,13 +446,15 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
     }
     if (digitalRead(0) == LOW)
     { // EXIT
-    exit = true;
-      while (digitalRead(0) == LOW);
-      
+      exit = true;
+      while (digitalRead(0) == LOW)
+        ;
+
       return -1;
     }
   }
   lol2.close();
+  return -1;
 }
 
 void spinAnim(int x, int y, int size_x, int size_y, int offset)
@@ -589,6 +608,7 @@ int choiceMenu(const String choices[], int count, bool context)
     if (digitalRead(37) == LOW)
     {
       // middle
+      lol2.close();
       exit = true;
       return choice;
     }
@@ -650,4 +670,5 @@ int choiceMenu(const String choices[], int count, bool context)
     }
   }
   lol2.close();
+  return -1;
 }

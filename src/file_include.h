@@ -3,6 +3,13 @@
 #define RS485_RTS_PIN 4
 #define chipSelect 13
 #define MAX_CONTACTS 100
+/////////////////////////
+//ENABLE DEVELOPER MODE//
+#define DEVMODE      //
+/////////////////////////
+
+#include "BleMouse.h"
+#include "BleKeyboard.h"
 #include "SPI.h"
 #include "TFT_eSPI.h"
 #include "SD.h"

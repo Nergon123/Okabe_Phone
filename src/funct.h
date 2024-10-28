@@ -4,5 +4,6 @@
 
 String sendATCommand(String command);
 void populateContacts();
-
+int getChargeLevel();
+int getSignalLevel();
 #endif

@@ -12,7 +12,28 @@ String sendATCommand(String command)
   return response;
 }
 
+int getChargeLevel()
+{
+  int charge = chrg.getBatteryLevel() / 25;
 
+  int toIcon = (charge / 25) - 1;
+  #ifdef DEVMODE
+    toIcon = charge_d;    
+  #endif
+  if (toIcon > 3)
+    toIcon = 3;
+  if (toIcon < 0)
+    toIcon = 0;
+  return toIcon;
+}
+int getSignalLevel()
+{
+  int signal = 1;// temp placeholder to actual getSignalLevel
+  #ifdef DEVMODE
+    signal = signallevel_d;
+  #endif  
+  return signal; 
+}
 
 void populateContacts()
 {
