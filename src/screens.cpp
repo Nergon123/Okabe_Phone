@@ -1,4 +1,5 @@
 #include "screens.h"
+void makeCall(Contact contact);
 void messages()
 {
   File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
@@ -12,37 +13,37 @@ void messages()
     ;
   lol2.close();
 }
-void knipka(){
+void knipka()
+{
 
-          blemouse.begin();
-          changeFont(0);
-          tft.fillScreen(0x0);
-          drawStatusBar();
-          tft.setTextColor(0xffff);
-            bool isConnected = true;
-  
-          while (digitalRead(37) == HIGH)
-          {
+  blemouse.begin();
+  changeFont(0);
+  tft.fillScreen(0x0);
+  drawStatusBar();
+  tft.setTextColor(0xffff);
+  bool isConnected = !blemouse.isConnected();
 
-            if (isConnected != blemouse.isConnected())
-            {
-              tft.fillScreen(0x0);
-              tft.setCursor(0, 50);
-              tft.setTextSize(5);
-              tft.print("Knipka\n");
-              tft.setTextSize(2);
-              tft.println(String("CONNECTED?" + String(blemouse.isConnected())));
-              isConnected = blemouse.isConnected();
+  while (digitalRead(37) == HIGH)
+  {
 
-            }
-            if (digitalRead(0) == LOW && blemouse.isConnected())
-            {
-              while (digitalRead(0) == LOW)
-                ;
-              blemouse.move(0, 0, -1);
-            }
-          };
-          blemouse.end();
+    if (isConnected != blemouse.isConnected())
+    {
+      tft.fillScreen(0x0);
+      tft.setCursor(0, 50);
+      tft.setTextSize(5);
+      tft.print("Knipka\n");
+      tft.setTextSize(2);
+      tft.println(String("CONNECTED?" + String(blemouse.isConnected())));
+      isConnected = blemouse.isConnected();
+    }
+    if (digitalRead(0) == LOW && blemouse.isConnected())
+    {
+      while (digitalRead(0) == LOW)
+        ;
+      blemouse.move(0, 0, -1);
+    }
+  };
+  blemouse.end();
 }
 void e()
 {
@@ -58,9 +59,15 @@ void e()
     String levels[] = {"0", "1", "2", "3"};
     String btMenu[] = {"BT Mouse", "BT Keyboard"};
     String btMouse[] = {"SCROLLDOWN"};
+    Contact contact;
+    contact.index = 0;
+    contact.name = "Daru";
+    contact.number = "090X848X146";
     switch (choice)
     {
-    case 0:
+    case 1:
+
+      makeCall(contact);
       break;
     case 3:
       charge_d = choiceMenu(levels, ArraySize(levels), true);
@@ -81,7 +88,7 @@ void e()
         switch (btMChoice)
         {
         case 0:
-                knipka();
+          knipka();
           break;
         }
         break;
@@ -92,7 +99,6 @@ void e()
   lol2.close();
 #endif
 }
-
 
 bool settings()
 {
@@ -301,84 +307,65 @@ void offlineCharging()
 
 void makeCall(Contact contact)
 {
-  // Ensure the contact number is valid
-  if (contact.number.isEmpty())
-  {
-    Serial.println("Invalid contact number.");
-    return;
-  }
-
-  // Send AT command to initiate a call
-  Serial1.print("ATD");
-  Serial1.print(contact.number);
-  Serial1.println(";"); // End the command with a semicolon to start the call
-  tft.fillScreen(0x0000);
+  bool calling = true;
+  tft.fillScreen(0);
   drawStatusBar();
-  tft.setCursor(40, 120);
+
+  changeFont(1);
+  tft.setTextColor(0xffff);
+
+  tft.setTextSize(1);
+  tft.setCursor(20, 140 + 60);
+  tft.print(contact.name);
+
+  tft.setTextSize(2);
+  tft.setCursor(0, 180 + 60);
+  tft.print(contact.number);
+ 
+  tft.setTextSize(1);
+  tft.setCursor(85, 95);
   tft.print("Calling...");
-  // Optional: Wait and check for response
-  unsigned long startTime = millis();
-  while (millis() - startTime < 10000)
-  { // Wait up to 10 seconds
-    if (Serial1.available())
-    {
-      String response = Serial1.readStringUntil('\n');
-      if (response.indexOf("OK") != -1)
-      {
-        Serial.println("Call initiated successfully.");
-        tft.fillScreen(0x0000);
-        drawStatusBar();
 
-        tft.setCursor(40, 120);
-        tft.print("VOICE ONLY");
-        Serial.println(sendATCommand("AT+CLCC"));
-
-        return;
-      }
-      else if (response.indexOf("ERROR") != -1)
-      {
-        Serial.println("Failed to initiate call.");
-        return;
-      }
-    }
-  }
-
-  Serial.println("No response from SIM800L.");
+  while (calling)
+    for (int i = 7; i > 0; i--)
+      spinAnim(55, 60, 12, 6, i);
+  tft.fillScreen(0);
+  drawStatusBar();
 }
+
+
 void contactss()
 {
-  // Initialize contacts array
+
   populateContacts();
 
-  // Convert contact names to a string array for display
+  
   String contactNames[contactCount];
   for (int i = 0; i < contactCount; ++i)
   {
     contactNames[i] = contacts[i].name;
   }
 
-  // Introduce a delay and draw the status bar
   delay(300);
   drawStatusBar();
 
-  // Use listMenu to display the contacts list
+
   int selectedContactIndex = listMenu(contactNames, contactCount, false, 1, "Address Book");
 
-  // If a contact was selected, display the context menu
   if (selectedContactIndex != -1)
   {
     int contextMenuSelection = choiceMenu(contmenu, 5, true);
 
-    // Implement what happens after a context menu option is selected
+    
     switch (contextMenuSelection)
     {
-    case 0: // Call
+    case 0: 
       makeCall(contacts[selectedContactIndex]);
       break;
-    case 1: // Outgoing
-      // Implement outgoing call functionality
+    case 1: 
+    //OUTGOING
       break;
-      // Add other cases as needed
+
     }
   }
 }

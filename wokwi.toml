@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = '.pio/build/lilygo-t-display-s3/firmware.bin'
+elf = '.pio/build/lilygo-t-display-s3/firmware.elf'

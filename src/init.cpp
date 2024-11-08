@@ -16,15 +16,15 @@ bool havenewmessages = false;
 BleMouse blemouse("OkabePhone","DEVELOPER",chrg.getBatteryLevel());
 void setup()
 {
+  tft.init();
+  tft.fillScreen(0x0000);
   // WIRE.begin();
   pinMode(38, INPUT_PULLUP);
   pinMode(0, INPUT_PULLUP);
   pinMode(39, INPUT_PULLUP);
   pinMode(37, INPUT_PULLUP);
   chrg.begin(21, 22);
-  tft.init();
 
-  tft.fillScreen(0x0000);
   if (chrg.isChargerConnected() == 1)
   {
     offlineCharging();
@@ -34,9 +34,11 @@ void setup()
   tft.setTextSize(3);
   tft.println("NerBoot");
   tft.setTextSize(1);
-  tft.println("NerBoot v.0.0.1 ALPHA\n\nBootloader written by NERGON\n\nResources located in sdcard\nfolder FIRMWARE\n");
+  tft.println("NerBoot v.0.0.4 ALPHA\n\nBootloader written by NERGON\n\nResources located in sdcard\nfolder FIRMWARE\n");
   SPI.begin(14, 2, 15, 13);
-
+  #ifdef DEVMODE
+  tft.println("\n       !!! DEVMODE ENABLED !!!\n\n       THIS MEANS THAT THIS \n       BUILD NOT FOR PRODUCTION\n");
+  #endif
   Serial.begin(115200);
   Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
   Serial.print("Initializing SD card...");
@@ -69,13 +71,11 @@ void setup()
 
   preferences.begin("settings", false);
   ima = preferences.getUInt("ima", 0); // Load ima with a default value of 0
-
-  drawFromSd(0X5A708D, 0, 0, 240, 26, lol2);
-  drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294, lol2);
+  while(digitalRead(37)==LOW);
   //Serial.println("test");
 
 
-  tft.fillScreen(0x0000);
+
 
 
 

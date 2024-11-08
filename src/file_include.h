@@ -12,11 +12,13 @@
 #include "BleKeyboard.h"
 #include "SPI.h"
 #include "TFT_eSPI.h"
+#include "EXT/TFT_Config.h"
+#include "EXT/IP5306.h"
 #include "SD.h"
-#include "IP5306.h"
 #include <Preferences.h>
 #include <Wire.h>
 #include "hal/uart_types.h"
+
 #include "init.h"
 #include "funct.h"
 #include "render.h"

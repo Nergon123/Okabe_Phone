@@ -18,6 +18,8 @@ void changeFont(int ch)
 }
 void drawFromSdTrans(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, uint16_t tc, File file)
 {
+   if (!file.available())
+    blueScreen("SD_CARD_NOT_AVAILABLE");
   file.seek(pos);
 
   const int buffer_size = size_x * 2; // 2 bytes per pixel
@@ -59,6 +61,8 @@ void drawFromSdTrans(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y,
 
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, File file)
 {
+     if (!file.available())
+    blueScreen("SD_CARD_NOT_AVAILABLE");
   file.seek(pos);
 
   const int downscaled_width = size_x / scale;
@@ -80,6 +84,7 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
     // Skip the lines that won't be drawn (vertical downscaling)
     file.seek(file.position() + (size_x * 2 * (scale - 1)));
   }
+  file.close();
 }
 
 void writeText(int x, int y, char *str)
@@ -177,6 +182,8 @@ void blueScreen(const char *reason)
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file)
 {
+  if (!file.available())
+    blueScreen("SD_CARD_NOT_AVAILABLE");
   file.seek(pos);
 
   const int buffer_size = size_x * 2;
@@ -457,7 +464,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
   return -1;
 }
 
-void spinAnim(int x, int y, int size_x, int size_y, int offset)
+void spinAnim(int x, int y, int size_x, int size_y, int offset,int spacing)
 {
   File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
   int max_count = (2 * x) + (2 * (y - 2));
@@ -474,19 +481,19 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset)
         drawFromSd(0x658BC5 + (j * 0x62), x + xt, y + yt, 7, 7, lol2);
       if (printed_count < size_x)
       {
-        xt += 7;
+        xt += spacing;
       }
       else if (printed_count >= size_x && printed_count < size_x + (size_y - 1))
       {
-        yt += 7;
+        yt += spacing;
       }
       else if (printed_count > size_x + (size_y - 1) && printed_count < (size_x * 2) + size_y)
       {
-        xt -= 7;
+        xt -= spacing;
       }
       else if (printed_count > (size_x * 2) + (size_y)-2 && yy < size_y)
       {
-        yt -= 7;
+        yt -= spacing;
         yy++;
         if (yy > size_y - 2)
           draw = false;

@@ -13,6 +13,6 @@ void blueScreen(const char *reason);
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file);
 int listMenu(const String choices[], int icount, bool images, int type, String label);
 void listMenu_sub(String label, int type, int page, int pages);
-void spinAnim(int x,int y,int size_x,int size_y,int offset);
+void spinAnim(int x,int y,int size_x,int size_y,int offset,int spacing = 10);
 int choiceMenu(const String choices[], int count, bool context);
 #endif
