@@ -1,17 +1,17 @@
 #include "screens.h"
 void makeCall(Contact contact);
+void incomingCall(Contact contact);
 void messages()
 {
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
-  drawFromSd(0x613D45, 0, 26, 240, 294, lol2);
-  drawFromSd(0x5DECA5, 0, 26, 240, 42, lol2);
-  drawFromSd(0x5E8A25, 0, 68, 240, 128, lol2);
+
+  drawFromSd(0x613D45, 0, 26, 240, 294);
+  drawFromSd(0x5DECA5, 0, 26, 240, 42);
+  drawFromSd(0x5E8A25, 0, 68, 240, 128);
   String lol[] = {"Inbox", "Outbox"};
   int ch = choiceMenu(lol, 2, false);
   String exampleMessage = "SAMPLE TEXT TO TEST MESSAGE | EmAIL | SMS | OR SoMETHING ~!@#$ \nKILL YOURSELF\n \n \n - Unknown";
-  while (digitalRead(0) == HIGH)
+  while (buttonsHelding() == -1)
     ;
-  lol2.close();
 }
 void knipka()
 {
@@ -23,7 +23,7 @@ void knipka()
   tft.setTextColor(0xffff);
   bool isConnected = !blemouse.isConnected();
 
-  while (digitalRead(37) == HIGH)
+  while (buttonsHelding() != DOWN)
   {
 
     if (isConnected != blemouse.isConnected())
@@ -36,10 +36,9 @@ void knipka()
       tft.println(String("CONNECTED?" + String(blemouse.isConnected())));
       isConnected = blemouse.isConnected();
     }
-    if (digitalRead(0) == LOW && blemouse.isConnected())
+    if (buttonsHelding() == BACK && blemouse.isConnected())
     {
-      while (digitalRead(0) == LOW)
-        ;
+
       blemouse.move(0, 0, -1);
     }
   };
@@ -48,7 +47,7 @@ void knipka()
 void e()
 {
 #ifdef DEVMODE
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
+
   tft.fillScreen(0x0000);
   drawStatusBar();
   int choice = -1;
@@ -65,6 +64,9 @@ void e()
     contact.number = "090X848X146";
     switch (choice)
     {
+      case 0:
+      incomingCall(contact);
+      break;
     case 1:
 
       makeCall(contact);
@@ -96,18 +98,15 @@ void e()
       break;
     }
   }
-  lol2.close();
+
 #endif
 }
 
 bool settings()
 {
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
-  drawFromSd(0x613D45, 0, 26, 240, 294, lol2);
-  drawFromSd(0x5E3B65, 0, 26, 240, 42, lol2);
 
-  while (digitalRead(37) == LOW)
-    ;
+  drawFromSd(0x613D45, 0, 26, 240, 294);
+  drawFromSd(0x5E3B65, 0, 26, 240, 42);
   String lol[] = {
       "Change Wallpaper",
       "Phone ringtone",
@@ -144,8 +143,8 @@ bool settings()
       switch (picch)
       {
       case 0:
-        drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * pic), 0, 26, 240, 294, lol2);
-        while (digitalRead(0) == HIGH)
+        drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * pic), 0, 26, 240, 294);
+        while (buttonsHelding() != BACK)
           ;
         break;
       case 1:
@@ -159,27 +158,26 @@ bool settings()
       }
     }
   }
-  lol2.close();
+
   return false;
 }
 void MainMenu()
 {
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
-  drawFromSd(0x5ADC01, 0, 26, 240, 294, lol2);
-  drawFromSd(0x5D0341, 51, 71, 49, 49, lol2);
-  lol2.close();
-  while (digitalRead(38) == LOW)
-    ;
+
+  drawFromSd(0x5ADC01, 0, 26, 240, 294);
+  drawFromSd(0x5D0341, 51, 71, 49, 49);
+
   int choice = 0;
   bool exit = false;
   while (!exit)
-  {
-    if (digitalRead(0) == LOW)
+    switch (buttonsHelding())
+    {
+    case BACK:
     {
       exit = true;
       break;
     }
-    if (digitalRead(37) == LOW)
+    case SELECT:
     {
       // middle
       switch (choice)
@@ -197,9 +195,10 @@ void MainMenu()
         exit = settings();
         break;
       }
+      break;
     }
 
-    if (digitalRead(38) == LOW)
+    case UP:
     {
       choice--;
       if (choice > 3)
@@ -209,11 +208,10 @@ void MainMenu()
 
       rendermenu(choice, false);
       // left
-      while (digitalRead(38) == LOW)
-        ;
+      break;
     }
 
-    if (digitalRead(39) == LOW)
+    case DOWN:
     {
       choice++;
       if (choice > 3)
@@ -222,43 +220,29 @@ void MainMenu()
         choice = 3;
 
       rendermenu(choice, true);
-      // right
-      while (digitalRead(39) == LOW)
-        ;
+      break;
     }
-  }
+    }
 
   MainScreen();
 }
 
 int gallery()
 {
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
-  // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294, lol2);
-  if (!lol2.available())
-    blueScreen("SD_CARD_NOT_AVAILABLE");
-  while (digitalRead(37) == LOW)
-    ;
-  lol2.close();
+
+  // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
   return listMenu(wallnames, ArraySize(wallnames), true, 2, "Change wallpaper");
 }
 
 void MainScreen()
 {
   Serial.println("MAINSCREEN");
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
-  drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294, lol2);
+
+  drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
   // bool exit = false;
-  while (true)
-  {
-    if (digitalRead(38) == LOW)
-    {
-      while (digitalRead(38) == LOW)
-        ;
-      MainMenu();
-    }
-  }
-  lol2.close();
+  while (buttonsHelding() != UP)
+    ;
+  MainMenu();
 }
 
 void offlineCharging()
@@ -266,45 +250,70 @@ void offlineCharging()
   tft.fillRect(35, 100, 160, 80, 0xffff);
   tft.fillRect(195, 120, 10, 40, 0xFFFF);
   tft.setCursor(70, 310);
-  tft.setTextSize(1);
-  changeFont(1);
-  tft.print("vvLAUNCHvv");
-
-  while (digitalRead(37) == HIGH)
+  bool exit = false;
+  while (buttonsHelding() == -1 || !exit)
   {
+
+    int mill = millis();
+    if (buttonsHelding() != -1)
+      break;
     int icc = chrg.isChargerConnected();
     int bp = chrg.getBatteryLevel();
     tft.fillRect(40, 105, 150, 70, 0x0000);
     if (chrg.isChargerConnected() && bp < 25)
-      delay(500);
+      while (millis() - mill < 500)
+        if (buttonsHelding() != -1)
+        {
+          exit = true;
+          break;
+        }
 
     tft.fillRect(45, 110, 43, 60, 0xffff);
-    if (digitalRead(37) == LOW)
-      break;
 
     if (chrg.isChargerConnected() && bp < 75)
-      delay(500);
+      while (millis() - mill < 1000)
+        if (buttonsHelding() != -1)
+        {
+          exit = true;
+          break;
+        }
     tft.fillRect(45 + 48, 110, 43, 60, 0xffff);
 
-    if (digitalRead(37) == LOW)
-      break;
     if (chrg.isChargerConnected() && bp < 100)
-      delay(500);
-
+      while (millis() - mill < 1500)
+        if (buttonsHelding() != -1)
+        {
+          exit = true;
+          break;
+        }
     tft.fillRect(45 + 96, 110, 43, 60, 0xffff);
-    if (digitalRead(37) == LOW)
-      break;
-    delay(500);
 
-    if (chrg.getBatteryLevel() == 100)
-    {
-      while (digitalRead(37) == HIGH)
-        ;
-    }
+    while (chrg.getBatteryLevel() == 100)
+      if (buttonsHelding() != -1)
+      {
+        exit = true;
+        break;
+      }
   }
   tft.fillScreen(0x0000);
 }
 
+void incomingCall(Contact contact){
+   drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+
+  drawFromSd(0x5F7A25,0,90,240,134);
+  changeFont(1);
+  tft.setTextColor(0);
+  tft.setCursor(15,170);
+  tft.print(contact.name);
+  tft.setTextColor(0xf800);
+  tft.setCursor(90,140);
+  changeFont(4);
+  tft.setTextSize(1);
+  tft.print("Ca l l ing");
+  writeCustomFont(55,185,contact.number,1);
+  for(;;);
+}
 void makeCall(Contact contact)
 {
   bool calling = true;
@@ -320,26 +329,54 @@ void makeCall(Contact contact)
 
   tft.setTextSize(2);
   tft.setCursor(0, 180 + 60);
-  tft.print(contact.number);
- 
+  // tft.print(contact.number);
+  writeCustomFont(5, 240, contact.number);
+
   tft.setTextSize(1);
   tft.setCursor(85, 95);
   tft.print("Calling...");
-
+  delay(50);
+  bool hang = false;
   while (calling)
-    for (int i = 7; i > 0; i--)
+  {
+    for (int i = 7; i >= 0; i--)
+    {
       spinAnim(55, 60, 12, 6, i);
+      delay(40);
+      if (buttonsHelding() == DOWN)
+      {
+        hang = true;
+        calling = false;
+        break;
+      }
+      else if (buttonsHelding() == UP)
+      {
+        calling = false;
+        break; 
+        // proceed to emulating call
+      }
+    }
+  }
+  if (hang)
+  {
+    // if hang up
+    return;
+  }
+
+  tft.fillScreen(0);
+  drawStatusBar();
+  drawFromSd(0x65D147, 40, 143, 160, 34);
+  while (true /*"IF CALL IN PROGRESS" STATEMENT HERE*/)
+    ;
   tft.fillScreen(0);
   drawStatusBar();
 }
-
 
 void contactss()
 {
 
   populateContacts();
 
-  
   String contactNames[contactCount];
   for (int i = 0; i < contactCount; ++i)
   {
@@ -349,23 +386,20 @@ void contactss()
   delay(300);
   drawStatusBar();
 
-
   int selectedContactIndex = listMenu(contactNames, contactCount, false, 1, "Address Book");
 
   if (selectedContactIndex != -1)
   {
     int contextMenuSelection = choiceMenu(contmenu, 5, true);
 
-    
     switch (contextMenuSelection)
     {
-    case 0: 
+    case 0:
       makeCall(contacts[selectedContactIndex]);
       break;
-    case 1: 
-    //OUTGOING
+    case 1:
+      // OUTGOING
       break;
-
     }
   }
 }

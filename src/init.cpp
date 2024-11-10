@@ -16,6 +16,7 @@ bool havenewmessages = false;
 BleMouse blemouse("OkabePhone","DEVELOPER",chrg.getBatteryLevel());
 void setup()
 {
+
   tft.init();
   tft.fillScreen(0x0000);
   // WIRE.begin();
@@ -25,11 +26,11 @@ void setup()
   pinMode(37, INPUT_PULLUP);
   chrg.begin(21, 22);
 
-  if (chrg.isChargerConnected() == 1)
+  /*if (chrg.isChargerConnected() == 1)
   {
     offlineCharging();
     tft.setTextFont(1);
-  }
+  } */
   tft.setCursor(0, 0);
   tft.setTextSize(3);
   tft.println("NerBoot");
@@ -51,24 +52,22 @@ void setup()
     tft.println("\nSD Initialization failed!");
     delay(1000);
     blueScreen("SD_CARD_INIT_FAIL");
-    // tft.setTextColor(0xffff);
   }
   else
   {
     Serial.println("SD Initialization done.");
     tft.println("\nSD Initialization done.\n");
   }
-  Serial.println("Contents of the SD card:");
 
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
   if (!SD.exists("/FIRMWARE/IMAGES.SG"))
     blueScreen("NO_FIRMWARE");
-
+  
+  File lol2 = SD.open("/FIRMWARE/IMAGES.SG");
   while (lol2.position() != 13)
   {
     tft.print((char)lol2.read());
   }
-
+  lol2.close();
   preferences.begin("settings", false);
   ima = preferences.getUInt("ima", 0); // Load ima with a default value of 0
   while(digitalRead(37)==LOW);
@@ -82,7 +81,7 @@ void setup()
   // tft.pushImage(0,0,240,80,(uint16_t)image);
   // while(lol2.available())
   // Serial.print(lol2.read());
-  lol2.close();
+
 }
 
 void loop(void)

@@ -3,6 +3,11 @@
 #define RS485_RTS_PIN 4
 #define chipSelect 13
 #define MAX_CONTACTS 100
+
+#define BACK 0
+#define SELECT 1
+#define UP 2
+#define DOWN 3
 /////////////////////////
 //ENABLE DEVELOPER MODE//
 #define DEVMODE      //
@@ -23,3 +28,5 @@
 #include "funct.h"
 #include "render.h"
 #include "screens.h"
+#include <regex>
+

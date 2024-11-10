@@ -14,11 +14,15 @@ void changeFont(int ch)
     break;
   case 3:
     tft.setFreeFont(&FreeMono9pt7b);
+    break;
+  case 4:
+    tft.setFreeFont(&FreeSans12pt7b);
+    break;
   }
 }
 void drawFromSdTrans(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, uint16_t tc, File file)
 {
-   if (!file.available())
+  if (!file.available())
     blueScreen("SD_CARD_NOT_AVAILABLE");
   file.seek(pos);
 
@@ -57,11 +61,12 @@ void drawFromSdTrans(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y,
       tft.pushImage(pos_x + draw_start, a + pos_y, size_x - draw_start, 1, (uint16_t *)(&buffer[draw_start * 2]));
     }
   }
+  file.close();
 }
 
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, File file)
 {
-     if (!file.available())
+  if (!file.available())
     blueScreen("SD_CARD_NOT_AVAILABLE");
   file.seek(pos);
 
@@ -101,70 +106,65 @@ void writeText(int x, int y, char *str)
 
 void drawStatusBar()
 {
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
-  if (!lol2.available())
-    blueScreen("SD_CARD_NOT_AVAILABLE");
 
-  drawFromSd(0X5A708D, 0, 0, 240, 26, lol2);    // statusbar  
-  if(getSignalLevel()==1)                         
-  drawFromSd(0x5AD47D, 0, 0, 37, 26, lol2);                                // no_signal
-  drawFromSd(0x5ABC1D + (0x618) * getSignalLevel(), 0, 0, 30, 26, lol2);   // signal
-  drawFromSd(0X5AA14D + (0x6B4) * getChargeLevel(), 207, 0, 33, 26, lol2); // battery
+  drawFromSd(0X5A708D, 0, 0, 240, 26); // statusbar
+  if (getSignalLevel() == 1)
+    drawFromSd(0x5AD47D, 0, 0, 37, 26);                              // no_signal
+  drawFromSd(0x5ABC1D + (0x618) * getSignalLevel(), 0, 0, 30, 26);   // signal
+  drawFromSd(0X5AA14D + (0x6B4) * getChargeLevel(), 207, 0, 33, 26); // battery
   //  tft.print(String(charge) + String("%"));
-  lol2.close();
 }
 
 void rendermenu(int choice, bool right)
 {
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
+
   switch (choice)
   {
   case 0:
     if (right)
     {
-      drawFromSd(0x5D5097 + (0x17A2 * 3), 137, (123 + 26), 55, 55, lol2);
+      drawFromSd(0x5D5097 + (0x17A2 * 3), 137, (123 + 26), 55, 55);
     }
     else
     {
-      drawFromSd(0x5D5097 + (0x17A2 * 1), 138, (42 + 26), 55, 55, lol2);
+      drawFromSd(0x5D5097 + (0x17A2 * 1), 138, (42 + 26), 55, 55);
     }
-    drawFromSd(0x5D0341, 51, (45 + 26), 49, 49, lol2);
+    drawFromSd(0x5D0341, 51, (45 + 26), 49, 49);
     break;
   case 1:
     if (right)
     {
-      drawFromSd(0x5D5097, 49, (43 + 26), 55, 55, lol2);
+      drawFromSd(0x5D5097, 49, (43 + 26), 55, 55);
     }
     else
     {
-      drawFromSd(0x5D5097 + (0x17A2 * 2), 49, (122 + 26), 55, 55, lol2);
+      drawFromSd(0x5D5097 + (0x17A2 * 2), 49, (122 + 26), 55, 55);
     }
-    drawFromSd(0x5D1603, 141, (44 + 26), 49, 51, lol2);
+    drawFromSd(0x5D1603, 141, (44 + 26), 49, 51);
     break;
   case 2:
     if (right)
     {
-      drawFromSd(0x5D5097 + (0x17A2 * 1), 138, (42 + 26), 55, 55, lol2);
+      drawFromSd(0x5D5097 + (0x17A2 * 1), 138, (42 + 26), 55, 55);
     }
     else
     {
-      drawFromSd(0x5D5097 + (0x17A2 * 3), 137, (123 + 26), 55, 55, lol2);
+      drawFromSd(0x5D5097 + (0x17A2 * 3), 137, (123 + 26), 55, 55);
     }
-    drawFromSd(0x5D2989, 52, (125 + 26), 50, 50, lol2);
+    drawFromSd(0x5D2989, 52, (125 + 26), 50, 50);
     break;
   case 3:
     if (right)
     {
-      drawFromSd(0x5D5097 + (0x17A2 * 2), 49, (122 + 26), 55, 55, lol2);
+      drawFromSd(0x5D5097 + (0x17A2 * 2), 49, (122 + 26), 55, 55);
     }
     else
     {
-      drawFromSd(0x5D5097, 49, (43 + 26), 55, 55, lol2);
+      drawFromSd(0x5D5097, 49, (43 + 26), 55, 55);
     }
-    drawFromSd(0x5D3D11, 140, (125 + 26), 49, 51, lol2);
+    drawFromSd(0x5D3D11, 140, (125 + 26), 49, 51);
     break;
   }
-  lol2.close();
 }
 void blueScreen(const char *reason)
 {
@@ -180,12 +180,12 @@ void blueScreen(const char *reason)
     ;
 }
 
-void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file)
+void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file,bool transp,uint16_t tc)
 {
   if (!file.available())
     blueScreen("SD_CARD_NOT_AVAILABLE");
   file.seek(pos);
-
+  if(!transp){
   const int buffer_size = size_x * 2;
   uint8_t buffer[buffer_size];
 
@@ -195,10 +195,101 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
 
     tft.pushImage(pos_x, a + pos_y, size_x, 1, (uint16_t *)buffer);
   }
+  }else
+  {
+      const int buffer_size = size_x * 2; // 2 bytes per pixel
+  uint8_t buffer[buffer_size];
+
+  for (int a = 0; a < size_y; a++)
+  {
+    // Read a whole line (row) of pixels at once
+    file.read(buffer, buffer_size);
+
+    int draw_start = -1;
+    for (int i = 0; i < size_x; i++)
+    {
+      uint16_t wd = (buffer[2 * i] << 8) | buffer[2 * i + 1];
+
+      if (wd != tc)
+      {
+        if (draw_start == -1)
+        {
+          draw_start = i;
+        }
+      }
+      else
+      {
+        if (draw_start != -1)
+        {
+          tft.pushImage(pos_x + draw_start, a + pos_y, i - draw_start, 1, (uint16_t *)(&buffer[draw_start * 2]));
+          draw_start = -1;
+        }
+      }
+    }
+    if (draw_start != -1)
+    {
+      tft.pushImage(pos_x + draw_start, a + pos_y, size_x - draw_start, 1, (uint16_t *)(&buffer[draw_start * 2]));
+    }
+  }
+  }
 }
+void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y,bool transp,uint16_t tc){
+  drawFromSd(pos,pos_x,pos_y,size_x,size_y, SD.open("/FIRMWARE/IMAGES.SG"), transp, tc);
+}
+void writeCustomFont(int x, int y, String input,int type)
+{
+  int w = 21;
+  int h = 27;
+  bool transp = false;
+  uint16_t tc = 0xFFFF;
+  uint32_t addr = 0x658ED5;
+  switch(type){
+    case 0:
+    break;
+    case 1:
+    w=15;
+    h=19;
+    addr = 0x65FBC7;
+    transp = true;
+    break;
+    default:
+    break;
+  }
+    int size = w * h * 2;
+
+  char buf[64];
+  input.toCharArray(buf, 64);   
+  for (int i = 1; i < input.length() + 1; i++)
+  {
+    Serial.println(String(buf[i-1])+ " " + String(w*(i-1)+x));
+      switch (buf[i-1])
+      {
+      case '#':
+      drawFromSd(addr + (size * 10), w * (i-1) + x, y, w, h,transp,tc);
+        break;
+      case '*':
+      drawFromSd(addr + (size * 11), w * (i-1) + x, y, w, h,transp,tc);
+        break;
+      case 'X':
+      drawFromSd(addr + (size * 12), w * (i-1) + x, y, w, h,transp,tc);
+        break;
+      case '/':
+      drawFromSd(addr + (size * 13), w * (i-1) + x, y, w, h,transp,tc);
+        break;
+      case ':':
+      drawFromSd(addr + (size * 14), w * (i-1) + x, y, w,h,transp,tc);
+        break;
+      default:
+      if (buf[i-1] > 47 && buf[i-1] < 58)
+      drawFromSd(addr + (size * (buf[i - 1] - 48)), w * (i-1) + x, y, w, h,transp,tc);
+        break;
+      }
+  }
+}
+
 void listMenu_sub(String label, int type, int page, int pages)
 {
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
+
   tft.setCursor(30, 45);
   tft.setTextSize(1);
   changeFont(1);
@@ -208,7 +299,6 @@ void listMenu_sub(String label, int type, int page, int pages)
   tft.setCursor(210, 40);
   tft.print(String(page + 1) + String("/") + String(pages + 1));
   changeFont(1);
-  lol2.close();
 }
 
 int listMenu(const String choices[], int icount, bool images, int type, String label)
@@ -234,9 +324,9 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
   if (icount == 0)
     return -1; // exit if list empty
 
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ); // load file with graphical resources
-  int scale = 7;                                         // downscale multiplier for images
-  int x = 10;                                            // coordinates where begin to render text
+  // load file with graphical resources
+  int scale = 7; // downscale multiplier for images
+  int x = 10;    // coordinates where begin to render text
   int y = 65;
   int mult = 20; // spacing beetween
   if (images)
@@ -244,9 +334,9 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
     mult = (294 / scale) + 1;
     x = 55;
   }
-  drawFromSd(0x5DAF1F, 0, 26, 240, 25, lol2); // bluebar TODO: just draw rectangle instead of loading a whole image
-  if (type >= 0 && type < 3)                  // with icon to draw...
-    drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25, lol2);
+  drawFromSd(0x5DAF1F, 0, 26, 240, 25); // bluebar TODO: just draw rectangle instead of loading a whole image
+  if (type >= 0 && type < 3)            // with icon to draw...
+    drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
   int items_per_page = 269 / mult; // max items per page (empty space height divided by spacing)
   int count = icount;
   int pages = (icount + items_per_page - 1) / items_per_page - 1;
@@ -262,7 +352,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
   changeFont(1);
 
   listMenu_sub(label, type, page, pages);
-  drawFromSd(0x639365, 0, 51, 240, 269, lol2);
+  drawFromSd(0x639365, 0, 51, 240, 269);
   tft.setTextColor(color_inactive);
 
   for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
@@ -271,7 +361,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
     {
 
       tft.drawLine(0, 50 + mult * (i + 1), 240, 50 + mult * (i + 1), 0x0000);
-      drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale, lol2);
+      drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale);
     }
     tft.setCursor(x, y + (mult * i));
     tft.print(choices[items_per_page * page + i]);
@@ -282,20 +372,20 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
   if (images)
   {
     tft.drawLine(0, 50 + mult * (choice + 1), 240, 50 + mult * (choice + 1), 0x0000);
-    drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + choice)), 10, 51 + mult * choice, 240, 294, scale, lol2);
+    drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + choice)), 10, 51 + mult * choice, 240, 294, scale);
   }
   bool exit = false;
   while (!exit)
-  {
-
-    if (digitalRead(37) == LOW)
+    switch (buttonsHelding())
     {
-      while (digitalRead(37) == LOW)
-        ;
-      lol2.close();
+    case SELECT:
+    {
+      exit = true;
+
       return items_per_page * page + choice;
+      break;
     }
-    if (digitalRead(38) == LOW)
+    case UP:
     { // Up button
       bool changed = false;
       int old_choice = choice;
@@ -305,19 +395,19 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
       }
       else if (page > 0)
       {
-        drawFromSd(0x5DAF1F, 0, 26, 240, 25, lol2);
+        drawFromSd(0x5DAF1F, 0, 26, 240, 25);
         if (type >= 0 && type < 3)
-          drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25, lol2);
+          drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
         page--;
         changed = true;
-        drawFromSd(0x639365, 0, 51, 240, 269, lol2);
+        drawFromSd(0x639365, 0, 51, 240, 269);
         for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
         {
           if (images)
           {
             tft.drawLine(0, 50 + mult * (i + 1), 240, 50 + mult * (i + 1), 0x0000);
             tft.drawLine(0, 50 + mult * (i), 240, 50 + mult * (i), 0x0000);
-            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale, lol2);
+            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale);
           }
           tft.setCursor(x, y + (mult * i));
           tft.print(choices[items_per_page * page + i]);
@@ -326,18 +416,18 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
       }
       else
       {
-        drawFromSd(0x5DAF1F, 0, 26, 240, 25, lol2);
+        drawFromSd(0x5DAF1F, 0, 26, 240, 25);
         if (type >= 0 && type < 3)
-          drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25, lol2);
+          drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
         page = pages;
         changed = true;
-        drawFromSd(0x639365, 0, 51, 240, 269, lol2);
+        drawFromSd(0x639365, 0, 51, 240, 269);
         for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
         {
           if (images)
           {
             tft.drawLine(0, 50 + mult * (i + 1), 240, 50 + mult * (i + 1), 0x0000);
-            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale, lol2);
+            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale);
           }
           tft.setCursor(x, y + (mult * i));
           tft.print(choices[items_per_page * page + i]);
@@ -346,7 +436,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
       }
 
       if (!changed)
-        drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult, lol2);
+        drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult);
 
       listMenu_sub(label, type, page, pages);
       tft.setTextColor(color_inactive);
@@ -356,7 +446,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
         if (images)
         {
           tft.drawLine(0, 50 + mult * (choice + 2), 240, 50 + mult * (choice + 2), 0x0000);
-          drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + (old_choice))), 10, 51 + mult * (old_choice), 240, 294, scale, lol2);
+          drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + (old_choice))), 10, 51 + mult * (old_choice), 240, 294, scale);
         }
         tft.print(choices[items_per_page * page + old_choice]);
       }
@@ -367,12 +457,11 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
       if (images)
       {
         tft.drawLine(0, 50 + mult * (choice + 1), 240, 50 + mult * (choice + 1), 0x0000);
-        drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + choice)), 10, 51 + mult * choice, 240, 294, scale, lol2);
+        drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + choice)), 10, 51 + mult * choice, 240, 294, scale);
       }
-      while (digitalRead(38) == LOW)
-        ;
+      break;
     }
-    if (digitalRead(39) == LOW)
+    case DOWN:
     { // Down button
       int old_choice = choice;
       bool changed = false;
@@ -385,46 +474,46 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
         page++;
         changed = true;
         choice = 0;
-        drawFromSd(0x639365, 0, 51, 240, 269, lol2);
+        drawFromSd(0x639365, 0, 51, 240, 269);
         for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
         {
           if (images)
           {
             tft.drawLine(0, 50 + mult * (i + 1), 240, 50 + mult * (i + 1), 0x0000);
-            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale, lol2);
+            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale);
           }
           tft.setCursor(x, y + (mult * i));
           tft.print(choices[items_per_page * page + i]);
         }
-        drawFromSd(0x5DAF1F, 0, 26, 240, 25, lol2);
+        drawFromSd(0x5DAF1F, 0, 26, 240, 25);
         if (type >= 0 && type < 3)
-          drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25, lol2);
+          drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
       }
       else
       {
         page = 0;
         changed = true;
         choice = 0;
-        drawFromSd(0x639365, 0, 51, 240, 269, lol2);
+        drawFromSd(0x639365, 0, 51, 240, 269);
         for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
         {
           if (images)
           {
             tft.drawLine(0, 50 + mult * i, 240, 50 + mult * i, 0x0000);
-            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale, lol2);
+            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale);
           }
           tft.setCursor(x, y + (mult * i));
           tft.print(choices[items_per_page * page + i]);
         }
 
-        drawFromSd(0x5DAF1F, 0, 26, 240, 25, lol2);
+        drawFromSd(0x5DAF1F, 0, 26, 240, 25);
         if (type >= 0 && type < 3)
-          drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25, lol2);
+          drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
       }
       if (!changed)
       {
 
-        drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult, lol2);
+        drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult);
       }
       listMenu_sub(label, type, page, pages);
       tft.setTextColor(color_inactive);
@@ -434,7 +523,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
         if (images)
         {
           tft.drawLine(0, 50 + mult * (choice), 240, 50 + mult * (choice), 0x0000);
-          drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + (old_choice))), 10, 51 + mult * (old_choice), 240, 294, scale, lol2);
+          drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + (old_choice))), 10, 51 + mult * (old_choice), 240, 294, scale);
         }
         tft.print(choices[items_per_page * page + old_choice]);
       }
@@ -446,39 +535,53 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
       if (images)
       {
         tft.drawLine(0, 50 + mult * (choice + 1), 240, 50 + mult * (choice + 1), 0x0000);
-        drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + choice)), 10, 51 + mult * choice, 240, 294, scale, lol2);
+        drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + choice)), 10, 51 + mult * choice, 240, 294, scale);
       }
-      while (digitalRead(39) == LOW)
-        ;
+      break;
     }
-    if (digitalRead(0) == LOW)
+    case BACK:
     { // EXIT
       exit = true;
-      while (digitalRead(0) == LOW)
-        ;
-
       return -1;
+      break;
     }
-  }
-  lol2.close();
+    }
+
   return -1;
 }
-
-void spinAnim(int x, int y, int size_x, int size_y, int offset,int spacing)
+/*
+void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing)
 {
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
+  File file = SD.open("/FIRMWARE/IMAGES.SG");
+  file.seek(0x658BC5);
+
+  const int buffer_size = 400 * 2;
+  uint8_t buffer[buffer_size];
+
+  file.read(buffer, buffer_size);
+
+  file.close();
+
+
   int max_count = (2 * x) + (2 * (y - 2));
   int printed_count = 0;
   int xt = 0;
   int yt = 0;
   int yy = 0;
   bool draw = true;
+   uint8_t currentcircle[98];
   while (printed_count < max_count)
   {
     for (int j = offset; j >= 0 && printed_count < max_count; j--)
     {
-      if (draw)
-        drawFromSd(0x658BC5 + (j * 0x62), x + xt, y + yt, 7, 7, lol2);
+      if (draw){
+        for(int i =(98*j);i<98*(j+1);i++){
+          currentcircle[i]=buffer[i];
+        }
+        tft.pushImage(x+xt,y+yt,7,7,(uint16_t *)currentcircle);
+        Serial.println(j);
+      }
+      //  drawFromSd(0x658BC5 + (j * 0x62), x + xt, y + yt, 7, 7);
       if (printed_count < size_x)
       {
         xt += spacing;
@@ -502,14 +605,83 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset,int spacing)
     }
     offset = 7;
   }
-  lol2.close();
+
+}*/
+
+void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing)
+{
+  // Open the file and seek to the position where image data starts
+  File file = SD.open("/FIRMWARE/IMAGES.SG");
+  file.seek(0x658BC4);
+  // Read data from SD card into buffer
+  const int buffer_size = 400 * 2;
+  uint8_t buffer[buffer_size];
+  file.read(buffer, buffer_size);
+  file.close();
+
+  // Define max frames and set up variables for animation path
+  int max_count = (2 * size_x) + (2 * (size_y - 1)); // Adjusted max_count for full frames
+  int printed_count = 0;
+  int xt = 0;
+  int yt = 0;
+  bool draw = true;
+
+  // Array for the current 7x7 frame, as uint16_t (16-bit color for pushImage)
+  uint16_t currentcircle[49]; // 7x7 frame requires 49 pixels
+
+  // Main animation loop
+  while (printed_count < max_count)
+  {
+    for (int j = offset; j >= 0 && printed_count < max_count; j--)
+    {
+      if (draw)
+      {
+        int start_index = 98 * j; // Starting index for the 7x7 frame in buffer
+
+        // Ensure we're within buffer bounds
+        if (start_index + 98 <= buffer_size)
+        {
+          for (int i = 0; i < 49; i++)
+          {
+            // Convert two bytes per pixel into 16-bit color
+            currentcircle[i] = (buffer[start_index + (i * 2)] << 8) | buffer[start_index + (i * 2) + 1];
+          }
+
+          // Display the frame at the calculated position
+          tft.pushImage(x + xt, y + yt, 7, 7, currentcircle);
+        }
+      }
+
+      // Update position based on `printed_count` relative to size_x and size_y
+      if (printed_count < size_x)
+      { // Move right
+        xt += spacing;
+      }
+      else if (printed_count < size_x + size_y - 1)
+      { // Move down
+        yt += spacing;
+      }
+      else if (printed_count < (2 * size_x) + size_y - 1)
+      { // Move left
+        xt -= spacing;
+      }
+      else
+      { // Move up
+        yt -= spacing;
+        if (yt <= -((size_y - 1) * spacing))
+        {
+          draw = false; // End animation once reaching the top again
+        }
+      }
+
+      printed_count++;
+    }
+    offset = 7; // Reset offset after each loop iteration
+  }
 }
 
 int choiceMenu(const String choices[], int count, bool context)
 {
-  while (digitalRead(37) == LOW)
-    ;
-  File lol2 = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ);
   int x = 30;
   int y = 95;
   int mul = 20;
@@ -518,14 +690,13 @@ int choiceMenu(const String choices[], int count, bool context)
 
   if (context)
   {
-    drawFromSdTrans(0x607565, 16, 100, 208, 123, 0x07e0, lol2);
+    drawFromSdTrans(0x607565, 16, 100, 208, 123, 0x07e0);
     x = 40;
     y = 120;
   }
   else
   {
-
-    drawFromSd(0x5E8A25, 0, 68, 240, 128, lol2);
+    drawFromSd(0x5E8A25, 0, 68, 240, 128);
     x = 30;
     y = 95;
   }
@@ -550,13 +721,15 @@ int choiceMenu(const String choices[], int count, bool context)
   tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
   bool exit = false;
   while (!exit)
-  {
-    if (digitalRead(0) == LOW)
+    switch (buttonsHelding())
+    {
+    case BACK:
     {
       exit = true;
       return -1;
+      break;
     }
-    if (digitalRead(38) == LOW)
+    case UP:
     {
       // left
       if (context)
@@ -564,7 +737,7 @@ int choiceMenu(const String choices[], int count, bool context)
         tft.setTextSize(1);
         tft.setTextColor(color_inactive);
 
-        drawFromSdTrans(0x607565, 16, 100, 208, 123, 0x07e0, lol2);
+        drawFromSdTrans(0x607565, 16, 100, 208, 123, 0x07e0);
         for (int i = 0; i < count; i++)
         {
           tft.setCursor(x, y + (mul * i));
@@ -576,7 +749,7 @@ int choiceMenu(const String choices[], int count, bool context)
         tft.setTextSize(1);
         tft.setTextColor(color_inactive);
 
-        drawFromSd(0x5E8A25, 0, 68, 240, 128, lol2);
+        drawFromSd(0x5E8A25, 0, 68, 240, 128);
         for (int i = 0; i < count; i++)
         {
           tft.setCursor(x, y + (mul * i));
@@ -607,19 +780,18 @@ int choiceMenu(const String choices[], int count, bool context)
       tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
       tft.print(choices[choice]);
       Serial.println(choice);
-
-      while (digitalRead(38) == LOW)
-        ;
       delay(100);
+      break;
     }
-    if (digitalRead(37) == LOW)
+    case SELECT:
     {
       // middle
-      lol2.close();
+
       exit = true;
       return choice;
+      break;
     }
-    if (digitalRead(39) == LOW)
+    case DOWN:
     {
       // right
       if (context)
@@ -627,7 +799,7 @@ int choiceMenu(const String choices[], int count, bool context)
         tft.setTextSize(1);
         tft.setTextColor(color_inactive);
 
-        drawFromSdTrans(0x607565, 16, 100, 208, 123, 0x07e0, lol2);
+        drawFromSdTrans(0x607565, 16, 100, 208, 123, 0x07e0);
         for (int i = 0; i < count; i++)
         {
           tft.setCursor(x, y + (mul * i));
@@ -639,7 +811,7 @@ int choiceMenu(const String choices[], int count, bool context)
         tft.setTextSize(1);
         tft.setTextColor(color_inactive);
 
-        drawFromSd(0x5E8A25, 0, 68, 240, 128, lol2);
+        drawFromSd(0x5E8A25, 0, 68, 240, 128);
         for (int i = 0; i < count; i++)
         {
           tft.setCursor(x, y + (mul * i));
@@ -671,11 +843,9 @@ int choiceMenu(const String choices[], int count, bool context)
       tft.print(choices[choice]);
       Serial.println(choice);
 
-      while (digitalRead(39) == LOW)
-        ;
       delay(100);
+      break;
     }
-  }
-  lol2.close();
+    }
   return -1;
 }
