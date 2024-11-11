@@ -2,26 +2,53 @@
 #define INITT_H
 
 #include "file_include.h"
+
 #ifdef DEVMODE
 extern int charge_d;
 extern int signallevel_d;
 #endif
+
+struct SDImage
+{
+    uint32_t address;
+    int w;
+    int h;
+    uint16_t tc;
+    bool transp;
+   SDImage(uint32_t addr, int width, int height, uint16_t trans_color, bool transparency)
+    : address(addr), w(width), h(height), tc(trans_color), transp(transparency) {}
+      SDImage() : address(0), w(0), h(0), tc(0), transp(false) {} 
+};
 
 struct Contact
 {
     int index;
     String number;
     String name;
+    String email;
 };
 struct Message
 {
     int index;
-    int status;
+    char status;
     Contact contact;
     String subject;
     String content;
     String date;
 };
+struct mOption
+{
+    String label;
+    SDImage icon;
+
+    
+};
+enum status{
+    NEW,
+    REPLIED,
+    READED
+};
+
 
 extern int contactCount;
 extern IP5306 chrg;
@@ -31,7 +58,9 @@ extern uint32_t ima;
 
 extern Preferences preferences;
 
+extern SDImage mailimg[4];
 extern Contact contacts[MAX_CONTACTS];
+extern Contact examplecontact;
 
 const String contmenu[] = {
     "Call",

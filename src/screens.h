@@ -9,4 +9,5 @@ void MainMenu();
 int gallery();
 void MainScreen();
 void offlineCharging();
+void recovery(String message);
 #endif

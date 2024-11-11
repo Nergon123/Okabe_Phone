@@ -1,6 +1,7 @@
 #include "screens.h"
 void makeCall(Contact contact);
 void incomingCall(Contact contact);
+void inbox();
 void messages()
 {
 
@@ -9,6 +10,17 @@ void messages()
   drawFromSd(0x5E8A25, 0, 68, 240, 128);
   String lol[] = {"Inbox", "Outbox"};
   int ch = choiceMenu(lol, 2, false);
+  switch (ch)
+  {
+  case 0:
+    inbox();
+    break;
+  case 1:
+
+    break;
+  default:
+    break;
+  }
   String exampleMessage = "SAMPLE TEXT TO TEST MESSAGE | EmAIL | SMS | OR SoMETHING ~!@#$ \nKILL YOURSELF\n \n \n - Unknown";
   while (buttonsHelding() == -1)
     ;
@@ -47,11 +59,8 @@ void knipka()
 void e()
 {
 #ifdef DEVMODE
-
-  tft.fillScreen(0x0000);
-  drawStatusBar();
-  int choice = -1;
-  while (choice != -2)
+  int choice = -2;
+  while (choice != -1)
   {
     String debug[] = {"Emulate incoming call", "Emulate outgoing call", "Emulate recieving message", "Set battery level", "Set signal level", "BLUETOOTH", "WI-FI"};
     choice = listMenu(debug, ArraySize(debug), false, 2, "DEV MODE");
@@ -62,9 +71,10 @@ void e()
     contact.index = 0;
     contact.name = "Daru";
     contact.number = "090X848X146";
+
     switch (choice)
     {
-      case 0:
+    case 0:
       incomingCall(contact);
       break;
     case 1:
@@ -132,7 +142,7 @@ bool settings()
       }
       break;
     default:
-      blueScreen("DOESN'T_EXIST");
+      sysError("DOESN'T_EXIST");
       break;
     }
 
@@ -298,21 +308,26 @@ void offlineCharging()
   tft.fillScreen(0x0000);
 }
 
-void incomingCall(Contact contact){
-   drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+void incomingCall(Contact contact)
+{
+  drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
 
-  drawFromSd(0x5F7A25,0,90,240,134);
+  drawFromSd(0x5F7A25, 0, 90, 240, 134);
   changeFont(1);
   tft.setTextColor(0);
-  tft.setCursor(15,170);
+  tft.setCursor(15, 170);
   tft.print(contact.name);
   tft.setTextColor(0xf800);
-  tft.setCursor(90,140);
+  tft.setCursor(90, 140);
   changeFont(4);
   tft.setTextSize(1);
   tft.print("Ca l l ing");
-  writeCustomFont(55,185,contact.number,1);
-  for(;;);
+  drawFromSd(0x661AF3, 45, 105, 42, 50, true, 0xD6BA);
+
+  writeCustomFont(55, 185, contact.number, 1);
+  drawFromSd(0x662B5B, 73, 90, 13, 14, true, 0xD6BA);
+  for (;;)
+    ;
 }
 void makeCall(Contact contact)
 {
@@ -352,7 +367,7 @@ void makeCall(Contact contact)
       else if (buttonsHelding() == UP)
       {
         calling = false;
-        break; 
+        break;
         // proceed to emulating call
       }
     }
@@ -402,4 +417,81 @@ void contactss()
       break;
     }
   }
+}
+
+void inbox()
+{
+  mOption example[] = {
+    {"01/01 Shining Finger",mailimg[0]},
+    {"01/01 Shining Finger",mailimg[0]},
+    {"01/01 Shining Finger",mailimg[0]},
+    {"01/01 Shining Finger",mailimg[0]},
+    {"01/01 Shining Finger",mailimg[1]},
+    {"01/01 Mayuri",mailimg[1]},
+    {"01/01 John Titor",mailimg[1]},
+    {"01/01 John Titor",mailimg[0]},
+    {"01/01 Part-Time Warrior",mailimg[1]},
+    {"01/01 Assistant",mailimg[2]},
+    {"01/01 Nergon",mailimg[0]},
+    {"01/01 John Titor",mailimg[0]},
+    {"01/01 John Titor",mailimg[0]},
+    
+  };
+
+  listMenu(example, ArraySize(example), false, 0, "MAIL");
+}
+
+void fileBrowser()
+{
+  // TODO
+}
+
+void downloadFile(String url, String path)
+{
+  // TODO
+}
+
+void mediaPlayer(String path)
+{
+  // TODO
+}
+
+void ringtoneSelector()
+{
+  // TODO
+}
+
+void mailRingtoneSelector()
+{
+  // TODO
+}
+
+void messageActivity()
+{
+  // TODO
+}
+
+void editContact()
+{
+  // TODO
+}
+
+void imageViewer()
+{
+  // TODO
+}
+
+void recovery(String message)
+{
+  tft.setCursor(0, 40);
+  tft.fillScreen(0);
+  tft.setTextFont(1);
+  tft.setTextSize(4);
+  tft.setTextColor(0x00FF);
+  tft.print("=RECOVERY=\n\n");
+  tft.setTextSize(1);
+  tft.setTextColor(0xFFFF);
+  tft.println(message);
+  for (;;)
+    ;
 }
