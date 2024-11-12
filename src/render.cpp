@@ -146,7 +146,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
   {
     const int buffer_size = size_x * 2; // 2 bytes per pixel
     uint8_t buffer[buffer_size];
-
+    uint16_t buffer2[buffer_size / 2];
     for (int a = 0; a < size_y; a++)
     {
       // Read a whole line (row) of pixels at once
@@ -155,9 +155,12 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
       int draw_start = -1;
       for (int i = 0; i < size_x; i++)
       {
-        uint16_t wd = (buffer[2 * i] << 8) | buffer[2 * i + 1];
+        uint16_t wd = (buffer[2 * i + 1] << 8) | buffer[2 * i];
+        buffer2[i] = wd;
+
         if (wd != tc)
         {
+
           if (draw_start == -1)
           {
             draw_start = i;
@@ -167,14 +170,14 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
         {
           if (draw_start != -1)
           {
-            tft.pushImage(pos_x + draw_start, a + pos_y, i - draw_start, 1, (uint16_t *)(&buffer[draw_start * 2]));
+            tft.pushImage(pos_x + draw_start, a + pos_y, i - draw_start, 1, (uint16_t *)(&buffer2[draw_start]));
             draw_start = -1;
           }
         }
       }
       if (draw_start != -1)
       {
-        tft.pushImage(pos_x + draw_start, a + pos_y, size_x - draw_start, 1, (uint16_t *)(&buffer[draw_start * 2]));
+        tft.pushImage(pos_x + draw_start, a + pos_y, size_x - draw_start, 1, (uint16_t *)(&buffer2[draw_start]));
       }
     }
   }
@@ -439,10 +442,10 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
         tft.drawLine(0, 50 + mult * (choice + 1), 240, 50 + mult * (choice + 1), 0x0000);
         drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + choice)), 10, 51 + mult * choice, 240, 294, scale);
       }
-       if (choices[items_per_page * page + choice].icon.address != 0)
-        {
-          drawFromSd(10, 51 + mult * choice, choices[items_per_page * page + choice].icon);
-        }
+      if (choices[items_per_page * page + choice].icon.address != 0)
+      {
+        drawFromSd(10, 51 + mult * choice, choices[items_per_page * page + choice].icon);
+      }
       break;
     }
     case DOWN:
@@ -485,10 +488,11 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
           {
             tft.drawLine(0, 50 + mult * i, 240, 50 + mult * i, 0x0000);
             drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale);
-          } if (choices[items_per_page * page + i].icon.address != 0)
-        {
-          drawFromSd(10, 51 + mult * i, choices[items_per_page * page + i].icon);
-        }
+          }
+          if (choices[items_per_page * page + i].icon.address != 0)
+          {
+            drawFromSd(10, 51 + mult * i, choices[items_per_page * page + i].icon);
+          }
           tft.setCursor(x, y + (mult * i));
           tft.print(choices[items_per_page * page + i].label);
         }
@@ -511,7 +515,8 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
         {
           tft.drawLine(0, 50 + mult * (choice), 240, 50 + mult * (choice), 0x0000);
           drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + (old_choice))), 10, 51 + mult * (old_choice), 240, 294, scale);
-        } if (choices[items_per_page * page + old_choice].icon.address != 0)
+        }
+        if (choices[items_per_page * page + old_choice].icon.address != 0)
         {
           drawFromSd(10, 51 + mult * (old_choice), choices[items_per_page * page + old_choice].icon);
         }
@@ -526,10 +531,11 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
       {
         tft.drawLine(0, 50 + mult * (choice + 1), 240, 50 + mult * (choice + 1), 0x0000);
         drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + choice)), 10, 51 + mult * choice, 240, 294, scale);
-      } if (choices[items_per_page * page + choice].icon.address != 0)
-        {
-          drawFromSd(10, 51 + mult * choice, choices[items_per_page * page + choice].icon);
-        }
+      }
+      if (choices[items_per_page * page + choice].icon.address != 0)
+      {
+        drawFromSd(10, 51 + mult * choice, choices[items_per_page * page + choice].icon);
+      }
       break;
     }
     case BACK:

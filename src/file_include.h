@@ -16,7 +16,8 @@
 /////////////////////////
 
 
-
+#include <WiFi.h>
+#include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "BleMouse.h"
 #include "BleKeyboard.h"
