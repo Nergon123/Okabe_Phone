@@ -15,16 +15,12 @@ bool havenewmessages = false;
 BleMouse blemouse("OkabePhone", "DEVELOPER", chrg.getBatteryLevel());
 
 Contact examplecontact;
-SDImage mailimg[4] = {
-    SDImage(0x662DB1, 18, 21, 0, true),
-    SDImage(0x662DB1+ (18*21*2), 18, 21, 0, true),
-    SDImage(0x662DB1 + (18*21*2*2),18, 21, 0, true),
-    SDImage(0x662DB1+ (18*21*2*3), 18, 21, 0, true)
-};
+
+
 
 void setup()
 {
-
+  
   tft.init();
   tft.fillScreen(0x0000);
   // WIRE.begin();
@@ -34,7 +30,7 @@ void setup()
   pinMode(37, INPUT_PULLUP);
   chrg.begin(21, 22);
 
-  analogWrite(TFT_BL, 50);
+  //analogWrite(TFT_BL, 50);
   /*if (chrg.isChargerConnected() == 1)
   {
     offlineCharging();
@@ -53,6 +49,7 @@ void setup()
   Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
   Serial.print("Initializing SD card...");
   tft.println("\nInitializing SD card...");
+  
 
   if (!SD.begin(chipSelect, SPI, 80000000))
   {
@@ -68,7 +65,15 @@ void setup()
     Serial.println("SD Initialization done.");
     tft.println("\nSD Initialization done.\n");
   }
-
+  
+      tft.print("Connecting to WiFi...");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        tft.print(".");
+    }
+    tft.println(" Connected!");
+  downloadFile("https://raw.githubusercontent.com/Nergon123/AutoSchoolBell/refs/heads/master/AutoSchoolBell.c","/AutoSchoolBell.c");
+  fileBrowser();
   if (!SD.exists("/FIRMWARE/IMAGES.SG"))
     recovery("No /FIRMARE/IMAGE.SG found\nhere some tools to help you!");
 

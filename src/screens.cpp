@@ -13,7 +13,7 @@ void messages()
   switch (ch)
   {
   case 0:
-    inbox();
+    inbox(false);
     break;
   case 1:
 
@@ -106,6 +106,7 @@ void e()
         break;
       }
       break;
+
     }
   }
 
@@ -419,36 +420,128 @@ void contactss()
   }
 }
 
-void inbox()
+void inbox(bool outbox)
 {
+  SDImage mailimg[4] = {
+      SDImage(0x662DB1, 18, 21, 0, true),
+      SDImage(0x662DB1 + (18 * 21 * 2), 18, 21, 0, true),
+      SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
+      SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
   mOption example[] = {
-    {"01/01 Shining Finger",mailimg[0]},
-    {"01/01 Shining Finger",mailimg[0]},
-    {"01/01 Shining Finger",mailimg[0]},
-    {"01/01 Shining Finger",mailimg[0]},
-    {"01/01 Shining Finger",mailimg[1]},
-    {"01/01 Mayuri",mailimg[1]},
-    {"01/01 John Titor",mailimg[1]},
-    {"01/01 John Titor",mailimg[0]},
-    {"01/01 Part-Time Warrior",mailimg[1]},
-    {"01/01 Assistant",mailimg[2]},
-    {"01/01 Nergon",mailimg[0]},
-    {"01/01 John Titor",mailimg[0]},
-    {"01/01 John Titor",mailimg[0]},
-    
+      {"01/01 Shining Finger", mailimg[0]},
+      {"01/01 Shining Finger", mailimg[0]},
+      {"01/01 Shining Finger", mailimg[0]},
+      {"01/01 Shining Finger", mailimg[0]},
+      {"01/01 Shining Finger", mailimg[1]},
+      {"01/01 Mayuri", mailimg[1]},
+      {"01/01 John Titor", mailimg[1]},
+      {"01/01 John Titor", mailimg[0]},
+      {"01/01 Part-Time Warrior", mailimg[1]},
+      {"01/01 Assistant", mailimg[2]},
+      {"01/01 Nergon", mailimg[0]},
+      {"01/01 John Titor", mailimg[0]},
+      {"01/01 John Titor", mailimg[0]},
+
   };
 
   listMenu(example, ArraySize(example), false, 0, "MAIL");
 }
 
-void fileBrowser()
+void fileBrowser(File dir)
 {
-  // TODO
+  SDImage folderIcon = SDImage(0x663981, 18, 18, 0, true);
+  SDImage fileIcon = SDImage(0x663981 + (18 * 18 * 2), 18, 18, 0, true);
+  String currentPath = dir.path();
+  File file = dir.openNextFile();
+  dir.rewindDirectory();
+  mOption *options = new mOption[64];
+  int choice = -2;
+  int i = 0;
+  do
+  {
+    i = 0;
+
+    dir = SD.open(currentPath);
+    dir.rewindDirectory();
+    file = dir.openNextFile();
+    Serial.println(currentPath);
+    while (file)
+    {
+      if (file.name() != "")
+      {
+
+        Serial.println();
+        Serial.print(file.name());
+        if (file.isDirectory())
+        {
+          Serial.print("/");
+          options[i].icon = folderIcon;
+          options[i].label = file.name() + String("/");
+        }
+        else
+        {
+          options[i].icon = fileIcon;
+          options[i].label = file.name();
+        }
+        i++;
+        file = dir.openNextFile();
+      }
+    }
+    choice = listMenu(options, i, false, 2, "FILE MANAGER");
+    if (options[choice].label.endsWith("/"))
+    {
+      options[choice].label.remove(options[choice].label.lastIndexOf("/"));
+      currentPath += options[choice].label;
+    }
+    dir.close();
+  } while (choice != -1);
+
+  file.close();
+  dir.close();
 }
 
-void downloadFile(String url, String path)
+void downloadFile(const char *url, const char *path)
 {
-  // TODO
+  HTTPClient http;
+  http.begin(url);
+  int httpCode = http.GET();
+
+  if (httpCode == HTTP_CODE_OK)
+  {
+    // Get file stream
+    WiFiClient *stream = http.getStreamPtr();
+    File file = SD.open(path, FILE_WRITE);
+
+    if (file)
+    {
+      const uint16_t chunksize=8192;
+      uint8_t buffer[chunksize];
+      int len = 0;
+      uint32_t downloaded = 0;
+      ulong mil = millis();
+      // Write received data to file
+      while (http.connected() && (len = stream->available()) > 0)
+      {
+        int bytesRead = stream->readBytes(buffer, len > sizeof(buffer) ? sizeof(buffer) : len);
+        file.write(buffer, bytesRead);
+        downloaded += chunksize;
+      }
+      float time = (millis()-mil)/1000;
+      tft.println("FILE DOWNLOADED."+String(downloaded) +" BYTES PER " + String(time) + " SECONDS");
+      tft.println(String(downloaded/time) + "bytes per second");
+      Serial.println("File downloaded and saved to SD card.");
+      file.close();
+    }
+    else
+    {
+      Serial.println("Failed to open file on SD card");
+    }
+  }
+  else
+  {
+    Serial.printf("Download failed, error: %d\n", httpCode);
+  }
+  http.end();
 }
 
 void mediaPlayer(String path)
