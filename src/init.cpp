@@ -45,7 +45,7 @@ void setup()
 #ifdef DEVMODE
   tft.println("\n       !!! DEVMODE ENABLED !!!\n\n       THIS MEANS THAT THIS \n       BUILD NOT FOR PRODUCTION\n");
 #endif
-  Serial.begin(115200);
+  Serial.begin(921600);
   Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
   Serial.print("Initializing SD card...");
   tft.println("\nInitializing SD card...");
@@ -65,14 +65,6 @@ void setup()
     Serial.println("SD Initialization done.");
     tft.println("\nSD Initialization done.\n");
   }
-  
-      tft.print("Connecting to WiFi...");
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        tft.print(".");
-    }
-    tft.println(" Connected!");
-  downloadFile("https://raw.githubusercontent.com/Nergon123/AutoSchoolBell/refs/heads/master/AutoSchoolBell.c","/AutoSchoolBell.c");
   fileBrowser();
   if (!SD.exists("/FIRMWARE/IMAGES.SG"))
     recovery("No /FIRMARE/IMAGE.SG found\nhere some tools to help you!");

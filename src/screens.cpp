@@ -447,6 +447,8 @@ void inbox(bool outbox)
   listMenu(example, ArraySize(example), false, 0, "MAIL");
 }
 
+
+
 void fileBrowser(File dir)
 {
   SDImage folderIcon = SDImage(0x663981, 18, 18, 0, true);
@@ -502,45 +504,81 @@ void fileBrowser(File dir)
 
 void downloadFile(const char *url, const char *path)
 {
+  tft.fillScreen(0);
+  tft.setCursor(0,0);
   HTTPClient http;
+  http.setTimeout(20000);  // Set timeout
   http.begin(url);
   int httpCode = http.GET();
-
-  if (httpCode == HTTP_CODE_OK)
+  
+  if (httpCode == HTTP_CODE_OK)  // Check for successful response
   {
-    // Get file stream
     WiFiClient *stream = http.getStreamPtr();
     File file = SD.open(path, FILE_WRITE);
 
     if (file)
     {
-      const uint16_t chunksize=8192;
+      const uint16_t chunksize = 512;  // Reduce chunk size
       uint8_t buffer[chunksize];
-      int len = 0;
       uint32_t downloaded = 0;
-      ulong mil = millis();
-      // Write received data to file
-      while (http.connected() && (len = stream->available()) > 0)
+      ulong startTime = millis();
+
+      Serial.println("Starting file download...");
+
+      // Download loop
+      while (stream->connected() || stream->available())
       {
-        int bytesRead = stream->readBytes(buffer, len > sizeof(buffer) ? sizeof(buffer) : len);
-        file.write(buffer, bytesRead);
-        downloaded += chunksize;
+        int bytesRead = stream->readBytes(buffer, sizeof(buffer));
+
+        if (bytesRead > 0)
+        {
+          file.write(buffer, bytesRead);
+          downloaded += bytesRead;
+
+          // Debugging output to track progress
+          tft.print("Downloaded: ");
+          tft.print(downloaded);
+          tft.println(" bytes");
+          tft.setCursor(0,0);
+
+          // Periodically flush the file to ensure data is written to SD
+          file.flush();
+        }
+        else if (bytesRead == 0)
+        {
+          // No more data available in stream
+          break;
+        }
+        else
+        {
+          Serial.println("Read error or disconnected");
+          break;
+        }
       }
-      float time = (millis()-mil)/1000;
-      tft.println("FILE DOWNLOADED."+String(downloaded) +" BYTES PER " + String(time) + " SECONDS");
-      tft.println(String(downloaded/time) + "bytes per second");
-      Serial.println("File downloaded and saved to SD card.");
-      file.close();
+
+      float elapsedTime = (millis() - startTime) / 1000.0;
+      tft.println("Download complete.");
+      tft.print("Total bytes downloaded: ");
+      tft.println(downloaded);
+      tft.print("Elapsed time: ");
+      tft.print(elapsedTime);
+      tft.println(" seconds");
+      tft.print("Download speed: ");
+      tft.print(downloaded / elapsedTime);
+      tft.println(" bytes/second");
+
+      file.close();  // Close the file after completion
     }
     else
     {
-      Serial.println("Failed to open file on SD card");
+      Serial.println("Failed to open file on SD card.");
     }
   }
   else
   {
-    Serial.printf("Download failed, error: %d\n", httpCode);
+    Serial.printf("Download failed, HTTP error code: %d\n", httpCode);
   }
+
   http.end();
 }
 
@@ -561,8 +599,8 @@ void mailRingtoneSelector()
 
 void messageActivity()
 {
-  // TODO
-}
+  
+  }
 
 void editContact()
 {
