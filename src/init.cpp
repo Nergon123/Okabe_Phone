@@ -37,7 +37,7 @@ void setup()
     offlineCharging();
     tft.setTextFont(1);
   } */
-  tft.setCursor(10, 0);
+  tft.setCursor(0, 0);
   tft.setTextSize(4);
   tft.println("NerBoot");
   tft.fillRect(0,0,10,10,TFT_RED);
@@ -54,6 +54,10 @@ void setup()
   Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
   Serial.print("Initializing SD card...");
   tft.println("\nInitializing SD card...");
+  
+  
+  
+
   if (!SD.begin(chipSelect, SPI, 80000000))
   {
     Serial.println("SD Initialization failed!");
@@ -77,8 +81,11 @@ void setup()
   }
   lol2.close();
   preferences.begin("settings", false);
+
   ima = preferences.getUInt("ima", 0);
   contactCount = preferences.getUInt("contactCount",0);
+
+  
   if (!SD.exists("/DATA/MESSAGES.JSON"))
   {
     if (!SD.exists("/DATA"))
@@ -97,7 +104,6 @@ void setup()
   
   while (digitalRead(37) == LOW)
     ; 
-  vTaskStartScheduler();
   //messageActivity();
   
   // Serial.println("test");

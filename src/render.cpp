@@ -260,14 +260,8 @@ void listMenu_sub(String label, int type, int page, int pages)
   changeFont(1);
 }
 
-void listMenu(void *pvParameters)
+int listMenu(mOption *choices, int icount, bool images, int type, String label)
 {
-  /*mOption *choices, int icount, bool images, int type, String label*/
-  mOption *choices;
-  int icount = 0;
-  bool images = false;
-  int type = 0;
-  String label;
   tft.setTextWrap(false, false);
   /*
 
@@ -329,7 +323,7 @@ void listMenu(void *pvParameters)
   if(empty){
   tft.setCursor(75,70);
   tft.print("< Empty >");
-  while(buttonPressed==-1);
+  while(buttonsHelding()==-1);
   return -1;
   }
   for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
@@ -561,9 +555,6 @@ void listMenu(void *pvParameters)
     }
 
   return -1;
-}
-int listMenu(mOption *choices, int icount, bool images, int type, String label){
-  
 }
 int listMenu(const String choices[], int icount, bool images, int type, String label)
 {
