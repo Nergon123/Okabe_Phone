@@ -23,7 +23,7 @@ struct SDImage
 struct Contact
 {
     int index;
-    String number;
+    String phone;
     String name;
     String email;
 };
@@ -50,7 +50,7 @@ enum status{
 };
 
 
-extern int contactCount;
+extern uint contactCount;
 extern IP5306 chrg;
 extern TFT_eSPI tft;
 extern BleMouse blemouse;
