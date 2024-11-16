@@ -18,6 +18,6 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
 int listMenu(mOption choices[], int icount, bool images, int type, String label);
 void listMenu_sub(String label, int type, int page, int pages);
 void spinAnim(int x,int y,int size_x,int size_y,int offset,int spacing = 10);
-
+void printSplitString(String text);
 int choiceMenu(const String choices[], int count, bool context);
 #endif

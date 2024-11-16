@@ -70,7 +70,7 @@ void e()
     Contact contact;
     contact.index = 0;
     contact.name = "Daru";
-    contact.number = "090X848X146";
+    contact.phone = "090X848X146";
 
     switch (choice)
     {
@@ -106,7 +106,6 @@ void e()
         break;
       }
       break;
-
     }
   }
 
@@ -181,6 +180,8 @@ void MainMenu()
   int choice = 0;
   bool exit = false;
   while (!exit)
+  {
+
     switch (buttonsHelding())
     {
     case BACK:
@@ -206,6 +207,8 @@ void MainMenu()
         exit = settings();
         break;
       }
+      drawFromSd(0x5ADC01, 0, 26, 240, 294);
+      rendermenu(choice, false);
       break;
     }
 
@@ -234,7 +237,7 @@ void MainMenu()
       break;
     }
     }
-
+  }
   MainScreen();
 }
 
@@ -325,11 +328,12 @@ void incomingCall(Contact contact)
   tft.print("Ca l l ing");
   drawFromSd(0x661AF3, 45, 105, 42, 50, true, 0xD6BA);
 
-  writeCustomFont(55, 185, contact.number, 1);
+  writeCustomFont(55, 185, contact.phone, 1);
   drawFromSd(0x662B5B, 73, 90, 13, 14, true, 0xD6BA);
   for (;;)
     ;
 }
+
 void makeCall(Contact contact)
 {
   bool calling = true;
@@ -346,7 +350,7 @@ void makeCall(Contact contact)
   tft.setTextSize(2);
   tft.setCursor(0, 180 + 60);
   // tft.print(contact.number);
-  writeCustomFont(5, 240, contact.number);
+  writeCustomFont(5, 240, contact.phone);
 
   tft.setTextSize(1);
   tft.setCursor(85, 95);
@@ -444,15 +448,13 @@ void inbox(bool outbox)
 
   };
 
-  listMenu(example, ArraySize(example), false, 0, "MAIL");
+  listMenu(example, ArraySize(example), false, 0, "Inbox");
 }
-
-
 
 void fileBrowser(File dir)
 {
-  SDImage folderIcon = SDImage(0x663981, 18, 18, 0, true);
-  SDImage fileIcon = SDImage(0x663981 + (18 * 18 * 2), 18, 18, 0, true);
+  SDImage folderIcon = SDImage(0x663983, 18, 18, 0, true);
+  SDImage fileIcon = SDImage(0x663984 + (18 * 18 * 2), 18, 18, 0, true);
   String currentPath = dir.path();
   File file = dir.openNextFile();
   dir.rewindDirectory();
@@ -505,27 +507,26 @@ void fileBrowser(File dir)
 void downloadFile(const char *url, const char *path)
 {
   tft.fillScreen(0);
-  tft.setCursor(0,0);
+  tft.setCursor(0, 0);
   HTTPClient http;
-  http.setTimeout(20000);  // Set timeout
+  http.setTimeout(20000);
   http.begin(url);
   int httpCode = http.GET();
-  
-  if (httpCode == HTTP_CODE_OK)  // Check for successful response
+
+  if (httpCode == HTTP_CODE_OK)
   {
     WiFiClient *stream = http.getStreamPtr();
     File file = SD.open(path, FILE_WRITE);
 
     if (file)
     {
-      const uint16_t chunksize = 512;  // Reduce chunk size
+      const uint16_t chunksize = 512;
       uint8_t buffer[chunksize];
       uint32_t downloaded = 0;
       ulong startTime = millis();
 
       Serial.println("Starting file download...");
 
-      // Download loop
       while (stream->connected() || stream->available())
       {
         int bytesRead = stream->readBytes(buffer, sizeof(buffer));
@@ -535,18 +536,15 @@ void downloadFile(const char *url, const char *path)
           file.write(buffer, bytesRead);
           downloaded += bytesRead;
 
-          // Debugging output to track progress
           tft.print("Downloaded: ");
           tft.print(downloaded);
           tft.println(" bytes");
-          tft.setCursor(0,0);
+          tft.setCursor(0, 0);
 
-          // Periodically flush the file to ensure data is written to SD
           file.flush();
         }
         else if (bytesRead == 0)
         {
-          // No more data available in stream
           break;
         }
         else
@@ -567,7 +565,7 @@ void downloadFile(const char *url, const char *path)
       tft.print(downloaded / elapsedTime);
       tft.println(" bytes/second");
 
-      file.close();  // Close the file after completion
+      file.close();
     }
     else
     {
@@ -597,10 +595,79 @@ void mailRingtoneSelector()
   // TODO
 }
 
-void messageActivity()
+void messageActivity(Contact contact, String date, String subject, String content, bool outcoming)
 {
-  
+
+  drawStatusBar();
+  SDImage in_mail[4] = {
+      SDImage(0x663E91, 23, 24, 0, false),
+      SDImage(0x663E91 + (23 * 24 * 2), 23, 24, 0, false),
+      SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false),
+      SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false),
+  };
+  drawFromSd(0x5DAF1F, 0, 26, 240, 25);
+  drawFromSd(0x5DDDFF, 0, 26, 25, 25);
+  int y_jump = 22;
+  int y_scr = 0;
+  int y_text = 18;
+  int height = measureStringHeight(content) * 3;
+  tft.setCursor(30, 45);
+  tft.setTextSize(1);
+  changeFont(1);
+  tft.setTextColor(0xffff);
+
+  tft.print("Send Mail");
+  tft.setTextColor(0);
+
+  tft.setViewport(0, 51, 240, 269, true);
+  bool exit = false;
+  while (!exit)
+  {
+
+    drawFromSd(0x639365, 0, 0, 240, 269);
+    // tft.fillScreen(0xFFFF);
+    drawFromSd(0, 0 + y_scr, in_mail[0]);
+    tft.setCursor(24, 0 + y_text + y_scr);
+    tft.println(date);
+
+    drawFromSd(0, 24 + y_scr, in_mail[2]);
+    tft.setCursor(24, 24 + y_text + y_scr);
+    tft.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
+                                                     : !contact.email.isEmpty()    ? contact.email
+                                                                                   : "UNKNOWN");
+
+    drawFromSd(0, 48 + y_scr, in_mail[3]);
+    tft.setCursor(24, 48 + y_text + y_scr);
+    tft.println(subject);
+
+    tft.drawLine(0, 72 + y_scr, 240, 72 + y_scr, 0);
+    Serial.println(height);
+
+    printSplitString(content);
+    int r = -1;
+    while (r == -1)
+    {
+      r = buttonsHelding();
+      switch (r)
+      {
+      case DOWN:
+        if (y_scr > -height)
+          y_scr -= y_jump;
+        break;
+      case UP:
+        if (y_scr < 0)
+          y_scr += y_jump;
+        break;
+      case BACK:
+        exit = true;
+        break;
+      default:
+        break;
+      }
+    }
   }
+  tft.resetViewport();
+}
 
 void editContact()
 {
@@ -625,4 +692,23 @@ void recovery(String message)
   tft.println(message);
   for (;;)
     ;
+}
+void WiFiList()
+{
+  WiFi.begin();
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  while (true)
+  {
+    int count = WiFi.scanNetworks();
+    String names[50];
+    uint8_t a;
+    uint8_t *l;
+    int32_t c, d;
+    for (int i = 0; i < count; i++)
+    {
+      WiFi.getNetworkInfo(i, names[i], a, c, l, d);
+    }
+    listMenu(names, count, false, 0, "WI-FI");
+  }
 }

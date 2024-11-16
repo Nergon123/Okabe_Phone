@@ -2,7 +2,7 @@
 String sendATCommand(String command)
 {
   Serial1.println(command);
-  delay(100); // Wait for response
+  delay(100); 
 
   String response = "";
   while (Serial1.available())
@@ -37,6 +37,7 @@ int getSignalLevel()
 
 void populateContacts()
 {
+  //STOLEN FROM CHATGPT
   String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
 
   // Process the response
@@ -72,7 +73,7 @@ void populateContacts()
 
     // Populate the contact structure
     contacts[contactCount].index = contactCount; // Use the count as index
-    contacts[contactCount].number = number;
+    contacts[contactCount].phone = number;
     contacts[contactCount].name = name;
     contactCount++;
 
@@ -126,4 +127,89 @@ int buttonsHelding() {
   if (checkButton(39)) return DOWN;  
 
   return -1;
+}
+
+int measureStringHeight(const String& text, int displayWidth) {
+    //STOLEN FROM CHATGPT
+    int lines = 1;               
+    int lineWidth = 0;            
+    int spaceWidth = tft.textWidth(" ");  
+    int lineHeight = tft.fontHeight();   
+
+    String word = "";  
+
+    for (int i = 0; i < text.length(); i++) {
+        char c = text[i];
+
+        
+        if (c == '\r' && i + 1 < text.length() && text[i + 1] == '\n') {
+            lines++;         
+            lineWidth = 0;    
+            i++;             
+            continue;
+        }
+
+
+        if (c == '\n' || c == '\r') {
+            lines++;          
+            lineWidth = 0;    
+            continue;
+        }
+
+       
+        if (c == ' ' || i == text.length() - 1) {
+            if (i == text.length() - 1 && c != ' ') {
+                word += c; 
+            }
+
+            int wordWidth = tft.textWidth(word);
+
+           
+            if (lineWidth + wordWidth > displayWidth) {
+                lines++;          
+                lineWidth = wordWidth + spaceWidth; 
+            } else {
+                lineWidth += wordWidth + spaceWidth; 
+            }
+
+            word = "";  
+        } else {
+            word += c;  
+        }
+    }
+
+    
+    return lines * lineHeight;
+}
+
+void saveContactsToJson(const Contact contacts[], size_t contactCount, const char* fileName) {
+    if (!SD.begin()) {
+        Serial.println("SD card initialization failed!");
+        return;
+    }
+
+
+    File file = SD.open(fileName, FILE_WRITE);
+    if (!file) {
+        Serial.println("Failed to open file for writing.");
+        return;
+    }
+    StaticJsonDocument<1024> doc;
+    JsonArray contactArray = doc.to<JsonArray>();
+    for (size_t i = 0; i < contactCount; i++) {
+        JsonObject contact = contactArray.createNestedObject();
+        contact["name"] = contacts[i].name;
+        contact["phone"] = contacts[i].phone;
+        contact["email"] = contacts[i].email;
+    }
+
+    // Serialize JSON to the file
+    if (serializeJson(doc, file) == 0) {
+        Serial.println("Failed to write JSON to file.");
+    } else {
+        Serial.println("Contacts saved successfully.");
+    }
+
+    // Close the file
+    file.close();
 }
