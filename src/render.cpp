@@ -200,7 +200,7 @@ void writeCustomFont(int x, int y, String input, int type)
   int h = 27;
   bool transp = false;
   uint16_t tc = 0xFFFF;
-  uint32_t addr = 0x658ED5;
+  uint32_t addr = 0x658ED3;
   switch (type)
   {
   case 0:
@@ -208,7 +208,7 @@ void writeCustomFont(int x, int y, String input, int type)
   case 1:
     w = 15;
     h = 19;
-    addr = 0x65FBC7;
+    addr = 0x65FBC6;
     transp = true;
     break;
   default:
@@ -260,8 +260,14 @@ void listMenu_sub(String label, int type, int page, int pages)
   changeFont(1);
 }
 
-int listMenu(mOption *choices, int icount, bool images, int type, String label)
+void listMenu(void *pvParameters)
 {
+  /*mOption *choices, int icount, bool images, int type, String label*/
+  mOption *choices;
+  int icount = 0;
+  bool images = false;
+  int type = 0;
+  String label;
   tft.setTextWrap(false, false);
   /*
 
@@ -323,7 +329,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
   if(empty){
   tft.setCursor(75,70);
   tft.print("< Empty >");
-  while(buttonsHelding()==-1);
+  while(buttonPressed==-1);
   return -1;
   }
   for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
@@ -355,7 +361,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
   }
   bool exit = false;
   while (!exit)
-    switch (buttonsHelding())
+    switch (buttonPressed)
     {
     case SELECT:
     {
@@ -556,6 +562,9 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
 
   return -1;
 }
+int listMenu(mOption *choices, int icount, bool images, int type, String label){
+  
+}
 int listMenu(const String choices[], int icount, bool images, int type, String label)
 {
   mOption *optionArr = new mOption[icount];
@@ -682,7 +691,7 @@ int choiceMenu(const String choices[], int count, bool context)
   tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
   bool exit = false;
   while (!exit)
-    switch (buttonsHelding())
+    switch (buttonPressed)
     {
     case BACK:
     {

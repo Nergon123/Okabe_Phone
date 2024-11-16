@@ -1,21 +1,9 @@
 
+#include <defines.h>
 
-#define RS485_RX_PIN 35
-#define RS485_TX_PIN 26
-#define RS485_RTS_PIN 4
-#define chipSelect 13
-#define MAX_CONTACTS 100
-
-#define BACK 0
-#define SELECT 1
-#define UP 2
-#define DOWN 3
-/////////////////////////
-//ENABLE DEVELOPER MODE//
-#define DEVMODE      //
-/////////////////////////
-
-
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include "freertos/semphr.h"
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>

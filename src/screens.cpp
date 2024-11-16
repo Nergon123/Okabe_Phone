@@ -2,7 +2,10 @@
 void makeCall(Contact contact);
 void incomingCall(Contact contact);
 void inbox();
-void messages()
+void messagesDoing(){
+
+}
+void messages(void* pvParameters)
 {
 
   drawFromSd(0x613D45, 0, 26, 240, 294);
@@ -16,15 +19,16 @@ void messages()
     inbox(false);
     break;
   case 1:
-
+    inbox(true);
     break;
   default:
     break;
   }
   String exampleMessage = "SAMPLE TEXT TO TEST MESSAGE | EmAIL | SMS | OR SoMETHING ~!@#$ \nKILL YOURSELF\n \n \n - Unknown";
-  while (buttonsHelding() == -1)
+  while (buttonPressed == -1)
     ;
 }
+
 void knipka()
 {
 
