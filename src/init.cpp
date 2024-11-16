@@ -13,10 +13,10 @@ int signallevel_d = 3;
 #endif
 bool havenewmessages = false;
 BleMouse blemouse("OkabePhone", "DEVELOPER", chrg.getBatteryLevel());
-
+int buttonPressed = -1;
 Contact examplecontact;
 
-
+SemaphoreHandle_t xSemaphore;
 
 void setup()
 {
@@ -37,9 +37,12 @@ void setup()
     offlineCharging();
     tft.setTextFont(1);
   } */
-  tft.setCursor(0, 0);
+  tft.setCursor(10, 0);
   tft.setTextSize(4);
   tft.println("NerBoot");
+  tft.fillRect(0,0,10,10,TFT_RED);
+  tft.fillRect(0,10,10,10,TFT_GREEN);
+  tft.fillRect(0,20,10,10,TFT_BLUE);
   tft.setTextSize(1);
   changeFont(0);
   tft.println("\n\nNerBoot v.0.0.4 ALPHA\n\nBootloader written by NERGON\n\nResources located in sdcard\nfolder FIRMWARE\n");
@@ -51,10 +54,6 @@ void setup()
   Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
   Serial.print("Initializing SD card...");
   tft.println("\nInitializing SD card...");
-  
-  
-  
-
   if (!SD.begin(chipSelect, SPI, 80000000))
   {
     Serial.println("SD Initialization failed!");
@@ -71,7 +70,6 @@ void setup()
   }
   if (!SD.exists("/FIRMWARE/IMAGES.SG"))
     recovery("No /FIRMARE/IMAGE.SG found\nhere some tools to help you!");
-
   File lol2 = SD.open("/FIRMWARE/IMAGES.SG");
   while (lol2.position() != 13)
   {
@@ -79,11 +77,8 @@ void setup()
   }
   lol2.close();
   preferences.begin("settings", false);
-
   ima = preferences.getUInt("ima", 0);
   contactCount = preferences.getUInt("contactCount",0);
-
-  
   if (!SD.exists("/DATA/MESSAGES.JSON"))
   {
     if (!SD.exists("/DATA"))
@@ -93,6 +88,7 @@ void setup()
     File file = SD.open("/DATA/MESSAGES.JSON", FILE_WRITE);
     file.print("{}");
     file.close();
+
   }
   
 
@@ -101,6 +97,7 @@ void setup()
   
   while (digitalRead(37) == LOW)
     ; 
+  vTaskStartScheduler();
   //messageActivity();
   
   // Serial.println("test");
@@ -112,6 +109,5 @@ void setup()
 
 void loop(void)
 {
-  drawStatusBar();
-  MainScreen();
+
 }

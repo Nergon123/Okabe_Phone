@@ -49,7 +49,7 @@ enum status{
     READED
 };
 
-
+extern int buttonPressed;
 extern uint contactCount;
 extern IP5306 chrg;
 extern TFT_eSPI tft;

@@ -2,7 +2,7 @@
 String sendATCommand(String command)
 {
   Serial1.println(command);
-  delay(100); 
+  delay(100);
 
   String response = "";
   while (Serial1.available())
@@ -37,7 +37,7 @@ int getSignalLevel()
 
 void populateContacts()
 {
-  //STOLEN FROM CHATGPT
+  // STOLEN FROM CHATGPT
   String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
 
   // Process the response
@@ -82,24 +82,29 @@ void populateContacts()
   }
 }
 
-
-bool checkButton(int pin) {
-  if (digitalRead(pin) == LOW) {
-    delay(50); 
-    while (digitalRead(pin) == LOW);  
+bool checkButton(int pin)
+{
+  if (digitalRead(pin) == LOW)
+  {
+    delay(50);
+    while (digitalRead(pin) == LOW)
+      ;
     return true;
   }
   return false;
 }
 
-int buttonsHelding() {
-    /*
-   *
-   * |M|I|B|C|
+
+void ButtonTask(void *pvParameters) {
+
+  /*
+   * SIDE BUTTON 10
+   *  7 8 9
+   * |M|I|B|
    *     ^=2
-   * <   0=1 >
-   * A   V=3 D=0
-   * 1   2   3
+   * <=4 0=1 >=5
+   * A=6 V=3 D=BACK
+   * 1  2  3
    * 4   5   6
    * 7   8   9
    * *   0   #
@@ -121,95 +126,183 @@ int buttonsHelding() {
   // SELECT_BUTTON_PIN = 37;
   // DOWN_BUTTON_PIN = 39;
 
-  if (checkButton(0)) return BACK; 
-  if (checkButton(37)) return SELECT; 
-  if (checkButton(38)) return UP;    
-  if (checkButton(39)) return DOWN;  
+  for (;;) {
+    // Check each button using checkButton()
+#ifndef DEVMODE
+    if (checkButton(0)) {
+      buttonPressed = BACK;
+      Serial.println("BACK");
+    }
+    else if (checkButton(37)) {
+      buttonPressed = SELECT;
+      Serial.println("SELECT");
+    }
+    else if (checkButton(38)) {
+      buttonPressed = UP;
+      Serial.println("UP");
+    }
+    else if (checkButton(39)) {
+      buttonPressed = DOWN;
+      Serial.println("DOWN");
+    }
+#endif
 
-  return -1;
+    // If Serial data is available (for manual input)
+    if (Serial.available()) {
+      char input = Serial.read();
+      switch (input) {
+        case 'w':
+          buttonPressed = UP;
+          Serial.println("UP");
+          break;
+        case 's':
+          buttonPressed = DOWN;
+          Serial.println("DOWN");
+          break;
+        case ' ':
+          buttonPressed = SELECT;
+          Serial.println("SELECT");
+          break;
+        case 'q':
+          buttonPressed = BACK;
+          Serial.println("BACK");
+          break;
+        case '`':
+          Serial.println("SOFTWARE RESET");
+          ESP.restart();
+          buttonPressed = -1;
+          break;
+        case 'm':
+          Serial.println("MESSAGES");
+          drawStatusBar();
+          messages();
+          MainScreen();
+          buttonPressed = -1;
+          break;
+        case 'b':
+          Serial.println("CONTACTS");
+          drawStatusBar();
+          contactss();
+          MainScreen();
+          buttonPressed = -1;
+          break;
+        case '*':
+        case '#':
+          Serial.println(input);
+          buttonPressed = input;
+          break;
+        default:
+          if (input >= '0' && input <= '9') {
+            Serial.println(input);
+            buttonPressed = input;
+          }
+          break;
+      }
+    }
+
+    // If no button pressed, set it to -1
+    if (buttonPressed == -1) {
+      // Optionally print or do something when no button is pressed
+    }
+
+    // Delay to avoid high CPU usage
+    vTaskDelay(100 / portTICK_PERIOD_MS);  // 100 ms delay
+  }
 }
 
-int measureStringHeight(const String& text, int displayWidth) {
-    //STOLEN FROM CHATGPT
-    int lines = 1;               
-    int lineWidth = 0;            
-    int spaceWidth = tft.textWidth(" ");  
-    int lineHeight = tft.fontHeight();   
+int measureStringHeight(const String &text, int displayWidth)
+{
+  // STOLEN FROM CHATGPT
+  int lines = 1;
+  int lineWidth = 0;
+  int spaceWidth = tft.textWidth(" ");
+  int lineHeight = tft.fontHeight();
 
-    String word = "";  
+  String word = "";
 
-    for (int i = 0; i < text.length(); i++) {
-        char c = text[i];
+  for (int i = 0; i < text.length(); i++)
+  {
+    char c = text[i];
 
-        
-        if (c == '\r' && i + 1 < text.length() && text[i + 1] == '\n') {
-            lines++;         
-            lineWidth = 0;    
-            i++;             
-            continue;
-        }
-
-
-        if (c == '\n' || c == '\r') {
-            lines++;          
-            lineWidth = 0;    
-            continue;
-        }
-
-       
-        if (c == ' ' || i == text.length() - 1) {
-            if (i == text.length() - 1 && c != ' ') {
-                word += c; 
-            }
-
-            int wordWidth = tft.textWidth(word);
-
-           
-            if (lineWidth + wordWidth > displayWidth) {
-                lines++;          
-                lineWidth = wordWidth + spaceWidth; 
-            } else {
-                lineWidth += wordWidth + spaceWidth; 
-            }
-
-            word = "";  
-        } else {
-            word += c;  
-        }
+    if (c == '\r' && i + 1 < text.length() && text[i + 1] == '\n')
+    {
+      lines++;
+      lineWidth = 0;
+      i++;
+      continue;
     }
 
-    
-    return lines * lineHeight;
+    if (c == '\n' || c == '\r')
+    {
+      lines++;
+      lineWidth = 0;
+      continue;
+    }
+
+    if (c == ' ' || i == text.length() - 1)
+    {
+      if (i == text.length() - 1 && c != ' ')
+      {
+        word += c;
+      }
+
+      int wordWidth = tft.textWidth(word);
+
+      if (lineWidth + wordWidth > displayWidth)
+      {
+        lines++;
+        lineWidth = wordWidth + spaceWidth;
+      }
+      else
+      {
+        lineWidth += wordWidth + spaceWidth;
+      }
+
+      word = "";
+    }
+    else
+    {
+      word += c;
+    }
+  }
+
+  return lines * lineHeight;
 }
 
-void saveContactsToJson(const Contact contacts[], size_t contactCount, const char* fileName) {
-    if (!SD.begin()) {
-        Serial.println("SD card initialization failed!");
-        return;
-    }
+void saveContactsToJson(const Contact contacts[], size_t contactCount, const char *fileName)
+{
+  if (!SD.begin())
+  {
+    Serial.println("SD card initialization failed!");
+    return;
+  }
 
+  File file = SD.open(fileName, FILE_WRITE);
+  if (!file)
+  {
+    Serial.println("Failed to open file for writing.");
+    return;
+  }
+  StaticJsonDocument<1024> doc;
+  JsonArray contactArray = doc.to<JsonArray>();
+  for (size_t i = 0; i < contactCount; i++)
+  {
+    JsonObject contact = contactArray.createNestedObject();
+    contact["name"] = contacts[i].name;
+    contact["phone"] = contacts[i].phone;
+    contact["email"] = contacts[i].email;
+  }
 
-    File file = SD.open(fileName, FILE_WRITE);
-    if (!file) {
-        Serial.println("Failed to open file for writing.");
-        return;
-    }
-    StaticJsonDocument<1024> doc;
-    JsonArray contactArray = doc.to<JsonArray>();
-    for (size_t i = 0; i < contactCount; i++) {
-        JsonObject contact = contactArray.createNestedObject();
-        contact["name"] = contacts[i].name;
-        contact["phone"] = contacts[i].phone;
-        contact["email"] = contacts[i].email;
-    }
+  // Serialize JSON to the file
+  if (serializeJson(doc, file) == 0)
+  {
+    Serial.println("Failed to write JSON to file.");
+  }
+  else
+  {
+    Serial.println("Contacts saved successfully.");
+  }
 
-    // Serialize JSON to the file
-    if (serializeJson(doc, file) == 0) {
-        Serial.println("Failed to write JSON to file.");
-    } else {
-        Serial.println("Contacts saved successfully.");
-    }
-
-    // Close the file
-    file.close();
+  // Close the file
+  file.close();
 }

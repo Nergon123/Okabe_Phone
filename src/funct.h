@@ -6,6 +6,5 @@ String sendATCommand(String command);
 void populateContacts();
 int getChargeLevel();
 int getSignalLevel();
-int buttonsHelding();
 int measureStringHeight(const String &text, int displayWidth = 240);
 #endif
