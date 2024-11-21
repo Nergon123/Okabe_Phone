@@ -2,7 +2,7 @@
 String sendATCommand(String command)
 {
   Serial1.println(command);
-  delay(100); 
+  delay(100);
 
   String response = "";
   while (Serial1.available())
@@ -37,7 +37,7 @@ int getSignalLevel()
 
 void populateContacts()
 {
-  //STOLEN FROM CHATGPT
+  // STOLEN FROM CHATGPT
   String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
 
   // Process the response
@@ -94,8 +94,8 @@ bool checkButton(int pin)
   return false;
 }
 
-
-void ButtonTask(void *pvParameters) {
+int buttonsHelding()
+{
 
   /*
    * SIDE BUTTON 10
@@ -104,7 +104,7 @@ void ButtonTask(void *pvParameters) {
    *     ^=2
    * <=4 0=1 >=5
    * A=6 V=3 D=BACK
-   * 1  2  3
+   * 1   2   3
    * 4   5   6
    * 7   8   9
    * *   0   #
@@ -126,95 +126,180 @@ void ButtonTask(void *pvParameters) {
   // SELECT_BUTTON_PIN = 37;
   // DOWN_BUTTON_PIN = 39;
 
-  if (checkButton(0)) return BACK; 
-  if (checkButton(37)) return SELECT; 
-  if (checkButton(38)) return UP;    
-  if (checkButton(39)) return DOWN;  
+#ifndef DEVMODE
+  if (checkButton(0))
+    return BACK;
+  if (checkButton(37))
+    return SELECT;
+  if (checkButton(38))
+    return UP;
+  if (checkButton(39))
+    return DOWN;
+#endif
+
+  if (Serial.available())
+  {
+    char input = Serial.read();
+    switch (input)
+    {
+    case 'a':
+      Serial.println("LEFT");
+      return LEFT;
+      break;
+    case 'd':
+      Serial.println("RIGHT");
+      return RIGHT;
+      break;
+    case 'w':
+      Serial.println("UP");
+      return UP;
+      break;
+    case 's':
+      Serial.println("DOWN");
+      return DOWN;
+      break;
+    case ' ':
+      Serial.println("SELECT");
+      return SELECT;
+      break;
+    case 'e':
+      Serial.println("ANSWER");
+      return ANSWER;
+      break;
+    case 'q':
+      Serial.println("BACK");
+      return BACK;
+      break;
+    case '`':
+      Serial.println("SOFTWARE RESET");
+      ESP.restart();
+      return -1;
+      break;
+    case 'm':
+      Serial.println("MESSAGES");
+      drawStatusBar();
+      messages();
+      MainScreen();
+      return -1;
+      break;
+    case 'b':
+      Serial.println("CONTACTS");
+      drawStatusBar();
+      contactss();
+      MainScreen();
+      return -1;
+      break;
+    case '*':
+      Serial.println(input);
+      return input;
+      break;
+    case '#':
+      Serial.println(input);
+      return input;
+      break;
+    default:
+      if (input >= '0' && input <= '9')
+      {
+        Serial.println(input);
+        return input;
+      }
+      break;
+    }
+  }
 
   return -1;
 }
 
-int measureStringHeight(const String& text, int displayWidth) {
-    //STOLEN FROM CHATGPT
-    int lines = 1;               
-    int lineWidth = 0;            
-    int spaceWidth = tft.textWidth(" ");  
-    int lineHeight = tft.fontHeight();   
+int measureStringHeight(const String &text, int displayWidth)
+{
+  // STOLEN FROM CHATGPT
+  int lines = 1;
+  int lineWidth = 0;
+  int spaceWidth = tft.textWidth(" ");
+  int lineHeight = tft.fontHeight();
 
-    String word = "";  
+  String word = "";
 
-    for (int i = 0; i < text.length(); i++) {
-        char c = text[i];
+  for (int i = 0; i < text.length(); i++)
+  {
+    char c = text[i];
 
-        
-        if (c == '\r' && i + 1 < text.length() && text[i + 1] == '\n') {
-            lines++;         
-            lineWidth = 0;    
-            i++;             
-            continue;
-        }
-
-
-        if (c == '\n' || c == '\r') {
-            lines++;          
-            lineWidth = 0;    
-            continue;
-        }
-
-       
-        if (c == ' ' || i == text.length() - 1) {
-            if (i == text.length() - 1 && c != ' ') {
-                word += c; 
-            }
-
-            int wordWidth = tft.textWidth(word);
-
-           
-            if (lineWidth + wordWidth > displayWidth) {
-                lines++;          
-                lineWidth = wordWidth + spaceWidth; 
-            } else {
-                lineWidth += wordWidth + spaceWidth; 
-            }
-
-            word = "";  
-        } else {
-            word += c;  
-        }
+    if (c == '\r' && i + 1 < text.length() && text[i + 1] == '\n')
+    {
+      lines++;
+      lineWidth = 0;
+      i++;
+      continue;
     }
 
-    
-    return lines * lineHeight;
+    if (c == '\n' || c == '\r')
+    {
+      lines++;
+      lineWidth = 0;
+      continue;
+    }
+
+    if (c == ' ' || i == text.length() - 1)
+    {
+      if (i == text.length() - 1 && c != ' ')
+      {
+        word += c;
+      }
+
+      int wordWidth = tft.textWidth(word);
+
+      if (lineWidth + wordWidth > displayWidth)
+      {
+        lines++;
+        lineWidth = wordWidth + spaceWidth;
+      }
+      else
+      {
+        lineWidth += wordWidth + spaceWidth;
+      }
+
+      word = "";
+    }
+    else
+    {
+      word += c;
+    }
+  }
+
+  return lines * lineHeight;
 }
 
-void saveContactsToJson(const Contact contacts[], size_t contactCount, const char* fileName) {
-    if (!SD.begin()) {
-        Serial.println("SD card initialization failed!");
-        return;
-    }
+void saveContactsToJson(const Contact contacts[], size_t contactCount, const char *fileName)
+{
+  File file = SD.open(fileName, FILE_WRITE);
+  if (!file)
+  {
+    Serial.println("Failed to open file for writing.");
+    return;
+  }
+  StaticJsonDocument<1024> doc;
+  JsonArray contactArray = doc.to<JsonArray>();
+  for (size_t i = 0; i < contactCount; i++)
+  {
+    JsonObject contact = contactArray.createNestedObject();
+    contact["name"] = contacts[i].name;
+    contact["phone"] = contacts[i].phone;
+    contact["email"] = contacts[i].email;
+  }
 
+  // Serialize JSON to the file
+  if (serializeJson(doc, file) == 0)
+  {
+    Serial.println("Failed to write JSON to file.");
+  }
+  else
+  {
+    Serial.println("Contacts saved successfully.");
+  }
 
-    File file = SD.open(fileName, FILE_WRITE);
-    if (!file) {
-        Serial.println("Failed to open file for writing.");
-        return;
-    }
-    StaticJsonDocument<1024> doc;
-    JsonArray contactArray = doc.to<JsonArray>();
-    for (size_t i = 0; i < contactCount; i++) {
-        JsonObject contact = contactArray.createNestedObject();
-        contact["name"] = contacts[i].name;
-        contact["phone"] = contacts[i].phone;
-        contact["email"] = contacts[i].email;
-    }
-
-    // Serialize JSON to the file
-    if (serializeJson(doc, file) == 0) {
-        Serial.println("Failed to write JSON to file.");
-    } else {
-        Serial.println("Contacts saved successfully.");
-    }
-
-    // Close the file
-    file.close();
+  // Close the file
+  file.close();
+}
+void checkVoiceCall()
+{
 }

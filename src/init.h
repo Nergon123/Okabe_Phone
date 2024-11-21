@@ -44,10 +44,18 @@ struct mOption
     
 };
 enum status{
-    NEW,
-    REPLIED,
-    READED
+    NEW = 'N',
+    REPLIED = 'R',
+    READED = 'D'
 };
+enum SCREENS{
+    MAINSCREEN,
+    MAINMENU,
+    MESSAGES,
+    CONTACTS,
+    SETTINGS,
+    E,
+  };
 
 
 extern uint contactCount;
@@ -55,65 +63,16 @@ extern IP5306 chrg;
 extern TFT_eSPI tft;
 extern BleMouse blemouse;
 extern uint32_t ima;
-
+extern int currentScreen;
 extern Preferences preferences;
+extern bool sbchanged;
 
 extern SDImage mailimg[4];
 extern Contact contacts[MAX_CONTACTS];
 extern Contact examplecontact;
 
-const String contmenu[] = {
-    "Call",
-    "Outgoing",
-    "Edit",
-    "Create",
-    "Delete"
-};
 
-const String wallnames[] = {
-    "Wallpaper 1",
-    "Wallpaper 2",
-    "Wallpaper 3",
-    "IBN5100",
-    "Red jelly",
-    "The head of doll",
-    "Mayuri jelly",
-    "Fatty Gero Froggy",
-    "Burning Gero Froggy",
-    "Upa",
-    "Metal Upa",
-    "Seira",
-    "Seira After awaking",
-    "Gero Froggy",
-    "Cat Gero Froggy",
-    "Cow Gero Froggy",
-    "FES",
-    "Gero Froggies",
-    "Calico Gero Froggies",
-    "Gold Upa",
-    "FES2",
-    "Erin 1",
-    "Erin 2",
-    "Orgel Sisters",
-    "Mayuri",
-    "Kurisu",
-    "Moeka",
-    "Luka",
-    "Faris",
-    "Suzuha",
-    "UNCONFIRMED",
-    "Popping steiner",
-    "Wallpaper 4",
-    "NukariyaIce",
-    "MayQueen",
-    "Upa ♪",
-    "Wallpaper 5",
-    "Rabikuro",
-    "Wallpaper 6",
-    "Space Froggies",
-    "Wallpaper 7",
-    "Nae"
-};
+
 
 
 template <typename T, size_t N>
@@ -124,6 +83,7 @@ size_t ArraySize(T (&)[N])
 
 void loop(void);
 void setup();
-
+void idle();
+void screens();
 
 #endif // INITT_H

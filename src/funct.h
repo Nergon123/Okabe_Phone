@@ -8,4 +8,5 @@ int getChargeLevel();
 int getSignalLevel();
 int buttonsHelding();
 int measureStringHeight(const String &text, int displayWidth = 240);
+void checkVoiceCall();
 #endif

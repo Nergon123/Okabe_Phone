@@ -1,9 +1,7 @@
 
 #include <defines.h>
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include "freertos/semphr.h"
+
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
