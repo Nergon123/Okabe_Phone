@@ -2,10 +2,8 @@
 void makeCall(Contact contact);
 void incomingCall(Contact contact);
 void inbox();
-void messagesDoing(){
-
-}
-void messages(void* pvParameters)
+void numberInput(char first);
+void messages()
 {
 
   drawFromSd(0x613D45, 0, 26, 240, 294);
@@ -24,9 +22,7 @@ void messages(void* pvParameters)
   default:
     break;
   }
-  String exampleMessage = "SAMPLE TEXT TO TEST MESSAGE | EmAIL | SMS | OR SoMETHING ~!@#$ \nKILL YOURSELF\n \n \n - Unknown";
-  while (buttonPressed == -1)
-    ;
+  currentScreen = SCREENS::MAINMENU;
 }
 
 void knipka()
@@ -62,6 +58,7 @@ void knipka()
 }
 void e()
 {
+
 #ifdef DEVMODE
   int choice = -2;
   while (choice != -1)
@@ -105,18 +102,21 @@ void e()
         {
         case 0:
           knipka();
+          sbchanged = true;
           break;
         }
         break;
       }
       break;
     }
+    idle();
   }
 
 #endif
+  currentScreen = SCREENS::MAINMENU;
 }
 
-bool settings()
+void settings()
 {
 
   drawFromSd(0x613D45, 0, 26, 240, 294);
@@ -129,24 +129,26 @@ bool settings()
   int a = choiceMenu(lol, 3, false);
   int pic = -1;
   int picch = -2;
-  bool exit = false;
-  while (!exit)
+
+  while (true)
   {
     switch (a)
     {
     case -1:
-      return false;
+      currentScreen = SCREENS::MAINMENU;
+      return;
       break;
     case 0:
       pic = gallery();
       if (pic == -1)
       {
-        exit = true;
-        return false;
+        currentScreen = SCREENS::MAINMENU;
+        return;
       }
       break;
     default:
-      sysError("DOESN'T_EXIST");
+      currentScreen = SCREENS::MAINMENU;
+      return;
       break;
     }
 
@@ -164,16 +166,17 @@ bool settings()
       case 1:
         preferences.putUInt("ima", pic);
         ima = pic;
-        exit = true;
+        currentScreen = SCREENS::MAINSCREEN;
+        return;
         break;
       default:
-        return false;
+
         break;
       }
     }
+    idle();
   }
-
-  return false;
+  currentScreen = SCREENS::MAINMENU;
 }
 void MainMenu()
 {
@@ -183,14 +186,14 @@ void MainMenu()
 
   int choice = 0;
   bool exit = false;
-  while (!exit)
+  while (true)
   {
-
     switch (buttonsHelding())
     {
     case BACK:
     {
-      exit = true;
+      currentScreen = SCREENS::MAINSCREEN;
+      return;
       break;
     }
     case SELECT:
@@ -199,16 +202,21 @@ void MainMenu()
       switch (choice)
       {
       case 0:
-        messages();
+
+        currentScreen = SCREENS::MESSAGES;
+        return;
         break;
       case 1:
-        contactss();
+        currentScreen = SCREENS::CONTACTS;
+        return;
         break;
       case 2:
-        e();
+        currentScreen = SCREENS::E;
+        return;
         break;
       case 3:
-        exit = settings();
+        currentScreen = SCREENS::SETTINGS;
+        return;
         break;
       }
       drawFromSd(0x5ADC01, 0, 26, 240, 294);
@@ -241,13 +249,56 @@ void MainMenu()
       break;
     }
     }
+    idle();
   }
-  MainScreen();
 }
 
 int gallery()
 {
 
+  const String wallnames[] = {
+      "Wallpaper 1",
+      "Wallpaper 2",
+      "Wallpaper 3",
+      "IBN5100",
+      "Red jelly",
+      "The head of doll",
+      "Mayuri jelly",
+      "Fatty Gero Froggy",
+      "Burning Gero Froggy",
+      "Upa",
+      "Metal Upa",
+      "Seira",
+      "Seira After awaking",
+      "Gero Froggy",
+      "Cat Gero Froggy",
+      "Cow Gero Froggy",
+      "FES",
+      "Gero Froggies",
+      "Calico Gero Froggies",
+      "Gold Upa",
+      "FES2",
+      "Erin 1",
+      "Erin 2",
+      "Orgel Sisters",
+      "Mayuri",
+      "Kurisu",
+      "Moeka",
+      "Luka",
+      "Faris",
+      "Suzuha",
+      "UNCONFIRMED",
+      "Popping steiner",
+      "Wallpaper 4",
+      "NukariyaIce",
+      "MayQueen",
+      "Upa ♪",
+      "Wallpaper 5",
+      "Rabikuro",
+      "Wallpaper 6",
+      "Space Froggies",
+      "Wallpaper 7",
+      "Nae"};
   // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
   return listMenu(wallnames, ArraySize(wallnames), true, 2, "Change wallpaper");
 }
@@ -258,9 +309,21 @@ void MainScreen()
 
   drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
   // bool exit = false;
-  while (buttonsHelding() != UP)
-    ;
-  MainMenu();
+  int c = -1;
+  while (c != UP)
+  {
+    int c = buttonsHelding();
+    idle();
+    if ((c >= '0' || c == '*' || c == '#') && c <= '9')
+    {
+      numberInput(c);
+      drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+    }
+    if (c == UP)
+      break;
+  }
+
+  currentScreen = SCREENS::MAINMENU;
 }
 
 void offlineCharging()
@@ -335,13 +398,14 @@ void incomingCall(Contact contact)
   writeCustomFont(55, 185, contact.phone, 1);
   drawFromSd(0x662B5B, 73, 90, 13, 14, true, 0xD6BA);
   for (;;)
-    ;
+    idle();
 }
 
 void makeCall(Contact contact)
 {
   bool calling = true;
   tft.fillScreen(0);
+  sbchanged = true;
   drawStatusBar();
 
   changeFont(1);
@@ -380,6 +444,7 @@ void makeCall(Contact contact)
         // proceed to emulating call
       }
     }
+    idle();
   }
   if (hang)
   {
@@ -391,14 +456,19 @@ void makeCall(Contact contact)
   drawStatusBar();
   drawFromSd(0x65D147, 40, 143, 160, 34);
   while (true /*"IF CALL IN PROGRESS" STATEMENT HERE*/)
-    ;
+    idle();
   tft.fillScreen(0);
   drawStatusBar();
 }
 
 void contactss()
 {
-
+  const String contmenu[] = {
+      "Call",
+      "Outgoing",
+      "Edit",
+      "Create",
+      "Delete"};
   populateContacts();
 
   String contactNames[contactCount];
@@ -426,10 +496,16 @@ void contactss()
       break;
     }
   }
+  currentScreen = SCREENS::MAINMENU;
 }
 
 void inbox(bool outbox)
 {
+  const char *title;
+  if (outbox)
+    title = "Outbox";
+  else
+    title = "Inbox";
   SDImage mailimg[4] = {
       SDImage(0x662DB1, 18, 21, 0, true),
       SDImage(0x662DB1 + (18 * 21 * 2), 18, 21, 0, true),
@@ -452,7 +528,7 @@ void inbox(bool outbox)
 
   };
 
-  listMenu(example, ArraySize(example), false, 0, "Inbox");
+  listMenu(example, ArraySize(example), false, 0, title);
 }
 
 void fileBrowser(File dir)
@@ -637,15 +713,14 @@ void messageActivity(Contact contact, String date, String subject, String conten
     drawFromSd(0, 24 + y_scr, in_mail[2]);
     tft.setCursor(24, 24 + y_text + y_scr);
     tft.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
-                                                     : !contact.email.isEmpty()    ? contact.email
-                                                                                   : "UNKNOWN");
+                                                     : !contact.email.isEmpty()   ? contact.email
+                                                                                  : "UNKNOWN");
 
     drawFromSd(0, 48 + y_scr, in_mail[3]);
     tft.setCursor(24, 48 + y_text + y_scr);
     tft.println(subject);
 
     tft.drawLine(0, 72 + y_scr, 240, 72 + y_scr, 0);
-    Serial.println(height);
 
     printSplitString(content);
     int r = -1;
@@ -669,6 +744,9 @@ void messageActivity(Contact contact, String date, String subject, String conten
         break;
       }
     }
+    tft.resetViewport();
+    idle();
+    tft.setViewport(0, 51, 240, 269, true);
   }
   tft.resetViewport();
 }
@@ -696,6 +774,109 @@ void recovery(String message)
   tft.println(message);
   for (;;)
     ;
+}
+void numberInput(char first)
+{
+  tft.fillRect(0, 300, 240, 20, 0);
+  sbchanged = true;
+  drawStatusBar();
+  const uint8_t max_char = 13;
+  char input[max_char];
+  for (int i = 0; i < max_char; i++)
+    input[i] = ' ';
+  input[0] = first;
+  char c = 255;
+  int pos = 1;
+  changeFont(0);
+  tft.setTextSize(3);
+  tft.fillRect(0, 300, 240, 20, 0);
+  tft.setCursor(0, 300);
+  tft.print(input);
+
+  while (true)
+  {
+    while (c == 255)
+    {
+      c = buttonsHelding();
+      idle();
+    }
+
+    switch (c)
+    {
+    case ANSWER:
+      makeCall({0, input});
+      return;
+      break;
+    case RIGHT:
+      pos--;
+      input[pos] = ' ';
+
+      tft.fillRect(0, 300, 240, 20, 0);
+      tft.setCursor(0, 300);
+      tft.print(input);
+      break;
+    case BACK:
+      return;
+      break;
+    default:
+      break;
+    }
+    if (pos == 0)
+      return;
+    if ((c >= '0' || c == '*' || c == '#') && c <= '9' && pos < max_char)
+    {
+      input[pos] = c;
+      pos++;
+      tft.fillRect(0, 300, 240, 20, 0);
+      tft.setCursor(0, 300);
+      tft.print(input);
+      c = 255;
+    }
+    idle();
+    Serial.println(c, DEC);
+    c = 255;
+  }
+}
+char textInput(char input)
+{
+  const char buttons[12][12] = {
+      "0 +E\r",
+      "1,.()\r",
+      "2ABCabc\r",
+      "3DEFdef\r",
+      "4GHIghi\r",
+      "5JKLjkl\r",
+      "6MNOmno\r",
+      "7PQRSpqrs\r",
+      "8TUVtuv\r",
+      "9WXYZwxyz\r",
+      "*\r",
+      "#\r"};
+  int sizes[12];
+
+  int pos = 0;
+  for (int i = 0; i < 12; i++)
+  {
+    int b = 0;
+    for (; b < 12; b++)
+    {
+      if (buttons[i][b] == '\r')
+        break;
+    }
+    sizes[i] = b;
+    Serial.println(b, DEC);
+    b = 0;
+  }
+
+  while (true)
+  {
+    int c = buttonsHelding();
+    if (c == input)
+    pos++;
+    else
+    textInput(c);
+  }
+  return 255;
 }
 void WiFiList()
 {

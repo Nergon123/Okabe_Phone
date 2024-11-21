@@ -5,7 +5,7 @@ struct Contact;
 void messages();
 void contactss();
 void e();
-bool settings();
+void settings();
 void MainMenu();
 int gallery();
 void MainScreen();
@@ -16,4 +16,5 @@ void fileBrowser(File dir = SD.open("/"));
 void messageActivity(Contact contact,String date,String subject,String content, bool outcoming = false);
 void downloadFile(const char *url, const char *path);
 void WiFiList();
+char textInput();
 #endif

@@ -23,7 +23,7 @@ void changeFont(int ch)
 
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, File file)
 {
-  //PARTIALLY STOLEN FROM CHATGPT
+  // PARTIALLY STOLEN FROM CHATGPT
   if (!file.available())
     sysError("SD_CARD_NOT_AVAILABLE");
   file.seek(pos);
@@ -49,16 +49,27 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
   }
   file.close();
 }
-
+int8_t _signal = 0;
+int8_t charge = 0;
 void drawStatusBar()
 {
-
-  drawFromSd(0X5A708D, 0, 0, 240, 26); // statusbar
-  if (getSignalLevel() == 1)
-    drawFromSd(0x5AD47D, 0, 0, 37, 26);                              // no_signal
-  drawFromSd(0x5ABC1D + (0x618) * getSignalLevel(), 0, 0, 30, 26);   // signal
-  drawFromSd(0X5AA14D + (0x6B4) * getChargeLevel(), 207, 0, 33, 26); // battery
-  //  tft.print(String(charge) + String("%"));
+  if (getSignalLevel() != _signal || getChargeLevel() != charge)
+  {
+    _signal = getSignalLevel();
+    charge = getChargeLevel();
+    sbchanged = true;
+  }
+  if (sbchanged)
+  {
+    sbchanged = false;
+    drawFromSd(0X5A708D, 0, 0, 240, 26);                     // statusbar
+   if (_signal == -1)
+     drawFromSd(0x5AD47D, 0, 0, 37, 26);                    // no_signal
+    else
+    drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26);  // signal
+    drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26); // battery
+    //  tft.print(String(charge) + String("%"));
+  }
 }
 
 void rendermenu(int choice, bool right)
@@ -114,7 +125,6 @@ void rendermenu(int choice, bool right)
 }
 void sysError(const char *reason)
 {
-
   tft.fillScreen(0x0000);
   tft.setCursor(10, 40);
   tft.setTextFont(1);
@@ -124,7 +134,8 @@ void sysError(const char *reason)
   tft.setTextColor(0xFFFF);
   tft.setTextSize(1);
   tft.println(String("\n\n\nThere a problem with your device\nYou can fix it by yourself i guess\nThere some details for you:\n\n\nReason:" + String(reason)));
-  for(;;);
+  for (;;)
+    ;
 }
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file, bool transp, uint16_t tc)
@@ -146,42 +157,37 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
   }
   else
   {
-    const int buffer_size = size_x * 2; // 2 bytes per pixel
-    uint8_t buffer[buffer_size];
-    for (int a = 0; a < size_y; a++)
-    {
-      // Read a whole line (row) of pixels at once
-      file.read(buffer, buffer_size);
+const int buffer_size = size_x * 2; // 2 bytes per pixel
+uint8_t buffer[buffer_size];
 
-      int draw_start = -1;
-      for (int i = 0; i < size_x; i++)
-      {
-        uint16_t wd = (buffer[2 * i + 1] << 8) | buffer[2 * i];
+for (int a = 0; a < size_y; a++) {
+    // Read a whole line (row) of pixels at once
+    file.read(buffer, buffer_size);
 
+    int draw_start = -1; // Initialize start of draw segment
 
-        if (wd != tc)
-        {
+    for (int i = 0; i < size_x; i++) {
+        // Reconstruct 16-bit color from two bytes
+        uint16_t wd = (buffer[2 * i] << 8) | buffer[2 * i + 1];
 
-          if (draw_start == -1)
-          {
-            draw_start = i;
-          }
+        if (wd != tc) { // If the pixel is not transparent
+            if (draw_start == -1) {
+                draw_start = i; // Start new draw segment
+            }
+        } else { // Transparent pixel
+            if (draw_start != -1) {
+                // Render segment up to current pixel
+                tft.pushImage(pos_x + draw_start, pos_y + a, i - draw_start, 1, (uint16_t *)(&buffer[2 * draw_start]));
+                draw_start = -1; // Reset draw_start
+            }
         }
-        else
-        {
-          if (draw_start != -1)
-          {
-            tft.pushImage(pos_x + draw_start, a + pos_y, i - draw_start, 1, (uint16_t *)(&buffer[draw_start]));
-            draw_start = -1;
-          }
-        }
-      }
-      Serial.println();
-      if (draw_start != -1)
-      {
-        tft.pushImage(pos_x + draw_start, a + pos_y, size_x - draw_start, 1, (uint16_t *)(&buffer[draw_start]));
-      }
     }
+
+    // Handle case where last segment reaches the end of the row
+    if (draw_start != -1) {
+        tft.pushImage(pos_x + draw_start, pos_y + a, size_x - draw_start, 1, (uint16_t *)(&buffer[2 * draw_start]));
+    }
+}
   }
 }
 
@@ -208,7 +214,7 @@ void writeCustomFont(int x, int y, String input, int type)
   case 1:
     w = 15;
     h = 19;
-    addr = 0x65FBC6;
+    addr = 0x65FBC7;
     transp = true;
     break;
   default:
@@ -281,9 +287,9 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
   2 = SETTINGS
 
   */
- bool empty = false;
+  bool empty = false;
   if (icount == 0)
-    empty= true;
+    empty = true;
 
   // load file with graphical resources
   int scale = 7; // downscale multiplier for images
@@ -320,11 +326,13 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
   listMenu_sub(label, type, page, pages);
   drawFromSd(0x639365, 0, 51, 240, 269);
   tft.setTextColor(color_inactive);
-  if(empty){
-  tft.setCursor(75,70);
-  tft.print("< Empty >");
-  while(buttonsHelding()==-1);
-  return -1;
+  if (empty)
+  {
+    tft.setCursor(75, 70);
+    tft.print("< Empty >");
+    while (buttonsHelding() == -1)
+      idle();
+    return -1;
   }
   for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
   {
@@ -355,12 +363,13 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
   }
   bool exit = false;
   while (!exit)
-    switch (buttonPressed)
+  {
+    switch (buttonsHelding())
     {
     case SELECT:
     {
       exit = true;
-      
+
       return items_per_page * page + choice;
       break;
     }
@@ -553,6 +562,8 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
       break;
     }
     }
+    idle();
+  }
 
   return -1;
 }
@@ -569,10 +580,10 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
 
 void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing)
 {
-  //FIRSTLY WAS WRITED MANUALLY BUT AFTER ENCOURING A BUG 
-  //I STOLE FROM CHATGPT
+  // FIRSTLY WAS WRITED MANUALLY BUT AFTER ENCOURING A BUG
+  // I STOLE FROM CHATGPT
   //(slighty modified)
-  // Open the file and seek to the position where image data starts
+  //  Open the file and seek to the position where image data starts
   File file = SD.open("/FIRMWARE/IMAGES.SG");
   file.seek(0x658BC4);
   // Read data from SD card into buffer
@@ -681,8 +692,8 @@ int choiceMenu(const String choices[], int count, bool context)
   int xx = x - 5;
   tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
   bool exit = false;
-  while (!exit)
-    switch (buttonPressed)
+  while (!exit){
+    switch (buttonsHelding())
     {
     case BACK:
     {
@@ -740,7 +751,6 @@ int choiceMenu(const String choices[], int count, bool context)
       int xx = x - 5;
       tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
       tft.print(choices[choice]);
-      Serial.println(choice);
       delay(100);
       break;
     }
@@ -802,26 +812,30 @@ int choiceMenu(const String choices[], int count, bool context)
       int xx = x - 5;
       tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
       tft.print(choices[choice]);
-      Serial.println(choice);
+
 
       delay(100);
       break;
     }
     }
+      idle();
+    }
   return -1;
 }
-
 
 void printSplitString(String text)
 {
   int wordStart = 0;
   int wordEnd = 0;
-  while ( (text.indexOf(' ', wordStart) >= 0) && ( wordStart <= text.length())) {
+  while ((text.indexOf(' ', wordStart) >= 0) && (wordStart <= text.length()))
+  {
     wordEnd = text.indexOf(' ', wordStart + 1);
     uint16_t len = tft.textWidth(text.substring(wordStart, wordEnd));
-    if (tft.getCursorX() + len >= tft.width()) {
+    if (tft.getCursorX() + len >= tft.width())
+    {
       tft.println();
-      if (wordStart > 0) wordStart++;
+      if (wordStart > 0)
+        wordStart++;
     }
     tft.print(text.substring(wordStart, wordEnd));
     wordStart = wordEnd;
