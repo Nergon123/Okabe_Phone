@@ -775,6 +775,7 @@ void recovery(String message)
   for (;;)
     ;
 }
+
 void numberInput(char first)
 {
   tft.fillRect(0, 300, 240, 20, 0);
