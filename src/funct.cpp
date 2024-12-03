@@ -300,6 +300,47 @@ void saveContactsToJson(const Contact contacts[], size_t contactCount, const cha
   // Close the file
   file.close();
 }
+
+void saveMessagesToJson(const Message messages[], size_t messageCount, const char *fileName)
+{
+  File file = SD.open(fileName, FILE_WRITE);
+  if (!file)
+  {
+    Serial.println("Failed to open file for writing.");
+    return;
+  }
+
+  StaticJsonDocument<2048> doc;
+  JsonArray messageArray = doc.to<JsonArray>();
+
+  for (size_t i = 0; i < messageCount; i++)
+  {
+    JsonObject messageObj = messageArray.createNestedObject();
+    messageObj["index"] = messages[i].index;
+    messageObj["status"] = messages[i].status;
+    messageObj["isOutgoing"] = messages[i].isOutgoing;
+    messageObj["contact"]["name"] = messages[i].contact.name;
+    messageObj["contact"]["phone"] = messages[i].contact.phone;
+    messageObj["contact"]["email"] = messages[i].contact.email;
+    messageObj["subject"] = messages[i].subject;
+    messageObj["content"] = messages[i].content;
+    messageObj["date"] = messages[i].date;
+  }
+
+
+  if (serializeJson(doc, file) == 0)
+  {
+    Serial.println("Failed to write JSON to file.");
+  }
+  else
+  {
+    Serial.println("Messages saved successfully.");
+  }
+
+  // Close the file
+  file.close();
+}
+
 void checkVoiceCall()
 {
 }

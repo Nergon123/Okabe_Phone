@@ -1,4 +1,5 @@
 #include "render.h"
+
 void changeFont(int ch)
 {
   switch (ch)
@@ -62,12 +63,12 @@ void drawStatusBar()
   if (sbchanged)
   {
     sbchanged = false;
-    drawFromSd(0X5A708D, 0, 0, 240, 26);                     // statusbar
-   if (_signal == -1)
-     drawFromSd(0x5AD47D, 0, 0, 37, 26);                    // no_signal
+    drawFromSd(0X5A708D, 0, 0, 240, 26); // statusbar
+    if (_signal == -1)
+      drawFromSd(0x5AD47D, 0, 0, 37, 26); // no_signal
     else
-    drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26);  // signal
-    drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26); // battery
+      drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26); // signal
+    drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26);  // battery
     //  tft.print(String(charge) + String("%"));
   }
 }
@@ -157,37 +158,45 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
   }
   else
   {
-const int buffer_size = size_x * 2; // 2 bytes per pixel
-uint8_t buffer[buffer_size];
+    const int buffer_size = size_x * 2; // 2 bytes per pixel
+    uint8_t buffer[buffer_size];
 
-for (int a = 0; a < size_y; a++) {
-    // Read a whole line (row) of pixels at once
-    file.read(buffer, buffer_size);
+    for (int a = 0; a < size_y; a++)
+    {
+      // Read a whole line (row) of pixels at once
+      file.read(buffer, buffer_size);
 
-    int draw_start = -1; // Initialize start of draw segment
+      int draw_start = -1; // Initialize start of draw segment
 
-    for (int i = 0; i < size_x; i++) {
+      for (int i = 0; i < size_x; i++)
+      {
         // Reconstruct 16-bit color from two bytes
         uint16_t wd = (buffer[2 * i] << 8) | buffer[2 * i + 1];
 
-        if (wd != tc) { // If the pixel is not transparent
-            if (draw_start == -1) {
-                draw_start = i; // Start new draw segment
-            }
-        } else { // Transparent pixel
-            if (draw_start != -1) {
-                // Render segment up to current pixel
-                tft.pushImage(pos_x + draw_start, pos_y + a, i - draw_start, 1, (uint16_t *)(&buffer[2 * draw_start]));
-                draw_start = -1; // Reset draw_start
-            }
+        if (wd != tc)
+        { // If the pixel is not transparent
+          if (draw_start == -1)
+          {
+            draw_start = i; // Start new draw segment
+          }
         }
-    }
+        else
+        { // Transparent pixel
+          if (draw_start != -1)
+          {
+            // Render segment up to current pixel
+            tft.pushImage(pos_x + draw_start, pos_y + a, i - draw_start, 1, (uint16_t *)(&buffer[2 * draw_start]));
+            draw_start = -1; // Reset draw_start
+          }
+        }
+      }
 
-    // Handle case where last segment reaches the end of the row
-    if (draw_start != -1) {
+      // Handle case where last segment reaches the end of the row
+      if (draw_start != -1)
+      {
         tft.pushImage(pos_x + draw_start, pos_y + a, size_x - draw_start, 1, (uint16_t *)(&buffer[2 * draw_start]));
+      }
     }
-}
   }
 }
 
@@ -265,12 +274,12 @@ void listMenu_sub(String label, int type, int page, int pages)
   tft.print(String(page + 1) + String("/") + String(pages + 1));
   changeFont(1);
 }
+    
 
 int listMenu(mOption *choices, int icount, bool images, int type, String label)
 {
   tft.setTextWrap(false, false);
   /*
-
 
   int icount
   I know I just can count here with ArraySize but whatever
@@ -567,6 +576,8 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
 
   return -1;
 }
+
+
 int listMenu(const String choices[], int icount, bool images, int type, String label)
 {
   mOption *optionArr = new mOption[icount];
@@ -692,7 +703,8 @@ int choiceMenu(const String choices[], int count, bool context)
   int xx = x - 5;
   tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
   bool exit = false;
-  while (!exit){
+  while (!exit)
+  {
     switch (buttonsHelding())
     {
     case BACK:
@@ -813,13 +825,12 @@ int choiceMenu(const String choices[], int count, bool context)
       tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
       tft.print(choices[choice]);
 
-
       delay(100);
       break;
     }
     }
-      idle();
-    }
+    idle();
+  }
   return -1;
 }
 

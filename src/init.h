@@ -30,7 +30,8 @@ struct Contact
 struct Message
 {
     int index;
-    char status;
+    unsigned char status;
+    bool isOutgoing;
     Contact contact;
     String subject;
     String content;
@@ -40,8 +41,6 @@ struct mOption
 {
     String label;
     SDImage icon;
-
-    
 };
 enum status{
     NEW = 'N',

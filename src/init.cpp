@@ -25,6 +25,7 @@ void setup()
 {
   tft.init();
   tft.fillScreen(0x0000);
+  analogWrite(TFT_BL,20);
 
   pinMode(38, INPUT_PULLUP);
   pinMode(0, INPUT_PULLUP);
