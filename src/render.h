@@ -20,4 +20,6 @@ void listMenu_sub(String label, int type, int page, int pages);
 void spinAnim(int x,int y,int size_x,int size_y,int offset,int spacing = 10);
 void printSplitString(String text);
 int choiceMenu(const String choices[], int count, bool context);
+extern int8_t _signal;
+extern int8_t charge;
 #endif

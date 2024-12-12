@@ -1,5 +1,5 @@
 #include "screens.h"
-void makeCall(Contact contact);
+void callActivity(Contact contact);
 void incomingCall(Contact contact);
 void inbox();
 void numberInput(char first);
@@ -56,6 +56,7 @@ void knipka()
   };
   blemouse.end();
 }
+
 void e()
 {
 
@@ -63,7 +64,7 @@ void e()
   int choice = -2;
   while (choice != -1)
   {
-    String debug[] = {"Emulate incoming call", "Emulate outgoing call", "Emulate recieving message", "Set battery level", "Set signal level", "BLUETOOTH", "WI-FI"};
+    String debug[] = {"Emulate incoming call", "Emulate outgoing call", "Emulate recieving message", "Set battery level", "Set signal level", "BLUETOOTH", "WI-FI" , };
     choice = listMenu(debug, ArraySize(debug), false, 2, "DEV MODE");
     String levels[] = {"0", "1", "2", "3"};
     String btMenu[] = {"BT Mouse", "BT Keyboard"};
@@ -75,12 +76,13 @@ void e()
 
     switch (choice)
     {
+
     case 0:
       incomingCall(contact);
       break;
     case 1:
 
-      makeCall(contact);
+      callActivity(contact);
       break;
     case 3:
       charge_d = choiceMenu(levels, ArraySize(levels), true);
@@ -397,12 +399,43 @@ void incomingCall(Contact contact)
 
   writeCustomFont(55, 185, contact.phone, 1);
   drawFromSd(0x662B5B, 73, 90, 13, 14, true, 0xD6BA);
-  for (;;)
+  int button = buttonsHelding();
+  while (isCalling)
+  {
+    button = buttonsHelding();
     idle();
-}
 
+    switch (button)
+    {
+    case ANSWER:
+      if (sendATCommand("ATA").indexOf("NO CARRIER") == -1)
+
+      {
+
+        callActivity(contact);
+      }
+      else
+        currentScreen = SCREENS::MAINSCREEN;
+      break;
+    case DECLINE:
+      currentScreen = SCREENS::MAINSCREEN;
+      return;
+      break;
+
+    default:
+      break;
+    }
+  }
+}
 void makeCall(Contact contact)
 {
+  isAnswered = true;
+  sendATCommand("ATD" + contact.phone + ";");
+  callActivity(contact);
+}
+void callActivity(Contact contact)
+{
+  ongoingCall = true;
   bool calling = true;
   tft.fillScreen(0);
   sbchanged = true;
@@ -425,13 +458,13 @@ void makeCall(Contact contact)
   tft.print("Calling...");
   delay(50);
   bool hang = false;
-  while (calling)
+  while (!isAnswered)
   {
     for (int i = 7; i >= 0; i--)
     {
       spinAnim(55, 60, 12, 6, i);
       delay(40);
-      if (buttonsHelding() == DOWN)
+      if (buttonsHelding() == DECLINE)
       {
         hang = true;
         calling = false;
@@ -441,24 +474,35 @@ void makeCall(Contact contact)
       {
         calling = false;
         break;
-        // proceed to emulating call
       }
     }
+
     idle();
   }
   if (hang)
   {
     // if hang up
+    sendATCommand("ATH");
+    ongoingCall = false;
+
     return;
   }
 
   tft.fillScreen(0);
   drawStatusBar();
   drawFromSd(0x65D147, 40, 143, 160, 34);
-  while (true /*"IF CALL IN PROGRESS" STATEMENT HERE*/)
+  while (ongoingCall)
+  {
+    if (buttonsHelding() == DECLINE)
+    {
+      sendATCommand("ATH");
+    }
     idle();
+  }
   tft.fillScreen(0);
   drawStatusBar();
+  ongoingCall = false;
+  isAnswered = false;
 }
 
 void contactss()
@@ -873,9 +917,9 @@ char textInput(char input)
   {
     int c = buttonsHelding();
     if (c == input)
-    pos++;
+      pos++;
     else
-    textInput(c);
+      textInput(c);
   }
   return 255;
 }

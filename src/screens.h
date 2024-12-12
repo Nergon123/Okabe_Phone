@@ -17,4 +17,6 @@ void messageActivity(Contact contact,String date,String subject,String content, 
 void downloadFile(const char *url, const char *path);
 void WiFiList();
 char textInput();
+void incomingCall(Contact contact);
+void callActivity(Contact contact);
 #endif
