@@ -37,15 +37,16 @@ struct Message
     String content;
     String date;
 };
-struct mOption
-{
-    String label;
-    SDImage icon;
-};
+
 enum status{
     NEW = 'N',
     REPLIED = 'R',
     READED = 'D'
+};
+struct mOption
+{
+    String label;
+    SDImage icon;
 };
 enum SCREENS{
     MAINSCREEN,
@@ -65,11 +66,15 @@ extern uint32_t ima;
 extern int currentScreen;
 extern Preferences preferences;
 extern bool sbchanged;
-
+extern bool isAbleToCall;
+extern bool isCalling;
+extern bool simIsBusy; 
+extern bool ongoingCall;
+extern bool isAnswered;
 extern SDImage mailimg[4];
 extern Contact contacts[MAX_CONTACTS];
 extern Contact examplecontact;
-
+extern String currentNumber;
 
 
 

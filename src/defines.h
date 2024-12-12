@@ -7,7 +7,7 @@
 #define chipSelect 13
 #define MAX_CONTACTS 100
 
-#define DBC_MS 2000
+#define DBC_MS 1000
 // DELAY BETWEEN CHECKS
 
 #define BACK 0

@@ -1,24 +1,85 @@
 #include "funct.h"
-String sendATCommand(String command)
+TaskHandle_t TaskHandleATCommand;
+String sendATCommand(String command, uint32_t timeout)
 {
-  Serial1.println(command);
-  delay(100);
+  Serial1.println(command); // Send the AT command
 
   String response = "";
-  while (Serial1.available())
+  uint32_t startTime = millis();
+
+  // Wait for response or timeout
+  while (millis() - startTime < timeout)
   {
-    response += Serial1.readString();
+    while (Serial1.available())
+    {
+      char c = Serial1.read(); // Read a single character
+      response += c;           // Append it to the response
+    }
   }
+  if (!isCalling)
+  {
+    bool _isCalling = response.indexOf("RING\r") != -1;
+    if (_isCalling)
+    {
+      int indexClip = response.indexOf("+CLIP:");
+      int endindex = response.indexOf("\r", indexClip);
+      int firIndex = response.indexOf("\"", indexClip);
+      currentNumber = response.substring(firIndex, response.indexOf("\"", firIndex + 1));
+      currentNumber.replace("\"", "");
+      Serial.println(currentNumber);
+    }
+    isCalling = _isCalling;
+  }
+  else
+  {
+    if (response.indexOf("NO CARRIER") != -1)
+    {
+      Serial.println("Call Ended.");
+      isCalling = false;
+      currentNumber = "";
+    }
+  }
+
   return response;
 }
 
+String getATvalue(String command)
+{
+
+  String response = sendATCommand(command);
+  Serial.println(response);
+  String result = "";
+
+  if (response.indexOf("ERROR") != -1)
+  {
+    return "ERROR";
+  }
+
+  int startIdx = response.indexOf(":");
+  if (startIdx != -1)
+  {
+
+    int endIdx = response.indexOf("\r", startIdx);
+
+    result = response.substring(startIdx + 1, endIdx);
+    result.trim();
+    Serial.println(result);
+  }
+  else
+  {
+    result = response;
+    result.trim();
+  }
+
+  return result;
+}
 int getChargeLevel()
 {
   int charge = chrg.getBatteryLevel() / 25;
 
   int toIcon = (charge / 25) - 1;
 #ifdef DEVMODE
-  toIcon = charge_d;
+  // toIcon = charge_d;
 #endif
   if (toIcon > 3)
     toIcon = 3;
@@ -28,9 +89,26 @@ int getChargeLevel()
 }
 int getSignalLevel()
 {
-  int signal = 1; // temp placeholder to actual getSignalLevel
+
+  int signal = -1; // temp placeholder to actual getSignalLevel
+  String a = getATvalue("AT+CREG?");
+  Serial.println("GETSIGNALLEVEL_CREG:" + a);
+  if (a.charAt(2) == '1' || a.charAt(2) == '5')
+  {
+    String b = getATvalue("AT+CSQ");
+    if (b != "ERROR")
+    {
+      char buf[5];
+      b.substring(0, b.indexOf(',')).toCharArray(buf, 5);
+      int strength = atoi(buf);
+      if (strength != 99)
+        if (signal > 3 || signal < 0)
+          signal = strength / 8;
+    }
+  }
+
 #ifdef DEVMODE
-  signal = signallevel_d;
+  // signal = signallevel_d;
 #endif
   return signal;
 }
@@ -327,7 +405,6 @@ void saveMessagesToJson(const Message messages[], size_t messageCount, const cha
     messageObj["date"] = messages[i].date;
   }
 
-
   if (serializeJson(doc, file) == 0)
   {
     Serial.println("Failed to write JSON to file.");
@@ -343,4 +420,20 @@ void saveMessagesToJson(const Message messages[], size_t messageCount, const cha
 
 void checkVoiceCall()
 {
+  if (isCalling && !ongoingCall)
+  {
+
+    Contact calling;
+    calling.phone = currentNumber;
+    for (int i = 0; i < contactCount; i++)
+    {
+      if (contacts[i].phone.indexOf(currentNumber) != -1)
+      {
+        calling = contacts[i];
+        break;
+      }
+    }
+    ongoingCall = true;
+    incomingCall(calling);
+  }
 }

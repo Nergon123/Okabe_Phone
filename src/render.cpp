@@ -54,12 +54,7 @@ int8_t _signal = 0;
 int8_t charge = 0;
 void drawStatusBar()
 {
-  if (getSignalLevel() != _signal || getChargeLevel() != charge)
-  {
-    _signal = getSignalLevel();
-    charge = getChargeLevel();
-    sbchanged = true;
-  }
+
   if (sbchanged)
   {
     sbchanged = false;
