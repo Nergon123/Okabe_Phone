@@ -1,5 +1,5 @@
 #include "funct.h"
-TaskHandle_t TaskHandleATCommand;
+//TaskHandle_t TaskHandleATCommand;
 String sendATCommand(String command, uint32_t timeout)
 {
   Serial1.println(command); // Send the AT command
@@ -288,7 +288,7 @@ int buttonsHelding()
   return -1;
 }
 
-int measureStringHeight(const String &text, int displayWidth)
+int measureStringHeight(const String &text, int displayWidth,int addLines)
 {
   // STOLEN FROM CHATGPT
   int lines = 1;

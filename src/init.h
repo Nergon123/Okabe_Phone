@@ -75,7 +75,7 @@ extern SDImage mailimg[4];
 extern Contact contacts[MAX_CONTACTS];
 extern Contact examplecontact;
 extern String currentNumber;
-
+extern int currentFont;
 
 
 

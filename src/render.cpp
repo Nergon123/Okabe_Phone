@@ -2,6 +2,7 @@
 
 void changeFont(int ch)
 {
+  currentFont = ch;
   switch (ch)
   {
   case 0:
@@ -829,8 +830,9 @@ int choiceMenu(const String choices[], int count, bool context)
   return -1;
 }
 
-void printSplitString(String text)
+int printSplitString(String text)
 {
+  int newLineCount = 0;
   int wordStart = 0;
   int wordEnd = 0;
   while ((text.indexOf(' ', wordStart) >= 0) && (wordStart <= text.length()))
@@ -840,10 +842,12 @@ void printSplitString(String text)
     if (tft.getCursorX() + len >= tft.width())
     {
       tft.println();
+      newLineCount++;
       if (wordStart > 0)
         wordStart++;
     }
     tft.print(text.substring(wordStart, wordEnd));
     wordStart = wordEnd;
   }
+  return newLineCount;
 }

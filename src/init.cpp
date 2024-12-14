@@ -23,6 +23,8 @@ bool isAbleToCall = false;
 bool simIsBusy = false;
 bool isAnswered = false;
 
+int currentFont = 0;
+
 String currentNumber = "";
 Contact contacts[MAX_CONTACTS];
 Contact examplecontact = {0, "+1234567890", "NERGON", "enderman3025@gmail.com"};
@@ -35,7 +37,7 @@ void setup()
 
   tft.init();
   tft.fillScreen(0x0000);
-  analogWrite(TFT_BL, 20);
+  // analogWrite(TFT_BL, 20);
 
   pinMode(38, INPUT_PULLUP);
   pinMode(0, INPUT_PULLUP);
@@ -75,18 +77,29 @@ void setup()
   {
     initSim();
   }
-  while (true)
-  {
-    if (Serial.available())
-    {
-      String req = Serial.readString();
-      String ans = sendATCommand(req);
-      tft.fillScreen(0);
-      tft.setCursor(0, 0);
-      tft.print(ans);
-      Serial.println(ans);
-    }
-  }
+//   changeFont(3);
+// tft.fillScreen(0);
+// tft.setTextSize(3);
+//   while (1)
+//   {
+//     char c = buttonsHelding();
+//     while (c == -1 || c == 255)
+//       c = buttonsHelding();
+//     if (c != -1 || c != 255)
+//       tft.print(textInput(c));
+//   }
+//   while (true)
+//   {
+//     if (Serial.available())
+//     {
+//       String req = Serial.readString();
+//       String ans = sendATCommand(req);
+//       tft.fillScreen(0);
+//       tft.setCursor(0, 0);
+//       tft.print(ans);
+//       Serial.println(ans);
+//     }
+//   }
 
   xTaskCreatePinnedToCore(
       TaskIdleHandler,
@@ -145,6 +158,7 @@ void setup()
     ;
   drawStatusBar();
 }
+
 void TaskIdleHandler(void *parameter)
 {
   while (true)

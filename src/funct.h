@@ -7,6 +7,6 @@ void populateContacts();
 int getChargeLevel();
 int getSignalLevel();
 int buttonsHelding();
-int measureStringHeight(const String &text, int displayWidth = 240);
+int measureStringHeight(const String &text, int displayWidth = 240,int addLines = 0);
 void checkVoiceCall();
 #endif
