@@ -16,7 +16,7 @@ void fileBrowser(File dir = SD.open("/"));
 void messageActivity(Contact contact,String date,String subject,String content, bool outcoming = false);
 void downloadFile(const char *url, const char *path);
 void WiFiList();
-char textInput();
+char textInput(int input);
 void incomingCall(Contact contact);
 void callActivity(Contact contact);
 #endif

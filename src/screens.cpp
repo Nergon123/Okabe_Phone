@@ -64,7 +64,15 @@ void e()
   int choice = -2;
   while (choice != -1)
   {
-    String debug[] = {"Emulate incoming call", "Emulate outgoing call", "Emulate recieving message", "Set battery level", "Set signal level", "BLUETOOTH", "WI-FI" , };
+    String debug[] = {
+        "Emulate incoming call",
+        "Emulate outgoing call",
+        "Emulate recieving message",
+        "Set battery level",
+        "Set signal level",
+        "BLUETOOTH",
+        "WI-FI",
+    };
     choice = listMenu(debug, ArraySize(debug), false, 2, "DEV MODE");
     String levels[] = {"0", "1", "2", "3"};
     String btMenu[] = {"BT Mouse", "BT Keyboard"};
@@ -734,7 +742,7 @@ void messageActivity(Contact contact, String date, String subject, String conten
   int y_jump = 22;
   int y_scr = 0;
   int y_text = 18;
-  int height = measureStringHeight(content) * 3;
+
   tft.setCursor(30, 45);
   tft.setTextSize(1);
   changeFont(1);
@@ -765,8 +773,8 @@ void messageActivity(Contact contact, String date, String subject, String conten
     tft.println(subject);
 
     tft.drawLine(0, 72 + y_scr, 240, 72 + y_scr, 0);
+    int height = measureStringHeight(content, printSplitString(content)) * 3;
 
-    printSplitString(content);
     int r = -1;
     while (r == -1)
     {
@@ -882,10 +890,33 @@ void numberInput(char first)
     c = 255;
   }
 }
-char textInput(char input)
+
+void showText(const char *text, int pos)
+{
+  int pfont = currentFont;
+  int textColor = tft.textcolor;
+  changeFont(0);
+  tft.setCursor(0, 300);
+  for (int i = 0; i < (int)(strchr(text, '\r') - text); i++)
+  {
+
+    if (i != pos)
+      tft.setTextColor(0xFFFF, 0, true);
+    else
+      tft.setTextColor(0, 0xFFFF, true);
+    if (text[i] == '\n')
+      tft.print("N");
+    else
+      tft.print(text[i]);
+  }
+  tft.textcolor = textColor;
+  changeFont(pfont);
+}
+
+char textInput(int input)
 {
   const char buttons[12][12] = {
-      "0 +E\r",
+      "0 +\n\r",
       "1,.()\r",
       "2ABCabc\r",
       "3DEFdef\r",
@@ -897,9 +928,24 @@ char textInput(char input)
       "9WXYZwxyz\r",
       "*\r",
       "#\r"};
+  bool first = true;
   int sizes[12];
-
+  char result;
   int pos = 0;
+  int currentIndex =
+      input >= '0' && input <= '9'
+          ? input - 48
+      : input == '*' ? 10
+      : input == '#' ? 11
+                     : -1;
+  Serial.println("INPUT:" + String(input));
+  Serial.println("currentIndex" + String(currentIndex));
+  if (currentIndex == -1)
+  {
+    Serial.println("UNKNOWN BUTTON:" + String(input));
+    return '\0';
+  }
+
   for (int i = 0; i < 12; i++)
   {
     int b = 0;
@@ -909,20 +955,49 @@ char textInput(char input)
         break;
     }
     sizes[i] = b;
-    Serial.println(b, DEC);
+    // Serial.println(b, DEC);
     b = 0;
   }
-
-  while (true)
+  int mil = millis();
+  pos = -1;
+  int curx = tft.getCursorX();
+  int cury = tft.getCursorY();
+  while (millis() - mil < DIB_MS)
   {
+    curx = tft.getCursorX();
+    cury = tft.getCursorY();
+    // Serial.println("POSITION:" + String(pos));
     int c = buttonsHelding();
-    if (c == input)
-      pos++;
-    else
-      textInput(c);
+    if (c == input || first)
+      if (pos < (int)(strchr(buttons[currentIndex], '\r') - buttons[currentIndex]))
+      {
+        mil = millis();
+        pos++;
+        result = buttons[currentIndex][pos];
+        Serial.println("POSITION:" + String(pos));
+
+        showText(buttons[currentIndex], pos);
+        tft.setCursor(curx, cury);
+      }
+      else
+      {
+        mil = millis();
+        pos = 0;
+        Serial.println("POSITION:" + String(pos));
+        result = buttons[currentIndex][pos];
+        showText(buttons[currentIndex], pos);
+        tft.setCursor(curx, cury);
+      }
+    first = false;
   }
-  return 255;
+
+  tft.fillRect(0, 300, 240, 30, 0x00);
+
+  tft.setCursor(curx, cury);
+  Serial.println("Result:" + String(result));
+  return result;
 }
+
 void WiFiList()
 {
   WiFi.begin();

@@ -10,6 +10,9 @@
 #define DBC_MS 1000
 // DELAY BETWEEN CHECKS
 
+#define DIB_MS 500
+//DELAY TO CONFIRM CHARACTER
+
 #define BACK 0
 #define SELECT 1
 #define UP 2
