@@ -77,29 +77,29 @@ void setup()
   {
     initSim();
   }
-//   changeFont(3);
-// tft.fillScreen(0);
-// tft.setTextSize(3);
-//   while (1)
-//   {
-//     char c = buttonsHelding();
-//     while (c == -1 || c == 255)
-//       c = buttonsHelding();
-//     if (c != -1 || c != 255)
-//       tft.print(textInput(c));
-//   }
-//   while (true)
-//   {
-//     if (Serial.available())
-//     {
-//       String req = Serial.readString();
-//       String ans = sendATCommand(req);
-//       tft.fillScreen(0);
-//       tft.setCursor(0, 0);
-//       tft.print(ans);
-//       Serial.println(ans);
-//     }
-//   }
+  //   changeFont(3);
+  // tft.fillScreen(0);
+  // tft.setTextSize(3);
+  //   while (1)
+  //   {
+  //     char c = buttonsHelding();
+  //     while (c == -1 || c == 255)
+  //       c = buttonsHelding();
+  //     if (c != -1 || c != 255)
+  //       tft.print(textInput(c));
+  //   }
+  //   while (true)
+  //   {
+  //     if (Serial.available())
+  //     {
+  //       String req = Serial.readString();
+  //       String ans = sendATCommand(req);
+  //       tft.fillScreen(0);
+  //       tft.setCursor(0, 0);
+  //       tft.print(ans);
+  //       Serial.println(ans);
+  //     }
+  //   }
 
   xTaskCreatePinnedToCore(
       TaskIdleHandler,
@@ -156,6 +156,7 @@ void setup()
 
   while (digitalRead(37) == LOW)
     ;
+messageActivityOut(examplecontact,"","",true);
   drawStatusBar();
 }
 

@@ -727,7 +727,7 @@ void mailRingtoneSelector()
   // TODO
 }
 
-void messageActivity(Contact contact, String date, String subject, String content, bool outcoming)
+void messageActivity(Contact contact, String date, String subject, String content, bool outcoming, bool sms)
 {
 
   drawStatusBar();
@@ -802,7 +802,173 @@ void messageActivity(Contact contact, String date, String subject, String conten
   }
   tft.resetViewport();
 }
+void messageActivityOut(Contact contact, String subject, String content, bool sms)
+{
+#define TLVP 238
+  // TEXT LIMIT VERTICAL VIEWPORT
 
+  int limit = 0;
+  if (sms)
+  {
+    limit = 160;
+  }
+  else
+  {
+    limit = 400;
+  }
+  char messagebuf[limit];
+  for (int i = 0; i < limit; i++)
+  {
+    messagebuf[i] = '\0';
+  }
+  int text_pos = 0;
+  int position = 0;
+  drawStatusBar();
+  SDImage in_mail[4] = {
+      SDImage(0x663E91, 23, 24, 0, false),
+      SDImage(0x663E91 + (23 * 24 * 2), 23, 24, 0, false),
+      SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false),
+      SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false),
+  };
+  drawFromSd(0x5DAF1F, 0, 26, 240, 25);
+  drawFromSd(0x5DDDFF, 0, 26, 25, 25);
+  int y_jump = 22;
+  int y_scr = 0;
+  int y_text = 18;
+  int min_y = y_scr;
+  tft.setCursor(30, 45);
+  tft.setTextSize(1);
+  changeFont(1);
+  tft.setTextColor(0xffff);
+
+  tft.print("Send Mail");
+  tft.setTextColor(0);
+
+  tft.setViewport(0, 51, 240, 269, true);
+  bool exit = false;
+  while (!exit)
+  {
+    position = 0;
+    drawFromSd(0x639365, 0, 0, 240, 269);
+    // tft.fillScreen(0xFFFF);
+    // position += 24;
+    drawFromSd(0, position + y_scr, in_mail[2]);
+    tft.setCursor(24, position + y_text + y_scr);
+    tft.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
+                                                     : !contact.email.isEmpty()   ? contact.email
+                                                                                  : "UNKNOWN");
+
+    if (!subject.isEmpty() || !sms)
+    {
+      position += 24;
+      drawFromSd(0, position + y_scr, in_mail[3]);
+      tft.setCursor(24, position + y_text + y_scr);
+      tft.println(subject);
+    }
+    position += 24;
+    tft.drawLine(0, position + y_scr, 240, position + y_scr, 0);
+    int height = measureStringHeight(messagebuf, 240, printSplitString(String(messagebuf)));
+    Serial.println(messagebuf);
+    int r = -1;
+       String a[3] = {"Return","Send Message","Delete"};
+       int u;
+       bool returns = false;
+    while (r == -1)
+    {
+
+      if (y_scr < min_y)
+      {
+        min_y = y_scr;
+      }
+      r = buttonsHelding();
+      switch (r)
+      {
+      case DOWN:
+        if (y_scr > -height)
+          y_scr -= y_jump;
+        break;
+      case UP:
+        if (y_scr < 0)
+          y_scr += y_jump;
+        break;
+      case BACK:
+   
+        u = choiceMenu(a,3,true);
+        switch (u)
+        {
+        case 0:
+          Serial.println("Return");
+           r=-2;
+          returns = true;
+          break;
+        case 1:
+          Serial.println("SEND MESSAGE");       
+        case 2:
+          Serial.println("DELETE");
+         
+          break;        
+        case 3:
+          Serial.println("Save to Drafts");
+          break;
+        
+        default:
+          break;
+        }
+        if(!returns)
+        exit = true;
+        break;
+      default:
+        if (r >= '0' && r <= '9')
+        {
+          while (r != BACK && r != UP && r != DOWN)
+          {
+            char l = textInput(r);
+            r = buttonsHelding();
+            if (l != 0)
+            {
+
+              Serial.println("Y:" + String(tft.getCursorY()));
+              drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 240, 120, 20, 0, 240);
+              if (text_pos < limit)
+                if (l != '\b')
+                {
+                  messagebuf[text_pos] = l;
+                  text_pos++;
+                  tft.print(l);
+                }
+                else
+                {
+                  messagebuf[text_pos - 1] = '\0';
+                  text_pos--;
+                  r = BACK;
+                  // WORKAROUND TODO: DO BETTER
+                }
+              if (tft.getCursorY() > TLVP)
+              {
+                y_scr -= y_jump;
+                if (y_scr < min_y)
+                  min_y = y_scr;
+                r = BACK;
+              }
+
+              if (y_scr != min_y)
+              {
+                y_scr = min_y;
+                r = BACK;
+              }
+              Serial.println("MINIMUM:"+ String(y_scr));
+            }
+          }
+        }
+        break;
+      }
+    }
+    tft.resetViewport();
+    idle();
+    tft.setViewport(0, 51, 240, 269, true);
+  }
+  tft.resetViewport();
+}
 void editContact()
 {
   // TODO
@@ -895,28 +1061,35 @@ void showText(const char *text, int pos)
 {
   int pfont = currentFont;
   int textColor = tft.textcolor;
+  int textSize = tft.textsize;
   changeFont(0);
-  tft.setCursor(0, 300);
+  tft.setTextSize(2);
+  tft.setCursor(0, 240);
   for (int i = 0; i < (int)(strchr(text, '\r') - text); i++)
   {
 
     if (i != pos)
       tft.setTextColor(0xFFFF, 0, true);
     else
-      tft.setTextColor(0, 0xFFFF, true);
+      tft.setTextColor(0xFFFF, 0x001F, true);
     if (text[i] == '\n')
-      tft.print("N");
+      tft.print("NL");
+    else if (text[i] == '\b')
+      tft.print("<-");
     else
       tft.print(text[i]);
   }
   tft.textcolor = textColor;
   changeFont(pfont);
+  tft.setTextSize(textSize);
 }
 
 char textInput(int input)
 {
+  if (input == -1)
+    return 0;
   const char buttons[12][12] = {
-      "0 +\n\r",
+      "0 +\n\b\r",
       "1,.()\r",
       "2ABCabc\r",
       "3DEFdef\r",
