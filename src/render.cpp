@@ -55,10 +55,14 @@ int8_t _signal = 0;
 int8_t charge = 0;
 void drawStatusBar()
 {
-
+  bool messageViewport = tft.getViewportY() == 51;
   if (sbchanged)
   {
+    if(messageViewport){
+      tft.resetViewport();
+    }  
     sbchanged = false;
+    charge = getChargeLevel();
     drawFromSd(0X5A708D, 0, 0, 240, 26); // statusbar
     if (_signal == -1)
       drawFromSd(0x5AD47D, 0, 0, 37, 26); // no_signal
@@ -66,8 +70,50 @@ void drawStatusBar()
       drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26); // signal
     drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26);  // battery
     //  tft.print(String(charge) + String("%"));
+    if(messageViewport){
+      tft.setViewport(0, 51, 240, 269, true);
+    }
   }
 }
+
+void drawCutoutFromSd(SDImage image,
+                      int cutout_x, int cutout_y,
+                      int cutout_width, int cutout_height,
+                      int display_x, int display_y,
+                      File file)
+{
+  
+  if (!file || !file.available()) {
+    Serial.println("Failed to open file or file not available");
+    return;
+  }
+
+  int image_width = image.w;     
+
+  uint32_t start_offset = image.address + (cutout_y * image_width + cutout_x) * 2;
+
+  
+  const int buffer_size = cutout_width * 2;  
+  uint8_t buffer[buffer_size];
+  
+  for (int row = 0; row < cutout_height; row++) {
+    
+    uint32_t row_offset = start_offset + (row * image_width * 2);
+    file.seek(row_offset);
+
+    int bytesRead = file.read(buffer, buffer_size);
+    if (bytesRead != buffer_size) {
+      Serial.println("Error reading row from SD card.");
+      return;
+    }
+    tft.pushImage(display_x, display_y + row, cutout_width, 1, (uint16_t *)buffer);
+  }
+
+
+
+
+}
+
 
 void rendermenu(int choice, bool right)
 {
@@ -270,7 +316,6 @@ void listMenu_sub(String label, int type, int page, int pages)
   tft.print(String(page + 1) + String("/") + String(pages + 1));
   changeFont(1);
 }
-    
 
 int listMenu(mOption *choices, int icount, bool images, int type, String label)
 {
@@ -573,7 +618,6 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
   return -1;
 }
 
-
 int listMenu(const String choices[], int icount, bool images, int type, String label)
 {
   mOption *optionArr = new mOption[icount];
@@ -661,6 +705,8 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing)
 
 int choiceMenu(const String choices[], int count, bool context)
 {
+  // int old_color = tft.textcolor;
+  // TODO ? 
   int x = 30;
   int y = 95;
   int mul = 20;
@@ -805,10 +851,13 @@ int choiceMenu(const String choices[], int count, bool context)
       {
         choice++;
       }
+
       tft.setTextColor(color_inactive);
       tft.setCursor(x, y + (mul * (choice - 1)));
+
       if (choice > 0)
         tft.print(choices[choice - 1]);
+
       if (choice == 0)
       {
         tft.setCursor(x, y + (mul * (count - 1)));
@@ -832,22 +881,38 @@ int choiceMenu(const String choices[], int count, bool context)
 
 int printSplitString(String text)
 {
-  int newLineCount = 0;
-  int wordStart = 0;
-  int wordEnd = 0;
-  while ((text.indexOf(' ', wordStart) >= 0) && (wordStart <= text.length()))
+  int newLineCount = 0;           // Counter for new lines
+  int wordStart = 0;              // Start index of a word
+  int wordEnd = 0;                // End index of a word
+  int textLen = text.length();    // Total length of the input text
+
+  while (wordStart < textLen)     // Process until we reach the end of the text
   {
-    wordEnd = text.indexOf(' ', wordStart + 1);
-    uint16_t len = tft.textWidth(text.substring(wordStart, wordEnd));
-    if (tft.getCursorX() + len >= tft.width())
+    // Find the next space or the end of the text
+    wordEnd = text.indexOf(' ', wordStart);
+    if (wordEnd == -1) wordEnd = textLen;  // If no more spaces, set to end of the text
+
+    String word = text.substring(wordStart, wordEnd);
+    uint16_t wordLen = tft.textWidth(word);
+
+    // Check if the word fits in the current line
+    if (tft.getCursorX() + wordLen >= tft.width())
     {
-      tft.println();
+      tft.println();             // Move to the next line
       newLineCount++;
-      if (wordStart > 0)
-        wordStart++;
     }
-    tft.print(text.substring(wordStart, wordEnd));
-    wordStart = wordEnd;
+
+    tft.print(word);             // Print the current word
+
+    // Add a space if there are more words and we're not at the end of the text
+    if (wordEnd < textLen)
+    {
+      tft.print(" ");
+      wordEnd++;                 // Skip the space character
+    }
+
+    wordStart = wordEnd;         // Move to the next word
   }
-  return newLineCount;
+
+  return newLineCount;           // Return the count of new lines
 }
