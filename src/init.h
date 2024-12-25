@@ -43,6 +43,11 @@ enum status{
     REPLIED = 'R',
     READED = 'D'
 };
+struct STR_DIR{
+    String text;
+    int direction;
+};
+
 struct mOption
 {
     String label;
@@ -68,7 +73,7 @@ extern Preferences preferences;
 extern bool sbchanged;
 extern bool isAbleToCall;
 extern bool isCalling;
-extern bool simIsBusy; 
+extern volatile bool simIsBusy; 
 extern bool ongoingCall;
 extern bool isAnswered;
 extern SDImage mailimg[4];
@@ -89,5 +94,5 @@ void loop(void);
 void setup();
 void idle();
 void screens();
-
+void suspendCore(bool suspend);
 #endif // INITT_H

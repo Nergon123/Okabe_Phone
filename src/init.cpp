@@ -10,7 +10,9 @@ BleMouse blemouse("OkabePhone", "DEVELOPER", chrg.getBatteryLevel());
 int charge_d = 3;
 int signallevel_d = 3;
 #endif
+
 int currentScreen = SCREENS::MAINSCREEN;
+
 int millDelay = 0;
 uint contactCount = 0;
 uint32_t ima = 0;
@@ -20,14 +22,14 @@ bool ongoingCall = false;
 bool sbchanged = true;
 bool havenewmessages = false;
 bool isAbleToCall = false;
-bool simIsBusy = false;
+volatile bool simIsBusy = false;
 bool isAnswered = false;
 
 int currentFont = 0;
 
 String currentNumber = "";
 Contact contacts[MAX_CONTACTS];
-Contact examplecontact = {0, "+1234567890", "NERGON", "enderman3025@gmail.com"};
+Contact examplecontact = {0, "+1234567890", "NERGON", "petro.chazov@gmail.com"};
 TaskHandle_t TaskHCommand;
 void TaskIdleHandler(void *parameter);
 void initSim();
@@ -37,7 +39,7 @@ void setup()
 
   tft.init();
   tft.fillScreen(0x0000);
-  // analogWrite(TFT_BL, 20);
+  analogWrite(TFT_BL, 1024);
 
   pinMode(38, INPUT_PULLUP);
   pinMode(0, INPUT_PULLUP);
@@ -77,30 +79,23 @@ void setup()
   {
     initSim();
   }
-  //   changeFont(3);
-  // tft.fillScreen(0);
-  // tft.setTextSize(3);
-  //   while (1)
-  //   {
-  //     char c = buttonsHelding();
-  //     while (c == -1 || c == 255)
-  //       c = buttonsHelding();
-  //     if (c != -1 || c != 255)
-  //       tft.print(textInput(c));
-  //   }
-  //   while (true)
-  //   {
-  //     if (Serial.available())
-  //     {
-  //       String req = Serial.readString();
-  //       String ans = sendATCommand(req);
-  //       tft.fillScreen(0);
-  //       tft.setCursor(0, 0);
-  //       tft.print(ans);
-  //       Serial.println(ans);
-  //     }
-  //   }
-
+#ifdef SIMDEBUG
+    while (true)
+    {
+      if (Serial.available())
+      {
+        String req = Serial.readString();
+        if(req.indexOf(":q")!=-1){
+          break;
+        }
+        String ans = sendATCommand(req);
+        tft.fillScreen(0);
+        tft.setCursor(0, 0);
+        tft.print(ans);
+        Serial.println(ans);
+      }
+    }
+#endif
   xTaskCreatePinnedToCore(
       TaskIdleHandler,
       "Core0Checker",
@@ -153,13 +148,18 @@ void setup()
     file.print("{}");
     file.close();
   }
+  tft.fillScreen(tft.color24to16(0x555555));
+
+  editContact(examplecontact);
 
   while (digitalRead(37) == LOW)
     ;
-messageActivityOut(examplecontact,"","",true);
   drawStatusBar();
 }
+void suspendCore(bool suspend)
+{
 
+}
 void TaskIdleHandler(void *parameter)
 {
   while (true)
@@ -172,8 +172,9 @@ void TaskIdleHandler(void *parameter)
         charge = getChargeLevel();
         sbchanged = true;
       }
-      delay(2000);
+      vTaskDelay(pdMS_TO_TICKS(2000));
     }
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 void loop()
@@ -216,6 +217,9 @@ void screens()
 }
 void initSim()
 {
+sendATCommand("AT+CMEE=2");
   sendATCommand("AT+CLIP=1");
+  sendATCommand("AT+CSCS=\"GSM\"");
   sendATCommand("AT+CMGF=1");
+  
 }

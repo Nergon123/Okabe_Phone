@@ -2,7 +2,7 @@
 #define funct_h
 #include "file_include.h"
 
-String sendATCommand(String command, uint32_t timeout = 1000);
+String sendATCommand(String command, uint32_t timeout = 1000,bool background = false);
 void populateContacts();
 int getChargeLevel();
 int getSignalLevel();

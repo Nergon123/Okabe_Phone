@@ -1,6 +1,6 @@
 
 #include <defines.h>
-
+#include "esp_check.h"
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
