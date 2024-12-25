@@ -1,4 +1,216 @@
 #include "render.h"
+bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction)
+{
+  tft.fillRect(xpos, ypos, w, h, 0xFFFF);
+  tft.drawRect(xpos, ypos, w, h, 0);
+  if (selected)
+  {
+    tft.setTextColor(0xF800);
+    tft.drawRect(xpos, ypos, w, h, 0);
+    tft.drawRect(xpos, ypos, w, h, 0xF800);
+  }
+  int x = (w - tft.textWidth(title)) / 2;
+  int y = h - ((h - tft.fontHeight()));
+  // Serial.println("X:" + String(x));
+  // Serial.println("Y:" + String(y));
+  tft.setCursor(xpos + x, ypos + y);
+  tft.print(title);
+  bool exit = false;
+  if (selected)
+    while (!exit)
+    {
+      char c = buttonsHelding();
+      switch (c)
+      {
+      case SELECT:
+        return true;
+        break;
+      case LEFT:
+        *direction = LEFT;
+        exit = true;
+        break;
+      case RIGHT:
+        *direction = RIGHT;
+        exit = true;
+        break;
+      case UP:
+        *direction = UP;
+        exit = true;
+        break;
+      case DOWN:
+        *direction = DOWN;
+        exit = true;
+        break;
+      }
+    }
+  tft.setTextColor(0);
+  tft.fillRect(xpos, ypos, w, h, 0xFFFF);
+  tft.drawRect(xpos, ypos, w, h, 0);
+  tft.setCursor(xpos + x, ypos + y);
+  tft.print(title);
+  return false;
+}
+String textbox(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers)
+{
+  content.trim();
+  if (used)
+    selected = true;
+  int cursorPos = content.length();
+  tft.resetViewport();
+  tft.setTextColor(0);
+  tft.setTextWrap(false);
+  tft.setCursor(5, ypos - 5);
+  changeFont(1);
+  tft.setTextSize(1);
+
+  if (selected)
+    tft.setTextColor(TFT_RED);
+  else
+    tft.setTextColor(0);
+  tft.print(title);
+  tft.setTextColor(0);
+  changeFont(3);
+  int yoff = tft.fontHeight();
+  int charWidth = tft.textWidth("D") + 1;
+  int xpos = 5;
+  int width = 235 - xpos;
+  int height = 25;
+  tft.setViewport(xpos, ypos, width, height);
+  xpos = 0;
+  int dypos = 0;
+  tft.setCursor(xpos + 5, dypos + yoff);
+  int c_offset = 0;
+
+  int length = tft.textWidth(content.substring(0, cursorPos)) + 15;
+  if (length > width)
+    c_offset = width - length;
+  if (selected)
+    tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
+  tft.fillRect(xpos, dypos, width, height, 0xFFFF);
+  tft.drawRect(xpos, dypos, width, height, 0);
+  if (selected)
+  {
+    tft.drawRect(xpos, dypos, width, height, 0xF800);
+  }
+  tft.print(content);
+  bool exit = false;
+  int c = -1;
+
+  if (!onlydraw)
+    if (used)
+    {
+      length = tft.textWidth(content.substring(0, cursorPos)) + 15;
+      if (length > width)
+        c_offset = width - length;
+
+      tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0);
+
+      tft.drawRect(xpos, ypos, width, height, 0xF800);
+
+      while (!exit)
+      {
+
+        while (c == -1)
+          c = buttonsHelding();
+        if (c != -1)
+        {
+          if (c >= '0' && c <= '9')
+          {
+
+            // Serial.println("C_OFFSET:" + String(c_offset));
+
+            char TI = textInput(c, onlynumbers, true);
+            if (TI != '\0')
+              if (TI != '\n')
+                if (TI != '\b')
+                {
+                  content = content.substring(0, cursorPos) + TI + content.substring(cursorPos, content.length());
+                  cursorPos++;
+                }
+                else
+                {
+                  content = content.substring(0, cursorPos - 1) + content.substring(cursorPos, content.length());
+                  cursorPos--;
+                }
+            length = tft.textWidth(content.substring(0, cursorPos)) + 15;
+            if (length > width)
+              c_offset = width - length;
+            tft.fillRect(xpos, dypos, width, height, 0xFFFF);
+            tft.drawRect(xpos, dypos, width, height, 0xF800);
+            tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
+            tft.println(content);
+            tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0);
+            c = buttonsHelding();
+          }
+          else
+          {
+            switch (c)
+            {
+            case LEFT:
+              if (cursorPos > 0)
+              {
+
+                cursorPos--;
+                length = tft.textWidth(content.substring(0, cursorPos)) + 15;
+                if (length > width)
+                  c_offset = width - length;
+                tft.fillRect(xpos, dypos, width, height, 0xFFFF);
+                tft.drawRect(xpos, dypos, width, height, 0xF800);
+                tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
+                tft.println(content);
+                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0);
+                tft.fillRect(tft.textWidth(content.substring(0, cursorPos + 1)) + c_offset + 5, 3, CWIDTH, height - 6, 0xffff);
+              }
+              break;
+            case RIGHT:
+              if (cursorPos < content.length())
+              {
+                cursorPos++;
+                length = tft.textWidth(content.substring(0, cursorPos)) + 15;
+                if (length > width)
+                  c_offset = width - length;
+                tft.fillRect(xpos, dypos, width, height, 0xFFFF);
+                tft.drawRect(xpos, dypos, width, height, 0xF800);
+                tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
+                tft.println(content);
+                tft.fillRect(tft.textWidth(content.substring(0, cursorPos - 1)) + c_offset + 5, 3, CWIDTH, height - 6, 0xffff);
+                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0);
+              }
+              break;
+
+            case UP:
+              *direction = UP;
+              exit = true;
+              break;
+
+            case DOWN:
+              *direction = DOWN;
+              exit = true;
+              break;
+            default:
+              *direction = BACK;
+              break;
+            }
+            c = buttonsHelding();
+          }
+        }
+      }
+    }
+
+  tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0xFFFF);
+  tft.fillRect(xpos, dypos, width, height, 0xFFFF);
+  tft.drawRect(xpos, dypos, width, height, 0);
+  tft.setCursor(xpos + 5, dypos + yoff);
+  tft.println(content);
+  tft.resetViewport();
+  tft.setCursor(5, ypos - 5);
+  changeFont(1);
+  tft.setTextSize(1);
+  tft.setTextColor(0);
+  tft.print(title);
+  content.trim();
+  return content;
+}
 
 void changeFont(int ch)
 {
@@ -58,9 +270,10 @@ void drawStatusBar()
   bool messageViewport = tft.getViewportY() == 51;
   if (sbchanged)
   {
-    if(messageViewport){
+    if (messageViewport)
+    {
       tft.resetViewport();
-    }  
+    }
     sbchanged = false;
     charge = getChargeLevel();
     drawFromSd(0X5A708D, 0, 0, 240, 26); // statusbar
@@ -70,7 +283,8 @@ void drawStatusBar()
       drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26); // signal
     drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26);  // battery
     //  tft.print(String(charge) + String("%"));
-    if(messageViewport){
+    if (messageViewport)
+    {
       tft.setViewport(0, 51, 240, 269, true);
     }
   }
@@ -82,38 +296,35 @@ void drawCutoutFromSd(SDImage image,
                       int display_x, int display_y,
                       File file)
 {
-  
-  if (!file || !file.available()) {
+
+  if (!file || !file.available())
+  {
     Serial.println("Failed to open file or file not available");
     return;
   }
 
-  int image_width = image.w;     
+  int image_width = image.w;
 
   uint32_t start_offset = image.address + (cutout_y * image_width + cutout_x) * 2;
 
-  
-  const int buffer_size = cutout_width * 2;  
+  const int buffer_size = cutout_width * 2;
   uint8_t buffer[buffer_size];
-  
-  for (int row = 0; row < cutout_height; row++) {
-    
+
+  for (int row = 0; row < cutout_height; row++)
+  {
+
     uint32_t row_offset = start_offset + (row * image_width * 2);
     file.seek(row_offset);
 
     int bytesRead = file.read(buffer, buffer_size);
-    if (bytesRead != buffer_size) {
+    if (bytesRead != buffer_size)
+    {
       Serial.println("Error reading row from SD card.");
       return;
     }
     tft.pushImage(display_x, display_y + row, cutout_width, 1, (uint16_t *)buffer);
   }
-
-
-
-
 }
-
 
 void rendermenu(int choice, bool right)
 {
@@ -166,6 +377,7 @@ void rendermenu(int choice, bool right)
     break;
   }
 }
+
 void sysError(const char *reason)
 {
   tft.fillScreen(0x0000);
@@ -705,8 +917,7 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing)
 
 int choiceMenu(const String choices[], int count, bool context)
 {
-  // int old_color = tft.textcolor;
-  // TODO ? 
+  // TODO ?
   int x = 30;
   int y = 95;
   int mul = 20;
@@ -752,6 +963,7 @@ int choiceMenu(const String choices[], int count, bool context)
     case BACK:
     {
       exit = true;
+
       return -1;
       break;
     }
@@ -881,16 +1093,17 @@ int choiceMenu(const String choices[], int count, bool context)
 
 int printSplitString(String text)
 {
-  int newLineCount = 0;           // Counter for new lines
-  int wordStart = 0;              // Start index of a word
-  int wordEnd = 0;                // End index of a word
-  int textLen = text.length();    // Total length of the input text
+  int newLineCount = 0;        // Counter for new lines
+  int wordStart = 0;           // Start index of a word
+  int wordEnd = 0;             // End index of a word
+  int textLen = text.length(); // Total length of the input text
 
-  while (wordStart < textLen)     // Process until we reach the end of the text
+  while (wordStart < textLen) // Process until we reach the end of the text
   {
     // Find the next space or the end of the text
     wordEnd = text.indexOf(' ', wordStart);
-    if (wordEnd == -1) wordEnd = textLen;  // If no more spaces, set to end of the text
+    if (wordEnd == -1)
+      wordEnd = textLen; // If no more spaces, set to end of the text
 
     String word = text.substring(wordStart, wordEnd);
     uint16_t wordLen = tft.textWidth(word);
@@ -898,21 +1111,21 @@ int printSplitString(String text)
     // Check if the word fits in the current line
     if (tft.getCursorX() + wordLen >= tft.width())
     {
-      tft.println();             // Move to the next line
+      tft.println(); // Move to the next line
       newLineCount++;
     }
 
-    tft.print(word);             // Print the current word
+    tft.print(word); // Print the current word
 
     // Add a space if there are more words and we're not at the end of the text
     if (wordEnd < textLen)
     {
       tft.print(" ");
-      wordEnd++;                 // Skip the space character
+      wordEnd++; // Skip the space character
     }
 
-    wordStart = wordEnd;         // Move to the next word
+    wordStart = wordEnd; // Move to the next word
   }
 
-  return newLineCount;           // Return the count of new lines
+  return newLineCount; // Return the count of new lines
 }

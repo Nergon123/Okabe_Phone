@@ -3,6 +3,12 @@ void callActivity(Contact contact);
 void incomingCall(Contact contact);
 void inbox();
 void numberInput(char first);
+
+bool confirmation(String reason){
+  //"ARE YOU SURE YOU WANT TO DO THIS?"
+  return true;
+}
+
 void messages()
 {
 
@@ -316,7 +322,7 @@ int gallery()
 void MainScreen()
 {
   Serial.println("MAINSCREEN");
-
+  changeFont(0);
   drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
   // bool exit = false;
   int c = -1;
@@ -521,6 +527,7 @@ void contactss()
       "Edit",
       "Create",
       "Delete"};
+
   populateContacts();
 
   String contactNames[contactCount];
@@ -546,6 +553,16 @@ void contactss()
     case 1:
       // OUTGOING
       break;
+    case 2:
+      editContact(contacts[selectedContactIndex]);
+      break;
+    case 3:
+    //CREATE
+    break;
+    case 4:
+    //DELETE
+    sendATCommand("AT+CPBW="+String(contacts[selectedContactIndex].index));
+    break;
     }
   }
   currentScreen = SCREENS::MAINMENU;
@@ -870,9 +887,9 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     int height = measureStringHeight(messagebuf, 240, printSplitString(String(messagebuf)));
     Serial.println(messagebuf);
     int r = -1;
-       String a[3] = {"Return","Send Message","Delete"};
-       int u;
-       bool returns = false;
+    String a[] = {"Return", "Send Message", "Delete", "Save To Drafts"};
+    int u;
+    bool returns = false;
     while (r == -1)
     {
 
@@ -892,30 +909,31 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
           y_scr += y_jump;
         break;
       case BACK:
-   
-        u = choiceMenu(a,3,true);
+
+        u = choiceMenu(a, 4, true);
+        tft.setTextColor(0);
         switch (u)
         {
         case 0:
           Serial.println("Return");
-           r=-2;
+          r = -2;
           returns = true;
           break;
         case 1:
-          Serial.println("SEND MESSAGE");       
+          Serial.println("SEND MESSAGE");
         case 2:
           Serial.println("DELETE");
-         
-          break;        
+
+          break;
         case 3:
           Serial.println("Save to Drafts");
           break;
-        
+
         default:
           break;
         }
-        if(!returns)
-        exit = true;
+        if (!returns)
+          exit = true;
         break;
       default:
         if (r >= '0' && r <= '9')
@@ -956,7 +974,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 y_scr = min_y;
                 r = BACK;
               }
-              Serial.println("MINIMUM:"+ String(y_scr));
+              Serial.println("MINIMUM:" + String(y_scr));
             }
           }
         }
@@ -969,9 +987,106 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
   }
   tft.resetViewport();
 }
-void editContact()
+void editContact(Contact contact)
 {
-  // TODO
+  int pos = 0;
+  int textboxes = 2;
+  int buttons = 2;
+  int direction;
+  drawFromSd(0x5DAF1F, 0, 26, 240, 25);
+  drawFromSd(0x5DDDFF + (0x4E2 * 1), 0, 26, 25, 25);
+  drawStatusBar();
+  tft.setCursor(30, 45);
+  tft.setTextSize(1);
+  changeFont(1);
+  tft.setTextColor(0xffff);
+  String boxString[textboxes] = {contact.name, contact.phone};
+  tft.print("Edit Contact");
+  drawFromSd(0x639365, 0, 51, 240, 269);
+  textbox("Name", contact.name, 70, true, false, false);
+  textbox("Phone Number", contact.phone, 120, true, false, false);
+
+  button("SAVE", 10, 285, 100, 28);
+  button("CANCEL", 120, 285, 100, 28);
+  bool save = false;
+  bool cancel = false;
+  bool exit = false;
+  while (!exit)
+  {
+    switch (pos)
+    {
+    case 0:
+      boxString[pos] = textbox("Name", boxString[pos], 70, false, false, true, &direction);
+      break;
+    case 1:
+      boxString[pos] = textbox("Phone Number", boxString[pos], 120, false, false, true, &direction, true);
+      break;
+    case 2:
+      save = button("SAVE", 10, 285, 100, 28, true, &direction);
+      if (save)
+      {
+        String resulta = "start-" + boxString[1] + "/" + boxString[0] + "-end";
+        for (int i = 0; i < resulta.length(); i++)
+        {
+          Serial.print(String(i) + ":");
+          Serial.print(resulta.charAt(i), HEX);
+          Serial.print("\n");
+        }
+
+        sendATCommand("AT+CPBS=\"SM\"");
+        String request = "AT+CPBW=" +
+                         String(contact.index) + ",\"" +
+                         boxString[1] + "\"," +
+                         String(boxString[1].indexOf("+") == 0 ? 145 : 129) +
+                         ",\"" + boxString[0] + "\"";
+        String result = sendATCommand(request);
+        Serial.println(result);
+        return;
+      }
+
+      // boxString[pos] = textbox("E-mail", boxString[pos], 170, false, false, true, &direction);
+      break;
+    case 3:
+      cancel = button("CANCEL", 120, 285, 100, 28, true, &direction);
+      if (cancel)
+        return;
+      break;
+    default:
+      pos = 0;
+      break;
+    }
+    Serial.println("DIRECTION:" + String(direction));
+    Serial.println("POS:" + String(pos));
+    switch (direction)
+    {
+    case DOWN:
+      if (pos < textboxes)
+        pos++;
+      else if (pos < textboxes + buttons)
+        ;
+      else
+        pos = 0;
+      break;
+    case UP:
+      if (pos > textboxes)
+        pos = textboxes - 1;
+
+      else if (pos > 0)
+        pos--;
+
+      break;
+    default:
+      break;
+    case RIGHT:
+      if (pos < textboxes + buttons - 1)
+        pos++;
+      break;
+    case LEFT:
+      if (pos > textboxes)
+        pos--;
+      break;
+    }
+  }
 }
 
 void imageViewer()
@@ -1059,12 +1174,26 @@ void numberInput(char first)
 
 void showText(const char *text, int pos)
 {
+
+  int h = tft.getViewportHeight();
+  int w = tft.getViewportWidth();
+  int vx = tft.getViewportX();
+  int vy = tft.getViewportY();
+  bool viewport = false;
+  if (tft.getViewportHeight() < 320)
+  {
+    tft.resetViewport();
+    viewport = true;
+  }
+
   int pfont = currentFont;
   int textColor = tft.textcolor;
   int textSize = tft.textsize;
   changeFont(0);
   tft.setTextSize(2);
-  tft.setCursor(0, 240);
+
+  tft.setCursor(0, INPUT_LOCATION_Y);
+
   for (int i = 0; i < (int)(strchr(text, '\r') - text); i++)
   {
 
@@ -1079,17 +1208,20 @@ void showText(const char *text, int pos)
     else
       tft.print(text[i]);
   }
+
   tft.textcolor = textColor;
   changeFont(pfont);
   tft.setTextSize(textSize);
+  if (viewport)
+    tft.setViewport(vx, vy, w, h);
 }
 
-char textInput(int input)
+char textInput(int input, bool onlynumbers, bool nonl)
 {
   if (input == -1)
     return 0;
-  const char buttons[12][12] = {
-      "0 +\n\b\r",
+  char buttons[12][12] = {
+      "0+@\b \n\r",
       "1,.()\r",
       "2ABCabc\r",
       "3DEFdef\r",
@@ -1101,6 +1233,18 @@ char textInput(int input)
       "9WXYZwxyz\r",
       "*\r",
       "#\r"};
+  if (nonl)
+  {
+    buttons[0][5] = '\r';
+  }
+  if (onlynumbers)
+  {
+    buttons[0][3] = '\r';
+    for (int i = 1; i < 12; i++)
+    {
+      buttons[i][1] = '\r';
+    }
+  }
   bool first = true;
   int sizes[12];
   char result;
@@ -1167,7 +1311,26 @@ char textInput(int input)
   tft.fillRect(0, 300, 240, 30, 0x00);
 
   tft.setCursor(curx, cury);
+  bool viewport = false;
+  int h = tft.getViewportHeight();
+  int w = tft.getViewportWidth();
+  int vx = tft.getViewportX();
+  int vy = tft.getViewportY();
+  if (tft.getViewportHeight() < 320)
+  {
+    tft.resetViewport();
+    viewport = true;
+  }
+
+  int x = 0;
+  int y = 240;
+  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), x, y, 120, 20, x, y);
+  if (viewport)
+    tft.setViewport(vx, vy, w, h);
   Serial.println("Result:" + String(result));
+  if(result=='\r'){
+    return '\0';
+  }
   return result;
 }
 

@@ -1,6 +1,6 @@
 #ifndef DEFINES_H
 #define DEFINES_H
-
+#define DISABLE_ALL_LIBRARY_WARNINGS
 #define RS485_RX_PIN 35
 #define RS485_TX_PIN 26
 #define RS485_RTS_PIN -1
@@ -13,6 +13,12 @@
 #define DIB_MS 500
 //DELAY TO CONFIRM CHARACTER
 
+#define INPUT_LOCATION_Y 240
+//INPUT OF inputText() WINDOW
+
+#define CWIDTH 1
+//CURSOR WIDTH
+
 #define BACK 0
 #define SELECT 1
 #define UP 2
@@ -24,6 +30,7 @@
 /////////////////////////
 // ENABLE DEVELOPER MODE//
 #define DEVMODE //
+#define SIMDEBUG//
 /////////////////////////
 
 #endif

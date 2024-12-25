@@ -17,7 +17,8 @@ void messageActivity(Contact contact, String date, String subject, String conten
 void messageActivityOut(Contact contact, String subject, String content, bool sms);
 void downloadFile(const char *url, const char *path);
 void WiFiList();
-char textInput(int input);
+char textInput(int input,bool onlynumbers = false,bool nonl = false);
 void incomingCall(Contact contact);
 void callActivity(Contact contact);
+void editContact(Contact contact);
 #endif

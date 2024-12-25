@@ -1,7 +1,13 @@
 #include "funct.h"
-//TaskHandle_t TaskHandleATCommand;
-String sendATCommand(String command, uint32_t timeout)
+// TaskHandle_t TaskHandleATCommand;
+String sendATCommand(String command, uint32_t timeout, bool background)
 {
+  bool _simIsBusy = simIsBusy;
+  while(_simIsBusy){
+    delay(100);
+    _simIsBusy = simIsBusy;
+  }
+  simIsBusy = true;
   Serial1.println(command); // Send the AT command
 
   String response = "";
@@ -12,6 +18,7 @@ String sendATCommand(String command, uint32_t timeout)
   {
     while (Serial1.available())
     {
+
       char c = Serial1.read(); // Read a single character
       response += c;           // Append it to the response
     }
@@ -39,14 +46,18 @@ String sendATCommand(String command, uint32_t timeout)
       currentNumber = "";
     }
   }
-
+  if (response.indexOf("ERROR") != -1)
+  {
+    Serial.println("AT COMMAND FAILED :" + command);
+  }
+  simIsBusy = false;
   return response;
 }
 
-String getATvalue(String command)
+String getATvalue(String command, bool background = false)
 {
 
-  String response = sendATCommand(command);
+  String response = sendATCommand(command, 1000, background);
   Serial.println(response);
   String result = "";
 
@@ -91,7 +102,7 @@ int getSignalLevel()
 {
 
   int signal = -1; // temp placeholder to actual getSignalLevel
-  String a = getATvalue("AT+CREG?");
+  String a = getATvalue("AT+CREG?", true);
   Serial.println("GETSIGNALLEVEL_CREG:" + a);
   if (a.charAt(2) == '1' || a.charAt(2) == '5')
   {
@@ -115,50 +126,54 @@ int getSignalLevel()
 
 void populateContacts()
 {
-  // STOLEN FROM CHATGPT
-  String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
+    String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
+    Serial.println(response);
+    // Process the response
+    int startIndex = 0;
+    int endIndex = 0;
+    contactCount = 0;
 
-  // Process the response
-  int startIndex = 0;
-  int endIndex = 0;
-  contactCount = 0;
+    while ((startIndex = response.indexOf("+CPBR: ", endIndex)) != -1)
+    {
+        startIndex += 7; // Skip "+CPBR: "
+        endIndex = response.indexOf('\n', startIndex);
+        String entry = response.substring(startIndex, endIndex);
 
-  while ((startIndex = response.indexOf("+CPBR: ", endIndex)) != -1)
-  {
-    startIndex += 7; // Skip "+CPBR: "
-    endIndex = response.indexOf('\n', startIndex);
-    String entry = response.substring(startIndex, endIndex);
+        // Split the entry into components
+        int commaIndex = entry.indexOf(',');
+        if (commaIndex == -1)
+            break;
 
-    // Split the entry into components
-    int commaIndex = entry.indexOf(',');
-    if (commaIndex == -1)
-      break;
+        // Extract index
+        String indexStr = entry.substring(0, commaIndex);
+        int contactIndex = indexStr.toInt();
+        entry = entry.substring(commaIndex + 1);
 
-    String indexStr = entry.substring(0, commaIndex);
-    entry = entry.substring(commaIndex + 1);
+        commaIndex = entry.indexOf(',');
+        if (commaIndex == -1)
+            break;
 
-    commaIndex = entry.indexOf(',');
-    if (commaIndex == -1)
-      break;
+        // Extract phone number
+        String number = entry.substring(0, commaIndex);
+        number.replace("\"", "");
+        entry = entry.substring(commaIndex + 1);
 
-    String number = entry.substring(0, commaIndex);
-    number.replace("\"", "");
-    entry = entry.substring(commaIndex + 1);
+        // Extract name
+        String name = entry;
+        name.replace("\"", "");
+        name.replace("145,", "");
 
-    String name = entry;
-    name.replace("\"", "");
-    name.replace("145,", "");
+        // Populate the contact structure
+        contacts[contactCount].index = contactIndex; // Use the index from +CPBR
+        contacts[contactCount].phone = number;
+        contacts[contactCount].name = name;
+        contactCount++;
 
-    // Populate the contact structure
-    contacts[contactCount].index = contactCount; // Use the count as index
-    contacts[contactCount].phone = number;
-    contacts[contactCount].name = name;
-    contactCount++;
-
-    if (contactCount >= MAX_CONTACTS)
-      break; // Prevent overflow
-  }
+        if (contactCount >= MAX_CONTACTS)
+            break; // Prevent overflow
+    }
 }
+
 
 bool checkButton(int pin)
 {
@@ -288,7 +303,7 @@ int buttonsHelding()
   return -1;
 }
 
-int measureStringHeight(const String &text, int displayWidth,int addLines)
+int measureStringHeight(const String &text, int displayWidth, int addLines)
 {
   // STOLEN FROM CHATGPT
   int lines = 1;
