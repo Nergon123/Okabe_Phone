@@ -3,8 +3,10 @@ void callActivity(Contact contact);
 void incomingCall(Contact contact);
 void inbox();
 void numberInput(char first);
-
-bool confirmation(String reason){
+bool messageActivity(Message message);
+void messageActivityOut(Contact contact, String subject, String content, bool sms);
+bool confirmation(String reason)
+{
   //"ARE YOU SURE YOU WANT TO DO THIS?"
   return true;
 }
@@ -538,32 +540,63 @@ void contactss()
 
   delay(300);
   drawStatusBar();
-
-  int selectedContactIndex = listMenu(contactNames, contactCount, false, 1, "Address Book");
-
-  if (selectedContactIndex != -1)
+  bool exit = false;
+  while (!exit)
   {
-    int contextMenuSelection = choiceMenu(contmenu, 5, true);
+    populateContacts();
 
-    switch (contextMenuSelection)
+    String contactNames[contactCount];
+    for (int i = 0; i < contactCount; ++i)
     {
-    case 0:
-      makeCall(contacts[selectedContactIndex]);
-      break;
-    case 1:
-      // OUTGOING
-      break;
-    case 2:
-      editContact(contacts[selectedContactIndex]);
-      break;
-    case 3:
-    //CREATE
-    break;
-    case 4:
-    //DELETE
-    sendATCommand("AT+CPBW="+String(contacts[selectedContactIndex].index));
-    break;
+      contactNames[i] = contacts[i].name;
     }
+    int selectedContactIndex = listMenu(contactNames, contactCount, false, 1, "Address Book");
+
+    if (selectedContactIndex != -1)
+    {
+      int contextMenuSelection = -1;
+      if (selectedContactIndex == -2)
+      {
+        const String choice = "Create";
+        contextMenuSelection = choiceMenu({&choice}, 1, true);
+        if (contextMenuSelection == 0)
+        {
+          editContact({lastContactIndex + 1});
+        }
+        else
+          exit = true;
+      }
+      else
+      {
+        contextMenuSelection = choiceMenu(contmenu, 5, true);
+
+        switch (contextMenuSelection)
+        {
+
+        case 0:
+          makeCall(contacts[selectedContactIndex]);
+          exit = true;
+          break;
+        case 1:
+          // OUTGOING
+          messageActivityOut(contacts[selectedContactIndex], "", "", true);
+          break;
+        case 2:
+          editContact(contacts[selectedContactIndex]);
+          break;
+        case 3:
+          // CREATE
+          editContact({lastContactIndex + 1});
+          break;
+        case 4:
+          // DELETE
+          sendATCommand("AT+CPBW=" + String(contacts[selectedContactIndex].index));
+          break;
+        }
+      }
+    }
+    else
+      exit = true;
   }
   currentScreen = SCREENS::MAINMENU;
 }
@@ -574,30 +607,34 @@ void inbox(bool outbox)
   if (outbox)
     title = "Outbox";
   else
-    title = "Inbox";
-  SDImage mailimg[4] = {
-      SDImage(0x662DB1, 18, 21, 0, true),
-      SDImage(0x662DB1 + (18 * 21 * 2), 18, 21, 0, true),
-      SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
-      SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
-  mOption example[] = {
-      {"01/01 Shining Finger", mailimg[0]},
-      {"01/01 Shining Finger", mailimg[0]},
-      {"01/01 Shining Finger", mailimg[0]},
-      {"01/01 Shining Finger", mailimg[0]},
-      {"01/01 Shining Finger", mailimg[1]},
-      {"01/01 Mayuri", mailimg[1]},
-      {"01/01 John Titor", mailimg[1]},
-      {"01/01 John Titor", mailimg[0]},
-      {"01/01 Part-Time Warrior", mailimg[1]},
-      {"01/01 Assistant", mailimg[2]},
-      {"01/01 Nergon", mailimg[0]},
-      {"01/01 John Titor", mailimg[0]},
-      {"01/01 John Titor", mailimg[0]},
+    title = "Inbox ";
 
-  };
+  int count = 0;
+  bool exit = false;
+  Message *messages = nullptr;
+  while (!exit)
+  {
+    exit = true;
+    parseMessages(messages, count);
+    mOption *a = new mOption[count];
+    for (int i = 0; i < count; i++)
+    {
+      a[count - i - 1] = messages[i];
+    }
 
-  listMenu(example, ArraySize(example), false, 0, title);
+    Serial.println("LISTMENU");
+    int choice = -2;
+    while (choice != -1)
+    {
+      choice = listMenu(a, count, false, 0, title);
+      if (choice >= 0)
+      {
+        exit = !messageActivity(messages[count - choice - 1]);
+        if (!exit)
+          choice = -1;
+      }
+    }
+  }
 }
 
 void fileBrowser(File dir)
@@ -744,14 +781,36 @@ void mailRingtoneSelector()
   // TODO
 }
 
-void messageActivity(Contact contact, String date, String subject, String content, bool outcoming, bool sms)
+bool messageActivity(Contact contact, String date, String subject, String content, int index, bool outcoming, bool sms)
 {
-
+  // returns if deleted
+  if (sms)
+  {
+    String response = sendATCommand("AT+CMGR=" + String(index));
+    if (response.indexOf("OK") == -1)
+    {
+      content = "======\nERROR LOADING FOLLOWING MESSAGE\n======";
+    }
+    int resIndex = 0;
+    for (int i = 0; i < 7; i++)
+    {
+      resIndex = response.indexOf('\"', ++resIndex);
+    }
+    int endIndex = response.indexOf('\"', ++resIndex);
+    Serial.println("resIndex:" + String(resIndex) + "\nendIndex:" + endIndex);
+    date = response.substring(resIndex, endIndex);
+    date.replace(',', ' ');
+    date = date.substring(0, date.lastIndexOf(':'));
+    Serial.println(date);
+    content = response.substring(endIndex + 3, response.lastIndexOf("OK") - 2);
+  }
+  content.trim();
+  const String choices[3] = {"Reply", "Return", "Delete"};
   drawStatusBar();
   SDImage in_mail[4] = {
-      SDImage(0x663E91, 23, 24, 0, false),
+      SDImage(0x663E91, 23, 24, 0, false), // TIME
       SDImage(0x663E91 + (23 * 24 * 2), 23, 24, 0, false),
-      SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false),
+      SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false), // "TO"
       SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false),
   };
   drawFromSd(0x5DAF1F, 0, 26, 240, 25);
@@ -764,34 +823,30 @@ void messageActivity(Contact contact, String date, String subject, String conten
   tft.setTextSize(1);
   changeFont(1);
   tft.setTextColor(0xffff);
-
-  tft.print("Send Mail");
+  bool deleted = false;
+  tft.print("Recieve Mail");
   tft.setTextColor(0);
-
   tft.setViewport(0, 51, 240, 269, true);
   bool exit = false;
   while (!exit)
   {
-
+    deleted = false;
+    tft.setTextColor(0);
     drawFromSd(0x639365, 0, 0, 240, 269);
     // tft.fillScreen(0xFFFF);
     drawFromSd(0, 0 + y_scr, in_mail[0]);
     tft.setCursor(24, 0 + y_text + y_scr);
     tft.println(date);
 
-    drawFromSd(0, 24 + y_scr, in_mail[2]);
+    drawFromSd(0, 24 + y_scr, in_mail[1]);
     tft.setCursor(24, 24 + y_text + y_scr);
     tft.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
                                                      : !contact.email.isEmpty()   ? contact.email
                                                                                   : "UNKNOWN");
 
-    drawFromSd(0, 48 + y_scr, in_mail[3]);
-    tft.setCursor(24, 48 + y_text + y_scr);
-    tft.println(subject);
-
-    tft.drawLine(0, 72 + y_scr, 240, 72 + y_scr, 0);
-    int height = measureStringHeight(content, printSplitString(content)) * 3;
-
+    tft.drawLine(0, 48 + y_scr, 240, 48 + y_scr, 0);
+    int height = measureStringHeight(content, printSplitString(content));
+    int ch = -2;
     int r = -1;
     while (r == -1)
     {
@@ -807,7 +862,25 @@ void messageActivity(Contact contact, String date, String subject, String conten
           y_scr += y_jump;
         break;
       case BACK:
-        exit = true;
+        ch = choiceMenu(choices, 3, true);
+        switch (ch)
+        {
+        case -1:
+          exit = true;
+          break;
+        case 0:
+          messageActivityOut(contact, "", "", true);
+          break;
+
+        case 2:
+          if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE"))
+          {
+            sendATCommand("AT+CMGD=" + String(index), 5000);
+            exit = true;
+            deleted = true;
+          }
+          break;
+        }
         break;
       default:
         break;
@@ -818,7 +891,14 @@ void messageActivity(Contact contact, String date, String subject, String conten
     tft.setViewport(0, 51, 240, 269, true);
   }
   tft.resetViewport();
+  return deleted;
 }
+
+bool messageActivity(Message message)
+{
+  return messageActivity(message.contact, message.date, message.subject, message.content, message.index, false, true);
+}
+
 void messageActivityOut(Contact contact, String subject, String content, bool sms)
 {
 #define TLVP 238
@@ -833,11 +913,8 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
   {
     limit = 400;
   }
-  char messagebuf[limit];
-  for (int i = 0; i < limit; i++)
-  {
-    messagebuf[i] = '\0';
-  }
+  String messagebuf;
+
   int text_pos = 0;
   int position = 0;
   drawStatusBar();
@@ -917,10 +994,18 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         case 0:
           Serial.println("Return");
           r = -2;
-          returns = true;
+          exit = true;
           break;
         case 1:
           Serial.println("SEND MESSAGE");
+          if (sendATCommand("AT+CMGF=1").indexOf("OK") != -1)
+          {
+            sendATCommand("AT+CMGS=\"" + contact.phone + "\"");
+            sendATCommand(messagebuf + char(26));
+          }
+          tft.resetViewport();
+          return;
+          break;
         case 2:
           Serial.println("DELETE");
 
@@ -932,8 +1017,6 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         default:
           break;
         }
-        if (!returns)
-          exit = true;
         break;
       default:
         if (r >= '0' && r <= '9')
@@ -947,19 +1030,20 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
 
               Serial.println("Y:" + String(tft.getCursorY()));
               drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 240, 120, 20, 0, 240);
-              if (text_pos < limit)
+
+              if (messagebuf.length() < limit)
                 if (l != '\b')
                 {
-                  messagebuf[text_pos] = l;
-                  text_pos++;
+                  messagebuf += l;
+                  
                   tft.print(l);
                 }
                 else
                 {
-                  messagebuf[text_pos - 1] = '\0';
-                  text_pos--;
+                  messagebuf.remove(messagebuf.length()-1);
                   r = BACK;
                   // WORKAROUND TODO: DO BETTER
+                  //update after week: i actually did this better
                 }
               if (tft.getCursorY() > TLVP)
               {
@@ -1025,12 +1109,11 @@ void editContact(Contact contact)
       save = button("SAVE", 10, 285, 100, 28, true, &direction);
       if (save)
       {
-        String resulta = "start-" + boxString[1] + "/" + boxString[0] + "-end";
-        for (int i = 0; i < resulta.length(); i++)
+        if (boxString[1].isEmpty())
+          break;
+        if (boxString[0].isEmpty())
         {
-          Serial.print(String(i) + ":");
-          Serial.print(resulta.charAt(i), HEX);
-          Serial.print("\n");
+          boxString[0] = boxString[1];
         }
 
         sendATCommand("AT+CPBS=\"SM\"");
@@ -1328,7 +1411,8 @@ char textInput(int input, bool onlynumbers, bool nonl)
   if (viewport)
     tft.setViewport(vx, vy, w, h);
   Serial.println("Result:" + String(result));
-  if(result=='\r'){
+  if (result == '\r')
+  {
     return '\0';
   }
   return result;

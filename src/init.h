@@ -7,7 +7,7 @@
 extern int charge_d;
 extern int signallevel_d;
 #endif
-
+extern bool backgroundBusy;
 struct SDImage
 {
     uint32_t address;
@@ -15,17 +15,28 @@ struct SDImage
     int h;
     uint16_t tc;
     bool transp;
-   SDImage(uint32_t addr, int width, int height, uint16_t trans_color, bool transparency)
-    : address(addr), w(width), h(height), tc(trans_color), transp(transparency) {}
-      SDImage() : address(0), w(0), h(0), tc(0), transp(false) {} 
+    SDImage(uint32_t addr, int width, int height, uint16_t trans_color, bool transparency)
+        : address(addr), w(width), h(height), tc(trans_color), transp(transparency) {}
+    SDImage() : address(0), w(0), h(0), tc(0), transp(false) {}
 };
-
+extern SDImage mailimg[4];
 struct Contact
 {
     int index;
     String phone;
     String name;
     String email;
+};
+struct mOption
+{
+    String label;
+    SDImage icon;
+};
+enum status
+{
+    NEW = 'N',
+    REPLIED = 'R',
+    READED = 'D'
 };
 struct Message
 {
@@ -36,32 +47,28 @@ struct Message
     String subject;
     String content;
     String date;
+    String longdate;
+    operator mOption() const
+    {
+        return mOption { date + " " + contact.name, status == status::NEW ? mailimg[0] : mailimg[1] };
+    }
 };
 
-enum status{
-    NEW = 'N',
-    REPLIED = 'R',
-    READED = 'D'
-};
-struct STR_DIR{
+struct STR_DIR
+{
     String text;
     int direction;
 };
 
-struct mOption
+enum SCREENS
 {
-    String label;
-    SDImage icon;
-};
-enum SCREENS{
     MAINSCREEN,
     MAINMENU,
     MESSAGES,
     CONTACTS,
     SETTINGS,
     E,
-  };
-
+};
 
 extern uint contactCount;
 extern IP5306 chrg;
@@ -73,16 +80,15 @@ extern Preferences preferences;
 extern bool sbchanged;
 extern bool isAbleToCall;
 extern bool isCalling;
-extern volatile bool simIsBusy; 
+extern volatile bool simIsBusy;
 extern bool ongoingCall;
 extern bool isAnswered;
-extern SDImage mailimg[4];
+
 extern Contact contacts[MAX_CONTACTS];
 extern Contact examplecontact;
 extern String currentNumber;
 extern int currentFont;
-
-
+extern int lastContactIndex;
 
 template <typename T, size_t N>
 size_t ArraySize(T (&)[N])

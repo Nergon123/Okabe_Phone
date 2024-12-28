@@ -3,8 +3,9 @@
 String sendATCommand(String command, uint32_t timeout, bool background)
 {
   bool _simIsBusy = simIsBusy;
-  while(_simIsBusy){
-    delay(100);
+  while (_simIsBusy)
+  {
+    delay(50);
     _simIsBusy = simIsBusy;
   }
   simIsBusy = true;
@@ -50,6 +51,7 @@ String sendATCommand(String command, uint32_t timeout, bool background)
   {
     Serial.println("AT COMMAND FAILED :" + command);
   }
+
   simIsBusy = false;
   return response;
 }
@@ -126,54 +128,58 @@ int getSignalLevel()
 
 void populateContacts()
 {
-    String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
-    Serial.println(response);
-    // Process the response
-    int startIndex = 0;
-    int endIndex = 0;
-    contactCount = 0;
+  String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
 
-    while ((startIndex = response.indexOf("+CPBR: ", endIndex)) != -1)
+  Serial.println(response);
+  // Process the response
+  int startIndex = 0;
+  int endIndex = 0;
+  contactCount = 0;
+
+  while ((startIndex = response.indexOf("+CPBR: ", endIndex)) != -1)
+  {
+    startIndex += 7; // Skip "+CPBR: "
+    endIndex = response.indexOf('\n', startIndex);
+    String entry = response.substring(startIndex, endIndex);
+
+    // Split the entry into components
+    int commaIndex = entry.indexOf(',');
+    if (commaIndex == -1)
+      break;
+
+    // Extract index
+    String indexStr = entry.substring(0, commaIndex);
+    int contactIndex = indexStr.toInt();
+    entry = entry.substring(commaIndex + 1);
+
+    commaIndex = entry.indexOf(',');
+    if (commaIndex == -1)
+      break;
+
+    // Extract phone number
+    String number = entry.substring(0, commaIndex);
+    number.replace("\"", "");
+    entry = entry.substring(commaIndex + 1);
+
+    // Extract name
+    String name = entry;
+    name.replace("\"", "");
+    name.replace("145,", "");
+    name.replace("129,", "");
+
+    // Populate the contact structure
+    contacts[contactCount].index = contactIndex; // Use the index from +CPBR
+    contacts[contactCount].phone = number;
+    contacts[contactCount].name = name;
+    contactCount++;
+    if (lastContactIndex < contactIndex)
     {
-        startIndex += 7; // Skip "+CPBR: "
-        endIndex = response.indexOf('\n', startIndex);
-        String entry = response.substring(startIndex, endIndex);
-
-        // Split the entry into components
-        int commaIndex = entry.indexOf(',');
-        if (commaIndex == -1)
-            break;
-
-        // Extract index
-        String indexStr = entry.substring(0, commaIndex);
-        int contactIndex = indexStr.toInt();
-        entry = entry.substring(commaIndex + 1);
-
-        commaIndex = entry.indexOf(',');
-        if (commaIndex == -1)
-            break;
-
-        // Extract phone number
-        String number = entry.substring(0, commaIndex);
-        number.replace("\"", "");
-        entry = entry.substring(commaIndex + 1);
-
-        // Extract name
-        String name = entry;
-        name.replace("\"", "");
-        name.replace("145,", "");
-
-        // Populate the contact structure
-        contacts[contactCount].index = contactIndex; // Use the index from +CPBR
-        contacts[contactCount].phone = number;
-        contacts[contactCount].name = name;
-        contactCount++;
-
-        if (contactCount >= MAX_CONTACTS)
-            break; // Prevent overflow
+      lastContactIndex = contactIndex;
     }
+    if (contactCount >= MAX_CONTACTS)
+      break; // Prevent overflow
+  }
 }
-
 
 bool checkButton(int pin)
 {
@@ -302,6 +308,95 @@ int buttonsHelding()
 
   return -1;
 }
+void parseMessages(Message*& msgs,int& count)
+{
+  Serial.println("AA");
+  populateContacts();
+  Serial.println("AB");
+  String response = sendATCommand("AT+CMGL=\"ALL\",1");
+  int lastIndexOf = 0;
+  int messageCount = 0;
+  
+  // Count the number of messages
+  while ((lastIndexOf = response.indexOf("+CMGL:", lastIndexOf)) != -1)
+  {
+    messageCount++;
+    lastIndexOf += 6; // Move past "+CMGL:"
+  }
+  
+  if (messageCount > 0)
+  {
+    msgs = new Message[messageCount];
+    lastIndexOf = 0;
+
+    for (int i = 0; i < messageCount; i++)
+    {
+      lastIndexOf = response.indexOf("+CMGL: ", lastIndexOf);
+      if (lastIndexOf == -1)
+        break;
+
+      int firstComma = response.indexOf(",", lastIndexOf);
+      int secondComma = response.indexOf(",", firstComma + 1);
+      int thirdComma = response.indexOf(",", secondComma + 1);
+      int fourthComma = response.indexOf(",", thirdComma + 1);
+
+      // Extract index
+      msgs[i].index = response.substring(lastIndexOf + 7, firstComma).toInt();
+
+      // Extract status
+      String statusStr = response.substring(response.indexOf("\"", firstComma) + 1, response.indexOf("\"", secondComma));
+      if (statusStr.indexOf("UNREAD") != -1)
+        msgs[i].status = status::NEW;
+      else if (statusStr.indexOf("READ") != -1)
+        msgs[i].status = status::READED;
+      else
+        msgs[i].status = status::NEW; // Default fallback
+
+      // Extract sender number
+      String number = response.substring(response.indexOf("\"", secondComma) + 1, response.indexOf("\"", response.indexOf("\"", secondComma) + 1));
+
+      // Extract date
+      int dateStart = response.indexOf("/", lastIndexOf);
+      msgs[i].date = response.substring(dateStart + 1, response.indexOf(",", dateStart));
+
+      // Debug output
+
+      String checknumber;
+      if (number.indexOf('+') != -1)
+      {
+        checknumber = number.substring(number.indexOf('+') + 3);
+      }
+      else
+      {
+        checknumber = number;
+      }
+      Contact curContact;
+      curContact.phone = number;
+      if(number.indexOf('p')!=-1)
+        curContact.name = "SERVICE NUMBER";
+      else
+      curContact.name = number;
+      curContact.index = -1;
+      for (int i = 0; i < contactCount; i++)
+      {
+        if (contacts[i].phone.indexOf(checknumber) != -1)
+        {
+          curContact = contacts[i];
+          break;
+        }
+      }
+      Serial.println(checknumber);
+      msgs[i].contact = curContact;
+      Serial.println("INDEX: " + String(msgs[i].index));
+      Serial.println("STATUS: " + String((int)msgs[i].status)); // Cast enum to int
+      Serial.println("DATE: " + msgs[i].date);
+      Serial.println("NUMBER: " + number);
+      Serial.println("CONTACT:" +  msgs[i].contact.name);
+      lastIndexOf += 7; // Move past "+CMGL:"
+    }
+  }
+  count = messageCount;
+}
 
 int measureStringHeight(const String &text, int displayWidth, int addLines)
 {
@@ -360,77 +455,6 @@ int measureStringHeight(const String &text, int displayWidth, int addLines)
   }
 
   return lines * lineHeight;
-}
-
-void saveContactsToJson(const Contact contacts[], size_t contactCount, const char *fileName)
-{
-  File file = SD.open(fileName, FILE_WRITE);
-  if (!file)
-  {
-    Serial.println("Failed to open file for writing.");
-    return;
-  }
-  StaticJsonDocument<1024> doc;
-  JsonArray contactArray = doc.to<JsonArray>();
-  for (size_t i = 0; i < contactCount; i++)
-  {
-    JsonObject contact = contactArray.createNestedObject();
-    contact["name"] = contacts[i].name;
-    contact["phone"] = contacts[i].phone;
-    contact["email"] = contacts[i].email;
-  }
-
-  // Serialize JSON to the file
-  if (serializeJson(doc, file) == 0)
-  {
-    Serial.println("Failed to write JSON to file.");
-  }
-  else
-  {
-    Serial.println("Contacts saved successfully.");
-  }
-
-  // Close the file
-  file.close();
-}
-
-void saveMessagesToJson(const Message messages[], size_t messageCount, const char *fileName)
-{
-  File file = SD.open(fileName, FILE_WRITE);
-  if (!file)
-  {
-    Serial.println("Failed to open file for writing.");
-    return;
-  }
-
-  StaticJsonDocument<2048> doc;
-  JsonArray messageArray = doc.to<JsonArray>();
-
-  for (size_t i = 0; i < messageCount; i++)
-  {
-    JsonObject messageObj = messageArray.createNestedObject();
-    messageObj["index"] = messages[i].index;
-    messageObj["status"] = messages[i].status;
-    messageObj["isOutgoing"] = messages[i].isOutgoing;
-    messageObj["contact"]["name"] = messages[i].contact.name;
-    messageObj["contact"]["phone"] = messages[i].contact.phone;
-    messageObj["contact"]["email"] = messages[i].contact.email;
-    messageObj["subject"] = messages[i].subject;
-    messageObj["content"] = messages[i].content;
-    messageObj["date"] = messages[i].date;
-  }
-
-  if (serializeJson(doc, file) == 0)
-  {
-    Serial.println("Failed to write JSON to file.");
-  }
-  else
-  {
-    Serial.println("Messages saved successfully.");
-  }
-
-  // Close the file
-  file.close();
 }
 
 void checkVoiceCall()
