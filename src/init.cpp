@@ -11,8 +11,14 @@ int charge_d = 3;
 int signallevel_d = 3;
 #endif
 
-int currentScreen = SCREENS::MAINSCREEN;
+SDImage mailimg[4] = {
+    SDImage(0x662DB1, 18, 21, 0, true),
+    SDImage(0x662DB1 + (18 * 21 * 2), 18, 21, 0, true),
+    SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
+    SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
 
+int currentScreen = SCREENS::MAINSCREEN;
+bool backgroundBusy = false;
 int millDelay = 0;
 uint contactCount = 0;
 uint32_t ima = 0;
@@ -24,13 +30,14 @@ bool havenewmessages = false;
 bool isAbleToCall = false;
 volatile bool simIsBusy = false;
 bool isAnswered = false;
-
+int lastContactIndex = 0;
 int currentFont = 0;
 
 String currentNumber = "";
 Contact contacts[MAX_CONTACTS];
 Contact examplecontact = {0, "+1234567890", "NERGON", "petro.chazov@gmail.com"};
 TaskHandle_t TaskHCommand;
+
 void TaskIdleHandler(void *parameter);
 void initSim();
 
@@ -77,24 +84,47 @@ void setup()
   Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
   if (sendATCommand("AT").indexOf("OK") != -1)
   {
+    tft.println("Setting up sim card please wait...");
     initSim();
+    tft.println("Done!");
   }
+
 #ifdef SIMDEBUG
+  if (digitalRead(39) == LOW)
+  {
+
+    tft.fillScreen(0);
+    tft.setCursor(0, 0);
+    tft.println("Waiting for connection...");
+
     while (true)
     {
       if (Serial.available())
       {
-        String req = Serial.readString();
-        if(req.indexOf(":q")!=-1){
+        tft.fillScreen(0);
+        tft.setCursor(0, 0);
+        tft.setTextSize(2);
+
+        tft.setTextColor(0xF800);
+        tft.println("\nAT COMMANDS CONSOLE\n (TO EXIT TYPE :q)\n");
+        tft.setTextColor(0xFFFF);
+        tft.setTextSize(1);
+        String req;
+
+        tft.println("REQUEST:");
+        req = Serial.readString();
+        tft.print(req + "\n");
+        if (req.indexOf(":q") != -1)
+        {
           break;
         }
         String ans = sendATCommand(req);
-        tft.fillScreen(0);
-        tft.setCursor(0, 0);
-        tft.print(ans);
+
+        tft.println("\nANSWER: " + ans);
         Serial.println(ans);
       }
     }
+  }
 #endif
   xTaskCreatePinnedToCore(
       TaskIdleHandler,
@@ -114,7 +144,7 @@ void setup()
     tft.setTextColor(0xf800);
     tft.println("\nSD Initialization failed!");
     delay(1000);
-    recovery("Something went wrong with your sd card\n(Possibly its just not there)\nAnyway download IMAGES.SG or something\nI think you can use some tools here");
+    recovery("Something went wrong with your sd card\n(Possibly its just not there)\n");
     sysError("SD_CARD_INIT_FAIL");
   }
   else
@@ -149,16 +179,20 @@ void setup()
     file.close();
   }
   tft.fillScreen(tft.color24to16(0x555555));
-
-  editContact(examplecontact);
-
+  messageActivityOut(examplecontact,"","",true);
   while (digitalRead(37) == LOW)
     ;
   drawStatusBar();
 }
 void suspendCore(bool suspend)
 {
-
+  if (suspend)
+  {
+    vTaskSuspend(TaskHCommand);
+    simIsBusy = false;
+  }
+  else
+    vTaskResume(TaskHCommand);
 }
 void TaskIdleHandler(void *parameter)
 {
@@ -166,15 +200,18 @@ void TaskIdleHandler(void *parameter)
   {
     while (!simIsBusy)
     {
+      backgroundBusy = true;
       if (getSignalLevel() != _signal || getChargeLevel() != charge)
       {
         _signal = getSignalLevel();
         charge = getChargeLevel();
         sbchanged = true;
       }
-      vTaskDelay(pdMS_TO_TICKS(2000));
+      vTaskDelay(pdMS_TO_TICKS(3000));
+      backgroundBusy = false;
     }
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    backgroundBusy = false;
+    vTaskDelay(pdMS_TO_TICKS(3000));
   }
 }
 void loop()
@@ -217,9 +254,8 @@ void screens()
 }
 void initSim()
 {
-sendATCommand("AT+CMEE=2");
-  sendATCommand("AT+CLIP=1");
-  sendATCommand("AT+CSCS=\"GSM\"");
-  sendATCommand("AT+CMGF=1");
-  
+  tft.println(sendATCommand("AT+CMEE=2"));
+  tft.println(sendATCommand("AT+CLIP=1"));
+  tft.println(sendATCommand("AT+CSCS=\"GSM\""));
+  tft.println(sendATCommand("AT+CMGF=1"));
 }

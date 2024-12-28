@@ -594,7 +594,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
     tft.print("< Empty >");
     while (buttonsHelding() == -1)
       idle();
-    return -1;
+    return -2;
   }
   for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++)
   {
