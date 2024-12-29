@@ -476,3 +476,18 @@ void checkVoiceCall()
     incomingCall(calling);
   }
 }
+
+bool checkSim(){
+  String error = sendATCommand("AT+CPIN?");
+  if (error.indexOf("READY") == -1)
+  {
+    error.trim();
+    error.replace("+CME ERROR:","");
+    if(error.indexOf("+CME")==0)
+    error = error.substring(11);
+    ErrorWindow(error);
+    currentScreen = SCREENS::MAINMENU;
+    return false;
+  }else
+  return true;
+}
