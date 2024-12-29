@@ -10,9 +10,32 @@ bool confirmation(String reason)
   //"ARE YOU SURE YOU WANT TO DO THIS?"
   return true;
 }
+void ErrorWindow(String reason)
+{
 
+  int xpos = 0;
+  drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+  drawFromSd(0x5F7A25, 0, 90, 240, 134);
+  tft.setCursor(80, 120);
+  changeFont(1);
+  tft.setTextColor(0xF800);
+  tft.println("ERROR");
+  tft.setTextColor(0);
+  if (tft.textWidth(reason) < 240)
+  {
+    xpos = (240 - tft.textWidth(reason)) / 2;
+  }
+  tft.setCursor(xpos, 150);
+  printSplitString(reason);
+  while (buttonsHelding() == -1)
+    ;
+}
 void messages()
 {
+  if (!checkSim())
+  {
+    return;
+  }
 
   drawFromSd(0x613D45, 0, 26, 240, 294);
   drawFromSd(0x5DECA5, 0, 26, 240, 42);
@@ -445,12 +468,20 @@ void incomingCall(Contact contact)
 }
 void makeCall(Contact contact)
 {
+  if (!checkSim())
+  {
+    return;
+  }
   isAnswered = true;
   sendATCommand("ATD" + contact.phone + ";");
   callActivity(contact);
 }
 void callActivity(Contact contact)
 {
+  if (!checkSim())
+  {
+    return;
+  }
   ongoingCall = true;
   bool calling = true;
   tft.fillScreen(0);
@@ -523,6 +554,10 @@ void callActivity(Contact contact)
 
 void contactss()
 {
+  if (!checkSim())
+  {
+    return;
+  }
   const String contmenu[] = {
       "Call",
       "Outgoing",
@@ -808,10 +843,10 @@ bool messageActivity(Contact contact, String date, String subject, String conten
   const String choices[3] = {"Reply", "Return", "Delete"};
   drawStatusBar();
   SDImage in_mail[4] = {
-      SDImage(0x663E91, 23, 24, 0, false), // TIME
-      SDImage(0x663E91 + (23 * 24 * 2), 23, 24, 0, false),
+      SDImage(0x663E91, 23, 24, 0, false),                     // TIME
+      SDImage(0x663E91 + (23 * 24 * 2), 23, 24, 0, false),     //"FROM"
       SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false), // "TO"
-      SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false),
+      SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false), //"SUB"
   };
   drawFromSd(0x5DAF1F, 0, 26, 240, 25);
   drawFromSd(0x5DDDFF, 0, 26, 25, 25);
@@ -1029,22 +1064,23 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
             {
 
               Serial.println("Y:" + String(tft.getCursorY()));
-              drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 240, 120, 20, 0, 240);
+              drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
 
               if (messagebuf.length() < limit)
-                if (l != '\b')
-                {
-                  messagebuf += l;
-                  
-                  tft.print(l);
-                }
-                else
-                {
-                  messagebuf.remove(messagebuf.length()-1);
-                  r = BACK;
-                  // WORKAROUND TODO: DO BETTER
-                  //update after week: i actually did this better
-                }
+                if (l != '\r')
+                  if (l != '\b')
+                  {
+                    messagebuf += l;
+
+                    tft.print(l);
+                  }
+                  else
+                  {
+                    messagebuf.remove(messagebuf.length() - 1);
+                    r = BACK;
+                    // WORKAROUND TODO: DO BETTER
+                    // update after week: i actually did this better
+                  }
               if (tft.getCursorY() > TLVP)
               {
                 y_scr -= y_jump;
@@ -1305,7 +1341,7 @@ char textInput(int input, bool onlynumbers, bool nonl)
     return 0;
   char buttons[12][12] = {
       "0+@\b \n\r",
-      "1,.()\r",
+      "1,.?!()\r",
       "2ABCabc\r",
       "3DEFdef\r",
       "4GHIghi\r",
@@ -1322,7 +1358,7 @@ char textInput(int input, bool onlynumbers, bool nonl)
   }
   if (onlynumbers)
   {
-    buttons[0][3] = '\r';
+    buttons[0][2] = '\r';
     for (int i = 1; i < 12; i++)
     {
       buttons[i][1] = '\r';

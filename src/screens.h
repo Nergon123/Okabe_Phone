@@ -21,4 +21,5 @@ char textInput(int input, bool onlynumbers = false, bool nonl = false);
 void incomingCall(Contact contact);
 void callActivity(Contact contact);
 void editContact(Contact contact);
+void ErrorWindow(String reason);
 #endif

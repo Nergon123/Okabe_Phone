@@ -9,5 +9,6 @@ int getSignalLevel();
 int buttonsHelding();
 int measureStringHeight(const String &text, int displayWidth = 240, int addLines = 0);
 void checkVoiceCall();
+bool checkSim();
 void parseMessages(Message *&msgs, int &count);
 #endif
