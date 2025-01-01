@@ -9,7 +9,6 @@
 #include "BleKeyboard.h"
 #include "SPI.h"
 #include "TFT_eSPI.h"
-#include "EXT/TFT_Config.h"
 #include "EXT/IP5306.h"
 #include "SD.h"
 #include <Preferences.h>
