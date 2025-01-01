@@ -1064,7 +1064,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
             {
 
               Serial.println("Y:" + String(tft.getCursorY()));
-              drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
+              //drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
 
               if (messagebuf.length() < limit)
                 if (l != '\r')
