@@ -5,6 +5,13 @@ void inbox();
 void numberInput(char first);
 bool messageActivity(Message message);
 void messageActivityOut(Contact contact, String subject, String content, bool sms);
+void talkingToSim()
+{
+
+  tft.setCursor(0, 265);
+  tft.fillRect(0, 270 - tft.fontHeight(), 240, tft.fontHeight(), ~tft.textcolor);
+  tft.println("TALKING TO SIM CARD . . .");
+}
 bool confirmation(String reason)
 {
   //"ARE YOU SURE YOU WANT TO DO THIS?"
@@ -32,6 +39,7 @@ void ErrorWindow(String reason)
 }
 void messages()
 {
+  talkingToSim();
   if (!checkSim())
   {
     return;
@@ -478,10 +486,6 @@ void makeCall(Contact contact)
 }
 void callActivity(Contact contact)
 {
-  if (!checkSim())
-  {
-    return;
-  }
   ongoingCall = true;
   bool calling = true;
   tft.fillScreen(0);
@@ -543,6 +547,7 @@ void callActivity(Contact contact)
     if (buttonsHelding() == DECLINE)
     {
       sendATCommand("ATH");
+      ongoingCall = false;
     }
     idle();
   }
@@ -564,7 +569,7 @@ void contactss()
       "Edit",
       "Create",
       "Delete"};
-
+  talkingToSim();
   populateContacts();
 
   String contactNames[contactCount];
@@ -578,6 +583,7 @@ void contactss()
   bool exit = false;
   while (!exit)
   {
+    talkingToSim();
     populateContacts();
 
     String contactNames[contactCount];
@@ -650,6 +656,7 @@ void inbox(bool outbox)
   while (!exit)
   {
     exit = true;
+    talkingToSim();
     parseMessages(messages, count);
     mOption *a = new mOption[count];
     for (int i = 0; i < count; i++)
@@ -818,6 +825,7 @@ void mailRingtoneSelector()
 
 bool messageActivity(Contact contact, String date, String subject, String content, int index, bool outcoming, bool sms)
 {
+  tft.setTextWrap(true);
   // returns if deleted
   if (sms)
   {
@@ -840,7 +848,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     content = response.substring(endIndex + 3, response.lastIndexOf("OK") - 2);
   }
   content.trim();
-  const String choices[3] = {"Reply", "Return", "Delete"};
+  const String choices[4] = {"Reply", "Return", "Delete", "HEX to ASCII"};
   drawStatusBar();
   SDImage in_mail[4] = {
       SDImage(0x663E91, 23, 24, 0, false),                     // TIME
@@ -897,7 +905,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
           y_scr += y_jump;
         break;
       case BACK:
-        ch = choiceMenu(choices, 3, true);
+        ch = choiceMenu(choices, 4, true);
         switch (ch)
         {
         case -1:
@@ -908,12 +916,15 @@ bool messageActivity(Contact contact, String date, String subject, String conten
           break;
 
         case 2:
-          if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE"))
+          if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE?"))
           {
             sendATCommand("AT+CMGD=" + String(index), 5000);
             exit = true;
             deleted = true;
           }
+          break;
+        case 3:
+          content = HEXTOASCII(content);
           break;
         }
         break;
@@ -949,7 +960,10 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     limit = 400;
   }
   String messagebuf;
-
+  int curx = 0;
+  int cury = 0;
+  int tcurx = 0;
+  int tcury = 0;
   int text_pos = 0;
   int position = 0;
   drawStatusBar();
@@ -1064,7 +1078,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
             {
 
               Serial.println("Y:" + String(tft.getCursorY()));
-              //drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
+              // drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
 
               if (messagebuf.length() < limit)
                 if (l != '\r')
@@ -1078,8 +1092,6 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                   {
                     messagebuf.remove(messagebuf.length() - 1);
                     r = BACK;
-                    // WORKAROUND TODO: DO BETTER
-                    // update after week: i actually did this better
                   }
               if (tft.getCursorY() > TLVP)
               {
@@ -1234,18 +1246,16 @@ void numberInput(char first)
   sbchanged = true;
   drawStatusBar();
   const uint8_t max_char = 13;
-  char input[max_char];
-  for (int i = 0; i < max_char; i++)
-    input[i] = ' ';
-  input[0] = first;
+  String number;
+  number += first;
   char c = 255;
   int pos = 1;
+  tft.setTextColor(TFT_WHITE);
   changeFont(0);
   tft.setTextSize(3);
   tft.fillRect(0, 300, 240, 20, 0);
   tft.setCursor(0, 300);
-  tft.print(input);
-
+  tft.print(number);
   while (true)
   {
     while (c == 255)
@@ -1257,16 +1267,17 @@ void numberInput(char first)
     switch (c)
     {
     case ANSWER:
-      makeCall({0, input});
+      if (!number.isEmpty())
+        makeCall({0, number});
       return;
       break;
-    case RIGHT:
-      pos--;
-      input[pos] = ' ';
+    case LEFT:
+
+      number.remove(number.length() - 1);
 
       tft.fillRect(0, 300, 240, 20, 0);
       tft.setCursor(0, 300);
-      tft.print(input);
+      tft.print(number);
       break;
     case BACK:
       return;
@@ -1274,15 +1285,13 @@ void numberInput(char first)
     default:
       break;
     }
-    if (pos == 0)
-      return;
-    if ((c >= '0' || c == '*' || c == '#') && c <= '9' && pos < max_char)
+
+    if ((c >= '0' || c == '*' || c == '#') && c <= '9' && number.length() < max_char)
     {
-      input[pos] = c;
-      pos++;
+      number += c;
       tft.fillRect(0, 300, 240, 20, 0);
       tft.setCursor(0, 300);
-      tft.print(input);
+      tft.print(number);
       c = 255;
     }
     idle();
@@ -1427,7 +1436,7 @@ char textInput(int input, bool onlynumbers, bool nonl)
     first = false;
   }
 
-  tft.fillRect(0, 300, 240, 30, 0x00);
+  tft.fillRect(0, 300, 240, 30, 0);
 
   tft.setCursor(curx, cury);
   bool viewport = false;
@@ -1435,15 +1444,14 @@ char textInput(int input, bool onlynumbers, bool nonl)
   int w = tft.getViewportWidth();
   int vx = tft.getViewportX();
   int vy = tft.getViewportY();
+
   if (tft.getViewportHeight() < 320)
   {
     tft.resetViewport();
     viewport = true;
   }
 
-  int x = 0;
-  int y = 240;
-  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), x, y, 120, 20, x, y);
+  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
   if (viewport)
     tft.setViewport(vx, vy, w, h);
   Serial.println("Result:" + String(result));

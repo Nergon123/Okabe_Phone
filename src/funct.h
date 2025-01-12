@@ -11,4 +11,5 @@ int measureStringHeight(const String &text, int displayWidth = 240, int addLines
 void checkVoiceCall();
 bool checkSim();
 void parseMessages(Message *&msgs, int &count);
+String HEXTOASCII(String hex);
 #endif

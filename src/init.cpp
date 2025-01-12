@@ -23,7 +23,8 @@ int millDelay = 0;
 uint contactCount = 0;
 uint32_t ima = 0;
 bool isCalling = false;
-bool ongoingCall = false;
+volatile bool ongoingCall = false;
+volatile int stateCall=6;
 
 bool sbchanged = true;
 bool havenewmessages = false;

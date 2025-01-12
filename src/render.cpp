@@ -748,8 +748,13 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label)
             tft.drawLine(0, 50 + mult * (i + 1), 240, 50 + mult * (i + 1), 0x0000);
             drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * (items_per_page * page + i)), 10, 51 + mult * i, 240, 294, scale);
           }
+
           tft.setCursor(x, y + (mult * i));
           tft.print(choices[items_per_page * page + i].label);
+          if (choices[items_per_page * page + i].icon.address != 0)
+          {
+            drawFromSd(icon_x, 51 + mult * i, choices[items_per_page * page + i].icon);
+          }
         }
         drawFromSd(0x5DAF1F, 0, 26, 240, 25);
         if (type >= 0 && type < 3)
@@ -1090,7 +1095,46 @@ int choiceMenu(const String choices[], int count, bool context)
   }
   return -1;
 }
+void findSplitPosition(String text, int charIndex, int &posX, int &posY)
+{
+  posX = 0; // Initialize X position
+  posY = 0; // Initialize Y position
+  
+  int currentX = 0; // Simulated X position
+  int currentY = 0; // Simulated Y position
+  int maxWidth = tft.width(); // Screen width
+  int lineHeight = tft.fontHeight(); // Line height based on the font
 
+  for (int i = 0; i < text.length(); i++)
+  {
+    char c = text[i];
+    
+    // Get the width of the current character
+    int charWidth = tft.textWidth(String(c));
+    
+    // Check if adding this character exceeds the screen width
+    if (currentX + charWidth > maxWidth)
+    {
+      currentX = 0;          // Move to the start of the new line
+      currentY += lineHeight; // Advance to the next line
+    }
+    
+    // If the current character matches the target index, return its position
+    if (i == charIndex)
+    {
+      posX = currentX;
+      posY = currentY;
+      return;
+    }
+    
+    // Advance the simulated cursor position
+    currentX += charWidth;
+  }
+
+  // If the character index is out of bounds, return the last position
+  posX = currentX;
+  posY = currentY;
+}
 int printSplitString(String text)
 {
   int newLineCount = 0;        // Counter for new lines
@@ -1109,8 +1153,9 @@ int printSplitString(String text)
     uint16_t wordLen = tft.textWidth(word);
 
     // Check if the word fits in the current line
-    if (tft.getCursorX() + wordLen >= tft.width())
+    if (tft.getCursorX() + wordLen >= tft.width() && wordStart > 1)
     {
+
       tft.println(); // Move to the next line
       newLineCount++;
     }
