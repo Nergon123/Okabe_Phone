@@ -81,7 +81,7 @@ extern bool sbchanged;
 extern bool isAbleToCall;
 extern bool isCalling;
 extern volatile bool simIsBusy;
-extern bool ongoingCall;
+extern volatile bool ongoingCall;
 extern bool isAnswered;
 
 extern Contact contacts[MAX_CONTACTS];

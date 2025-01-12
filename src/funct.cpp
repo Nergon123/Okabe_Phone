@@ -1,5 +1,29 @@
 #include "funct.h"
 // TaskHandle_t TaskHandleATCommand;
+unsigned int getIndexOfCount(int count, String input, String str, unsigned int fromIndex)
+{
+  for (int i = 0; i < count; i++)
+  {
+    fromIndex = input.indexOf(str, fromIndex + 1);
+  }
+  return fromIndex;
+}
+String HEXTOASCII(String hex)
+{
+  hex.toUpperCase();
+  String output;
+
+  for (int i = 0; i < hex.length(); i += 2) 
+  {
+    char h = hex[i];
+    char l = hex[i + 1];
+    int hv = (h >= '0' && h <= '9') ? h - '0' : h - 'A' + 10;
+    int lv = (l >= '0' && l <= '9') ? l - '0' : l - 'A' + 10;
+    char c = (hv << 4) | lv;
+    output += c;
+  }
+  return output;
+}
 String sendATCommand(String command, uint32_t timeout, bool background)
 {
   bool _simIsBusy = simIsBusy;
@@ -23,6 +47,12 @@ String sendATCommand(String command, uint32_t timeout, bool background)
       char c = Serial1.read(); // Read a single character
       response += c;           // Append it to the response
     }
+  }
+  if (response.indexOf("+CLIP:") != -1)
+  {
+    int indexClip = response.indexOf("+CLIP:");
+    int comma = getIndexOfCount(2, response, "\"", indexClip);
+    Serial.println("STATUS:" + response.substring(comma, response.indexOf(',', comma + 1)));
   }
   if (!isCalling)
   {
@@ -200,9 +230,9 @@ int buttonsHelding()
    * SIDE BUTTON 10
    *  7 8 9
    * |M|I|B|
-   *     ^=2
-   * <=4 0=1 >=5
-   * A=6 V=3 D=BACK
+   *      ^=W
+   * <=A  0=SP >=D
+   * A=Q  V=S  D=E
    * 1   2   3
    * 4   5   6
    * 7   8   9
@@ -308,7 +338,7 @@ int buttonsHelding()
 
   return -1;
 }
-void parseMessages(Message*& msgs,int& count)
+void parseMessages(Message *&msgs, int &count)
 {
   Serial.println("AA");
   populateContacts();
@@ -316,14 +346,14 @@ void parseMessages(Message*& msgs,int& count)
   String response = sendATCommand("AT+CMGL=\"ALL\",1");
   int lastIndexOf = 0;
   int messageCount = 0;
-  
+
   // Count the number of messages
   while ((lastIndexOf = response.indexOf("+CMGL:", lastIndexOf)) != -1)
   {
     messageCount++;
     lastIndexOf += 6; // Move past "+CMGL:"
   }
-  
+
   if (messageCount > 0)
   {
     msgs = new Message[messageCount];
@@ -372,10 +402,10 @@ void parseMessages(Message*& msgs,int& count)
       }
       Contact curContact;
       curContact.phone = number;
-      if(number.indexOf('p')!=-1)
+      if (number.indexOf('p') != -1)
         curContact.name = "SERVICE NUMBER";
       else
-      curContact.name = number;
+        curContact.name = number;
       curContact.index = -1;
       for (int i = 0; i < contactCount; i++)
       {
@@ -391,7 +421,7 @@ void parseMessages(Message*& msgs,int& count)
       Serial.println("STATUS: " + String((int)msgs[i].status)); // Cast enum to int
       Serial.println("DATE: " + msgs[i].date);
       Serial.println("NUMBER: " + number);
-      Serial.println("CONTACT:" +  msgs[i].contact.name);
+      Serial.println("CONTACT:" + msgs[i].contact.name);
       lastIndexOf += 7; // Move past "+CMGL:"
     }
   }
@@ -477,17 +507,19 @@ void checkVoiceCall()
   }
 }
 
-bool checkSim(){
+bool checkSim()
+{
   String error = sendATCommand("AT+CPIN?");
   if (error.indexOf("READY") == -1)
   {
     error.trim();
-    error.replace("+CME ERROR:","");
-    if(error.indexOf("+CME")==0)
-    error = error.substring(11);
+    error.replace("+CME ERROR:", "");
+    if (error.indexOf("+CME") == 0)
+      error = error.substring(11);
     ErrorWindow(error);
     currentScreen = SCREENS::MAINMENU;
     return false;
-  }else
-  return true;
+  }
+  else
+    return true;
 }
