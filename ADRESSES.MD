@@ -57,26 +57,27 @@ END AT 0x5A708D
   size of each is +(0x17A2*1)
   beginning at 0x5D5097
   first is 55x55, 49,(43+26)
-  drawFromSd(0x5D5097, 49,(43+26),55,55);
+  
+  ```drawFromSd(0x5D5097, 49,(43+26),55,55);```
   second is 55x55 138,(42+26)
-  drawFromSd(0x5D5097+(0x17A2*1),138,(42+26),55,55);
+  ```drawFromSd(0x5D5097+(0x17A2*1),138,(42+26),55,55);```
   third is 55x55 49,(122+26)
-  drawFromSd(0x5D5097+(0x17A2*2),49,(122+26),55,55);
+  ```drawFromSd(0x5D5097+(0x17A2*2),49,(122+26),55,55);```
   fourth 55x55 137,(123+26)
-  drawFromSd(0x5D5097+(0x17A2*3),137,(123+26),55,55);
+  ```drawFromSd(0x5D5097+(0x17A2*3),137,(123+26),55,55);```
 
   on icons
   first icon is 49x49, 51,(45+26)
-  drawFromSd(0x5D0342,51,(45+26),49,49);
+  ```drawFromSd(0x5D0342,51,(45+26),49,49);```
   0x5D0342
   second is 49x51, 141,(44+26)
-  drawFromSd(0x5D1603,141,(44+26),49,51);
+  ```drawFromSd(0x5D1603,141,(44+26),49,51);```
   0x5D1603
   third is 50x50,52,(125+26)
-  drawFromSd(0x5D2989,52,(125+26),50,50);
+  ```drawFromSd(0x5D2989,52,(125+26),50,50);```
   0x5D2989
   fourth is 49x51, 140,(125+26)
-  drawFromSd(0x5D3D11,140,(125+26),49,51);
+  ```drawFromSd(0x5D3D11,140,(125+26),49,51);```
   0x5D3D11
 
 # UI other

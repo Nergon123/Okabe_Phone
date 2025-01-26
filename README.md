@@ -1,12 +1,12 @@
 # Okabe Phone
----
+
 Okabe phone is my project that I was making just because I was bored...lmao.
 
 The project itself is recreation of phone of character from [vn game "Steins;Gate"](https://steins-gate.fandom.com/wiki/Steins;Gate_(visual_novel)) - [Rintarou Okabe](https://steins-gate.fandom.com/wiki/Rintaro_Okabe)
 
----
+
 ## A little bit of history 
----
+
 
 I started this project in July 2024 when I was playing around with unpacking resources of games... When I unpacked Steins;Gate I saw resources of phone and thought to myself.
 
@@ -18,9 +18,9 @@ So then I decided that I could do that, but I didn't really announce that anywhe
 
 26/01/2025 I decided to make repository public.
 
----
+
 ## TODO
----
+
 - [ ] Audio
 	- [ ] Ringtones
 	- [ ] Notifications
@@ -36,40 +36,40 @@ So then I decided that I could do that, but I didn't really announce that anywhe
 	- [ ] Ability to write posts on imageboards
 	- [ ] Very basic web browser (This thing have only 320KB of RAM, it would be almost impossible to render modern pages)
 
---- 
+ 
 ## Features
----
+
 - [x] Ability to Write SMS
 - [x] Ability to Send SMS
 - [x] Ability to Read SMS
 - [x] Ability to Call
 - [x] Ability to Recieve Calls
 - [x] Ability to Change Wallpapers
----
+
 ## Known Problems
----
+
 - (CRASH) Watchdog resets when call recieves at core 0 (Background AT Command process)
 - This thing overall unstable, right now it have status "Proof of Concept"
 - This thing probably cannot be used comercially since copyrighted material is being used(I'm not sure about this statement but probably it's true)
 
----
+
 ## Building Device
----
+
 See [DEVBUILD.MD](./DEVBUILD.MD)
 
----
+
 ## Info for Developers/Potential Contributors
----
+
 See [DEVINFO.MD](./DEVINFO.MD)
 
----
+
 ## Showcase
----
+
 See [SHOWCASE.MD](./SHOWCASE.MD)
 
----
+
 ## Contact
----
+
 If you any question you can ask it via
 - Issues
 - [E-Mail](mailto:enderman3025@gmail.com?subject=[OkabePhone]%20I%20have%20a%20question)
