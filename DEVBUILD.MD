@@ -45,14 +45,60 @@ You need following components to build same device that I have.
 2.  5x7 CM Universal Prototype one-sided board 
 3.  19 buttons (I use 6x6mm tact switchs)
 4.  SIM800L (It wouldn't work in countries where 2G network no longer available)
-5.  MicroSD card (I guess any size from like 16 MB,though I never seen microsd card with capacity less then 1 GB. I use 16 GB. [Official documentation of ESP32 says this thing have support up to 2TB sdcard](https://docs.espressif.com/projects/esp-faq/en/latest/software-framework/peripherals/sdio.html#what-is-the-maximum-capacity-for-esp32-sd-card))
-6.  MCP23017 IC and 2 resistors anywhere from 4.7k to 10k (I use 10k)
-7. 3.7V mobile Li-Ion Battery (I use default Nokia's BL-5C battery)
+5.  MicroSD card (I guess any size from like 16 MB,though I never seen microsd card with capacity less then 1 GB. I use 16 GB. [Official documentation of ESP32 says that this thing have support up to 2TB sdcard](https://docs.espressif.com/projects/esp-faq/en/latest/software-framework/peripherals/sdio.html#what-is-the-maximum-capacity-for-esp32-sd-card))
+6.  MCP23017 IC DIP and 2 resistors anywhere from 4.7k to 10k (I use 10k)
+7. 3.7V mobile Li-Ion Battery (I use Nokia's BL-5C battery)
 8. Wires
 9. Soldering iron, solder,flux and other tools for assemble.
 10. Small mobile speaker 8 Ohm or 32 Ohm (I'm actually not sure, but in theory both should work. I use 8 Ohm)
 11. Capacitors (3 pcs of 33pF)
 12. Electret Microphone
-
+13. MicroUsb Cable (for charging and uploading firmware)
+### Device assembly
 	
- ![Bottom_Board](./GHRES/Bottom_Board.png "Bottom Board")
+ ![Bottom Board](./GHRES/Bottom_Board.png "Bottom Board")
+
+Take a look at this schematic that I made.
+Sorry for background being white.
+
+![Terrible Keyboard](./GHRES/terrible_keyboard.jpg "Terrible Keyboard")
+
+There is no need to build keyboard this terrible. Maybe you'll do better job.
+
+So placement of IC MCP23017 should be like on picture (Or whatever, there no real difference where you'll put it just do wiring properly, according to schematic)
+
+![Cables](./GHRES/Cables.png)
+
+And connect bottom board to T4 board using  I2C cable that comes with T4 board.
+
+![T4 I2C](./GHRES/T4I2C.png)
+
+Look carefully where which pin is located
+(It's actually written under port itself)
+
+If you successfully connected Bottom board to T4 through I2C, proceed to next step.
+
+Connecting SIM800L to board
+
+![T4 SIM800L](./GHRES/T4_SIM800L.png)
+
+![SIM800LT4](./GHRES/SIM800LT4.png)
+
+When you connected SIM800L to board then time to solder the battery!
+
+As I said in disclaimer and near disclamer and everywhere
+
+__BE CAREFUL, BATTERIES ARE DANGEROUS__
+
+solder red wire to + 
+
+solder black wire to -
+
+It's recommended to look for online tutorial how to solder them.
+
+That's seems to be everything
+
+Thank you for reading
+
+If you have any questions problems and etc.
+see Contact info at [README/Contact](./README.md#contact)
