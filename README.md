@@ -70,7 +70,7 @@ See [SHOWCASE.MD](./SHOWCASE.MD)
 
 ## Contact
 
-If you any question you can ask it via
+If you any question you can ask them via
 - Issues
 - [E-Mail](mailto:enderman3025@gmail.com?subject=[OkabePhone]%20I%20have%20a%20question)
 - [My personal discord server](https://discord.gg/XWEscuUzG8) 
