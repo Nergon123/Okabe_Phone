@@ -1,0 +1,5 @@
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+ColumnLimit: 0  # Disable wrapping at a column limit
+IndentWidth: 4
+

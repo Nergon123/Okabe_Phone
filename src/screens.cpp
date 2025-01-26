@@ -32,6 +32,7 @@ void ErrorWindow(String reason) {
 void messages() {
 
     if (!checkSim()) {
+        currentScreen = SCREENS::MAINMENU;
         return;
     }
 
@@ -529,6 +530,7 @@ void callActivity(Contact contact) {
 
 void contactss() {
     if (!checkSim()) {
+        currentScreen = SCREENS::MAINMENU;
         return;
     }
     const String contmenu[] = {
