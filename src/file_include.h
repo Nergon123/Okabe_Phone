@@ -13,8 +13,11 @@
 #include "SD.h"
 #include <Preferences.h>
 #include <Wire.h>
+#include <MCP23017.h>
 #include "hal/uart_types.h"
 #include "init.h"
+
+#include <XboxGamepadDevice.h>
 
 #include "funct.h"
 #include "render.h"
