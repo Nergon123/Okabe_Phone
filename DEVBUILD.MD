@@ -1,13 +1,13 @@
 # Building device
----
+
 Alright.
 You looked at the main page and thought. Hell yeah! I want this phone for myself.
 
 Very well. But this requires some knowledge of electronics.
 
----
+
 # DISCLAIMER 
----
+
 By working with the circuits, components, and batteries provided, you acknowledge and agree to the following:
 
  1. Risk of Damage: Electronics components, including but not limited to batteries and circuits, are susceptible to damage if handled improperly. Short circuits, incorrect wiring, and other mistakes can result in damage to your components or cause overheating, fire, or other hazards.
@@ -23,17 +23,17 @@ If you fuck up and something will go wrong because you don't have experience wit
 
 (and yeah, I used AI to write this disclaimer)
 
----
+
 
 If you don't have experience with arduino things, circuits and etc. Then you can call friend that can do this. If you don't have friends like that... well you can try build that, but be extremelly careful, battery shortage is not a joke.
 
 Maybe guys in the Discord server can help.
 At the moment when I writing this there is no one like that. Except me of course. 
 
----
+
 
 ## Building device itself
----
+
 
 Considering that you ACKNOWLEDGED that disclaimer. You can continue
 
@@ -53,6 +53,6 @@ You need following components to build same device that I have.
 10. Small mobile speaker 8 Ohm or 32 Ohm (I'm actually not sure, but in theory both should work. I use 8 Ohm)
 11. Capacitors (3 pcs of 33pF)
 12. Electret Microphone
----
+
 	
  ![Bottom_Board](./GHRES/Bottom_Board.png "Bottom Board")
