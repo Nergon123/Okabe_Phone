@@ -5,9 +5,9 @@
 #define RS485_TX_PIN 26
 #define RS485_RTS_PIN -1
 #define chipSelect 13
+#define MCP23017_ADDR 0x20
 #define MAX_CONTACTS 100
 
-#define DBC_MS 1000
 // DELAY BETWEEN CHECKS
 
 #define DIB_MS 500
@@ -18,6 +18,17 @@
 
 #define CWIDTH 1
 //CURSOR WIDTH
+
+///////CALL STATES/////////
+
+#define ACTIVE 0
+#define HELD 1
+#define DIALING 2
+#define ALERTING 3
+#define INCOMING 4 
+#define WAITING 5
+#define DISCONNECT 6
+///////////////////////////
 
 #define BACK 0
 #define SELECT 1
