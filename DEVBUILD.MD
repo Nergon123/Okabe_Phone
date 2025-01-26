@@ -100,5 +100,7 @@ That's seems to be everything
 
 Thank you for reading
 
+To upload firmware proceed to [SOFTPART.MD](./SOFTPART.MD)
+
 If you have any questions problems and etc.
 see Contact info at [README/Contact](./README.md#contact)

@@ -3,3 +3,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+FLASH.bat
+FLASH.sh
+toFlash/
+refresh-toflash.sh
