@@ -203,8 +203,7 @@ void   setup() {
         file.close();
     }
     tft.fillScreen(tft.color24to16(0x555555));
-    messageActivityOut(examplecontact, "", "", true);
-    // actualGamepadLmaoWhy();
+   
     while (digitalRead(37) == LOW)
         ;
     drawStatusBar();

@@ -54,53 +54,7 @@ void messages() {
     currentScreen = SCREENS::MAINMENU;
 }
 
-void actualGamepadLmaoWhy() {
-    suspendCore(true);
 
-    tft.fillScreen(0);
-    tft.setTextColor(0xFFFF);
-    tft.setCursor(0, 20);
-    int buttons = buttonsHelding();
-    while (true) {
-        tft.setCursor(0, 20);
-
-        buttons = buttonsHelding();
-
-        tft.println(buttons);
-        while (buttons == buttonsHelding())
-            ;
-    }
-
-    suspendCore(false);
-}
-
-void knipka() {
-
-    blemouse.begin();
-    changeFont(0);
-    tft.fillScreen(0x0);
-    drawStatusBar();
-    tft.setTextColor(0xffff);
-    bool isConnected = !blemouse.isConnected();
-
-    while (buttonsHelding() != DOWN) {
-
-        if (isConnected != blemouse.isConnected()) {
-            tft.fillScreen(0x0);
-            tft.setCursor(0, 50);
-            tft.setTextSize(5);
-            tft.print("Knipka\n");
-            tft.setTextSize(2);
-            tft.println(String("CONNECTED?" + String(blemouse.isConnected())));
-            isConnected = blemouse.isConnected();
-        }
-        if (buttonsHelding() == BACK && blemouse.isConnected()) {
-
-            blemouse.move(0, 0, -1);
-        }
-    };
-    blemouse.end();
-}
 
 void e() {
 
@@ -142,20 +96,6 @@ void e() {
             // signallevel_d = choiceMenu(levels, ArraySize(levels), true);
             drawStatusBar();
             break;
-        case 5:
-            int btChoice = listMenu(btMenu, ArraySize(btMenu), false, 2, "BLUETOOTH");
-            switch (btChoice) {
-            case -1:
-                break;
-            case 0:
-                int btMChoice = listMenu(btMouse, ArraySize(btMouse), false, 2, "BT Mouse");
-                switch (btMChoice) {
-                case 0:
-                    knipka();
-                    sBarChanged = true;
-                    break;
-                }
-                break;
             }
             break;
         }
@@ -1091,7 +1031,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 u = choiceMenu(a, 4, true);
                 tft.setTextColor(0);
                 switch (u) {
-                case 0:
+                case -1:
                     Serial.println("Return");
                     r    = -2;
                     exit = true;
