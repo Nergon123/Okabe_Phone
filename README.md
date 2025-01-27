@@ -29,13 +29,14 @@ So then I decided that I could do that, but I didn't really announce that anywhe
 - [ ] Code stuff
 	- [ ] More readable code
 	- [ ] More optimised code 
-- [ ] Ability to Send E-mail
+- [ ] Ability to Send E-mail (not sms)
 - [ ] Themes (There was also other phones with same UI but other colors in Steins;Gate LBP)
 - [ ] "Maybe"
 	- [ ] Ability to read imageboards
 	- [ ] Ability to write posts on imageboards
 	- [ ] Very basic web browser (This thing have only 320KB of RAM, it would be almost impossible to render modern pages)
 - [ ] 3D printed shell
+- [ ] Properly designed PCB
  
 ## Features
 

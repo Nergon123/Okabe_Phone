@@ -15,4 +15,5 @@ void parseMessages(Message *&msgs, int &count);
 String HEXTOASCII(String hex);
 void playAudio(String path);
 int GetState();
+void printT_S(String str);
 #endif

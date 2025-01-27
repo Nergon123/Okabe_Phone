@@ -6,6 +6,10 @@ unsigned int getIndexOfCount(int count, String input, String str, unsigned int f
     }
     return fromIndex;
 }
+void printT_S(String str){
+    Serial.println(str);
+    tft.println(str);
+}
 String HEXTOASCII(String hex) {
     hex.toUpperCase();
     String output;
