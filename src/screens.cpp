@@ -14,7 +14,7 @@ bool confirmation(String reason) {
 void ErrorWindow(String reason) {
 
     int xpos = 0;
-    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+    drawWallpaper();
     drawFromSd(0x5F7A25, 0, 90, 240, 134);
     tft.setCursor(80, 120);
     changeFont(1);
@@ -53,8 +53,6 @@ void messages() {
     }
     currentScreen = SCREENS::MAINMENU;
 }
-
-
 
 void e() {
 
@@ -96,14 +94,14 @@ void e() {
             // signallevel_d = choiceMenu(levels, ArraySize(levels), true);
             drawStatusBar();
             break;
-            }
-            break;
         }
-        idle();
+        break;
     }
+    idle();
+}
 
 #endif
-    currentScreen = SCREENS::MAINMENU;
+currentScreen = SCREENS::MAINMENU;
 }
 
 void settings() {
@@ -127,6 +125,7 @@ void settings() {
             break;
         case 0:
             pic = gallery();
+
             if (pic == -1) {
                 currentScreen = SCREENS::MAINMENU;
                 return;
@@ -145,10 +144,11 @@ void settings() {
             return;
             break;
         }
+        Serial.println(pic);
+        String galch[] = {"Preview", "Confirm"};
+        if (pic != -1 && pic != 42) {
 
-        if (pic != -1) {
-            String galch[] = {"Preview", "Confirm"};
-            picch          = choiceMenu(galch, 2, true);
+            picch = choiceMenu(galch, 2, true);
             switch (picch) {
             case 0:
                 drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * pic), 0, 26, 240, 294);
@@ -157,8 +157,31 @@ void settings() {
                 break;
             case 1:
                 preferences.putUInt("wallpaperIndex", pic);
-                wallpaperIndex           = pic;
-                currentScreen = SCREENS::MAINSCREEN;
+                wallpaperIndex = pic;
+                currentScreen  = SCREENS::MAINSCREEN;
+                return;
+                break;
+            default:
+
+                break;
+            }
+        } else if (pic == 42) {
+            String path = fileBrowser(SD.open("/"), ".png");
+            while (buttonsHelding() != BACK)
+                ;
+            picch = choiceMenu(galch, 2, true);
+            switch (picch) {
+            case 0:
+                drawPNG(path.c_str());
+                while (buttonsHelding() != BACK)
+                    ;
+                break;
+            case 1:
+                preferences.putUInt("wallpaperIndex", -1);
+                preferences.putString("wallpaper", path);
+                wallpaperIndex = -1;
+                currentWallpaperPath = path;
+                currentScreen  = SCREENS::MAINSCREEN;
                 return;
                 break;
             default:
@@ -281,15 +304,16 @@ int gallery() {
         "Wallpaper 6",
         "Space Froggies",
         "Wallpaper 7",
-        "Nae"};
-    // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+        "Nae",
+        "Pick wallpaper..."};
+    // drawWallpaper();
     return listMenu(wallnames, ArraySize(wallnames), true, 2, "Change wallpaper");
 }
 
 void MainScreen() {
     Serial.println("MAINSCREEN");
     changeFont(0);
-    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+    drawWallpaper();
     // bool exit = false;
     int c = -1;
     while (c != UP) {
@@ -298,7 +322,7 @@ void MainScreen() {
         if ((c >= '0' || c == '*' || c == '#') && c <= '9') {
             numberInput(c);
 
-            drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+            drawWallpaper();
         }
         if (c == UP)
             break;
@@ -355,7 +379,7 @@ void offlineCharging() {
 }
 
 void incomingCall(Contact contact) {
-    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+    drawWallpaper();
 
     drawFromSd(0x5F7A25, 0, 90, 240, 134);
     changeFont(1);
@@ -570,7 +594,7 @@ void inbox(bool outbox) {
     }
 }
 
-void fileBrowser(File dir) {
+String fileBrowser(File dir, String format) {
     SDImage folderIcon  = SDImage(0x663983, 18, 18, 0, true);
     SDImage fileIcon    = SDImage(0x663984 + (18 * 18 * 2), 18, 18, 0, true);
     String  currentPath = dir.path();
@@ -579,6 +603,7 @@ void fileBrowser(File dir) {
     mOption *options = new mOption[64];
     int      choice  = -2;
     int      i       = 0;
+    format.toLowerCase();
     do {
         i = 0;
 
@@ -593,11 +618,16 @@ void fileBrowser(File dir) {
                 Serial.print(file.name());
                 if (file.isDirectory()) {
                     Serial.print("/");
+
                     options[i].icon  = folderIcon;
                     options[i].label = file.name() + String("/");
                 } else {
-                    options[i].icon  = fileIcon;
-                    options[i].label = file.name();
+                    String fileLow = String(file.name());
+                    fileLow.toLowerCase();
+                    if (format == "*" || fileLow.endsWith(format)) {
+                        options[i].icon  = fileIcon;
+                        options[i].label = file.name();
+                    }
                 }
                 i++;
                 file = dir.openNextFile();
@@ -607,10 +637,13 @@ void fileBrowser(File dir) {
         if (options[choice].label.endsWith("/")) {
             options[choice].label.remove(options[choice].label.lastIndexOf("/"));
             currentPath += options[choice].label;
+        } else {
+            currentPath += options[choice].label;
+            return currentPath;
         }
         dir.close();
     } while (choice != -1);
-
+    return "null";
     file.close();
     dir.close();
 }

@@ -1,12 +1,11 @@
 #include "init.h"
 
-
-
 IP5306      chrg;
 TFT_eSPI    tft = TFT_eSPI();
 Preferences preferences;
-BleMouse    blemouse("OkabePhone", "DEVELOPER", chrg.getBatteryLevel());
 MCP23017    mcp = MCP23017(MCP23017_ADDR);
+PNG png;
+
 
 SDImage mailimg[4] = {
     SDImage(0x662DB1, 18, 21, 0, true),
@@ -14,58 +13,58 @@ SDImage mailimg[4] = {
     SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
     SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
 
-//Variable to check if status bar refresh required
-bool          sBarChanged     = true;
-//Variable that indicate if there incoming call
-bool          isCalling       = false;
-//Checking if background SIM card check in progress
-bool          backgroundBusy  = false;
-//Check if there any new messages (Status Bar indicator)
-bool          haveNewMessages = false;
-//Check if SIM card can make calls 
-bool          isAbleToCall    = false;
-//Check if someone answered our call
-bool          isAnswered      = false;
-//Check if SIM Serial in use
-volatile bool simIsBusy       = false;
-//check if there call in progress
-volatile bool ongoingCall     = false;
-//check if there SIM card available
-volatile bool simIsUsable     = false;
+// Variable to check if status bar refresh required
+bool sBarChanged = true;
+// Variable that indicate if there incoming call
+bool isCalling = false;
+// Checking if background SIM card check in progress
+bool backgroundBusy = false;
+// Check if there any new messages (Status Bar indicator)
+bool haveNewMessages = false;
+// Check if SIM card can make calls
+bool isAbleToCall = false;
+// Check if someone answered our call
+bool isAnswered = false;
+// Check if SIM Serial in use
+volatile bool simIsBusy = false;
+// check if there call in progress
+volatile bool ongoingCall = false;
+// check if there SIM card available
+volatile bool simIsUsable = false;
 
-//Variable for non-blocking delay
-int          millDelay        = 0;
-//Current Screen variable, for recursion prevention
-int          currentScreen    = SCREENS::MAINSCREEN;
-//index of last Contact 
-int          lastContactIndex = 0;
-//count of all contacts
-uint         contactCount     = 0;
-//index of current wallpaper
-uint32_t     wallpaperIndex   = 0;
-//index of currentFont used for changeFont()
-int          currentFont      = 0;
+// Variable for non-blocking delay
+int millDelay = 0;
+// Current Screen variable, for recursion prevention
+int currentScreen = SCREENS::MAINSCREEN;
+// index of last Contact
+int lastContactIndex = 0;
+// count of all contacts
+uint contactCount = 0;
+// index of current wallpaper
+uint32_t wallpaperIndex = 0;
+// index of currentFont used for changeFont()
+int currentFont = 0;
 
-//Call state returned by SIM card
-volatile int stateCall        = 6;
-//delay between SIM card checks 
-volatile int DBC_MS           = 1000;
+// Call state returned by SIM card
+volatile int stateCall = 6;
+// delay between SIM card checks
+volatile int DBC_MS = 1000;
 
-//Contacts storage
+// Contacts storage
 Contact contacts[MAX_CONTACTS];
-//Default contact (to be erased)
+// Default contact (to be erased)
 Contact examplecontact = {0, "+1234567890", "NERGON", "petro.chazov@gmail.com"};
 
-//Handle for background SIM checks
+// Handle for background SIM checks
 TaskHandle_t TaskHCommand;
 
 // Number of person who calling us
-String currentNumber           = "";
+String currentNumber = "";
 
 String currentRingtonePath     = "";
 String currentMailRingtonePath = "";
 String currentNotificationPath = "";
-
+String currentWallpaperPath    = "/null";
 void   TaskIdleHandler(void *parameter);
 void   initSim();
 String lastSIMerror = "";
@@ -97,13 +96,13 @@ void   setup() {
     tft.println("NerBoot");
     tft.setCursor(12, 0);
     tft.setTextColor(0xFFFF);
-    tft.println("NerBoot");
+    printT_S("NerBoot");
     tft.fillRect(0, 0, 10, 10, TFT_RED);
     tft.fillRect(0, 10, 10, 10, TFT_GREEN);
     tft.fillRect(0, 20, 10, 10, TFT_BLUE);
     tft.setTextSize(1);
     changeFont(0);
-    tft.println("\n\nNerBoot v.0.0.4 ALPHA\n\nBootloader written by NERGON\n\nResources located in sdcard\nfolder FIRMWARE\n");
+    printT_S("\n\nNerBoot v.0.0.4 ALPHA\n\nPhone firmware written by NERGON\n\nResources located in sdcard\nfolder FIRMWARE\n");
     SPI.begin(14, 2, 15, 13);
 
 #ifdef DEVMODE
@@ -115,12 +114,12 @@ void   setup() {
 
     uint32_t oldtime = millis();
     if (sendATCommand("AT").indexOf("OK") != -1) {
-        tft.println("Setting up sim card please wait...");
+        printT_S("Setting up sim card please wait...");
         initSim();
         while (!_checkSim() && millis() - oldtime < 10000)
             ;
         populateContacts();
-        tft.println("Done!");
+        printT_S("Done!");
     }
 
 #ifdef SIMDEBUG
@@ -165,45 +164,44 @@ void   setup() {
         &TaskHCommand,
         0);
 
-    Serial.print("Initializing SD card...");
-    tft.println("\nInitializing SD card...");
-
+    printT_S("Initializing SD card...");
 
     if (!SD.begin(chipSelect, SPI, 80000000)) {
-        Serial.println("SD Initialization failed!");
-
+        
         tft.setTextColor(0xf800);
-        tft.println("\nSD Initialization failed!");
+        printT_S("\nSD Initialization failed!");
 
         delay(1000);
-
         // recovery("Something went wrong with your sd card\n(Possibly its just not there)\n");
-        //I can't work without sd card >_<
+        // I can't work without sd card >_<
         sysError("SD_CARD_INIT_FAIL");
     } else {
-
-        Serial.println("SD Initialization done.");
-        tft.println("\nSD Initialization done.\n");
+       printT_S("SD Initialization done.");
     }
 
     if (!SD.exists("/FIRMWARE/IMAGES.SG"))
-        recovery("No /FIRMARE/IMAGE.SG found\nhere some tools to help you!");
-
+        recovery("No /FIRMARE/IMAGE.SG found");
 
     preferences.begin("settings", false);
-    wallpaperIndex          = preferences.getUInt("wallpaperIndex", 0);
-    contactCount = preferences.getUInt("contactCount", 0);
-
-    if (!SD.exists("/DATA/MESSAGES.JSON")) {
-        if (!SD.exists("/DATA")) {
-            SD.mkdir("/DATA");
-        }
-        File file = SD.open("/DATA/MESSAGES.JSON", FILE_WRITE);
-        file.print("{}");
-        file.close();
+    wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
+    // contactCount   = preferences.getUInt("contactCount", 0);
+    if (wallpaperIndex < 0|| wallpaperIndex>42)
+        currentWallpaperPath = preferences.getString("wallpaper", "/null");
+    if (!SD.exists(currentWallpaperPath)) {
+        wallpaperIndex = 0;
+        printT_S(currentWallpaperPath+" - NOT FOUND");
     }
+
+    // if (!SD.exists("/DATA/MESSAGES.JSON")) {
+    //     if (!SD.exists("/DATA")) {
+    //         SD.mkdir("/DATA");
+    //     }
+    //     File file = SD.open("/DATA/MESSAGES.JSON", FILE_WRITE);
+    //     file.print("{}");
+    //     file.close();
+    // }
     tft.fillScreen(tft.color24to16(0x555555));
-   
+
     while (digitalRead(37) == LOW)
         ;
     drawStatusBar();

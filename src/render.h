@@ -28,5 +28,8 @@ String textbox(String title, String content, int ypos, bool onlydraw, bool selec
 bool button(String title, int xpos, int ypos, int w, int h, bool selected = false, int *direction = nullptr);
 extern int8_t _signal;
 extern int8_t charge;
+extern const int lastImage;
+void drawPNG(const char *filename);
+void drawWallpaper();
 void findSplitPosition(String text, int charIndex, int &posX, int &posY,int direction = 0);
 #endif
