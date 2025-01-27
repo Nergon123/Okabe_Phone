@@ -24,3 +24,5 @@ Upload will build and upload firmware to device.
 
 Basically IMAGES.SG is just one big RGB565 array.
 Adresses of every image there located in [ADRESSES.MD](./ADRESSES.MD)
+
+Editor located in [TOOLS](./Tools/README.MD)

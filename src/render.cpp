@@ -80,11 +80,12 @@ String textbox(String title, String content, int ypos, bool onlydraw, bool selec
     int xpos      = 5;
     int width     = 235 - xpos;
     int height    = 25;
-    xpos          = 0;
+   
     int dypos     = 0;
     int c_offset  = 0;
 
     tft.setViewport(xpos, ypos, width, height);
+    xpos = 0;
     tft.setCursor(xpos + 5, dypos + yoff);
 
     int length = tft.textWidth(content.substring(0, cursorPos)) + 15;
