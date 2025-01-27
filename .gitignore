@@ -1,5 +1,7 @@
 .pio
-.vscode
+.vscode/
+.vscode/extensions.json
+.vscode/settings.json
 FLASH.bat
 FLASH.sh
 toFlash/
