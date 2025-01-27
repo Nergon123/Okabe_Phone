@@ -24,11 +24,13 @@ struct Contact {
 };
 
 struct mOption {
+    
     String  label;
     SDImage icon;
 };
 
 enum status {
+    
     NEW     = 'N',
     REPLIED = 'R',
     READED  = 'D'
@@ -72,7 +74,7 @@ extern uint          contactCount;
 extern int           currentScreen;
 extern int           currentFont;
 extern int           lastContactIndex;
-extern uint32_t      ima;
+extern uint32_t      wallpaperIndex;
 extern volatile int  DBC_MS;
 extern volatile int  stateCall;
 extern bool          sBarChanged;
