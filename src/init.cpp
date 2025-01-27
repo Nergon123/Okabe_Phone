@@ -1,6 +1,7 @@
 #include "init.h"
 
-// Global variables
+
+
 IP5306      chrg;
 TFT_eSPI    tft = TFT_eSPI();
 Preferences preferences;
@@ -13,33 +14,54 @@ SDImage mailimg[4] = {
     SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
     SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
 
-//Variable to Check whether status bar changed
+//Variable to check if status bar refresh required
 bool          sBarChanged     = true;
-
+//Variable that indicate if there incoming call
 bool          isCalling       = false;
+//Checking if background SIM card check in progress
 bool          backgroundBusy  = false;
-bool          havenewmessages = false;
+//Check if there any new messages (Status Bar indicator)
+bool          haveNewMessages = false;
+//Check if SIM card can make calls 
 bool          isAbleToCall    = false;
+//Check if someone answered our call
 bool          isAnswered      = false;
+//Check if SIM Serial in use
 volatile bool simIsBusy       = false;
+//check if there call in progress
 volatile bool ongoingCall     = false;
+//check if there SIM card available
 volatile bool simIsUsable     = false;
 
+//Variable for non-blocking delay
 int          millDelay        = 0;
+//Current Screen variable, for recursion prevention
 int          currentScreen    = SCREENS::MAINSCREEN;
+//index of last Contact 
 int          lastContactIndex = 0;
+//count of all contacts
 uint         contactCount     = 0;
-uint32_t     ima              = 0;
+//index of current wallpaper
+uint32_t     wallpaperIndex   = 0;
+//index of currentFont used for changeFont()
 int          currentFont      = 0;
+
+//Call state returned by SIM card
 volatile int stateCall        = 6;
+//delay between SIM card checks 
 volatile int DBC_MS           = 1000;
 
+//Contacts storage
 Contact contacts[MAX_CONTACTS];
+//Default contact (to be erased)
 Contact examplecontact = {0, "+1234567890", "NERGON", "petro.chazov@gmail.com"};
 
+//Handle for background SIM checks
 TaskHandle_t TaskHCommand;
 
+// Number of person who calling us
 String currentNumber           = "";
+
 String currentRingtonePath     = "";
 String currentMailRingtonePath = "";
 String currentNotificationPath = "";
@@ -146,7 +168,6 @@ void   setup() {
     Serial.print("Initializing SD card...");
     tft.println("\nInitializing SD card...");
 
-    Serial.println(GetState());
 
     if (!SD.begin(chipSelect, SPI, 80000000)) {
         Serial.println("SD Initialization failed!");
@@ -157,6 +178,7 @@ void   setup() {
         delay(1000);
 
         // recovery("Something went wrong with your sd card\n(Possibly its just not there)\n");
+        //I can't work without sd card >_<
         sysError("SD_CARD_INIT_FAIL");
     } else {
 
@@ -167,15 +189,9 @@ void   setup() {
     if (!SD.exists("/FIRMWARE/IMAGES.SG"))
         recovery("No /FIRMARE/IMAGE.SG found\nhere some tools to help you!");
 
-    File lol2 = SD.open("/FIRMWARE/IMAGES.SG");
-
-    while (lol2.position() != 13) {
-        tft.print((char)lol2.read());
-    }
-    lol2.close();
 
     preferences.begin("settings", false);
-    ima          = preferences.getUInt("ima", 0);
+    wallpaperIndex          = preferences.getUInt("wallpaperIndex", 0);
     contactCount = preferences.getUInt("contactCount", 0);
 
     if (!SD.exists("/DATA/MESSAGES.JSON")) {

@@ -40,8 +40,8 @@
 #define DECLINE BACK
 /////////////////////////
 // ENABLE DEVELOPER MODE//
-#define DEVMODE //
-#define SIMDEBUG//
+//#define DEVMODE //
+//#define SIMDEBUG//
 /////////////////////////
 
 #endif

@@ -335,16 +335,20 @@ void rendermenu(int choice, bool right) {
         {52, (125 + 26)}, 
         {140, (125 + 26)}};
 
-    int offIndex = right ? (choice == 0 ? 3 : choice - 1) : choice;
+    int offIndex;
+    if (right) {
+        offIndex = (choice == 0) ? 3 : choice - 1;
+    } else {
+        offIndex = (choice + 1) % 4; 
+    }
+
     int onIndex  = choice;
 
-    // Draw the off icon
     drawFromSd(
         IconPositions[offIndex].x,
         IconPositions[offIndex].y,
         SDImage(baseAddress + (iconOffset * offIndex), 55, 55, 0, false));
 
-    // Draw the on icon
     drawFromSd(
         IconPositions[onIndex+4].x,
         IconPositions[onIndex+4].y,

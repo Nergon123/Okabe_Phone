@@ -14,7 +14,7 @@ bool confirmation(String reason) {
 void ErrorWindow(String reason) {
 
     int xpos = 0;
-    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
     drawFromSd(0x5F7A25, 0, 90, 240, 134);
     tft.setCursor(80, 120);
     changeFont(1);
@@ -216,8 +216,8 @@ void settings() {
                     ;
                 break;
             case 1:
-                preferences.putUInt("ima", pic);
-                ima           = pic;
+                preferences.putUInt("wallpaperIndex", pic);
+                wallpaperIndex           = pic;
                 currentScreen = SCREENS::MAINSCREEN;
                 return;
                 break;
@@ -342,14 +342,14 @@ int gallery() {
         "Space Froggies",
         "Wallpaper 7",
         "Nae"};
-    // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+    // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
     return listMenu(wallnames, ArraySize(wallnames), true, 2, "Change wallpaper");
 }
 
 void MainScreen() {
     Serial.println("MAINSCREEN");
     changeFont(0);
-    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
     // bool exit = false;
     int c = -1;
     while (c != UP) {
@@ -358,7 +358,7 @@ void MainScreen() {
         if ((c >= '0' || c == '*' || c == '#') && c <= '9') {
             numberInput(c);
 
-            drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+            drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
         }
         if (c == UP)
             break;
@@ -415,7 +415,7 @@ void offlineCharging() {
 }
 
 void incomingCall(Contact contact) {
-    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * ima), 0, 26, 240, 294);
+    drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
 
     drawFromSd(0x5F7A25, 0, 90, 240, 134);
     changeFont(1);
