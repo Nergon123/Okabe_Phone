@@ -27,4 +27,10 @@ When you open this tool you should see
 - **Replace Image** button: will let you use your file to replace image (for some reason on some systems filter doesn't work, if so you should choose `All Files (*.*)` from dropdown menu), Image should be in same resolution as source image. Press arrow to confirm replacing.
 - **Output** field and **Transparent** checkbox: This one is for SDImage variable, if you want to use color for transparency (there no alpha channel, this works more like chroma-key) you need to click on color on source image.
 
+## Example of replacement
+
+![SG](../GHRES/tool__screenshot.png)
+![Cat](../GHRES/tool_screenshot.png)
+![real-life](../GHRES/photos/cat.jpg)
+
 Thats everything what I can tell about this tool.
