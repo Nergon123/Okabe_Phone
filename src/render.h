@@ -31,5 +31,6 @@ extern int8_t charge;
 extern const int lastImage;
 void drawPNG(const char *filename);
 void drawWallpaper();
+void progressBar(int val, int max, int y, int h = 8, uint16_t color = TFT_WHITE, bool log = true);
 void findSplitPosition(String text, int charIndex, int &posX, int &posY,int direction = 0);
 #endif

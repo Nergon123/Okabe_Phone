@@ -92,9 +92,11 @@ void   setup() {
 #ifndef LOG
     if (!SD.begin(chipSelect, SPI, 80000000))
         sysError("SD_CARD_INIT_FAIL");
-    drawFromSd(50, 92, SDImage(SDImage(0x665421, 140, 135)));
+    if (!SD.exists("/FIRMWARE/IMAGES.SG"))
+        recovery("No /FIRMARE/IMAGES.SG found");
+    drawFromSd(50, 85, SDImage(SDImage(0x665421, 140, 135)));
 #endif
-
+    progressBar(0, 100,250);
     tft.setCursor(12, 3);
     tft.setTextSize(3);
     tft.setTextColor(tft.color24to16(0x656565));
@@ -117,7 +119,7 @@ void   setup() {
 
     Serial.begin(115200);
     Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
-
+    progressBar(10, 100,250);
     uint32_t oldtime = millis();
     if (sendATCommand("AT").indexOf("OK") != -1) {
         printT_S("Setting up sim card please wait...");
@@ -125,6 +127,7 @@ void   setup() {
         while (!_checkSim() && millis() - oldtime < 10000)
             ;
         populateContacts();
+            progressBar(90, 100,250);
         printT_S("Done!");
     }
 
@@ -185,10 +188,10 @@ void   setup() {
     } else {
         printT_S("SD Initialization done.");
     }
-#endif
     if (!SD.exists("/FIRMWARE/IMAGES.SG"))
         recovery("No /FIRMARE/IMAGES.SG found");
-
+#endif
+        progressBar(95, 100,250);
     preferences.begin("settings", false);
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
     // contactCount   = preferences.getUInt("contactCount", 0);
@@ -198,7 +201,7 @@ void   setup() {
         wallpaperIndex = 0;
         printT_S(currentWallpaperPath + " - NOT FOUND");
     }
-
+    progressBar(100, 100,250);
     // if (!SD.exists("/DATA/MESSAGES.JSON")) {
     //     if (!SD.exists("/DATA")) {
     //         SD.mkdir("/DATA");
@@ -207,7 +210,7 @@ void   setup() {
     //     file.print("{}");
     //     file.close();
     // }
-    tft.fillScreen(tft.color24to16(0x555555));
+
 
     while (digitalRead(37) == LOW)
         ;
@@ -291,9 +294,14 @@ void screens() {
 void initSim() {
 
     printT_S(sendATCommand("AT+CMEE=2"));
+    progressBar(25, 100,250);
     printT_S(sendATCommand("AT+CLIP=1"));
+    progressBar(30, 100,250);
     printT_S(sendATCommand("AT+CLCC=1"));
+    progressBar(45, 100,250);
     printT_S(sendATCommand("AT+CSCS=\"GSM\""));
+    progressBar(50, 100,250);
     printT_S(sendATCommand("AT+CMGF=1"));
     simIsUsable = _checkSim();
+    progressBar(80, 100,250);
 }

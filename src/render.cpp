@@ -375,11 +375,10 @@ void rendermenu(int &choice, int old_choice) {
     const uint32_t iconOffset  = 0x17A2;
 
     const SDImage onIcons[] = {
-        {0x5D0341, 49, 49, 0, false}, 
-        {0x5D1603, 49, 51, 0, false}, 
-        {0x5D2989, 50, 50, 0, false}, 
-        {0x5D3D11, 49, 51, 0, false}  
-    };
+        {0x5D0341, 49, 49, 0, false},
+        {0x5D1603, 49, 51, 0, false},
+        {0x5D2989, 50, 50, 0, false},
+        {0x5D3D11, 49, 51, 0, false}};
 
     const struct {
         int x, y;
@@ -396,11 +395,11 @@ void rendermenu(int &choice, int old_choice) {
     int offIndex = old_choice;
 
     int onIndex = choice;
-    if(old_choice!=choice)
-    drawFromSd(
-        IconPositions[offIndex].x,
-        IconPositions[offIndex].y,
-        SDImage(baseAddress + (iconOffset * offIndex), 55, 55, 0, false));
+    if (old_choice != choice)
+        drawFromSd(
+            IconPositions[offIndex].x,
+            IconPositions[offIndex].y,
+            SDImage(baseAddress + (iconOffset * offIndex), 55, 55, 0, false));
 
     drawFromSd(
         IconPositions[onIndex + 4].x,
@@ -1205,4 +1204,30 @@ void drawWallpaper() {
         wallpaperIndex = 0;
         drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
     }
+}
+
+
+int  lastpercentage;
+void progressBar(int val, int max, int y, int h, uint16_t color, bool log) {
+
+    int percentage = (val * 100) / max;
+    if (lastpercentage > percentage)
+        lastpercentage = percentage;
+    if (!log) {
+        //"for loop" and delay for smooth transition 
+        for (int i = lastpercentage; i <= percentage; i++) {
+            tft.drawRect(69, y, 100, h, color);
+            tft.fillRect(69, y, i, h, color);
+            delay(13); 
+        }
+    } else {
+#ifndef LOG
+        for (int i = lastpercentage; i <= percentage; i++) {
+            tft.drawRect(69, y, 100, h, color);
+            tft.fillRect(69, y, i, h, color);
+            delay(13);
+        }
+#endif
+    }
+    lastpercentage = percentage;
 }
