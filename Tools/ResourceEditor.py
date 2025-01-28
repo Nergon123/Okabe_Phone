@@ -33,7 +33,7 @@ def save_image_to_binary(file_path, address, image):
                 rgb565 = rgb888_to_rgb565(r, g, b)
                 f.write(struct.pack('<H', rgb565))
 def choose_file():
-    file_path = filedialog.askopenfilename(filetypes=[("Binary files", "*.SG"),("All files", "*.*")])
+    file_path = filedialog.askopenfilename(filetypes=[("OkabePhone Resource Files", "*.SG"),("All files", "*.*")])
     if file_path:
         entry_file.delete(0, tk.END)
         entry_file.insert(0, file_path)
@@ -84,7 +84,10 @@ def update_output():
         height = entry_height.get()
         transparent = checkbox_transparent_var.get()
         transparent_color = selected_color if transparent else 0
-        output_text = f"SDImage({hex(int(address, 16))}, {width}, {height}, {hex(transparent_color)}, {str(transparent).lower()});"
+        if transparent:
+            output_text = f"SDImage({hex(int(address, 16))}, {width}, {height}, {hex(transparent_color)}, {str(transparent).lower()});"
+        else:
+            output_text = f"SDImage({hex(int(address, 16))}, {width}, {height});"
         entry_output.delete(0, tk.END)
         entry_output.insert(0, output_text)
     except Exception as e:
@@ -134,7 +137,7 @@ def decrement_address():
         label_status.config(text=f"Error: {e}", foreground="red")
 
 root = tk.Tk()
-root.title("Okabe Image Resources Editor v0.4")
+root.title("Okabe Image Resources Editor v0.4.2")
 
 frame_input = ttk.Frame(root, padding="10")
 frame_input.grid(row=0, column=0, sticky=(tk.W, tk.E))
