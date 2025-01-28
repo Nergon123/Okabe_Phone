@@ -3,6 +3,8 @@ from tkinter import ttk, filedialog, messagebox
 import struct
 from PIL import Image, ImageTk, ImageDraw
 import pyperclip  
+
+_offset = 1
 def rgb888_to_rgb565(r, g, b):
     return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
 def load_image_from_binary(file_path, address, width, height):
@@ -39,7 +41,7 @@ def choose_file():
 def display_image():
     try:
         file_path = entry_file.get()
-        address = int(entry_address.get(), 16) - 1
+        address = int(entry_address.get(), 16) + _offset
         width = int(entry_width.get())
         height = int(entry_height.get())
         if width > 240 or height > 320:
@@ -110,7 +112,7 @@ def replace_image():
         label_status.config(text=f"Error: {e}", foreground="red")
 def increment_address():
     try:
-        address = int(entry_address.get(), 16) - 1
+        address = int(entry_address.get(), 16) + _offset
         offset = int(entry_offset.get(), 16)
         new_address = address + offset
         entry_address.delete(0, tk.END)
@@ -120,7 +122,7 @@ def increment_address():
         label_status.config(text=f"Error: {e}", foreground="red")
 def decrement_address():
     try:
-        address = int(entry_address.get(), 16) - 1
+        address = int(entry_address.get(), 16) + _offset
         offset = int(entry_offset.get(), 16)
         new_address = address - offset
         if new_address<0:
