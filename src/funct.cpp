@@ -7,8 +7,11 @@ unsigned int getIndexOfCount(int count, String input, String str, unsigned int f
     return fromIndex;
 }
 void printT_S(String str){
+    
     Serial.println(str);
+    #ifdef LOG
     tft.println(str);
+    #endif
 }
 String HEXTOASCII(String hex) {
     hex.toUpperCase();

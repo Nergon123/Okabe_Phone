@@ -19,6 +19,10 @@
 #define CWIDTH 1
 //CURSOR WIDTH
 
+#define FIRMVER "0.1.0 ALPHA"
+
+//#define LOG
+
 ///////CALL STATES/////////
 
 #define ACTIVE 0

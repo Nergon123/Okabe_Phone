@@ -4,8 +4,7 @@ IP5306      chrg;
 TFT_eSPI    tft = TFT_eSPI();
 Preferences preferences;
 MCP23017    mcp = MCP23017(MCP23017_ADDR);
-PNG png;
-
+PNG         png;
 
 SDImage mailimg[4] = {
     SDImage(0x662DB1, 18, 21, 0, true),
@@ -71,9 +70,9 @@ String lastSIMerror = "";
 void   setup() {
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
     mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
+
     tft.init();
     tft.fillScreen(0x0000);
-
     // INIT PINS
     analogWrite(TFT_BL, 1024);
 
@@ -89,24 +88,31 @@ void   setup() {
       offlineCharging();
       tft.setTextFont(1);
     } */
+    SPI.begin(14, 2, 15, chipSelect);
+#ifndef LOG
+    if (!SD.begin(chipSelect, SPI, 80000000))
+        sysError("SD_CARD_INIT_FAIL");
+    drawFromSd(50, 92, SDImage(SDImage(0x665421, 140, 135)));
+#endif
 
-    tft.setCursor(15, 3);
-    tft.setTextSize(4);
-    tft.setTextColor(tft.color24to16(0x666666));
-    tft.println("NerBoot");
-    tft.setCursor(12, 0);
+    tft.setCursor(12, 3);
+    tft.setTextSize(3);
+    tft.setTextColor(tft.color24to16(0x656565));
+    printT_S("OkabePhone");
+    tft.setCursor(15, 5);
     tft.setTextColor(0xFFFF);
-    printT_S("NerBoot");
+    printT_S("OkabePhone");
+#ifdef LOG
     tft.fillRect(0, 0, 10, 10, TFT_RED);
     tft.fillRect(0, 10, 10, 10, TFT_GREEN);
     tft.fillRect(0, 20, 10, 10, TFT_BLUE);
+#endif
     tft.setTextSize(1);
     changeFont(0);
-    printT_S("\n\nNerBoot v.0.0.4 ALPHA\n\nPhone firmware written by NERGON\n\nResources located in sdcard\nfolder FIRMWARE\n");
-    SPI.begin(14, 2, 15, 13);
+    printT_S("\nOkabePhone " + String(FIRMVER) + "\n\nPhone firmware written by Nergon\n\nResources located in sdcard\nfolder FIRMWARE\n");
 
 #ifdef DEVMODE
-    tft.println("\n       !!! DEVMODE ENABLED !!!\n\n       THIS MEANS THAT THIS \n       BUILD NOT FOR PRODUCTION\n");
+    printT_S("\n       !!! DEVMODE ENABLED !!!\n\n       THIS MEANS THAT THIS \n       BUILD NOT FOR PRODUCTION\n");
 #endif
 
     Serial.begin(115200);
@@ -165,9 +171,10 @@ void   setup() {
         0);
 
     printT_S("Initializing SD card...");
+#ifdef LOG
 
     if (!SD.begin(chipSelect, SPI, 80000000)) {
-        
+
         tft.setTextColor(0xf800);
         printT_S("\nSD Initialization failed!");
 
@@ -176,20 +183,20 @@ void   setup() {
         // I can't work without sd card >_<
         sysError("SD_CARD_INIT_FAIL");
     } else {
-       printT_S("SD Initialization done.");
+        printT_S("SD Initialization done.");
     }
-
+#endif
     if (!SD.exists("/FIRMWARE/IMAGES.SG"))
-        recovery("No /FIRMARE/IMAGE.SG found");
+        recovery("No /FIRMARE/IMAGES.SG found");
 
     preferences.begin("settings", false);
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
     // contactCount   = preferences.getUInt("contactCount", 0);
-    if (wallpaperIndex < 0|| wallpaperIndex>42)
+    if (wallpaperIndex < 0 || wallpaperIndex > 42)
         currentWallpaperPath = preferences.getString("wallpaper", "/null");
     if (!SD.exists(currentWallpaperPath)) {
         wallpaperIndex = 0;
-        printT_S(currentWallpaperPath+" - NOT FOUND");
+        printT_S(currentWallpaperPath + " - NOT FOUND");
     }
 
     // if (!SD.exists("/DATA/MESSAGES.JSON")) {
@@ -283,10 +290,10 @@ void screens() {
 }
 void initSim() {
 
-    tft.println(sendATCommand("AT+CMEE=2"));
-    tft.println(sendATCommand("AT+CLIP=1"));
-    tft.println(sendATCommand("AT+CLCC=1"));
-    tft.println(sendATCommand("AT+CSCS=\"GSM\""));
-    tft.println(sendATCommand("AT+CMGF=1"));
+    printT_S(sendATCommand("AT+CMEE=2"));
+    printT_S(sendATCommand("AT+CLIP=1"));
+    printT_S(sendATCommand("AT+CLCC=1"));
+    printT_S(sendATCommand("AT+CSCS=\"GSM\""));
+    printT_S(sendATCommand("AT+CMGF=1"));
     simIsUsable = _checkSim();
 }
