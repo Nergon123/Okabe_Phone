@@ -364,38 +364,39 @@ void drawCutoutFromSd(SDImage image,
     }
 }
 
-void rendermenu(int choice, bool right) {
+void rendermenu(int &choice, int old_choice) {
+
+    if (choice > 3)
+        choice = 0;
+    if (choice < 0)
+        choice = 3;
+
     const uint32_t baseAddress = 0x5D5097;
     const uint32_t iconOffset  = 0x17A2;
 
     const SDImage onIcons[] = {
-        {0x5D0341, 49, 49, 0, false}, // First on icon
-        {0x5D1603, 49, 51, 0, false}, // Second on icon
-        {0x5D2989, 50, 50, 0, false}, // Third on icon
-        {0x5D3D11, 49, 51, 0, false}  // Fourth on icon
+        {0x5D0341, 49, 49, 0, false}, 
+        {0x5D1603, 49, 51, 0, false}, 
+        {0x5D2989, 50, 50, 0, false}, 
+        {0x5D3D11, 49, 51, 0, false}  
     };
 
     const struct {
         int x, y;
     } IconPositions[] = {
-        {49, 43 + 26}, // On Icons
+        {49, 43 + 26}, // Off Icons
         {138, 42 + 26},
         {49, 122 + 26},
         {137, 123 + 26},
-        {51, (45 + 26)}, // Off Icons
+        {51, (45 + 26)}, // On Icons
         {141, (44 + 26)},
         {52, (125 + 26)},
         {140, (125 + 26)}};
 
-    int offIndex;
-    if (right) {
-        offIndex = (choice == 0) ? 3 : choice - 1;
-    } else {
-        offIndex = (choice + 1) % 4;
-    }
+    int offIndex = old_choice;
 
     int onIndex = choice;
-
+    if(old_choice!=choice)
     drawFromSd(
         IconPositions[offIndex].x,
         IconPositions[offIndex].y,
@@ -1198,7 +1199,7 @@ String SplitString(String text) {
 void drawWallpaper() {
     if (SD.exists(currentWallpaperPath))
         drawPNG(currentWallpaperPath.c_str());
-    else if  (wallpaperIndex < 0|| wallpaperIndex>42)
+    else if (wallpaperIndex >= 0 || wallpaperIndex < 42)
         drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
     else {
         wallpaperIndex = 0;

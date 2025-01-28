@@ -8,7 +8,7 @@ void changeFont(int ch);
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, File file = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ));
 void writeText(int x, int y, char *str);
 void drawStatusBar();
-void rendermenu(int choice, bool right);
+void rendermenu(int &choice, int old_choice);
 void sysError(const char *reason);
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file = SD.open("/FIRMWARE/IMAGES.SG", FILE_READ), bool transp = false, uint16_t tc = 0);
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool transp, uint16_t tc = 0);

@@ -146,7 +146,7 @@ void settings() {
         }
         Serial.println(pic);
         String galch[] = {"Preview", "Confirm"};
-        if (pic != -1 && pic != 42) {
+        if (pic != -1 && pic != lastImage) {
 
             picch = choiceMenu(galch, 2, true);
             switch (picch) {
@@ -157,7 +157,9 @@ void settings() {
                 break;
             case 1:
                 preferences.putUInt("wallpaperIndex", pic);
+                preferences.putString("wallpaper", "/null");
                 wallpaperIndex = pic;
+                currentWallpaperPath = "/null";
                 currentScreen  = SCREENS::MAINSCREEN;
                 return;
                 break;
@@ -165,7 +167,7 @@ void settings() {
 
                 break;
             }
-        } else if (pic == 42) {
+        } else if (pic == lastImage) {
             String path = fileBrowser(SD.open("/"), ".png");
             while (buttonsHelding() != BACK)
                 ;
@@ -179,9 +181,9 @@ void settings() {
             case 1:
                 preferences.putUInt("wallpaperIndex", -1);
                 preferences.putString("wallpaper", path);
-                wallpaperIndex = -1;
+                wallpaperIndex       = -1;
                 currentWallpaperPath = path;
-                currentScreen  = SCREENS::MAINSCREEN;
+                currentScreen        = SCREENS::MAINSCREEN;
                 return;
                 break;
             default:
@@ -198,8 +200,9 @@ void MainMenu() {
     drawFromSd(0x5ADC01, 0, 26, 240, 294);
     drawFromSd(0x5D0341, 51, 71, 49, 49);
 
-    int  choice = 0;
-    bool exit   = false;
+    int  choice     = 0;
+    int  old_choice = 0;
+    bool exit       = false;
     while (true) {
         switch (buttonsHelding()) {
         case BACK: {
@@ -229,30 +232,36 @@ void MainMenu() {
                 break;
             }
             drawFromSd(0x5ADC01, 0, 26, 240, 294);
-            rendermenu(choice, false);
+            rendermenu(choice, choice);
             break;
         }
 
         case UP: {
-            choice--;
-            if (choice > 3)
-                choice = 0;
-            if (choice < 0)
-                choice = 3;
-
-            rendermenu(choice, false);
+            old_choice = choice;
+            choice -= 2;
+            rendermenu(choice, old_choice);
             // left
             break;
         }
 
         case DOWN: {
-            choice++;
-            if (choice > 3)
-                choice = 0;
-            if (choice < 0)
-                choice = 3;
+            old_choice = choice;
+            choice += 2;
+            rendermenu(choice, old_choice);
+            break;
+        }
+        case LEFT: {
+            old_choice = choice;
+            choice--;
+            rendermenu(choice, old_choice);
+            // left
+            break;
+        }
 
-            rendermenu(choice, true);
+        case RIGHT: {
+            old_choice = choice;
+            choice++;
+            rendermenu(choice, old_choice);
             break;
         }
         }
@@ -643,7 +652,7 @@ String fileBrowser(File dir, String format) {
         }
         dir.close();
     } while (choice != -1);
-    return "null";
+    return "/null";
     file.close();
     dir.close();
 }
