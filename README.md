@@ -1,4 +1,5 @@
 # Okabe Phone
+[![Discord](https://img.shields.io/discord/1333879897860603905?label=Discord%20Server)](https://discord.gg/TdPYUj9fAj) ![GitHub last commit](https://img.shields.io/github/last-commit/Nergon123/Okabe_Phone) ![GitHub Repo stars](https://img.shields.io/github/stars/Nergon123/Okabe_Phone)
 
 Okabe phone is my project that I was making just because I was bored...lmao.
 
