@@ -75,5 +75,5 @@ See [SHOWCASE.MD](./SHOWCASE.MD)
 If you any question you can ask them via
 - Issues
 - [E-Mail](mailto:enderman3025@gmail.com?subject=[OkabePhone]%20I%20have%20a%20question)
-- [My personal discord server](https://discord.gg/XWEscuUzG8) 
+- [My personal discord server](https://discord.gg/TdPYUj9fAj) 
 - Discord DM ( username @nergon )
