@@ -470,7 +470,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
 }
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool transp, uint16_t tc) {
-    drawFromSd(pos, pos_x, pos_y, size_x, size_y, SD.open("/FIRMWARE/IMAGES.SG"), transp, tc);
+    drawFromSd(pos, pos_x, pos_y, size_x, size_y, SD.open(resPath), transp, tc);
 }
 
 void drawFromSd(int x, int y, SDImage sprite) {
@@ -524,6 +524,7 @@ void writeCustomFont(int x, int y, String input, int type) {
     }
 }
 
+// listMenu header
 void listMenu_sub(String label, int type, int page, int pages) {
 
     tft.setCursor(30, 45);
@@ -537,6 +538,7 @@ void listMenu_sub(String label, int type, int page, int pages) {
     changeFont(1);
 }
 
+// listMenu entry
 void lM_entryRender(int x, int y, int i, int index, int scale, int height, int icon_x, mOption choice, bool images = false) {
     if (images) {
 
@@ -764,6 +766,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
     return -1;
 }
 
+// Converter from old type of listMenu to new
 int listMenu(const String choices[], int icount, bool images, int type, String label, bool forceIcons, int findex) {
     mOption *optionArr = new mOption[icount];
     for (int i = 0; i < icount; i++) {
@@ -772,13 +775,79 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
     }
     return listMenu(optionArr, icount, images, type, label, forceIcons, findex);
 }
+int lmng_offset = 0;
+// Render entry of listMenuNonGraphical()
+void renderlmng(mOption* choices, int x, int y, int icount, String label, int index, uint16_t color_active, uint16_t color_inactive) {
+    uint max_per_page = ((320 - y - tft.fontHeight()) / tft.fontHeight());
 
+    if (index >= max_per_page + lmng_offset) {
+        tft.fillRect(x,y,240-x,320-y,0);
+        tft.fillScreen(0);
+    } else if (index < lmng_offset) {
+        lmng_offset = index;
+        tft.fillRect(x,y,240-x,320-y,0);
+    }
+    tft.setCursor(x, y);
+    tft.setTextColor(color_inactive);
+    tft.println(label + "  ");
+
+    for (int i = lmng_offset; i < max_per_page + lmng_offset; i++) {
+        if (i == index)
+            tft.setTextColor(color_active);
+        else
+            tft.setTextColor(color_inactive);
+        if (i < icount)
+            tft.println("  " + choices[i].label);
+    }
+}
+
+// listMenu that doesn't use graphics
+int listMenuNonGraphical(mOption* choices, int icount, String label,int y) {
+    int x     = 0;
+    int index = 0;
+    changeFont(0);
+    tft.fillRect(x,y,240-x,320-y,0);
+    uint     max_per_page   = ((320 - y - tft.fontHeight()) / tft.fontHeight());
+    uint16_t color_active   = TFT_RED;
+    uint16_t color_inactive = TFT_WHITE;
+    tft.setTextColor(color_inactive);
+    renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
+    bool exit = false;
+    while (!exit) {
+        int c = buttonsHelding();
+        switch (c) {
+        case UP:
+
+            index--;
+            if (index < 0)
+                index = icount - 1;
+            renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
+
+            break;
+        case DOWN:
+            index++;
+            if (index >= icount)
+                index = 0;
+            renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
+            break;
+        case SELECT:
+        return index;
+        break;
+        case BACK:
+            return -1;
+            break;
+        }
+    }
+    return -1;
+}
+
+// Animation of spinning circles in rectangle, used in outgoing call
 void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     // FIRSTLY WAS WRITED MANUALLY BUT AFTER ENCOURING A BUG
     // I STOLE FROM CHATGPT
     //(slighty modified)
     //  Open the file and seek to the position where image data starts
-    File file = SD.open("/FIRMWARE/IMAGES.SG");
+    File file = SD.open(resPath);
     file.seek(0x658BC4);
     // Read data from SD card into buffer
     const int buffer_size = 400 * 2;
@@ -979,75 +1048,7 @@ int choiceMenu(const String choices[], int count, bool context) {
     }
     return -1;
 }
-// void findSplitPosition(String text, int &charIndex, int &posX, int &posY, int direction)
-// {
 
-//   int prevNL = 0;
-//   int lastNewLine = 0;
-//   int curPosInText = 0;
-//   for (; curPosInText < charIndex; curPosInText++)
-//   {
-//     posX = tft.textWidth(text.substring(lastNewLine, curPosInText));
-//     if (posX >= 240 || text[curPosInText] == '\n')
-//     {
-//       posX = 0;
-//       prevNL = lastNewLine;
-//       lastNewLine = --curPosInText;
-//       posY += tft.fontHeight();
-//     }
-//     if (curPosInText >= text.length() - 1)
-//     {
-//       curPosInText = text.length() - 1;
-//       break;
-//     }
-//   }
-//   int lastX = posX;
-//   if (direction == UP)
-//   {
-//     if (lastNewLine != 0)
-//     {
-//       for (int i = lastNewLine; posX > lastX; i--)
-//       {
-//         posX = tft.textWidth(text.substring(prevNL, i));
-//         if (curPosInText >= text.length() - 1)
-//         {
-//           curPosInText = text.length() - 1;
-//           break;
-//         }
-//       }
-//       posY -= tft.fontHeight();
-//     }
-//   }
-//   else if (direction == DOWN)
-//   {
-//     while (text[curPosInText] != '\n' || posX < 240)
-//     {
-//       if (curPosInText < text.length())
-//         curPosInText++;
-//       posX = tft.textWidth(text.substring(lastNewLine, curPosInText));
-//       if (curPosInText >= text.length() - 1)
-//       {
-//         curPosInText = text.length() - 1;
-//         break;
-//       }
-//     }
-
-//     posY += tft.fontHeight();
-//     while (posX < lastX)
-//     {
-//       curPosInText++;
-//       if (curPosInText >= text.length() - 1)
-//       {
-//         curPosInText = text.length() - 1;
-//         break;
-//       }
-//     }
-//   }
-//   if (charIndex >= text.length() - 1)
-//     charIndex = text.length() - 1;
-//   if (charIndex < 0)
-//     charIndex = 0;
-// }
 void findSplitPosition(String text, int charIndex, int &posX, int &posY, int direction) {
     int prevNL       = 0; // Last newline position
     int lastNewLine  = 0; // Current line's start position
@@ -1206,19 +1207,19 @@ void drawWallpaper() {
     }
 }
 
-
-int  lastpercentage;
+int lastpercentage;
+// progress bar that used on boot screen
 void progressBar(int val, int max, int y, int h, uint16_t color, bool log) {
 
     int percentage = (val * 100) / max;
     if (lastpercentage > percentage)
         lastpercentage = percentage;
     if (!log) {
-        //"for loop" and delay for smooth transition 
+        //"for loop" and delay for smooth transition
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.drawRect(69, y, 100, h, color);
             tft.fillRect(69, y, i, h, color);
-            delay(13); 
+            delay(13);
         }
     } else {
 #ifndef LOG

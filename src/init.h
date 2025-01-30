@@ -66,11 +66,11 @@ enum SCREENS {
     E,
 };
 
-extern MCP23017    mcp;
-extern IP5306      chrg;
-extern TFT_eSPI    tft;
-extern Preferences preferences;
-extern PNG         png;
+extern MCP23017      mcp;
+extern IP5306        chrg;
+extern TFT_eSPI      tft;
+extern Preferences   preferences;
+extern PNG           png;
 
 extern uint          contactCount;
 extern int           currentScreen;
@@ -87,15 +87,17 @@ extern bool          backgroundBusy;
 extern volatile bool simIsBusy;
 extern volatile bool ongoingCall;
 extern volatile bool simIsUsable;
-
 extern Contact       contacts[MAX_CONTACTS];
 extern Contact       examplecontact;
+
 extern String        lastSIMerror;
 extern String        currentNumber;
 extern String        currentRingtonePath;
 extern String        currentNotificationPath;
 extern String        currentMailRingtonePath;
 extern String        currentWallpaperPath;
+extern String        resPath;
+
 
 template <typename T, size_t N>
 size_t ArraySize(T (&)[N]) {

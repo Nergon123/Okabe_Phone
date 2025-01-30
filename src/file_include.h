@@ -1,6 +1,5 @@
 
 #include <defines.h>
-#include "esp_check.h"
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -11,12 +10,11 @@
 #include <Preferences.h>
 #include <Wire.h>
 #include <MCP23017.h>
-#include "hal/uart_types.h"
-#include "init.h"
 #include <PNGdec.h>
+#include "hal/uart_types.h"
 
+#include "init.h"
 #include "funct.h"
 #include "render.h"
 #include "screens.h"
-#include <regex>
 
