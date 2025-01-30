@@ -51,8 +51,6 @@ volatile int DBC_MS = 1000;
 
 // Contacts storage
 Contact contacts[MAX_CONTACTS];
-// Default contact (to be erased)
-Contact examplecontact = {0, "+1234567890", "NERGON", "petro.chazov@gmail.com"};
 
 // Handle for background SIM checks
 TaskHandle_t TaskHCommand;
@@ -64,17 +62,24 @@ String currentRingtonePath     = "";
 String currentMailRingtonePath = "";
 String currentNotificationPath = "";
 String currentWallpaperPath    = "/null";
+String resPath                 = "/FIRMWARE/IMAGES.SG";
 void   TaskIdleHandler(void *parameter);
 void   initSim();
 String lastSIMerror = "";
-void   setup() {
+
+void setup() {
+    pinMode(TFT_BL, OUTPUT);
+    analogWrite(TFT_BL, 0);                            // bootup blinking prevention
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
     mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
-
+    // INIT display
     tft.init();
     tft.fillScreen(0x0000);
+
+    // INIT Serial
+    Serial.begin(115200);
+    Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
     // INIT PINS
-    analogWrite(TFT_BL, 1024);
 
     pinMode(38, INPUT_PULLUP);
     pinMode(0, INPUT_PULLUP);
@@ -88,15 +93,27 @@ void   setup() {
       offlineCharging();
       tft.setTextFont(1);
     } */
+
+    analogWrite(TFT_BL, 1024);
+
+    preferences.begin("settings", false);
+    resPath = preferences.getString("resPath", "/FIRMWARE/IMAGES.SG");
+
     SPI.begin(14, 2, 15, chipSelect);
 #ifndef LOG
-    if (!SD.begin(chipSelect, SPI, 80000000))
-        sysError("SD_CARD_INIT_FAIL");
-    if (!SD.exists("/FIRMWARE/IMAGES.SG"))
-        recovery("No /FIRMARE/IMAGES.SG found");
-    drawFromSd(50, 85, SDImage(SDImage(0x665421, 140, 135)));
+    while (!SD.begin(chipSelect, SPI, 80000000))
+        recovery("No MicroSD card.");
+
+    while (!SD.exists(resPath))
+        recovery("No " + resPath + " found");
+    tft.fillScreen(0x0000);
+
+    drawFromSd(50, 85, SDImage(0x665421, 140, 135)); // draw boot logo
 #endif
-    progressBar(0, 100,250);
+    if (buttonsHelding() == '*')
+        recovery("Manually triggered recovery."); // Chance to change resource file to custom one
+    progressBar(0, 100, 250);
+
     tft.setCursor(12, 3);
     tft.setTextSize(3);
     tft.setTextColor(tft.color24to16(0x656565));
@@ -117,17 +134,18 @@ void   setup() {
     printT_S("\n       !!! DEVMODE ENABLED !!!\n\n       THIS MEANS THAT THIS \n       BUILD NOT FOR PRODUCTION\n");
 #endif
 
-    Serial.begin(115200);
-    Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
-    progressBar(10, 100,250);
+    progressBar(10, 100, 250);
     uint32_t oldtime = millis();
+
     if (sendATCommand("AT").indexOf("OK") != -1) {
         printT_S("Setting up sim card please wait...");
         initSim();
+
         while (!_checkSim() && millis() - oldtime < 10000)
-            ;
+            ; // check if sim card is usable for 10 whole seconds...
+
         populateContacts();
-            progressBar(90, 100,250);
+        progressBar(90, 100, 250);
         printT_S("Done!");
     }
 
@@ -188,11 +206,10 @@ void   setup() {
     } else {
         printT_S("SD Initialization done.");
     }
-    if (!SD.exists("/FIRMWARE/IMAGES.SG"))
-        recovery("No /FIRMARE/IMAGES.SG found");
+    if (!SD.exists(resPath))
+        recovery("No" + resPath + "found");
 #endif
-        progressBar(95, 100,250);
-    preferences.begin("settings", false);
+    progressBar(95, 100, 250);
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
     // contactCount   = preferences.getUInt("contactCount", 0);
     if (wallpaperIndex < 0 || wallpaperIndex > 42)
@@ -201,7 +218,7 @@ void   setup() {
         wallpaperIndex = 0;
         printT_S(currentWallpaperPath + " - NOT FOUND");
     }
-    progressBar(100, 100,250);
+    progressBar(100, 100, 250);
     // if (!SD.exists("/DATA/MESSAGES.JSON")) {
     //     if (!SD.exists("/DATA")) {
     //         SD.mkdir("/DATA");
@@ -210,7 +227,6 @@ void   setup() {
     //     file.print("{}");
     //     file.close();
     // }
-
 
     while (digitalRead(37) == LOW)
         ;
@@ -294,14 +310,14 @@ void screens() {
 void initSim() {
 
     printT_S(sendATCommand("AT+CMEE=2"));
-    progressBar(25, 100,250);
+    progressBar(25, 100, 250);
     printT_S(sendATCommand("AT+CLIP=1"));
-    progressBar(30, 100,250);
+    progressBar(30, 100, 250);
     printT_S(sendATCommand("AT+CLCC=1"));
-    progressBar(45, 100,250);
+    progressBar(45, 100, 250);
     printT_S(sendATCommand("AT+CSCS=\"GSM\""));
-    progressBar(50, 100,250);
+    progressBar(50, 100, 250);
     printT_S(sendATCommand("AT+CMGF=1"));
     simIsUsable = _checkSim();
-    progressBar(80, 100,250);
+    progressBar(80, 100, 250);
 }

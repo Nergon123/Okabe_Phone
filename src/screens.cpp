@@ -1,4 +1,5 @@
 #include "screens.h"
+
 void callActivity(Contact contact);
 void incomingCall(Contact contact);
 void inbox();
@@ -9,6 +10,8 @@ void ringtoneSelector(bool isMail);
 
 bool confirmation(String reason) {
     //"ARE YOU SURE YOU WANT TO DO THIS?"
+    drawWallpaper();
+    drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
     return true;
 }
 void ErrorWindow(String reason) {
@@ -158,9 +161,9 @@ void settings() {
             case 1:
                 preferences.putUInt("wallpaperIndex", pic);
                 preferences.putString("wallpaper", "/null");
-                wallpaperIndex = pic;
+                wallpaperIndex       = pic;
                 currentWallpaperPath = "/null";
-                currentScreen  = SCREENS::MAINSCREEN;
+                currentScreen        = SCREENS::MAINSCREEN;
                 return;
                 break;
             default:
@@ -316,6 +319,7 @@ int gallery() {
         "Nae",
         "Pick wallpaper..."};
     // drawWallpaper();
+
     return listMenu(wallnames, ArraySize(wallnames), true, 2, "Change wallpaper");
 }
 
@@ -603,7 +607,7 @@ void inbox(bool outbox) {
     }
 }
 
-String fileBrowser(File dir, String format) {
+String fileBrowser(File dir, String format, bool graphical) {
     SDImage folderIcon  = SDImage(0x663983, 18, 18, 0, true);
     SDImage fileIcon    = SDImage(0x663984 + (18 * 18 * 2), 18, 18, 0, true);
     String  currentPath = dir.path();
@@ -614,8 +618,7 @@ String fileBrowser(File dir, String format) {
     int      i       = 0;
     format.toLowerCase();
     do {
-        i = 0;
-
+        i   = 0;
         dir = SD.open(currentPath);
         dir.rewindDirectory();
         file = dir.openNextFile();
@@ -636,18 +639,23 @@ String fileBrowser(File dir, String format) {
                     if (format == "*" || fileLow.endsWith(format)) {
                         options[i].icon  = fileIcon;
                         options[i].label = file.name();
-                    }
+                    } else
+                        i--;
                 }
                 i++;
                 file = dir.openNextFile();
             }
         }
-        choice = listMenu(options, i, false, 2, "FILE MANAGER");
+        if (graphical)
+            choice = listMenu(options, i, false, 2, "FILE MANAGER");
+        else
+            choice = listMenuNonGraphical(options, i, "FILE MANAGER");
+
         if (options[choice].label.endsWith("/")) {
             options[choice].label.remove(options[choice].label.lastIndexOf("/"));
-            currentPath += options[choice].label;
+            currentPath += "/" + options[choice].label;
         } else {
-            currentPath += options[choice].label;
+            currentPath += "/" + options[choice].label;
             return currentPath;
         }
         dir.close();
@@ -1251,12 +1259,43 @@ void recovery(String message) {
     tft.setTextFont(1);
     tft.setTextSize(4);
     tft.setTextColor(0x00FF);
-    tft.print("=RECOVERY=\n\n");
+    tft.println("=RECOVERY=\n");
     tft.setTextSize(1);
     tft.setTextColor(0xFFFF);
     tft.println(message);
-    for (;;)
-        ;
+    mOption options[2] = {{"Choose resource file"}, {"Try again"}};
+    int     choice     = listMenuNonGraphical(options, ArraySize(options), "Choose action.", 150);
+    switch (choice) {
+    case 0:
+        String TempResPath = fileBrowser(SD.open("/"), ".SG", false);
+
+        File   file = SD.open(TempResPath);
+        String buf;
+        file.seek(0);
+        for (int i = 0; i < 12; i++) {
+            buf += (char)file.read();
+        }
+        /*
+         * Fun fact, if you will open any IMAGES.SG in any
+         * text editor you'll see that there ELPSYKONGROO at the beginning.
+         * That's to prevent empty files.
+         */
+   
+        if (buf.indexOf("ELPSYKONGROO") != -1){
+            resPath = TempResPath;
+            mOption optionss[2] = {{"Yes!"},{"No..."}};
+            choice = listMenuNonGraphical(optionss,2,"File is valid!\n\nWould you like to \nsave choice for next boot?");
+            if(choice == 0){
+                preferences.putString("resPath",resPath);
+            }
+        }else{
+            tft.fillScreen(0);
+            tft.setCursor(0,0);
+            tft.println("Choice is invalid!\nPress any key to continue...");
+            while(buttonsHelding()==-1);
+        }
+        break;
+    }
 }
 
 void numberInput(char first) {
@@ -1364,7 +1403,7 @@ char textInput(int input, bool onlynumbers, bool nonl) {
     if (input == -1)
         return 0;
     char buttons[12][12] = {
-        "0+@\b \n\r",
+        " \b0+@\n\r",
         "1,.?!()\r",
         "2ABCabc\r",
         "3DEFdef\r",
