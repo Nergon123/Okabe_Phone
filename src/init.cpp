@@ -31,6 +31,9 @@ volatile bool ongoingCall = false;
 // check if there SIM card available
 volatile bool simIsUsable = false;
 
+// current brightness in percentage
+uint brightness = 100;
+
 // Variable for non-blocking delay
 int millDelay = 0;
 // Current Screen variable, for recursion prevention
@@ -44,6 +47,13 @@ uint32_t wallpaperIndex = 0;
 // index of currentFont used for changeFont()
 int currentFont = 0;
 
+// is Screen Locked????
+volatile bool isScreenLocked = false;
+
+// time to sleep
+ulong millSleep        = 0;
+int   delayBeforeSleep = 60000;
+int   delayBeforeLock  = 15000;
 // Call state returned by SIM card
 volatile int stateCall = 6;
 // delay between SIM card checks
@@ -68,6 +78,7 @@ void   initSim();
 String lastSIMerror = "";
 
 void setup() {
+    setCpuFrequencyMhz(20);
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0);                            // bootup blinking prevention
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
@@ -94,23 +105,23 @@ void setup() {
       tft.setTextFont(1);
     } */
 
-    analogWrite(TFT_BL, 1024);
+    analogWrite(TFT_BL, (256 * brightness) / 100);
 
     preferences.begin("settings", false);
     resPath = preferences.getString("resPath", "/FIRMWARE/IMAGES.SG");
 
     SPI.begin(14, 2, 15, chipSelect);
-#ifndef LOG
-    while (!SD.begin(chipSelect, SPI, 80000000))
+    while (!SD.begin(chipSelect, SPI))
         recovery("No MicroSD card.");
 
     while (!SD.exists(resPath))
         recovery("No " + resPath + " found");
+#ifndef LOG
     tft.fillScreen(0x0000);
 
     drawFromSd(50, 85, SDImage(0x665421, 140, 135)); // draw boot logo
 #endif
-    if (buttonsHelding() == '*')
+    if (buttonsHelding(false) == '*')
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
     progressBar(0, 100, 250);
 
@@ -129,9 +140,9 @@ void setup() {
     tft.setTextSize(1);
     changeFont(0);
     printT_S("\nOkabePhone " + String(FIRMVER) + "\n\nPhone firmware written by Nergon\n\nResources located in sdcard\nfolder FIRMWARE\n");
-
+    printT_S(String(ESP.getChipModel()) + String(" REV.") + String(ESP.getChipRevision()) + String(" ") + String(ESP.getCpuFreqMHz()) + String("MHz ") + String(ESP.getChipCores()) + String(" cores\n"));
 #ifdef DEVMODE
-    printT_S("\n       !!! DEVMODE ENABLED !!!\n\n       THIS MEANS THAT THIS \n       BUILD NOT FOR PRODUCTION\n");
+    printT_S("\n       !!! DEVMODE ENABLED !!!\n\n");
 #endif
 
     progressBar(10, 100, 250);
@@ -191,24 +202,6 @@ void setup() {
         &TaskHCommand,
         0);
 
-    printT_S("Initializing SD card...");
-#ifdef LOG
-
-    if (!SD.begin(chipSelect, SPI, 80000000)) {
-
-        tft.setTextColor(0xf800);
-        printT_S("\nSD Initialization failed!");
-
-        delay(1000);
-        // recovery("Something went wrong with your sd card\n(Possibly its just not there)\n");
-        // I can't work without sd card >_<
-        sysError("SD_CARD_INIT_FAIL");
-    } else {
-        printT_S("SD Initialization done.");
-    }
-    if (!SD.exists(resPath))
-        recovery("No" + resPath + "found");
-#endif
     progressBar(95, 100, 250);
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
     // contactCount   = preferences.getUInt("contactCount", 0);
@@ -219,7 +212,7 @@ void setup() {
         printT_S(currentWallpaperPath + " - NOT FOUND");
     }
     progressBar(100, 100, 250);
-    // if (!SD.exists("/DATA/MESSAGES.JSON")) {
+    // if (!SD.exists("/DATA/MESSAGES.JSON")) { I was thinking that json is too much. I can make my own way to save data on sdcard.
     //     if (!SD.exists("/DATA")) {
     //         SD.mkdir("/DATA");
     //     }
@@ -227,7 +220,10 @@ void setup() {
     //     file.print("{}");
     //     file.close();
     // }
-
+    saveMessage(Message(Contact("Example", "+0000000000"),
+                        "Who needs subjects?", "hello \n I guess I was in love with you...\n A girl with first letter in nickname \'m\'", "00/00", "00/00/00 23:32:23"),
+                "OUTMESSAGES.SGDB");
+    millSleep = millis();
     while (digitalRead(37) == LOW)
         ;
     drawStatusBar();
@@ -278,6 +274,20 @@ void loop() {
     screens();
 }
 void idle() {
+
+    if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
+        setBrightness(brightness / 2);
+    } else if (millis() > millSleep + delayBeforeSleep) {
+        setBrightness(0);
+    } else {
+        setBrightness(brightness);
+    }
+    if (millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked) {
+        Serial.println(isScreenLocked);
+        Serial.println(millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked);
+        LockScreen();
+    }
+
     checkVoiceCall();
     delay(50);
     if (millis() - millDelay > DBC_MS) {

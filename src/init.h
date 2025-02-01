@@ -23,6 +23,8 @@ struct Contact {
     String phone;
     String name;
     String email;
+    Contact() : index(-1), phone(""), name(""), email("") {}
+    Contact(String _name, String _phone, String _email = "", int _index = -1) : name(_name), phone(_phone), email(_email), index(_index) {}
 };
 
 struct mOption {
@@ -50,6 +52,8 @@ struct Message {
     operator mOption() const {
         return mOption{date + " " + contact.name, status == status::NEW ? mailimg[0] : mailimg[1]};
     }
+    Message(Contact _contact, String _subject, String _content, String _date, String _longdate, bool _isOutgoing = false, unsigned char _status = status::NEW, int _index = -1) : contact(_contact), subject(_subject), content(_content), date(_date), longdate(_longdate), isOutgoing(_isOutgoing), index(_index), status(_status) {}
+    Message() : contact(Contact()), subject(""), content(""), date("00/00"), longdate("00/00/00 00:00"), isOutgoing(false), index(-1), status(status::NEW) {}
 };
 
 struct STR_DIR {
@@ -66,17 +70,19 @@ enum SCREENS {
     E,
 };
 
-extern MCP23017      mcp;
-extern IP5306        chrg;
-extern TFT_eSPI      tft;
-extern Preferences   preferences;
-extern PNG           png;
+extern MCP23017    mcp;
+extern IP5306      chrg;
+extern TFT_eSPI    tft;
+extern Preferences preferences;
+extern PNG         png;
 
 extern uint          contactCount;
 extern int           currentScreen;
 extern int           currentFont;
 extern int           lastContactIndex;
+extern uint          brightness;
 extern uint32_t      wallpaperIndex;
+extern ulong         millSleep;
 extern volatile int  DBC_MS;
 extern volatile int  stateCall;
 extern bool          sBarChanged;
@@ -84,20 +90,20 @@ extern bool          isAbleToCall;
 extern bool          isCalling;
 extern bool          isAnswered;
 extern bool          backgroundBusy;
+extern volatile bool isScreenLocked;
 extern volatile bool simIsBusy;
 extern volatile bool ongoingCall;
 extern volatile bool simIsUsable;
 extern Contact       contacts[MAX_CONTACTS];
 extern Contact       examplecontact;
 
-extern String        lastSIMerror;
-extern String        currentNumber;
-extern String        currentRingtonePath;
-extern String        currentNotificationPath;
-extern String        currentMailRingtonePath;
-extern String        currentWallpaperPath;
-extern String        resPath;
-
+extern String lastSIMerror;
+extern String currentNumber;
+extern String currentRingtonePath;
+extern String currentNotificationPath;
+extern String currentMailRingtonePath;
+extern String currentWallpaperPath;
+extern String resPath;
 
 template <typename T, size_t N>
 size_t ArraySize(T (&)[N]) {

@@ -265,6 +265,7 @@ void pngDraw(PNGDRAW *pDraw) {
 
 // Function to draw the PNG image
 void drawPNG(const char *filename) {
+    fastMode(true);
     File file = SD.open(filename, FILE_READ);
     if (!file) {
         Serial.println("Failed to open file");
@@ -281,11 +282,13 @@ void drawPNG(const char *filename) {
     }
 
     file.close();
+    fastMode(false);
 }
 
 // Draw and downscale image
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, File file) {
     // PARTIALLY STOLEN FROM CHATGPT
+    fastMode(true);
     if (!file.available())
         sysError("SD_CARD_NOT_AVAILABLE");
     file.seek(pos);
@@ -308,11 +311,17 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
         file.seek(file.position() + (size_x * 2 * (scale - 1)));
     }
     file.close();
+    fastMode(false);
 }
 int8_t _signal = 0;
 int8_t charge  = 0;
 void   drawStatusBar() {
     bool messageViewport = tft.getViewportY() == 51;
+    int curx = tft.getCursorX();
+    int cury = tft.getCursorY();
+    int fontt = currentFont;
+    int size = tft.textsize;
+    uint16_t color = tft.textcolor;
     if (sBarChanged) {
         if (messageViewport) {
             tft.resetViewport();
@@ -326,9 +335,22 @@ void   drawStatusBar() {
             drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26); // signal
         drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26);    // battery
         //  tft.print(String(charge) + String("%"));
+        if(isScreenLocked){
+            changeFont(0);
+            tft.setCursor(0,0);
+            tft.setTextSize(1);
+            tft.setTextColor(TFT_WHITE);
+            tft.print("SCREEN IS LOCKED HOLD * TO UNLOCK");
+        }
+
         if (messageViewport) {
             tft.setViewport(0, 51, 240, 269, true);
         }
+        changeFont(fontt);
+            tft.setCursor(curx,cury);
+            tft.setTextSize(size);
+            tft.setTextColor(color);
+
     }
 }
 
@@ -337,7 +359,7 @@ void drawCutoutFromSd(SDImage image,
                       int cutout_width, int cutout_height,
                       int display_x, int display_y,
                       File file) {
-
+fastMode(true);
     if (!file || !file.available()) {
         Serial.println("Failed to open file or file not available");
         return;
@@ -362,6 +384,7 @@ void drawCutoutFromSd(SDImage image,
         }
         tft.pushImage(display_x, display_y + row, cutout_width, 1, (uint16_t *)buffer);
     }
+    fastMode(false);
 }
 
 void rendermenu(int &choice, int old_choice) {
@@ -422,6 +445,7 @@ void sysError(const char *reason) {
 }
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file, bool transp, uint16_t tc) {
+    fastMode(true);
     if (!file.available())
         sysError("SD_CARD_NOT_AVAILABLE");
     file.seek(pos);
@@ -467,6 +491,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
             }
         }
     }
+    fastMode(false);
 }
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool transp, uint16_t tc) {
@@ -622,8 +647,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
     if (empty) {
         tft.setCursor(75, 70);
         tft.print("< Empty >");
-        while (buttonsHelding() == -1)
-            idle();
+        while (buttonsHelding() == -1);
         return -2;
     }
     tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
@@ -760,7 +784,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
             break;
         }
         }
-        idle();
+        
     }
 
     return -1;
@@ -1044,7 +1068,7 @@ int choiceMenu(const String choices[], int count, bool context) {
             break;
         }
         }
-        idle();
+       
     }
     return -1;
 }

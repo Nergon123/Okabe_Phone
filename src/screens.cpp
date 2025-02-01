@@ -59,52 +59,43 @@ void messages() {
 
 void e() {
 
-#ifdef DEVMODE
     int choice = -2;
     while (choice != -1) {
         String debug[] = {
-            "Emulate incoming call",
-            "Emulate outgoing call",
-            "Emulate recieving message",
-            "Set battery level",
-            "Set signal level",
-            "BLUETOOTH",
-            "WI-FI",
-        };
-        choice            = listMenu(debug, ArraySize(debug), false, 2, "DEV MODE");
-        String  levels[]  = {"0", "1", "2", "3"};
-        String  btMenu[]  = {"BT Mouse", "BT Keyboard"};
-        String  btMouse[] = {"SCROLLDOWN"};
-        Contact contact;
-        contact.index = 0;
-        contact.name  = "Daru";
-        contact.phone = "090X848X146";
-
+            "Delete File",
+            "Cat"};
+        choice = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
+        char current; 
+        String path;
+        File file;
         switch (choice) {
-
         case 0:
-            incomingCall(contact);
+            path = fileBrowser();
+            SD.remove(path);
             break;
         case 1:
-
-            callActivity(contact);
-            break;
-        case 3:
-            // charge_d = choiceMenu(levels, ArraySize(levels), true);
-            drawStatusBar();
-            break;
-        case 4:
-            // signallevel_d = choiceMenu(levels, ArraySize(levels), true);
+            path = fileBrowser();
+            tft.fillScreen(0);
+            tft.setCursor(0,0);
+            changeFont(0);
+            tft.setTextColor(TFT_WHITE);
+            file = SD.open(path);
+            file.seek(0);
+            if(file)
+            while(file.available()){
+                tft.print((char)file.read());
+            }
+            file.close();
+            delay(1000);
+            while(buttonsHelding()==-1);
+            sBarChanged= true;
             drawStatusBar();
             break;
         }
         break;
+        
     }
-    idle();
-}
-
-#endif
-currentScreen = SCREENS::MAINMENU;
+    currentScreen = SCREENS::MAINMENU;
 }
 
 void settings() {
@@ -194,7 +185,7 @@ void settings() {
                 break;
             }
         }
-        idle();
+       
     }
     currentScreen = SCREENS::MAINMENU;
 }
@@ -268,7 +259,7 @@ void MainMenu() {
             break;
         }
         }
-        idle();
+      
     }
 }
 
@@ -331,7 +322,7 @@ void MainScreen() {
     int c = -1;
     while (c != UP) {
         int c = buttonsHelding();
-        idle();
+      
         if ((c >= '0' || c == '*' || c == '#') && c <= '9') {
             numberInput(c);
 
@@ -411,7 +402,7 @@ void incomingCall(Contact contact) {
     int button = buttonsHelding();
     while (isCalling) {
         button = buttonsHelding();
-        idle();
+       
 
         switch (button) {
         case ANSWER:
@@ -477,7 +468,7 @@ void callActivity(Contact contact) {
             }
         }
 
-        idle();
+        
     }
     if (hang) {
         // if hang up
@@ -497,7 +488,7 @@ void callActivity(Contact contact) {
             ongoingCall = false;
         }
         stateCall = GetState();
-        idle();
+        
     }
     tft.fillScreen(0);
     drawStatusBar();
@@ -539,7 +530,7 @@ void contactss() {
                 const String choice  = "Create";
                 contextMenuSelection = choiceMenu({&choice}, 1, true);
                 if (contextMenuSelection == 0) {
-                    editContact({lastContactIndex + 1});
+                    editContact(Contact("", "", "", lastContactIndex + 1));
                 } else
                     exit = true;
             } else {
@@ -560,7 +551,8 @@ void contactss() {
                     break;
                 case 3:
                     // CREATE
-                    editContact({lastContactIndex + 1});
+
+                    editContact(Contact("", "", "", lastContactIndex + 1));
                     break;
                 case 4:
                     // DELETE
@@ -891,7 +883,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
             }
         }
         tft.resetViewport();
-        idle();
+        
         tft.setViewport(0, 51, 240, 269, true);
     }
     tft.resetViewport();
@@ -1147,7 +1139,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
             }
         }
         tft.resetViewport();
-        idle();
+        
         tft.setViewport(0, 51, 240, 269, true);
     }
     tft.resetViewport();
@@ -1254,6 +1246,7 @@ void imageViewer() {
 }
 
 void recovery(String message) {
+
     tft.setCursor(0, 40);
     tft.fillScreen(0);
     tft.setTextFont(1);
@@ -1280,19 +1273,20 @@ void recovery(String message) {
          * text editor you'll see that there ELPSYKONGROO at the beginning.
          * That's to prevent empty files.
          */
-   
-        if (buf.indexOf("ELPSYKONGROO") != -1){
-            resPath = TempResPath;
-            mOption optionss[2] = {{"Yes!"},{"No..."}};
-            choice = listMenuNonGraphical(optionss,2,"File is valid!\n\nWould you like to \nsave choice for next boot?");
-            if(choice == 0){
-                preferences.putString("resPath",resPath);
+
+        if (buf.indexOf("ELPSYKONGROO") != -1) {
+            resPath             = TempResPath;
+            mOption optionss[2] = {{"Yes!"}, {"No..."}};
+            choice              = listMenuNonGraphical(optionss, 2, "File is valid!\n\nWould you like to \nsave choice for next boot?");
+            if (choice == 0) {
+                preferences.putString("resPath", resPath);
             }
-        }else{
+        } else {
             tft.fillScreen(0);
-            tft.setCursor(0,0);
+            tft.setCursor(0, 0);
             tft.println("Choice is invalid!\nPress any key to continue...");
-            while(buttonsHelding()==-1);
+            while (buttonsHelding() == -1)
+                ;
         }
         break;
     }
@@ -1317,13 +1311,13 @@ void numberInput(char first) {
     while (true) {
         while (c == 255) {
             c = buttonsHelding();
-            idle();
+            
         }
 
         switch (c) {
         case ANSWER:
             if (!number.isEmpty())
-                makeCall({0, number});
+                makeCall(Contact(number, ""));
             return;
             break;
         case LEFT:
@@ -1351,7 +1345,7 @@ void numberInput(char first) {
             tft.print(number);
             c = 255;
         }
-        idle();
+        
         Serial.println(c, DEC);
         c = 255;
     }
@@ -1502,6 +1496,27 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         return '\0';
     }
     return result;
+}
+
+void LockScreen(){
+    Serial.println("LockScreen");
+    sBarChanged = true;
+    isScreenLocked = true;
+    drawStatusBar();
+    ulong mill;
+    bool exit = false;
+    while(!exit){
+         mill = millis();
+        while(buttonsHelding() == '*'){
+            if(millis()>mill + 2000){
+                exit = true;
+                break;
+            }
+        }
+    }
+    isScreenLocked = false;
+    sBarChanged = true;
+    drawStatusBar();
 }
 
 void WiFiList() {
