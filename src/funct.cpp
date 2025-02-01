@@ -6,12 +6,12 @@ unsigned int getIndexOfCount(int count, String input, String str, unsigned int f
     }
     return fromIndex;
 }
-void printT_S(String str){
-    
+void printT_S(String str) {
+
     Serial.println(str);
-    #ifdef LOG
+#ifdef LOG
     tft.println(str);
-    #endif
+#endif
 }
 String HEXTOASCII(String hex) {
     hex.toUpperCase();
@@ -117,11 +117,11 @@ int getChargeLevel() {
 }
 int getSignalLevel() {
 
-    int    signal = -1;
+    int signal = -1;
 
-    String a      = getATvalue("AT+CREG?", true);
+    String a = getATvalue("AT+CREG?", true);
 
-    //Serial.println("GETSIGNALLEVEL_CREG:" + a);
+    // Serial.println("GETSIGNALLEVEL_CREG:" + a);
 
     if (a.charAt(2) == '1' || a.charAt(2) == '5') {
         String b = getATvalue("AT+CSQ");
@@ -250,7 +250,7 @@ int GetState() {
     return atoi(result.c_str());
 }
 
-int buttonsHelding() {
+int buttonsHelding(bool _idle) {
 
     /*
      * SIDE BUTTON 10
@@ -291,10 +291,15 @@ int buttonsHelding() {
     //   if (checkButton(39))
     //     return DOWN;
     // #endif
+    if(_idle)
+    idle();
     int result = checkEXbutton();
     if (result != 0)
         while (result == checkEXbutton())
             ;
+    else return -1;
+    millSleep = millis();
+   // setBrightness(brightness);
     switch (result) {
     case 2:
         return UP;
@@ -327,7 +332,6 @@ int buttonsHelding() {
         }
         break;
     }
-
 
     if (Serial.available()) {
         char input = Serial.read();
@@ -399,7 +403,6 @@ int buttonsHelding() {
     return -1;
 }
 
-
 void parseMessages(Message *&msgs, int &count) {
     String response     = sendATCommand("AT+CMGL=\"ALL\",1");
     int    lastIndexOf  = 0;
@@ -443,7 +446,6 @@ void parseMessages(Message *&msgs, int &count) {
             // Extract date
             int dateStart = response.indexOf("/", lastIndexOf);
             msgs[i].date  = response.substring(dateStart + 1, response.indexOf(",", dateStart));
-
 
             String checknumber;
             if (number.indexOf('+') != -1) {
@@ -560,4 +562,123 @@ void playAudio(String path) {
     while (true /*STATEMENT PLACEHOLDER*/) {
         break;
     }
+}
+
+/*
+OUT_MESSAGES[NULL]count of messages in two bytes[NL]
+[0x2][NL]
+phone[NL]
+name[0xF]
+email[NL]
+[0x19]
+subject[0xF]
+content[0xF]
+date[NL]
+longdate[NL]
+[0x3][NL]
+*/
+
+// Save message to sdcard file
+void saveMessage(Message message, String fileName) {
+    const String folder       = "/DATA";
+    const String path         = folder + "/" + fileName;
+    const String defaultData  = "OUT_MESSAGES\0\0\0\n";
+    const String formatedData = "\x2\n" +
+                                message.contact.phone + "\n" +
+                                message.contact.name + "\xF" +
+                                message.contact.email + "\n\x19" +
+                                message.subject + "\xF" +
+                                message.content + "\xF" +
+                                message.date + "\n" +
+                                message.longdate + "\n\x3\n";
+
+    // Initialize SD card
+    if (!SD.begin()) {
+        Serial.println("SD card initialization failed!");
+        return;
+    }
+
+    // Create directory if it doesn't exist
+    if (!SD.exists(folder)) {
+        if (!SD.mkdir(folder)) {
+            Serial.println("Error creating directory!");
+            return;
+        }
+    }
+
+    // Open file for writing
+    File file = SD.open(path, FILE_WRITE);
+    if (!file) {
+        Serial.println("Error opening file for writing!");
+        return;
+    }
+
+    // Debug: Print file size
+    Serial.print("File size: ");
+    Serial.println(file.size());
+
+    // Write default data if file is empty
+    if (file.size() == 0) {
+        file.seek(0);
+        file.print(defaultData);
+        Serial.println("Default data written to file.");
+    }
+
+    // Read current count
+    file.seek(12);
+    uint8_t  bytes[2] = {(uint8_t)file.read(), (uint8_t)file.read()};
+    uint16_t count    = ((uint16_t)bytes[1] << 8) | bytes[0];
+    count++;
+    Serial.print("Updated count: ");
+    Serial.println(count);
+
+    // Write updated count
+    file.seek(12);
+    file.write(count >> 8);
+    file.write(count & 0xFF);
+
+    // Append new message data
+    file.seek(file.size());
+    file.print(formatedData);
+    Serial.println("Formatted data written to file.");
+
+    // Close the file
+    file.close();
+
+    // Debug: Print file contents
+    file = SD.open(path, FILE_READ);
+    if (file) {
+        Serial.println("File contents:");
+        while (file.available()) {
+            Serial.write(file.read());
+        }
+        file.close();
+    } else {
+        Serial.println("Error opening file for reading!");
+    }
+}
+
+void fastMode(bool status) {
+    if (status) {
+        setCpuFrequencyMhz(80);
+    } else {
+        setCpuFrequencyMhz(20);
+    }
+}
+int currentBrightness = brightness;
+void setBrightness(int percentage) {
+    percentage = constrain(percentage, 0, 100);
+    
+    if (percentage > currentBrightness) {
+        for (int i = currentBrightness; i <= percentage; i++) {
+            analogWrite(TFT_BL, (256* i) / 100); 
+            delay(5);  
+        }
+    } else {
+        for (int i = currentBrightness; i > percentage; i--) {
+            analogWrite(TFT_BL, (256 * i) / 100);  
+            delay(5);  
+        }
+    }
+    currentBrightness = percentage;
 }

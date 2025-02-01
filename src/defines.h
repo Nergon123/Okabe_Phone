@@ -20,9 +20,9 @@
 #define CWIDTH 1
 //CURSOR WIDTH
 
-#define FIRMVER "0.1.0 ALPHA"
+#define FIRMVER "0.1.3 ALPHA"
 
-//#define LOG
+#define LOG
 
 ///////CALL STATES/////////
 
@@ -45,7 +45,7 @@
 #define DECLINE BACK
 /////////////////////////
 // ENABLE DEVELOPER MODE//
-//#define DEVMODE //
+#define DEVMODE //
 //#define SIMDEBUG//
 /////////////////////////
 
