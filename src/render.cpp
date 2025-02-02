@@ -313,8 +313,10 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
     file.close();
     fastMode(false);
 }
+
 int8_t _signal = 0;
 int8_t charge  = 0;
+
 void   drawStatusBar() {
     bool messageViewport = tft.getViewportY() == 51;
     int curx = tft.getCursorX();
@@ -340,7 +342,7 @@ void   drawStatusBar() {
             tft.setCursor(0,0);
             tft.setTextSize(1);
             tft.setTextColor(TFT_WHITE);
-            tft.print("SCREEN IS LOCKED HOLD * TO UNLOCK");
+            tft.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
         }
 
         if (messageViewport) {
