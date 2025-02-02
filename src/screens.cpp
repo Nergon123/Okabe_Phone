@@ -94,7 +94,7 @@ void e() {
             break;
         case 2:
                 saveMessage(Message(Contact("Example", "+0000000000"),"SUBJECT.",
-                        "Example message Long Language", "00/00", "00/00/00 23:32:23"),
+                        "Example message\n Not-So-Long Message \n with newlines \n ", "00/00", "00/00/00 23:32:23"),
                 "OUTMESSAGES.SGDB");
             break;
         }
