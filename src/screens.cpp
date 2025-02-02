@@ -63,11 +63,11 @@ void e() {
     while (choice != -1) {
         String debug[] = {
             "Delete File",
-            "Cat"};
+            "Cat", "Write Message To SD"};
         choice = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
-        char current; 
+        char   current;
         String path;
-        File file;
+        File   file;
         switch (choice) {
         case 0:
             path = fileBrowser();
@@ -76,24 +76,29 @@ void e() {
         case 1:
             path = fileBrowser();
             tft.fillScreen(0);
-            tft.setCursor(0,0);
+            tft.setCursor(0, 0);
             changeFont(0);
             tft.setTextColor(TFT_WHITE);
             file = SD.open(path);
             file.seek(0);
-            if(file)
-            while(file.available()){
-                tft.print((char)file.read());
-            }
+            if (file)
+                while (file.available()) {
+                    tft.print((char)file.read());
+                }
             file.close();
             delay(1000);
-            while(buttonsHelding()==-1);
-            sBarChanged= true;
+            while (buttonsHelding() == -1)
+                ;
+            sBarChanged = true;
             drawStatusBar();
+            break;
+        case 2:
+                saveMessage(Message(Contact("Example", "+0000000000"),"SUBJECT.",
+                        "Example message Long Language", "00/00", "00/00/00 23:32:23"),
+                "OUTMESSAGES.SGDB");
             break;
         }
         break;
-        
     }
     currentScreen = SCREENS::MAINMENU;
 }
@@ -185,7 +190,6 @@ void settings() {
                 break;
             }
         }
-       
     }
     currentScreen = SCREENS::MAINMENU;
 }
@@ -259,7 +263,6 @@ void MainMenu() {
             break;
         }
         }
-      
     }
 }
 
@@ -322,7 +325,7 @@ void MainScreen() {
     int c = -1;
     while (c != UP) {
         int c = buttonsHelding();
-      
+
         if ((c >= '0' || c == '*' || c == '#') && c <= '9') {
             numberInput(c);
 
@@ -402,7 +405,6 @@ void incomingCall(Contact contact) {
     int button = buttonsHelding();
     while (isCalling) {
         button = buttonsHelding();
-       
 
         switch (button) {
         case ANSWER:
@@ -467,8 +469,6 @@ void callActivity(Contact contact) {
                 break;
             }
         }
-
-        
     }
     if (hang) {
         // if hang up
@@ -488,7 +488,6 @@ void callActivity(Contact contact) {
             ongoingCall = false;
         }
         stateCall = GetState();
-        
     }
     tft.fillScreen(0);
     drawStatusBar();
@@ -883,7 +882,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
             }
         }
         tft.resetViewport();
-        
+
         tft.setViewport(0, 51, 240, 269, true);
     }
     tft.resetViewport();
@@ -1139,7 +1138,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
             }
         }
         tft.resetViewport();
-        
+
         tft.setViewport(0, 51, 240, 269, true);
     }
     tft.resetViewport();
@@ -1311,7 +1310,6 @@ void numberInput(char first) {
     while (true) {
         while (c == 255) {
             c = buttonsHelding();
-            
         }
 
         switch (c) {
@@ -1345,7 +1343,7 @@ void numberInput(char first) {
             tft.print(number);
             c = 255;
         }
-        
+
         Serial.println(c, DEC);
         c = 255;
     }
@@ -1498,24 +1496,24 @@ char textInput(int input, bool onlynumbers, bool nonl) {
     return result;
 }
 
-void LockScreen(){
+void LockScreen() {
     Serial.println("LockScreen");
-    sBarChanged = true;
+    sBarChanged    = true;
     isScreenLocked = true;
     drawStatusBar();
     ulong mill;
-    bool exit = false;
-    while(!exit){
-         mill = millis();
-        while(buttonsHelding() == '*'){
-            if(millis()>mill + 2000){
+    bool  exit = false;
+    while (!exit) {
+        mill = millis();
+        while (buttonsHelding() == '*') {
+            if (millis() > mill + 2000) {
                 exit = true;
                 break;
             }
         }
     }
     isScreenLocked = false;
-    sBarChanged = true;
+    sBarChanged    = true;
     drawStatusBar();
 }
 

@@ -220,9 +220,7 @@ void setup() {
     //     file.print("{}");
     //     file.close();
     // }
-    saveMessage(Message(Contact("Example", "+0000000000"),
-                        "Who needs subjects?", "hello \n I guess I was in love with you...\n A girl with first letter in nickname \'m\'", "00/00", "00/00/00 23:32:23"),
-                "OUTMESSAGES.SGDB");
+
     millSleep = millis();
     while (digitalRead(37) == LOW)
         ;
