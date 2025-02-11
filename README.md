@@ -1,10 +1,11 @@
 # Okabe Phone
 [![Discord](https://img.shields.io/discord/1333879897860603905?label=Discord%20Server)](https://discord.gg/TdPYUj9fAj) ![GitHub last commit](https://img.shields.io/github/last-commit/Nergon123/Okabe_Phone) ![GitHub Repo stars](https://img.shields.io/github/stars/Nergon123/Okabe_Phone)
 
-Okabe phone is my project that I was making just because I was bored...lmao.
+Okabe phone is my project that I'm making just because I bored...lmao.
 
 The project itself is recreation of phone of character from [vn game "Steins;Gate"](https://steins-gate.fandom.com/wiki/Steins;Gate_(visual_novel)) - [Rintarou Okabe](https://steins-gate.fandom.com/wiki/Rintaro_Okabe)
 
+It's based on ESP32 microcontroller. [LILYGO T4](https://lilygo.cc/products/t4) To be precise
 
 ## A little bit of history 
 
