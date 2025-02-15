@@ -291,15 +291,16 @@ int buttonsHelding(bool _idle) {
     //   if (checkButton(39))
     //     return DOWN;
     // #endif
-    if(_idle)
-    idle();
+    if (_idle)
+        idle();
     int result = checkEXbutton();
     if (result != 0)
         while (result == checkEXbutton())
             ;
-    else return -1;
+    else
+        return -1;
     millSleep = millis();
-   // setBrightness(brightness);
+    // setBrightness(brightness);
     switch (result) {
     case 2:
         return UP;
@@ -564,6 +565,38 @@ void playAudio(String path) {
     }
 }
 
+
+
+
+void fastMode(bool status) {
+    //TODO: REINIT SCREEN and SDCARD
+    if (status) {
+        setCpuFrequencyMhz(80);
+    } else {
+        setCpuFrequencyMhz(20);
+        
+    }
+}
+
+int currentBrightness = brightness;
+// Set screen brightness
+void setBrightness(int percentage) {
+    percentage = constrain(percentage, 0, 100);
+
+    if (percentage > currentBrightness) {
+        for (int i = currentBrightness; i <= percentage; i++) {
+            analogWrite(TFT_BL, (256 * i) / 100);
+            delay(5);
+        }
+    } else {
+        for (int i = currentBrightness; i > percentage; i--) {
+            analogWrite(TFT_BL, (256 * i) / 100);
+            delay(5);
+        }
+    }
+    currentBrightness = percentage;
+}
+
 /*
 OUT_MESSAGES[NULL]count of messages in two bytes[NL]
 [0x2][NL]
@@ -579,106 +612,117 @@ longdate[NL]
 */
 
 // Save message to sdcard file
+
 void saveMessage(Message message, String fileName) {
-    const String folder       = "/DATA";
-    const String path         = folder + "/" + fileName;
-    const String defaultData  = "OUT_MESSAGES\0\0\0\n";
-    const String formatedData = "\x2\n" +
-                                message.contact.phone + "\n" +
-                                message.contact.name + "\xF" +
-                                message.contact.email + "\n\x19" +
-                                message.subject + "\xF" +
-                                message.content + "\xF" +
-                                message.date + "\n" +
-                                message.longdate + "\n\x3\n";
 
-    // Initialize SD card
-    if (!SD.begin()) {
-        Serial.println("SD card initialization failed!");
-        return;
-    }
 
-    // Create directory if it doesn't exist
-    if (!SD.exists(folder)) {
-        if (!SD.mkdir(folder)) {
-            Serial.println("Error creating directory!");
-            return;
-        }
-    }
+ // Open the file in read-write mode
+  File file = SD.open(fileName, FILE_WRITE);
 
-    // Open file for writing
-    File file = SD.open(path, FILE_WRITE);
+
+  if (!file) {
+    Serial.println("Failed to open file!");
+    return;
+  }
+file.flush();
+size_t filesize = file.size();
+  // Check if the file is empty or doesn't have the MESSAGES header
+  if (file.size() == 0) {
+    Serial.println("File is empty. Writing header...");
+    // Write the MESSAGES header
+    file.print("MESSAGES\0"); // [NULL] is \0
+    uint16_t initialCount = 0; // Initial count of messages is 0
+    file.write((uint8_t*)&initialCount, 2); // Write count as two raw bytes
+    file.print("\n"); // [NL] is \n
+  }
+
+  // Read the current count of messages
+  file.seek(0); // Go to the beginning of the file
+  String header = file.readStringUntil('\n');
+  file.seek(9); // Move to the position of the count (after "MESSAGES\0")
+  uint16_t messageCount;
+  file.read((uint8_t*)&messageCount, 2); // Read the count as two raw bytes
+
+  // Increment the message count
+  messageCount++;
+
+  // Update the header with the new count
+  file.seek(9); // Move to the position of the count (after "MESSAGES\0")
+  file.write((uint8_t*)&messageCount, 2); // Write the updated count as two raw bytes
+file.flush();
+  // Move to the end of the file to append the new message
+  file.seek(filesize);
+Serial.println(String(filesize)+"/"+String(file.position()));
+  // Write the message in the specified format
+  file.print("\x2\n"); // [0x2] is \x2, [NL] is \n
+  file.print(message.contact.phone + "\n");
+  file.print(message.contact.name + "\x0F\n"); // [0xF] is \x0F
+  file.print(message.contact.email + "\n");
+  file.print("\x19\n"); // [0x19] is \x19
+  file.print(message.subject + "\x0F\n"); // [0xF] is \x0F
+  file.print(message.content + "\x0F\n"); // [0xF] is \x0F
+  file.print(message.date + "\n");
+  file.print(message.longdate + "\n");
+  file.print("\x3\n"); // [0x3] is \x3, [NL] is \n
+
+  // Close the file
+  file.close();
+
+  Serial.println("Message written to SD card successfully!");
+}
+
+void parseSDMessages(Message messages[], int &messageCount, String filePath) {
+
+    // Open the file in read mode
+    File file = SD.open(filePath, FILE_READ);
+
     if (!file) {
-        Serial.println("Error opening file for writing!");
+        Serial.println("Failed to open file!");
         return;
     }
 
-    // Debug: Print file size
-    Serial.print("File size: ");
-    Serial.println(file.size());
+    // Read the header
+    String header = file.readStringUntil('\n');
+    file.read((uint8_t *)&messageCount, 2); // Read the count as two raw bytes
 
-    // Write default data if file is empty
-    if (file.size() == 0) {
-        file.seek(0);
-        file.print(defaultData);
-        Serial.println("Default data written to file.");
+    // Parse each message
+    for (int i = 0; i < messageCount; i++) {
+        // Read and ignore the message start marker
+        file.readStringUntil('\n');
+
+        // Read phone
+        messages[i].contact.phone = file.readStringUntil('\n');
+
+        // Read name (ends with \x0F)
+        messages[i].contact.name = file.readStringUntil('\x0F');
+        file.read(); // Read and ignore the newline after \x0F
+
+        // Read email
+        messages[i].contact.email = file.readStringUntil('\n');
+
+        // Read and ignore the subject marker
+        file.readStringUntil('\n');
+
+        // Read subject (ends with \x0F)
+        messages[i].subject = file.readStringUntil('\x0F');
+        file.read(); // Read and ignore the newline after \x0F
+
+        // Read content (ends with \x0F)
+        messages[i].content = file.readStringUntil('\x0F');
+        file.read(); // Read and ignore the newline after \x0F
+
+        // Read date
+        messages[i].date = file.readStringUntil('\n');
+
+        // Read longdate
+        messages[i].longdate = file.readStringUntil('\n');
+
+        // Read and ignore the message end marker
+        file.readStringUntil('\n');
     }
-
-    // Read current count
-    file.seek(12);
-    uint8_t  bytes[2] = {(uint8_t)file.read(), (uint8_t)file.read()};
-    uint16_t count    = ((uint16_t)bytes[1] << 8) | bytes[0];
-    count++;
-    Serial.print("Updated count: ");
-    Serial.println(count);
-
-    // Write updated count
-    file.seek(12);
-    file.write(count >> 8);
-    file.write(count & 0xFF);
-
-    // Append new message data
-    file.seek(file.size());
-    file.print(formatedData);
-    Serial.println("Formatted data written to file.");
 
     // Close the file
     file.close();
 
-    // Debug: Print file contents
-    file = SD.open(path, FILE_READ);
-    if (file) {
-        Serial.println("File contents:");
-        while (file.available()) {
-            Serial.write(file.read());
-        }
-        file.close();
-    } else {
-        Serial.println("Error opening file for reading!");
-    }
-}
-
-void fastMode(bool status) {
-    if (status) {
-        setCpuFrequencyMhz(80);
-    } else {
-        setCpuFrequencyMhz(20);
-    }
-}
-int currentBrightness = brightness;
-void setBrightness(int percentage) {
-    percentage = constrain(percentage, 0, 100);
-    
-    if (percentage > currentBrightness) {
-        for (int i = currentBrightness; i <= percentage; i++) {
-            analogWrite(TFT_BL, (256* i) / 100); 
-            delay(5);  
-        }
-    } else {
-        for (int i = currentBrightness; i > percentage; i--) {
-            analogWrite(TFT_BL, (256 * i) / 100);  
-            delay(5);  
-        }
-    }
-    currentBrightness = percentage;
+    Serial.println("Messages parsed successfully!");
 }

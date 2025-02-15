@@ -61,7 +61,6 @@ volatile int DBC_MS = 1000;
 
 // Contacts storage
 Contact contacts[MAX_CONTACTS];
-
 // Handle for background SIM checks
 TaskHandle_t TaskHCommand;
 

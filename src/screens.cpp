@@ -63,9 +63,9 @@ void e() {
     while (choice != -1) {
         String debug[] = {
             "Delete File",
-            "Cat", "Write Message To SD"};
+            "Cat",
+            "Write Message To SD"};
         choice = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
-        char   current;
         String path;
         File   file;
         switch (choice) {
@@ -93,9 +93,15 @@ void e() {
             drawStatusBar();
             break;
         case 2:
-                saveMessage(Message(Contact("Example", "+0000000000"),"SUBJECT.",
-                        "Example message\n Not-So-Long Message \n with newlines \n ", "00/00", "00/00/00 23:32:23"),
-                "OUTMESSAGES.SGDB");
+            saveMessage(
+                Message(
+                    Contact("Example", "+0000000000"),
+                    "SUBJECT.",
+                    "Example message\n Not-So-Long Message \n with newlines \n ",
+                    "00/00",
+                    "00/00/00 23:32:23"),
+                "/DATA/OUTMESSAGES.SGDB");
+
             break;
         }
         break;
