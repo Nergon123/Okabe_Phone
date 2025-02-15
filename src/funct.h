@@ -20,4 +20,5 @@ void printT_S(String str);
 void fastMode(bool status);
 void setBrightness(int percentage);
 int buttonsHelding(bool _idle = true);
+void parseSDMessages(Message messages[], int &messageCount, String filePath);
 #endif

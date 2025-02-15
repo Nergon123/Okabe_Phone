@@ -638,11 +638,11 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
     uint16_t color_active   = 0xFDD3;
     uint16_t color_inactive = 0x0000;
     int      choice         = findex;
-
+fastMode(true);
     tft.setTextSize(1);
     tft.setTextColor(color_inactive);
     changeFont(1);
-
+    
     listMenu_sub(label, type, page, pages);
     drawFromSd(0x639365, 0, 51, 240, 269);
     tft.setTextColor(color_inactive);
@@ -657,6 +657,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
         indexx = items_per_page * page + i;
         lM_entryRender(x, y, i, indexx, scale, mult, icon_x, choices[indexx], images);
     }
+    fastMode(false);
     bool exit = false;
     while (!exit) {
         switch (buttonsHelding()) {
@@ -667,6 +668,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
             break;
         }
         case UP: { // Up button
+            fastMode(true);
 
             bool changed    = false;
             int  old_choice = choice;
@@ -714,31 +716,40 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
             tft.setTextColor(color_inactive);
             tft.setCursor(x, y + (mult * old_choice));
             if (!changed) {
+                
                 indexx = items_per_page * page + old_choice;
                 lM_entryRender(x, y, old_choice, indexx, scale, mult, icon_x, choices[indexx], images);
-                ;
+                
                 tft.setCursor(x, y + (mult * choice));
                 tft.print(choices[items_per_page * page + choice].label);
+                
                 indexx = items_per_page * page + choice;
+                
                 lM_entryRender(x, y, choice, indexx, scale, mult, icon_x, choices[indexx], images);
             }
-
+            fastMode(false);
             break;
         }
         case DOWN: { // Down button
+        fastMode(true);
             int  old_choice = choice;
             bool changed    = false;
             if (choice < (items_per_page - 1) && items_per_page * page + choice < icount - 1) {
                 choice++;
             } else if (page < pages) {
+                
                 page++;
                 changed = true;
                 choice  = 0;
+                
                 drawFromSd(0x639365, 0, 51, 240, 269);
                 tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
+                
                 for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++) {
+                
                     indexx = items_per_page * page + i;
                     lM_entryRender(x, y, i, indexx, scale, mult, icon_x, choices[indexx], images);
+                
                 }
                 drawFromSd(0x5DAF1F, 0, 26, 240, 25);
                 if (type >= 0 && type < 3)
@@ -777,7 +788,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
                 indexx++;
                 lM_entryRender(x, y, choice, indexx, scale, mult, icon_x, choices[indexx], images);
             }
-
+            fastMode(false);
             break;
         }
         case BACK: { // EXIT
@@ -801,6 +812,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
     }
     return listMenu(optionArr, icount, images, type, label, forceIcons, findex);
 }
+
 int lmng_offset = 0;
 // Render entry of listMenuNonGraphical()
 void renderlmng(mOption* choices, int x, int y, int icount, String label, int index, uint16_t color_active, uint16_t color_inactive) {
