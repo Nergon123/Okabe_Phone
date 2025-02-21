@@ -23,4 +23,6 @@ void callActivity(Contact contact);
 void editContact(Contact contact);
 void ErrorWindow(String reason);
 void LockScreen();
+bool confirmation(String reason);
+void AT_test();
 #endif
