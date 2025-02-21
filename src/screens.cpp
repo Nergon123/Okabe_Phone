@@ -7,11 +7,19 @@ void numberInput(char first);
 bool messageActivity(Message message);
 void messageActivityOut(Contact contact, String subject, String content, bool sms);
 void ringtoneSelector(bool isMail);
-
+void SerialGetFile();
 bool confirmation(String reason) {
     //"ARE YOU SURE YOU WANT TO DO THIS?"
     drawWallpaper();
     drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
+    changeFont(1);
+    tft.setCursor(45, 110);
+    tft.setTextColor(0);
+    tft.println("CONFIRMATION");
+    button("YES", 120, 190, 80, 30);
+    while (true)
+        ;
+
     return true;
 }
 void ErrorWindow(String reason) {
@@ -64,7 +72,8 @@ void e() {
         String debug[] = {
             "Delete File",
             "Cat",
-            "Write Message To SD"};
+            "Write Message To SD",
+            "Serial To File"};
         choice = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
         String path;
         File   file;
@@ -103,6 +112,10 @@ void e() {
                 "/DATA/OUTMESSAGES.SGDB");
 
             break;
+            case 3:
+             SerialGetFile();
+             break;
+            
         }
         break;
     }
@@ -435,7 +448,7 @@ void makeCall(Contact contact) {
     }
     isAnswered = true;
     sendATCommand("ATD" + contact.phone + ";");
-    stateCall = GetState();
+
     callActivity(contact);
 }
 void callActivity(Contact contact) {
@@ -460,6 +473,7 @@ void callActivity(Contact contact) {
     tft.setTextSize(1);
     tft.setCursor(85, 95);
     tft.print("Calling...");
+    stateCall = GetState();
     delay(50);
     bool hang = false;
     while (stateCall == DIALING) {
@@ -544,6 +558,7 @@ void contactss() {
                 switch (contextMenuSelection) {
 
                 case 0:
+                    // CALL
                     makeCall(contacts[selectedContactIndex]);
                     exit = true;
                     break;
@@ -552,6 +567,7 @@ void contactss() {
                     messageActivityOut(contacts[selectedContactIndex], "", "", true);
                     break;
                 case 2:
+                    // EDIT
                     editContact(contacts[selectedContactIndex]);
                     break;
                 case 3:
@@ -1538,4 +1554,89 @@ void WiFiList() {
         }
         listMenu(names, count, false, 0, "WI-FI");
     }
+}
+
+void AT_test() {
+    tft.fillScreen(0);
+    changeFont(0);
+    tft.setCursor(0, 0);
+    tft.println("Waiting for connection...");
+    while (true) {
+        if (Serial.available()) {
+            tft.fillScreen(0);
+            tft.setCursor(0, 0);
+            tft.setTextSize(2);
+
+            tft.setTextColor(0xF800);
+            tft.println("\nAT COMMANDS CONSOLE\n (TO EXIT TYPE :q)\n");
+            tft.setTextColor(0xFFFF);
+            tft.setTextSize(1);
+            String req;
+
+            tft.println("REQUEST:");
+            req = Serial.readString();
+            tft.print(req + "\n");
+            if (req.indexOf(":q") != -1) {
+                break;
+            }
+            String ans = sendATCommand(req);
+
+            tft.println("\nANSWER: " + ans);
+            Serial.println(ans);
+        }
+    }
+}
+void SerialGetFile() {
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_WHITE);
+    tft.setTextSize(1);
+    tft.setCursor(10, 30);
+    Serial.updateBaudRate(460800);
+    tft.println("WAITING FOR CONNECTION...");
+    
+    // Wait for file name
+    while (!Serial.available());
+    String fileName = Serial.readStringUntil('\n');
+    fileName.trim();
+    
+    if (fileName.length() == 0) {
+        tft.println("Invalid file name.");
+        return;
+    }
+
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(10, 30);
+    tft.println("Receiving: " + fileName);
+    Serial.println("START");  
+
+    // Open file on SD card
+    File file = SD.open("/" + fileName, FILE_WRITE);
+    if (!file) {
+        tft.println("Failed to open file.");
+        Serial.println("Failed to open file.");
+        return;
+    }
+
+   
+    int bytesReceived = 0;
+    int fileSize = 7000000; 
+    
+    while (true) {
+        if (Serial.available()) {
+            char c = Serial.read();
+            file.write(c);
+            bytesReceived++;
+            file.flush();
+        } else if (bytesReceived > 0) {
+ 
+            break;
+        }
+    }
+
+    file.close();
+    Serial.println("DONE");  
+
+    tft.setCursor(10, 100);
+    tft.println("Transfer Complete!");
+    Serial.updateBaudRate(115200);
 }

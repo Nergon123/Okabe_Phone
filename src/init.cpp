@@ -77,7 +77,8 @@ void   initSim();
 String lastSIMerror = "";
 
 void setup() {
-    setCpuFrequencyMhz(20);
+   
+    setCpuFrequencyMhz(160);
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0);                            // bootup blinking prevention
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
@@ -91,11 +92,6 @@ void setup() {
     Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
     // INIT PINS
 
-    pinMode(38, INPUT_PULLUP);
-    pinMode(0, INPUT_PULLUP);
-    pinMode(39, INPUT_PULLUP);
-    pinMode(37, INPUT_PULLUP);
-
     chrg.begin(21, 22);
 
     /*if (chrg.isChargerConnected() == 1)
@@ -108,7 +104,8 @@ void setup() {
 
     preferences.begin("settings", false);
     resPath = preferences.getString("resPath", "/FIRMWARE/IMAGES.SG");
-
+    Serial.println(resPath);
+    
     SPI.begin(14, 2, 15, chipSelect);
     while (!SD.begin(chipSelect, SPI))
         recovery("No MicroSD card.");
@@ -160,37 +157,7 @@ void setup() {
     }
 
 #ifdef SIMDEBUG
-    if (digitalRead(39) == LOW) {
-
-        tft.fillScreen(0);
-        tft.setCursor(0, 0);
-        tft.println("Waiting for connection...");
-
-        while (true) {
-            if (Serial.available()) {
-                tft.fillScreen(0);
-                tft.setCursor(0, 0);
-                tft.setTextSize(2);
-
-                tft.setTextColor(0xF800);
-                tft.println("\nAT COMMANDS CONSOLE\n (TO EXIT TYPE :q)\n");
-                tft.setTextColor(0xFFFF);
-                tft.setTextSize(1);
-                String req;
-
-                tft.println("REQUEST:");
-                req = Serial.readString();
-                tft.print(req + "\n");
-                if (req.indexOf(":q") != -1) {
-                    break;
-                }
-                String ans = sendATCommand(req);
-
-                tft.println("\nANSWER: " + ans);
-                Serial.println(ans);
-            }
-        }
-    }
+    AT_test();
 #endif
     xTaskCreatePinnedToCore(
         TaskIdleHandler,
@@ -202,29 +169,26 @@ void setup() {
         0);
 
     progressBar(95, 100, 250);
+
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
     // contactCount   = preferences.getUInt("contactCount", 0);
+
     if (wallpaperIndex < 0 || wallpaperIndex > 42)
         currentWallpaperPath = preferences.getString("wallpaper", "/null");
+
     if (!SD.exists(currentWallpaperPath)) {
         wallpaperIndex = 0;
         printT_S(currentWallpaperPath + " - NOT FOUND");
     }
     progressBar(100, 100, 250);
-    // if (!SD.exists("/DATA/MESSAGES.JSON")) { I was thinking that json is too much. I can make my own way to save data on sdcard.
-    //     if (!SD.exists("/DATA")) {
-    //         SD.mkdir("/DATA");
-    //     }
-    //     File file = SD.open("/DATA/MESSAGES.JSON", FILE_WRITE);
-    //     file.print("{}");
-    //     file.close();
-    // }
+
 
     millSleep = millis();
-    while (digitalRead(37) == LOW)
+    while (buttonsHelding()=='#')
         ;
     drawStatusBar();
 }
+
 void suspendCore(bool suspend) {
     if (suspend) {
         vTaskSuspend(TaskHCommand);
@@ -232,6 +196,7 @@ void suspendCore(bool suspend) {
     } else
         vTaskResume(TaskHCommand);
 }
+
 void TaskIdleHandler(void *parameter) {
     while (true) {
         while (!simIsBusy && simIsUsable) {

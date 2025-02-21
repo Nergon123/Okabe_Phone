@@ -4,9 +4,13 @@ import struct
 from PIL import Image, ImageTk, ImageDraw
 import pyperclip  
 
+
+
 _offset = 1
 def rgb888_to_rgb565(r, g, b):
     return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
+
+
 def load_image_from_binary(file_path, address, width, height):
     with open(file_path, 'rb') as f:
         f.seek(address)
@@ -17,12 +21,18 @@ def load_image_from_binary(file_path, address, width, height):
                 data = f.read(2)
                 if not data:
                     break
+                if len(data) < 2:
+                    print(f"Buffer less than 2...")
+                    break
+
                 rgb565 = struct.unpack('<H', data)[0]
                 r = ((rgb565 >> 11) & 0x1F) << 3
                 g = ((rgb565 >> 5) & 0x3F) << 2
                 b = (rgb565 & 0x1F) << 3
                 pixels[x, y] = (r, g, b)
         return image
+
+
 def save_image_to_binary(file_path, address, image):
     width, height = image.size
     with open(file_path, 'r+b') as f:
@@ -32,12 +42,20 @@ def save_image_to_binary(file_path, address, image):
                 r, g, b = image.getpixel((x, y))
                 rgb565 = rgb888_to_rgb565(r, g, b)
                 f.write(struct.pack('<H', rgb565))
+
+def save_image():
+    print("not implemented")
+    save_file_path = filedialog.asksaveasfilename(filetypes=[("PNG picture","*.png")],title="RENAME_ME");
+    
+
 def choose_file():
     file_path = filedialog.askopenfilename(filetypes=[("OkabePhone Resource Files", "*.SG"),("All files", "*.*")])
     if file_path:
         entry_file.delete(0, tk.END)
         entry_file.insert(0, file_path)
         update_output()
+
+
 def display_image():
     try:
         file_path = entry_file.get()
@@ -58,6 +76,8 @@ def display_image():
         update_output()
     except Exception as e:
         label_status.config(text=f"Error: {e}", foreground="red")
+
+
 def get_color_at_cursor(event):
     try:
         x, y = event.x, event.y
@@ -77,52 +97,77 @@ def get_color_at_cursor(event):
             label_status.config(text="Cursor is outside the image bounds", foreground="red")
     except Exception as e:
         label_status.config(text=f"Error: {e}", foreground="red")
+
+
 def update_output():
+
     try:
         address = entry_address.get()
         width = entry_width.get()
         height = entry_height.get()
         transparent = checkbox_transparent_var.get()
         transparent_color = selected_color if transparent else 0
+
         if transparent:
             output_text = f"SDImage({hex(int(address, 16))}, {width}, {height}, {hex(transparent_color)}, {str(transparent).lower()});"
         else:
             output_text = f"SDImage({hex(int(address, 16))}, {width}, {height});"
+
         entry_output.delete(0, tk.END)
         entry_output.insert(0, output_text)
+
     except Exception as e:
         label_status.config(text=f"Error: {e}", foreground="red")
+
+
 def copy_to_clipboard():
+
     try:
         output_text = entry_output.get()
         pyperclip.copy(output_text)
         label_status.config(text="Copied to clipboard!", foreground="blue")
+
     except Exception as e:
         label_status.config(text=f"Error: {e}", foreground="red")
+
+
 def replace_image():
     try:
         file_path = filedialog.askopenfilename(
-            filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp"), ("All files", "*.*")]
+            filetypes=[("Image files", "*.png *.jpg *.jpeg *.bmp"), ("All files", "*.*")]
         )
+        
         if not file_path:
             return
+        
         new_image = Image.open(file_path).convert('RGB')
+        if new_image.height != int(entry_height.get()) or new_image.width != int(entry_width.get()):
+            label_status.config(text=f"Image should be same size as source (Input W:{new_image.width}, H:{new_image.height}).", foreground="red")
+            return
+        
         new_image = new_image.resize((current_width, current_height), Image.Resampling.LANCZOS)
         save_image_to_binary(binary_file_path, binary_file_address, new_image)
         display_image()
         label_status.config(text="Image replaced successfully!", foreground="green")
+
     except Exception as e:
         label_status.config(text=f"Error: {e}", foreground="red")
+
+
 def increment_address():
     try:
         address = int(entry_address.get(), 16) + _offset
         offset = int(entry_offset.get(), 16)
         new_address = address + offset
+        if new_address<0:
+            new_address = 0
         entry_address.delete(0, tk.END)
         entry_address.insert(0, hex(new_address))
         display_image()
     except Exception as e:
         label_status.config(text=f"Error: {e}", foreground="red")
+
+
 def decrement_address():
     try:
         address = int(entry_address.get(), 16) + _offset
@@ -137,7 +182,7 @@ def decrement_address():
         label_status.config(text=f"Error: {e}", foreground="red")
 
 root = tk.Tk()
-root.title("Okabe Image Resources Editor v0.4.2")
+root.title("Okabe Phone Image Resources Editor v0.4.2 Alpha")
 
 frame_input = ttk.Frame(root, padding="10")
 frame_input.grid(row=0, column=0, sticky=(tk.W, tk.E))
@@ -179,8 +224,12 @@ entry_height.bind("<KeyRelease>", lambda e: update_output())
 
 button_display = ttk.Button(frame_input, text="Display Image", command=display_image)
 button_display.grid(row=4, column=0, columnspan=3)
+
 button_replace = ttk.Button(frame_input, text="Replace Image", command=replace_image)
 button_replace.grid(row=5, column=0, columnspan=3)
+
+button_replace = ttk.Button(frame_input, text="Save As...", command=save_image)
+button_replace.grid(row=5, column=1, columnspan=3)
 
 checkbox_transparent_var = tk.BooleanVar()
 checkbox_transparent = ttk.Checkbutton(frame_input, text="Transparent", variable=checkbox_transparent_var, command=update_output)
