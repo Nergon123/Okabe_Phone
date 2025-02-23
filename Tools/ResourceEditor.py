@@ -44,9 +44,16 @@ def save_image_to_binary(file_path, address, image):
                 f.write(struct.pack('<H', rgb565))
 
 def save_image():
-    print("not implemented")
-    save_file_path = filedialog.asksaveasfilename(filetypes=[("PNG picture","*.png")],title="RENAME_ME");
-    
+    try:
+        save_file_path = filedialog.asksaveasfilename(filetypes=[("PNG picture","*.png")],title="Save Image As...");
+        file_path = entry_file.get()
+        address = int(entry_address.get(), 16) + _offset
+        width = int(entry_width.get())
+        height = int(entry_height.get())
+        image = load_image_from_binary(file_path, address, width, height)
+        image.save(save_file_path)
+    except Exception as e:
+        label_status.config(text=f"Error: {e}", foreground="red")
 
 def choose_file():
     file_path = filedialog.askopenfilename(filetypes=[("OkabePhone Resource Files", "*.SG"),("All files", "*.*")])
