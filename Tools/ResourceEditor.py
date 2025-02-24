@@ -6,9 +6,10 @@ import pyperclip
 
 
 
-_offset = 1
+_offset = 0
 def rgb888_to_rgb565(r, g, b):
-    return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
+    color = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
+    return ((color & 0xFF) << 8) | (color >> 8)
 
 
 def load_image_from_binary(file_path, address, width, height):
@@ -16,26 +17,31 @@ def load_image_from_binary(file_path, address, width, height):
         f.seek(address)
         image = Image.new('RGB', (width, height))
         pixels = image.load()
+
         for y in range(height):
             for x in range(width):
                 data = f.read(2)
-                if not data:
-                    break
                 if len(data) < 2:
-                    print(f"Buffer less than 2...")
+                    print(f"Buffer less then 2...")
                     break
 
-                rgb565 = struct.unpack('<H', data)[0]
-                r = ((rgb565 >> 11) & 0x1F) << 3
-                g = ((rgb565 >> 5) & 0x3F) << 2
-                b = (rgb565 & 0x1F) << 3
+                # Swap bytes if needed
+                rgb565 = struct.unpack('>H', data)[0]  # Reverse byte order if swapped
+
+                # Convert RGB565 to 8-bit RGB
+                r = ((rgb565 >> 11) & 0x1F) * 255 // 31
+                g = ((rgb565 >> 5) & 0x3F) * 255 // 63
+                b = (rgb565 & 0x1F) * 255 // 31
+
                 pixels[x, y] = (r, g, b)
-        return image
+
+    return image
 
 
 def save_image_to_binary(file_path, address, image):
+    """Save PIL image as binary RGB565 with swapped bytes"""
     width, height = image.size
-    with open(file_path, 'r+b') as f:
+    with open(file_path, 'r+b') as f:  # Use 'w+b' if the file might not exist
         f.seek(address)
         for y in range(height):
             for x in range(width):
@@ -189,7 +195,7 @@ def decrement_address():
         label_status.config(text=f"Error: {e}", foreground="red")
 
 root = tk.Tk()
-root.title("Okabe Phone Image Resources Editor v0.4.2 Alpha")
+root.title("Okabe Phone Image Resources Editor v0.4.4 Alpha")
 
 frame_input = ttk.Frame(root, padding="10")
 frame_input.grid(row=0, column=0, sticky=(tk.W, tk.E))

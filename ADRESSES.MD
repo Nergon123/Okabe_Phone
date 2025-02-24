@@ -26,7 +26,7 @@ END AT 0x5A708D
 ## BATTERY PLACEMENT IS 207,0
   0/3,1/3,2/3,3/3
   SIZE 0x6B4
-  LOCATIONS 0X5AA14D ,+0x6B4,+0x6B4,+0x6B4
+  LOCATIONS 0X5AA14D
   COUNT 4
   RESOLUTION IS 33X26
 
@@ -52,9 +52,9 @@ END AT 0x5A708D
   LOCATION 0x613D45
 
 ## MENU ITEMS PLACEMENT
-
   turned off icons
-  size of each is +(0x17A2*1)
+  size of each is 0x17A2
+  background is 0x07e0
   beginning at 0x5D5097
   first is 55x55, 49,(43+26)
   
@@ -77,7 +77,7 @@ END AT 0x5A708D
   first icon is 49x49, 51,(45+26)
   
   ```drawFromSd(0x5D0342,51,(45+26),49,49);```
-  
+  x
   0x5D0342
   second is 49x51, 141,(44+26)
   

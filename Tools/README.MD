@@ -34,3 +34,6 @@ When you open this tool you should see
 ![real-life](../GHRES/photos/cat.jpg)
 
 Thats everything what I can tell about this tool.
+
+# File manager
+TBD

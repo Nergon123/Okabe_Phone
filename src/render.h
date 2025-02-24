@@ -6,12 +6,12 @@ extern String resPath;
 struct SDImage;
 struct mOption;
 void changeFont(int ch);
-void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, File file = SD.open(resPath, FILE_READ));
+void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, String file_path = resPath);
 void writeText(int x, int y, char *str);
 void drawStatusBar();
 void rendermenu(int &choice, int old_choice);
 void sysError(const char *reason);
-void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file = SD.open(resPath, FILE_READ), bool transp = false, uint16_t tc = 0);
+void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path = resPath, bool transp = false, uint16_t tc = 0);
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool transp, uint16_t tc = 0);
 void drawFromSd(int x, int y, SDImage sprite);
 void writeCustomFont(int x, int y, String input, int type = 0);
@@ -24,7 +24,7 @@ String SplitString(String text);
 int choiceMenu(const String choices[], int count, bool context);
 void drawCutoutFromSd(SDImage image, int cutout_x, int cutout_y,
                       int cutout_width, int cutout_height,
-                      int display_x, int display_y, File file = SD.open(resPath, FILE_READ));
+                      int display_x, int display_y, String file_path = resPath);
 int findCharIndex(String text, int &charIndex, int direction);
 String textbox(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction = nullptr, bool onlynumbers = false);
 bool button(String title, int xpos, int ypos, int w, int h, bool selected = false, int *direction = nullptr);

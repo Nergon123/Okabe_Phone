@@ -112,10 +112,9 @@ void e() {
                 "/DATA/OUTMESSAGES.SGDB");
 
             break;
-            case 3:
-             SerialGetFile();
-             break;
-            
+        case 3:
+            SerialGetFile();
+            break;
         }
         break;
     }
@@ -215,7 +214,7 @@ void settings() {
 void MainMenu() {
 
     drawFromSd(0x5ADC01, 0, 26, 240, 294);
-    drawFromSd(0x5D0341, 51, 71, 49, 49);
+    drawFromSd(0x5D0341, 51, 71, 49, 49, true, 0x07e0);
 
     int  choice     = 0;
     int  old_choice = 0;
@@ -228,7 +227,6 @@ void MainMenu() {
             break;
         }
         case SELECT: {
-            // middle
             switch (choice) {
             case 0:
 
@@ -257,7 +255,6 @@ void MainMenu() {
             old_choice = choice;
             choice -= 2;
             rendermenu(choice, old_choice);
-            // left
             break;
         }
 
@@ -271,7 +268,6 @@ void MainMenu() {
             old_choice = choice;
             choice--;
             rendermenu(choice, old_choice);
-            // left
             break;
         }
 
@@ -1586,57 +1582,183 @@ void AT_test() {
         }
     }
 }
-void SerialGetFile() {
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextColor(TFT_WHITE);
-    tft.setTextSize(1);
-    tft.setCursor(10, 30);
-    Serial.updateBaudRate(460800);
-    tft.println("WAITING FOR CONNECTION...");
-    
-    // Wait for file name
-    while (!Serial.available());
-    String fileName = Serial.readStringUntil('\n');
-    fileName.trim();
-    
-    if (fileName.length() == 0) {
-        tft.println("Invalid file name.");
-        return;
-    }
 
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(10, 30);
-    tft.println("Receiving: " + fileName);
-    Serial.println("START");  
+int RunAction(String request) {
+    String actions[] = {"RECIEVE", "SEND", "LIST", "DELETE", "EXIT"};
+    int    action    = -1;
 
-    // Open file on SD card
-    File file = SD.open("/" + fileName, FILE_WRITE);
-    if (!file) {
-        tft.println("Failed to open file.");
-        Serial.println("Failed to open file.");
-        return;
-    }
-
-   
-    int bytesReceived = 0;
-    int fileSize = 7000000; 
-    
-    while (true) {
-        if (Serial.available()) {
-            char c = Serial.read();
-            file.write(c);
-            bytesReceived++;
-            file.flush();
-        } else if (bytesReceived > 0) {
- 
+    for (int i = 0; i < ArraySize(actions); i++) {
+        if (request.indexOf(actions[i]) != -1) {
+            request.replace(actions[i], "");
+            request.trim();
+            action = i;
             break;
         }
     }
 
-    file.close();
-    Serial.println("DONE");  
+    if (action == -1) {
+        return -1; // Invalid action
+    }
 
-    tft.setCursor(10, 100);
-    tft.println("Transfer Complete!");
+    switch (action) {
+    case 0: { // RECIEVE
+        String fileName = request;
+        if (fileName.length() == 0) {
+            tft.println("Invalid file name.");
+            return -1;
+        }
+
+        tft.fillScreen(TFT_BLACK);
+        tft.setCursor(10, 30);
+        tft.println("Receiving: " + fileName);
+        Serial.println("START");
+
+        
+        if (SD.exists("/" + fileName)) {
+            SD.remove("/" + fileName);
+        }
+
+        File file = SD.open("/" + fileName, FILE_WRITE);
+        if (!file) {
+            tft.println("Failed to open file.");
+            Serial.println("Failed to open file.");
+            return -1;
+        }
+
+        const int     BUFFER_SIZE = 512;
+        uint8_t       buffer[BUFFER_SIZE];
+        int           bytesReceived   = 0;
+        unsigned long lastReceiveTime = millis();
+        int           flushCounter    = 0;
+
+        while (true) {
+            int availableBytes = Serial.available();
+            if (availableBytes > 0) {
+                int toRead = Serial.readBytes(buffer, BUFFER_SIZE);
+                file.write(buffer, toRead);
+                bytesReceived += toRead;
+                lastReceiveTime = millis();
+
+                file.flush();
+
+                Serial.println("ACK");
+            }
+
+            
+            if (millis() - lastReceiveTime > 10000) {
+                break;
+            }
+        }
+
+        file.flush();
+        file.close();
+        Serial.println("DONE");
+
+        tft.setCursor(10, 100);
+        tft.println("Transfer Complete!");
+        break;
+    }
+    case 1: { // SEND
+        String fileName = request;
+        if (!SD.exists("/" + fileName)) {
+            Serial.println("ERROR: File not found.");
+            return -1;
+        }
+
+        File file = SD.open("/" + fileName, FILE_READ);
+        if (!file) {
+            Serial.println("ERROR: Cannot open file.");
+            return -1;
+        }
+
+        Serial.println("START");
+
+        const int BUFFER_SIZE = 512;
+        uint8_t   buffer[BUFFER_SIZE];
+
+        while (file.available()) {
+            int bytesRead = file.read(buffer, BUFFER_SIZE);
+            Serial.write(buffer, bytesRead);
+
+            
+            while (true) {
+                if (Serial.available()) {
+                    String ack = Serial.readStringUntil('\n');
+                    if (ack == "ACK") {
+                       
+                        break;
+                    }
+                }
+            }
+        }
+
+        file.close();
+        Serial.println("DONE");
+        break;
+    }
+
+    case 2: { // LIST FILES
+        File root = SD.open(request);
+        if (!root) {
+            Serial.println("ERROR: Cannot open directory.");
+            return -1;
+        }
+
+        Serial.println("**FILES:");
+        while (true) {
+            File entry = root.openNextFile();
+            if (!entry)
+                break;
+            if (entry.isDirectory())
+                Serial.println(String(entry.name()) + "/");
+            else
+                Serial.println(entry.name());
+            entry.close();
+        }
+        Serial.println("**END");
+        break;
+    }
+
+    case 3: { // DELETE FILE
+        String fileName = request;
+        if (SD.exists("/" + fileName)) {
+            SD.remove("/" + fileName);
+            Serial.println("DELETED");
+        } else {
+            Serial.println("ERROR: File not found.");
+        }
+        break;
+    }
+    case 4:
+        return 255;
+        break;
+    }
+
+    return action;
+}
+
+void SerialGetFile() {
+    suspendCore(true);
+    fastMode(true);
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_WHITE);
+    tft.setTextSize(1);
+    tft.setCursor(10, 30);
+    Serial.updateBaudRate(1000000);
+    tft.println("WAITING FOR CONNECTION...");
+    while (buttonsHelding(false) != BACK) {
+        // Wait
+        while (!Serial.available()) {
+            delay(1000);
+            Serial.println("READY");
+        }
+        String action = Serial.readStringUntil('\n');
+        action.trim();
+        if (RunAction(action) == 255)
+            break;
+    }
+
     Serial.updateBaudRate(115200);
+    fastMode(false);
+    suspendCore(false);
 }

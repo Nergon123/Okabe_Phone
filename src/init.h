@@ -115,4 +115,5 @@ void setup();
 void idle();
 void screens();
 void suspendCore(bool suspend);
+bool initSDCard(bool fast);
 #endif // INITT_H
