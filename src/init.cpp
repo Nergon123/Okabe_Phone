@@ -72,19 +72,21 @@ String currentMailRingtonePath = "";
 String currentNotificationPath = "";
 String currentWallpaperPath    = "/null";
 String resPath                 = "/FIRMWARE/IMAGES.SG";
-void   TaskIdleHandler(void *parameter);
-void   initSim();
 String lastSIMerror = "";
 
+void   TaskIdleHandler(void *parameter);
+void   initSim();
+bool   initSDCard(bool fast);
 void setup() {
-   
-    setCpuFrequencyMhz(160);
+
+    setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0);                            // bootup blinking prevention
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
     mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
     // INIT display
     tft.init();
+
     tft.fillScreen(0x0000);
 
     // INIT Serial
@@ -105,9 +107,10 @@ void setup() {
     preferences.begin("settings", false);
     resPath = preferences.getString("resPath", "/FIRMWARE/IMAGES.SG");
     Serial.println(resPath);
-    
+
     SPI.begin(14, 2, 15, chipSelect);
-    while (!SD.begin(chipSelect, SPI))
+
+    while (!initSDCard(true))
         recovery("No MicroSD card.");
 
     while (!SD.exists(resPath))
@@ -182,9 +185,8 @@ void setup() {
     }
     progressBar(100, 100, 250);
 
-
     millSleep = millis();
-    while (buttonsHelding()=='#')
+    while (buttonsHelding() == '#')
         ;
     drawStatusBar();
 }
@@ -293,3 +295,21 @@ void initSim() {
     simIsUsable = _checkSim();
     progressBar(80, 100, 250);
 }
+
+bool initSDCard(bool fast) {
+    SD.end();  
+    ulong sd_freq = MAX_SD_FREQ;
+
+    if (fast) {
+        while (sd_freq >= MIN_SD_FREQ) {
+            if (SD.begin(chipSelect, SPI, sd_freq)) {
+                return true;  
+            }
+            sd_freq -= 1000000;  
+        }
+       
+    }
+
+    return SD.begin(chipSelect, SPI, SAFE_SD_FREQ);
+}
+

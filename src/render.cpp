@@ -1,6 +1,8 @@
 #include "render.h"
 const int lastImage = 42;
-bool      button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
+
+
+bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
 
     tft.fillRect(xpos, ypos, w, h, 0xFFFF);
     tft.drawRect(xpos, ypos, w, h, 0);
@@ -54,6 +56,7 @@ bool      button(String title, int xpos, int ypos, int w, int h, bool selected, 
     tft.print(title);
     return false;
 }
+
 String textbox(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers) {
 
     content.trim();
@@ -286,9 +289,10 @@ void drawPNG(const char *filename) {
 }
 
 // Draw and downscale image
-void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, File file) {
+void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, String file_path) {
     // PARTIALLY STOLEN FROM CHATGPT
     fastMode(true);
+    File file = SD.open(file_path);
     if (!file.available())
         sysError("SD_CARD_NOT_AVAILABLE");
     file.seek(pos);
@@ -360,10 +364,11 @@ void drawCutoutFromSd(SDImage image,
                       int cutout_x, int cutout_y,
                       int cutout_width, int cutout_height,
                       int display_x, int display_y,
-                      File file) {
+                      String file_path) {
 fastMode(true);
+File file = SD.open(file_path);
     if (!file || !file.available()) {
-        Serial.println("Failed to open file or file not available");
+        sysError("FILE_NOT_AVAILABLE");
         return;
     }
 
@@ -386,6 +391,7 @@ fastMode(true);
         }
         tft.pushImage(display_x, display_y + row, cutout_width, 1, (uint16_t *)buffer);
     }
+    file.close();
     fastMode(false);
 }
 
@@ -400,10 +406,10 @@ void rendermenu(int &choice, int old_choice) {
     const uint32_t iconOffset  = 0x17A2;
 
     const SDImage onIcons[] = {
-        {0x5D0341, 49, 49, 0, false},
-        {0x5D1603, 49, 51, 0, false},
-        {0x5D2989, 50, 50, 0, false},
-        {0x5D3D11, 49, 51, 0, false}};
+        {0x5D0341, 49, 49, 0x07e0, true},
+        {0x5D1603, 49, 51, 0x07e0, true},
+        {0x5D2989, 50, 50, 0x07e0, true},
+        {0x5D3D11, 49, 51, 0x07e0, true}};
 
     const struct {
         int x, y;
@@ -424,7 +430,7 @@ void rendermenu(int &choice, int old_choice) {
         drawFromSd(
             IconPositions[offIndex].x,
             IconPositions[offIndex].y,
-            SDImage(baseAddress + (iconOffset * offIndex), 55, 55, 0, false));
+            SDImage(baseAddress + (iconOffset * offIndex), 55, 55, 0x07e0, true));
 
     drawFromSd(
         IconPositions[onIndex + 4].x,
@@ -446,10 +452,11 @@ void sysError(const char *reason) {
         ;
 }
 
-void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File file, bool transp, uint16_t tc) {
+void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path , bool transp, uint16_t tc) {
     fastMode(true);
+    File file =  SD.open(resPath, FILE_READ);
     if (!file.available())
-        sysError("SD_CARD_NOT_AVAILABLE");
+        sysError("FILE_NOT_AVAILABLE");
     file.seek(pos);
     if (!transp) {
         const int buffer_size = size_x * 2;
@@ -493,11 +500,12 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, File
             }
         }
     }
+    file.close();
     fastMode(false);
 }
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool transp, uint16_t tc) {
-    drawFromSd(pos, pos_x, pos_y, size_x, size_y, SD.open(resPath), transp, tc);
+    drawFromSd(pos, pos_x, pos_y, size_x, size_y, resPath, transp, tc);
 }
 
 void drawFromSd(int x, int y, SDImage sprite) {

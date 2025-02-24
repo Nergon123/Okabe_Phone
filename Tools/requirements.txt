@@ -1,3 +1,5 @@
+pyserial
+tqdm
+simple-term-menu
 Pillow
 pyperclip
-

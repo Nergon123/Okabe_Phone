@@ -49,4 +49,14 @@
 //#define SIMDEBUG//
 /////////////////////////
 
+//CPU frequency for ESP32 by default is 240 MHz  
+#define FAST_CPU_FREQ_MHZ 240
+
+//Lowest possible speed is 20 MHZ (?)
+#define SLOW_CPU_FREQ_MHZ 20
+
+
+#define MAX_SD_FREQ 240000000
+#define MIN_SD_FREQ 1000000 
+#define SAFE_SD_FREQ 500000 
 #endif

@@ -1,7 +1,6 @@
 #include "funct.h"
 // TaskHandle_t TaskHandleATCommand;
 
-
 unsigned int getIndexOfCount(int count, String input, String str, unsigned int fromIndex) {
     for (int i = 0; i < count; i++) {
         fromIndex = input.indexOf(str, fromIndex + 1);
@@ -93,8 +92,7 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
     return response;
 }
 
-
-//Get string value after first colon 
+// Get string value after first colon
 String getATvalue(String command, bool background = false) {
 
     String response = sendATCommand(command, 1000, background);
@@ -121,7 +119,7 @@ String getATvalue(String command, bool background = false) {
     return result;
 }
 
-//Get battery charge (from 0 to 3)
+// Get battery charge (from 0 to 3)
 int getChargeLevel() {
 
     int toIcon = (chrg.getBatteryLevel() / 25) - 1;
@@ -131,7 +129,7 @@ int getChargeLevel() {
     return toIcon;
 }
 
-//Get cellular signal level (from -1 as "unavaliable" to 3)
+// Get cellular signal level (from -1 as "unavaliable" to 3)
 int getSignalLevel() {
 
     int signal = -1;
@@ -154,8 +152,7 @@ int getSignalLevel() {
     return signal;
 }
 
-
-//Populate contact list
+// Populate contact list
 void populateContacts() {
     String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
 
@@ -204,11 +201,11 @@ void populateContacts() {
             lastContactIndex = contactIndex;
         }
         if (contactCount >= MAX_CONTACTS)
-            break; 
+            break;
     }
 }
 
-//check if certain button is pressed (Deprecated?)
+// check if certain button is pressed (Deprecated?)
 bool checkButton(int pin) {
     if (digitalRead(pin) == LOW) {
         delay(50);
@@ -218,7 +215,6 @@ bool checkButton(int pin) {
     }
     return false;
 }
-
 
 /*
  *check if MCP23017 button is pressed
@@ -262,7 +258,7 @@ int checkEXbutton() {
     return 0;
 }
 
-//Get Call status from SIM Card Module
+// Get Call status from SIM Card Module
 int GetState() {
     String result = sendATCommand("AT+CLCC");
     Serial.println("AAA" + result);
@@ -276,7 +272,7 @@ int GetState() {
     return atoi(result.c_str());
 }
 
-//Button
+// Button
 int buttonsHelding(bool _idle) {
 
     /*
@@ -361,8 +357,8 @@ int buttonsHelding(bool _idle) {
         break;
     }
 
-    //For some reason serial control support
-    //You can control device keypad from other device through Serial port
+    // For some reason serial control support
+    // You can control device keypad from other device through Serial port
     if (Serial.available()) {
         char input = Serial.read();
         switch (input) {
@@ -413,7 +409,7 @@ int buttonsHelding(bool _idle) {
     return -1;
 }
 
-//Parse SMS messages from SIM Card
+// Parse SMS messages from SIM Card
 void parseMessages(Message *&msgs, int &count) {
     String response     = sendATCommand("AT+CMGL=\"ALL\",1");
     int    lastIndexOf  = 0;
@@ -490,8 +486,7 @@ void parseMessages(Message *&msgs, int &count) {
     count = messageCount;
 }
 
-
-//Measure String Height in pixels
+// Measure String Height in pixels
 int measureStringHeight(const String &text) {
     int lines      = 1;
     int lineWidth  = 0;
@@ -539,8 +534,7 @@ int measureStringHeight(const String &text) {
     return lines * lineHeight;
 }
 
-
-//Check if someone calling (Function subject to change. I need to use interrupts for that)
+// Check if someone calling (Function subject to change. I need to use interrupts for that)
 void checkVoiceCall() {
     if (isCalling && !ongoingCall) {
 
@@ -557,8 +551,7 @@ void checkVoiceCall() {
     }
 }
 
-
-//Check if sim card is there
+// Check if sim card is there
 bool _checkSim() {
     lastSIMerror = sendATCommand("AT+CPIN?");
     if (lastSIMerror.indexOf("READY") == -1) {
@@ -569,14 +562,14 @@ bool _checkSim() {
         return true;
 }
 
-//Throw full screen error if there no sim card
+// Throw full screen error if there no sim card
 bool checkSim() {
     if (!simIsUsable)
         ErrorWindow(lastSIMerror);
     return simIsUsable;
 }
 
-//Play Audio through PCM
+// Play Audio through PCM
 void playAudio(String path) {
 
     while (true /*STATEMENT PLACEHOLDER*/) {
@@ -584,14 +577,11 @@ void playAudio(String path) {
     }
 }
 
-//Speed up/Slow down CPU, SD card, screen frequencies to save battery
+// Speed up/Slow down CPU, SD card, screen frequencies to save battery
 void fastMode(bool status) {
     // TODO: REINIT SCREEN and SDCARD
-    if (status) {
-        setCpuFrequencyMhz(80);
-    } else {
-        setCpuFrequencyMhz(20);
-    }
+    setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
+    initSDCard(status);
 }
 
 int currentBrightness = brightness;
