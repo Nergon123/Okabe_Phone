@@ -81,12 +81,12 @@ void setup() {
 
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     pinMode(TFT_BL, OUTPUT);
-    analogWrite(TFT_BL, 0);                            // bootup blinking prevention
-    mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
-    mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
+    analogWrite(TFT_BL, 0);                            // boot blinking prevention
+
     // INIT display
     tft.init();
-
+    mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
+    mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
     tft.fillScreen(0x0000);
 
     // INIT Serial
@@ -192,6 +192,7 @@ void setup() {
 }
 
 void suspendCore(bool suspend) {
+    if(TaskHCommand)
     if (suspend) {
         vTaskSuspend(TaskHCommand);
         simIsBusy = false;

@@ -729,3 +729,58 @@ void parseSDMessages(Message messages[], int &messageCount, String filePath) {
 
     Serial.println("Messages parsed successfully!");
 }
+
+void execute_application() {
+    suspendCore(true);
+    String  file_path = fileBrowser(SD.open("/"), "bin");
+    tft.fillScreen(0);
+    mOption mOp[2]    = {{"Yes"}, {"No"}};
+    int     choice    = listMenuNonGraphical(mOp, 2, "DO YOU REALLY TRUST THIS APPLICATION?\n\nPATH:sdcard:"+file_path+"\n\nNOTICE: WITH APPLICATION ACTIVE\n\n YOU WOULDN'T RECIEVE ANY\n\n CALLS MESSAGES ETC.\n\n(Unless application designed to)\n\n BY LAUNCHING APPLICATION YOU\n\nGIVING ACCESS TO WHOLE DEVICE\n\n INCLUDING:\n\n SD CARD, SIM CARD,WIFI,\n\n BLUETOOTH,FIRMWARE etc.\n\n\n Continue?");
+    if (choice)
+    {
+        sBarChanged = true;
+        drawStatusBar();
+        suspendCore(false);
+        return;
+    }
+    tft.fillScreen(0);
+    changeFont(0);
+    tft.setTextColor(0xFFFF);
+    tft.setCursor(30, 190);
+    tft.println("BOOTING INTO APPLICATION...");
+    if (file_path == "/null")
+        return;
+    fastMode(true);
+    File file = SD.open(file_path);
+    if (!file) {
+        Serial.println("Failed to open file!");
+        return;
+    }
+
+    const esp_partition_t *partition = esp_partition_find_first(
+        ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, "app1");
+    if (!partition) {
+        Serial.println("Partition not found!");
+        return;
+    }
+    esp_partition_erase_range(partition, 0, partition->size);
+
+    if (file.size() > partition->size) {
+        Serial.printf("File size bigger than partition size %d bytes/%d bytes\n\n", file.size(), partition->size);
+        return;
+    }
+
+    uint8_t buffer[4096];
+    size_t  offset = 0;
+    while (file.available()) {
+        size_t bytesRead = sizeof(buffer);
+        file.read(buffer, sizeof(buffer));
+        esp_partition_write(partition, offset, buffer, bytesRead);
+        progressBar(offset,file.size(),200);
+        offset += bytesRead;
+    }
+
+    file.close();
+    esp_ota_set_boot_partition(partition);
+    ESP.restart();
+}

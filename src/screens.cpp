@@ -73,7 +73,8 @@ void e() {
             "Delete File",
             "Cat",
             "Write Message To SD",
-            "Serial To File"};
+            "Serial To File",
+            "Execute Application"};
         choice = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
         String path;
         File   file;
@@ -115,7 +116,11 @@ void e() {
         case 3:
             SerialGetFile();
             break;
+            case 4:
+            execute_application();
+            break;
         }
+
         break;
     }
     currentScreen = SCREENS::MAINMENU;
@@ -1661,13 +1666,13 @@ int RunAction(String request) {
     case 1: { // SEND
         String fileName = request;
         if (!SD.exists("/" + fileName)) {
-            Serial.println("ERROR: File not found.");
+            tft.println("ERROR: File not found.");
             return -1;
         }
 
         File file = SD.open("/" + fileName, FILE_READ);
         if (!file) {
-            Serial.println("ERROR: Cannot open file.");
+            tft.println("ERROR: Cannot open file.");
             return -1;
         }
 
@@ -1693,6 +1698,11 @@ int RunAction(String request) {
         }
 
         file.close();
+        ulong baud = Serial.baudRate();
+        Serial.end();
+        delay(100);
+        Serial.begin(baud);
+        
         Serial.println("DONE");
         break;
     }

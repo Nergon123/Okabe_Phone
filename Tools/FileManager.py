@@ -93,7 +93,7 @@ def get_file(remote_path):
                     if not chunk:
                         break  
                     file.write(chunk)  
-                    ser.write(b"ACK")  
+                    ser.write(b"ACK\n")  
 
             print(f"File {remote_path} received successfully.")
 
