@@ -1,6 +1,7 @@
 
 
 #include <defines.h>
+#include "esp_ota_ops.h"
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>

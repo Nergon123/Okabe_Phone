@@ -849,6 +849,7 @@ void renderlmng(mOption* choices, int x, int y, int icount, String label, int in
 
 // listMenu that doesn't use graphics
 int listMenuNonGraphical(mOption* choices, int icount, String label,int y) {
+    suspendCore(true);
     int x     = 0;
     int index = 0;
     changeFont(0);
@@ -877,13 +878,16 @@ int listMenuNonGraphical(mOption* choices, int icount, String label,int y) {
             renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
             break;
         case SELECT:
+        suspendCore(false);
         return index;
         break;
         case BACK:
+        suspendCore(false);
             return -1;
             break;
         }
     }
+    suspendCore(false);
     return -1;
 }
 
@@ -1255,7 +1259,7 @@ void drawWallpaper() {
 
 int lastpercentage;
 // progress bar that used on boot screen
-void progressBar(int val, int max, int y, int h, uint16_t color, bool log) {
+void progressBar(int val, int max, int y, int h, uint16_t color, bool log,bool fast) {
 
     int percentage = (val * 100) / max;
     if (lastpercentage > percentage)
@@ -1265,6 +1269,7 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log) {
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.drawRect(69, y, 100, h, color);
             tft.fillRect(69, y, i, h, color);
+            if(!fast)
             delay(13);
         }
     } else {
@@ -1272,6 +1277,7 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log) {
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.drawRect(69, y, 100, h, color);
             tft.fillRect(69, y, i, h, color);
+            if(!fast)
             delay(13);
         }
 #endif

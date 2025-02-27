@@ -21,4 +21,5 @@ void fastMode(bool status);
 void setBrightness(int percentage);
 int buttonsHelding(bool _idle = true);
 void parseSDMessages(Message messages[], int &messageCount, String filePath);
+void execute_application();
 #endif
