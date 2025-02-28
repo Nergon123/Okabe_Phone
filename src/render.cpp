@@ -633,8 +633,8 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
     } else if (choices[0].icon.address != 0 || forceIcons) {
         x = 29;
     }
-    tft.fillRect(0, 26, 240, 25, 0x32B3);
-    // drawFromSd(0x5DAF1F, 0, 26, 240, 25); // bluebar TODO: just draw rectangle instead of loading a whole image
+    //tft.fillRect(0, 26, 240, 25, 0x32B3);
+     drawFromSd(0x5DAF1F, 0, 26, 240, 25); 
     if (type >= 0 && type < 3) // with icon to draw...
         drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
     int items_per_page = 269 / mult; // max items per page (empty space height divided by spacing)
