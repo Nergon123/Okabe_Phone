@@ -17,6 +17,7 @@ bool confirmation(String reason) {
     tft.setTextColor(0);
     tft.println("CONFIRMATION");
     button("YES", 120, 190, 80, 30);
+    //TODO
     while (true)
         ;
 
@@ -1529,7 +1530,7 @@ void LockScreen() {
     while (!exit) {
         mill = millis();
         while (buttonsHelding() == '*') {
-            if (millis() > mill + 2000) {
+            if (millis() > mill + 1000) {
                 exit = true;
                 break;
             }
@@ -1589,7 +1590,7 @@ void AT_test() {
 }
 
 int RunAction(String request) {
-    String actions[] = {"RECIEVE", "SEND", "LIST", "DELETE", "EXIT"};
+    String actions[] = {"RECEIVE", "SEND", "LIST", "DELETE","WRITE","READ","EXIT"};
     int    action    = -1;
 
     for (int i = 0; i < ArraySize(actions); i++) {
@@ -1685,16 +1686,12 @@ int RunAction(String request) {
             int bytesRead = file.read(buffer, BUFFER_SIZE);
             Serial.write(buffer, bytesRead);
 
+            String ack;
+            while (ack != "ACK") 
+                if (Serial.available())
+                    ack = Serial.readStringUntil('\n');
+                
             
-            while (true) {
-                if (Serial.available()) {
-                    String ack = Serial.readStringUntil('\n');
-                    if (ack == "ACK") {
-                       
-                        break;
-                    }
-                }
-            }
         }
 
         file.close();
@@ -1713,16 +1710,20 @@ int RunAction(String request) {
             Serial.println("ERROR: Cannot open directory.");
             return -1;
         }
-
+    
         Serial.println("**FILES:");
         while (true) {
             File entry = root.openNextFile();
-            if (!entry)
+            if (!entry) {
                 break;
-            if (entry.isDirectory())
-                Serial.println(String(entry.name()) + "/");
-            else
-                Serial.println(entry.name());
+            }
+            if (entry.isDirectory()) {
+                // For directories, append a "/" and set size to 0
+                Serial.println(String(entry.name()) + "/,0");
+            } else {
+                // For files, include the file size
+                Serial.println(String(entry.name()) + "," + entry.size());
+            }
             entry.close();
         }
         Serial.println("**END");
@@ -1739,7 +1740,85 @@ int RunAction(String request) {
         }
         break;
     }
-    case 4:
+    case 4: {//WRITE
+        int firstSpace = request.indexOf(' ');
+        int secondSpace = request.indexOf(' ', firstSpace + 1);
+
+        String filePath = request.substring(0, firstSpace);
+        int offset = request.substring(firstSpace + 1, secondSpace).toInt();
+        int length = request.substring(secondSpace + 1).toInt();
+
+
+        File file = SD.open(filePath, FILE_WRITE);
+        if (!file) {
+            Serial.println("ERROR: Cannot open file.");
+            return -1;
+        }
+
+        if (!file.seek(offset)) {
+            Serial.println("ERROR: Seek failed.");
+            file.close();
+            return -1;
+        }
+
+
+        uint8_t buffer[512];
+        int bytesRead = 0;
+        while (bytesRead < length) {
+            int toRead = min(length - bytesRead,(int)sizeof(buffer));
+            int read = Serial.readBytes(buffer, toRead);
+            file.write(buffer, read);
+            bytesRead += read;
+            file.flush();
+            Serial.println("ACK");
+        }
+
+        file.flush();
+        file.close();
+        Serial.println("DONE");
+        break;
+    }
+    case 5:{//READ
+        int firstSpace = request.indexOf(' ');
+        int secondSpace = request.indexOf(' ', firstSpace + 1);
+
+        String filePath = request.substring(0, firstSpace);
+        int offset = request.substring(firstSpace + 1, secondSpace).toInt();
+        int length = request.substring(secondSpace + 1).toInt();
+
+        File file = SD.open(filePath, FILE_READ);
+        if (!file) {
+            Serial.println("ERROR: Cannot open file.");
+            return -1;
+        }
+
+
+        if (!file.seek(offset)) {
+            Serial.println("ERROR: Seek failed.");
+            file.close();
+            return -1;
+        }
+
+
+        uint8_t buffer[512];
+        int bytesRead = 0;
+        while (bytesRead < length) {
+            int toRead = min(length - bytesRead,(int)sizeof(buffer));
+            size_t read = file.read(buffer, toRead);
+            Serial.write(buffer,read);
+            bytesRead += read;
+
+            String ack;
+            while (ack != "ACK") 
+                if (Serial.available())
+                    ack = Serial.readStringUntil('\n');
+        }
+        file.close();
+        Serial.println("DONE");
+        break;
+    break; 
+    }
+    case 6://EXIT
         return 255;
         break;
     }

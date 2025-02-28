@@ -143,6 +143,7 @@ def list_remote_files(path):
         reslist = result_.split("\r\n")
 
         reslist = [item.strip() for item in reslist if item.strip()]
+        reslist = [item.split(',')[0] for item in reslist]
         return reslist
 
 
@@ -194,7 +195,7 @@ def send_file(serial_port, file_path):
             if response == "READY":
                 break
         
-        ser.write(("RECIEVE" + file_name + "\n").encode())
+        ser.write(("RECEIVE" + file_name + "\n").encode())
         
         while True:
             response = ser.readline().decode("latin-1").strip()

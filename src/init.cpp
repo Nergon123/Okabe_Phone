@@ -248,8 +248,6 @@ void idle() {
         setBrightness(brightness);
     }
     if (millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked) {
-        Serial.println(isScreenLocked);
-        Serial.println(millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked);
         LockScreen();
     }
 
