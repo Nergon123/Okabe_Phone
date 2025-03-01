@@ -241,7 +241,7 @@ void loop() {
 void idle() {
 
     if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
-        setBrightness(brightness / 2);
+        setBrightness(brightness*0.1);
     } else if (millis() > millSleep + delayBeforeSleep) {
         setBrightness(0);
     } else {

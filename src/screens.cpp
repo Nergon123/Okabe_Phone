@@ -28,6 +28,7 @@ void ErrorWindow(String reason) {
     int xpos = 0;
     drawWallpaper();
     drawFromSd(0x5F7A25, 0, 90, 240, 134);
+    tft.setTextSize(1);
     tft.setCursor(80, 120);
     changeFont(1);
     tft.setTextColor(0xF800);
@@ -43,10 +44,10 @@ void ErrorWindow(String reason) {
 }
 void messages() {
 
-    if (!checkSim()) {
-        currentScreen = SCREENS::MAINMENU;
-        return;
-    }
+    // if (!checkSim()) {
+    //     currentScreen = SCREENS::MAINMENU;
+    //     return;
+    // }
 
     drawFromSd(0x613D45, 0, 26, 240, 294);
     drawFromSd(0x5DECA5, 0, 26, 240, 42);
@@ -74,7 +75,7 @@ void e() {
             "Delete File",
             "Cat",
             "Write Message To SD",
-            "Serial To File",
+            "PC Connection",
             "Execute Application"};
         choice = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
         String path;
@@ -117,7 +118,7 @@ void e() {
         case 3:
             SerialGetFile();
             break;
-            case 4:
+        case 4:
             execute_application();
             break;
         }
@@ -518,10 +519,10 @@ void callActivity(Contact contact) {
 }
 
 void contactss() {
-    if (!checkSim()) {
-        currentScreen = SCREENS::MAINMENU;
-        return;
-    }
+    // if (!checkSim()) {
+    //     currentScreen = SCREENS::MAINMENU;
+    //     return;
+    // }
     const String contmenu[] = {
         "Call",
         "Outgoing",
@@ -610,13 +611,13 @@ void inbox(bool outbox) {
         }
 
         Serial.println("LISTMENU");
-        int choice = -2;
-        while (choice != -1) {
+        int choice = -1;
+        while (choice != -2) {
             choice = listMenu(a, count, false, 0, title);
             if (choice >= 0) {
                 exit = !messageActivity(messages[count - choice - 1]);
                 if (!exit)
-                    choice = -1;
+                    choice = -2;
             }
         }
     }
@@ -1590,7 +1591,7 @@ void AT_test() {
 }
 
 int RunAction(String request) {
-    String actions[] = {"RECEIVE", "SEND", "LIST", "DELETE","WRITE","READ","EXIT"};
+    String actions[] = {"RECEIVE", "SEND", "LIST", "DELETE", "WRITE", "READ", "EXIT"};
     int    action    = -1;
 
     for (int i = 0; i < ArraySize(actions); i++) {
@@ -1619,7 +1620,6 @@ int RunAction(String request) {
         tft.println("Receiving: " + fileName);
         Serial.println("START");
 
-        
         if (SD.exists("/" + fileName)) {
             SD.remove("/" + fileName);
         }
@@ -1650,7 +1650,6 @@ int RunAction(String request) {
                 Serial.println("ACK");
             }
 
-            
             if (millis() - lastReceiveTime > 10000) {
                 break;
             }
@@ -1687,11 +1686,9 @@ int RunAction(String request) {
             Serial.write(buffer, bytesRead);
 
             String ack;
-            while (ack != "ACK") 
+            while (ack != "ACK")
                 if (Serial.available())
                     ack = Serial.readStringUntil('\n');
-                
-            
         }
 
         file.close();
@@ -1699,7 +1696,7 @@ int RunAction(String request) {
         Serial.end();
         delay(100);
         Serial.begin(baud);
-        
+
         Serial.println("DONE");
         break;
     }
@@ -1710,7 +1707,7 @@ int RunAction(String request) {
             Serial.println("ERROR: Cannot open directory.");
             return -1;
         }
-    
+
         Serial.println("**FILES:");
         while (true) {
             File entry = root.openNextFile();
@@ -1740,14 +1737,13 @@ int RunAction(String request) {
         }
         break;
     }
-    case 4: {//WRITE
-        int firstSpace = request.indexOf(' ');
+    case 4: { // WRITE
+        int firstSpace  = request.indexOf(' ');
         int secondSpace = request.indexOf(' ', firstSpace + 1);
 
         String filePath = request.substring(0, firstSpace);
-        int offset = request.substring(firstSpace + 1, secondSpace).toInt();
-        int length = request.substring(secondSpace + 1).toInt();
-
+        int    offset   = request.substring(firstSpace + 1, secondSpace).toInt();
+        int    length   = request.substring(secondSpace + 1).toInt();
 
         File file = SD.open(filePath, FILE_WRITE);
         if (!file) {
@@ -1761,12 +1757,11 @@ int RunAction(String request) {
             return -1;
         }
 
-
         uint8_t buffer[512];
-        int bytesRead = 0;
+        int     bytesRead = 0;
         while (bytesRead < length) {
-            int toRead = min(length - bytesRead,(int)sizeof(buffer));
-            int read = Serial.readBytes(buffer, toRead);
+            int toRead = min(length - bytesRead, (int)sizeof(buffer));
+            int read   = Serial.readBytes(buffer, toRead);
             file.write(buffer, read);
             bytesRead += read;
             file.flush();
@@ -1778,13 +1773,13 @@ int RunAction(String request) {
         Serial.println("DONE");
         break;
     }
-    case 5:{//READ
-        int firstSpace = request.indexOf(' ');
+    case 5: { // READ
+        int firstSpace  = request.indexOf(' ');
         int secondSpace = request.indexOf(' ', firstSpace + 1);
 
         String filePath = request.substring(0, firstSpace);
-        int offset = request.substring(firstSpace + 1, secondSpace).toInt();
-        int length = request.substring(secondSpace + 1).toInt();
+        int    offset   = request.substring(firstSpace + 1, secondSpace).toInt();
+        int    length   = request.substring(secondSpace + 1).toInt();
 
         File file = SD.open(filePath, FILE_READ);
         if (!file) {
@@ -1792,33 +1787,31 @@ int RunAction(String request) {
             return -1;
         }
 
-
         if (!file.seek(offset)) {
             Serial.println("ERROR: Seek failed.");
             file.close();
             return -1;
         }
 
-
         uint8_t buffer[512];
-        int bytesRead = 0;
+        int     bytesRead = 0;
         while (bytesRead < length) {
-            int toRead = min(length - bytesRead,(int)sizeof(buffer));
-            size_t read = file.read(buffer, toRead);
-            Serial.write(buffer,read);
+            int    toRead = min(length - bytesRead, (int)sizeof(buffer));
+            size_t read   = file.read(buffer, toRead);
+            Serial.write(buffer, read);
             bytesRead += read;
 
             String ack;
-            while (ack != "ACK") 
+            while (ack != "ACK")
                 if (Serial.available())
                     ack = Serial.readStringUntil('\n');
         }
         file.close();
         Serial.println("DONE");
         break;
-    break; 
+        break;
     }
-    case 6://EXIT
+    case 6: // EXIT
         return 255;
         break;
     }
@@ -1835,10 +1828,15 @@ void SerialGetFile() {
     tft.setCursor(10, 30);
     Serial.updateBaudRate(1000000);
     tft.println("WAITING FOR CONNECTION...");
-    while (buttonsHelding(false) != BACK) {
+    bool exit = false;
+    while (!exit) {
         // Wait
-        while (!Serial.available()) {
-            delay(1000);
+
+        while (!Serial.available() & !exit) {
+            ulong ltime = millis();
+            while ((millis() - ltime < 1000) && !exit) {
+                exit = buttonsHelding(false) == BACK;
+            }
             Serial.println("READY");
         }
         String action = Serial.readStringUntil('\n');
