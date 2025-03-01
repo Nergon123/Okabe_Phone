@@ -577,7 +577,7 @@ void playAudio(String path) {
     }
 }
 
-// Speed up/Slow down CPU, SD card, screen frequencies to save battery
+// Speed up/Slow down CPU and SD card frequencies to save battery
 void fastMode(bool status) {
     // TODO: REINIT SCREEN and SDCARD
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
@@ -595,7 +595,7 @@ void setBrightness(int percentage) {
             delay(5);
         }
     } else {
-        for (int i = currentBrightness; i > percentage; i--) {
+        for (int i = currentBrightness; i >= percentage; i--) {
             analogWrite(TFT_BL, (256 * i) / 100);
             delay(5);
         }
@@ -763,12 +763,12 @@ void execute_application() {
         Serial.println("Partition not found!");
         return;
     }
-    esp_partition_erase_range(partition, 0, partition->size);
-
+    
     if (file.size() > partition->size) {
         Serial.printf("File size bigger than partition size %d bytes/%d bytes\n\n", file.size(), partition->size);
         return;
     }
+    esp_partition_erase_range(partition, 0, partition->size);
 
     uint8_t buffer[4096];
     size_t  offset = 0;
