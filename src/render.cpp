@@ -251,7 +251,7 @@ void pngDraw(PNGDRAW *pDraw) {
 }
 
 // Function to draw the PNG image
-void drawPNG(const char *filename) {
+void drawPNG(const char *filename ) {
     fastMode(true);
     File file = SD.open(filename, FILE_READ);
     if (!file) {
@@ -435,12 +435,37 @@ void sysError(const char *reason) {
         ;
 }
 
+
+struct touch_action {
+    int pos_x;
+    int pos_y;
+    int size_x;
+    int size_y;
+    void (*_function)(void); 
+
+ 
+    touch_action(int posx, int posy, int sizex, int sizey, void (*function)(void))
+        : pos_x(posx), pos_y(posy), size_x(sizex), size_y(sizey), _function(function) {}
+};
+
+
+void checkPosition(int touch_x, int touch_y, touch_action *tacs) {
+    if (touch_y > tacs[0].pos_y && touch_y < tacs[0].pos_y + tacs[0].size_y &&
+        touch_x > tacs[0].pos_x && touch_x < tacs[0].pos_x + tacs[0].size_x) {
+        if (tacs[0]._function) {  
+            tacs[0]._function();
+        }
+    }
+}
+
+touch_action curr_ta[1]={touch_action(0,0,0,0,nullptr)};
+
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path, bool transp, uint16_t tc) {
     fastMode(true);
     File file = SD.open(resPath, FILE_READ);
     if (!file.available())
         sysError("FILE_NOT_AVAILABLE");
-    file.seek(pos);
+        file.seek(pos);
     if (!transp) {
         const int buffer_size = size_x * 2;
         uint8_t   buffer[buffer_size];
@@ -642,7 +667,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
         tft.print("< Empty >");
         while (buttonsHelding() == -1)
             ;
-        return -2;
+        return -1;
     }
     tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
     for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++) {

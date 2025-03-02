@@ -90,8 +90,8 @@ void setup() {
     // INIT Serial
     Serial.begin(115200);
     Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
-    // INIT PINS
-
+    
+    // INIT charging IC
     chrg.begin(21, 22);
 
     // RESET KEYBOARD
@@ -180,7 +180,7 @@ void setup() {
 
     if (wallpaperIndex < 0 || wallpaperIndex > 42)
         currentWallpaperPath = preferences.getString("wallpaper", "/null");
-
+        preferences.end();
     if (!SD.exists(currentWallpaperPath)) {
         wallpaperIndex = 0;
         printT_S(currentWallpaperPath + " - NOT FOUND");
@@ -191,6 +191,7 @@ void setup() {
     while (buttonsHelding() == '#')
         ;
     drawStatusBar();
+    Serial.updateBaudRate(115200);
 }
 
 void suspendCore(bool suspend) {

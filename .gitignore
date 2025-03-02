@@ -6,3 +6,5 @@ FLASH.bat
 FLASH.sh
 toFlash/
 refresh-toflash.sh
+monitor.sh
+upload.sh
