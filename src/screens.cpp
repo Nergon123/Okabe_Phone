@@ -205,14 +205,10 @@ void settings() {
             }
         } else if (pic == lastImage) {
             String path = fileBrowser(SD.open("/"), ".png");
-            while (buttonsHelding() != BACK)
-                ;
-            picch = choiceMenu(galch, 2, true);
+            picch       = choiceMenu(galch, 2, true);
             switch (picch) {
             case 0:
                 drawPNG(path.c_str());
-                while (buttonsHelding() != BACK)
-                    ;
                 break;
             case 1:
                 preferences.putUInt("wallpaperIndex", -1);
@@ -363,7 +359,7 @@ void MainScreen() {
         if ((c >= '0' || c == '*' || c == '#') && c <= '9') {
             numberInput(c);
             drawWallpaper();
-        }else if (c == UP|| c == SELECT)
+        } else if (c == UP || c == SELECT)
             break;
     }
 
@@ -379,7 +375,7 @@ void offlineCharging() {
 
         ulong mill = millis();
         if (buttonsHelding(false) != -1)
-        return;
+            return;
         int icc = chrg.isChargerConnected();
         int bp  = getChargeLevel();
         tft.fillRect(40, 105, 150, 70, 0x0000);
@@ -552,45 +548,45 @@ void contactss() {
 
         if (selectedContactIndex != -1) {
             int contextMenuSelection = -1;
-            if (selectedContactIndex == -2) {
-                const String choice  = "Create";
-                contextMenuSelection = choiceMenu({&choice}, 1, true);
-                if (contextMenuSelection == 0) {
-                    editContact(Contact("", "", "", lastContactIndex + 1));
-                } else
-                    exit = true;
-            } else {
-                contextMenuSelection = choiceMenu(contmenu, 5, true);
 
-                switch (contextMenuSelection) {
+            contextMenuSelection = choiceMenu(contmenu, 5, true);
 
-                case 0:
-                    // CALL
-                    makeCall(contacts[selectedContactIndex]);
-                    exit = true;
-                    break;
-                case 1:
-                    // OUTGOING
-                    messageActivityOut(contacts[selectedContactIndex], "", "", true);
-                    break;
-                case 2:
-                    // EDIT
-                    editContact(contacts[selectedContactIndex]);
-                    break;
-                case 3:
-                    // CREATE
+            switch (contextMenuSelection) {
 
-                    editContact(Contact("", "", "", lastContactIndex + 1));
-                    break;
-                case 4:
-                    // DELETE
-                    sendATCommand("AT+CPBW=" + String(contacts[selectedContactIndex].index));
-                    populateContacts();
-                    break;
-                }
+            case 0:
+                // CALL
+                makeCall(contacts[selectedContactIndex]);
+                exit = true;
+                break;
+            case 1:
+                // OUTGOING
+                messageActivityOut(contacts[selectedContactIndex], "", "", true);
+                break;
+            case 2:
+                // EDIT
+                editContact(contacts[selectedContactIndex]);
+                break;
+            case 3:
+                // CREATE
+
+                editContact(Contact("", "", "", lastContactIndex + 1));
+                break;
+            case 4:
+                // DELETE
+                sendATCommand("AT+CPBW=" + String(contacts[selectedContactIndex].index));
+                populateContacts();
+                break;
             }
-        } else
-            exit = true;
+
+        } else {
+           
+            const String choice  = "Create";
+            int CMS = choiceMenu({&choice}, 1, true);
+            if (!CMS) {
+                editContact(Contact("", "", "", lastContactIndex + 1));
+            } else
+                exit = true;
+        }
     }
     currentScreen = SCREENS::MAINMENU;
 }
@@ -615,13 +611,13 @@ void inbox(bool outbox) {
         }
 
         Serial.println("LISTMENU");
-        int choice = -1;
-        while (choice != -2) {
+        int choice = -2;
+        while (choice != -1) {
             choice = listMenu(a, count, false, 0, title);
             if (choice >= 0) {
                 exit = !messageActivity(messages[count - choice - 1]);
                 if (!exit)
-                    choice = -2;
+                    choice = -1;
             }
         }
     }
@@ -1271,6 +1267,11 @@ void editContact(Contact contact) {
 
 void imageViewer() {
     // TODO
+    tft.setViewport(0, 51, 240, 269, true);
+    tft.fillScreen(0);
+
+    //CODE
+    tft.resetViewport();
 }
 
 void recovery(String message) {

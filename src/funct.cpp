@@ -320,98 +320,102 @@ int buttonsHelding(bool _idle) {
     if (result != 0)
         while (result == checkEXbutton())
             ;
-    else
-        return -1;
     millSleep = millis();
     // setBrightness(brightness);
-    switch (result) {
-    case 2:
-        return UP;
-    case 4:
-        return LEFT;
-    case 5:
-        return SELECT;
-    case 6:
-        return RIGHT;
-    case 7:
-        return ANSWER;
-    case 8:
-        return DOWN;
-    case 9:
-        return DECLINE;
-    case 19:
-        return '*';
-
-    case 20:
-        return '0';
-
-    case 21:
-        return '#';
-
-    default:
-        if (result > 9 && result < 19) {
-            result -= 10;
-            result += '1';
-            return result;
-        }
-        break;
-    }
 
     // For some reason serial control support
     // You can control device keypad from other device through Serial port
+
     if (Serial.available()) {
         char input = Serial.read();
+
         switch (input) {
         case 'a':
             Serial.println("LEFT");
-            return LEFT;
+            result = 4;
             break;
         case 'd':
             Serial.println("RIGHT");
-            return RIGHT;
+            result = 6;
             break;
         case 'w':
             Serial.println("UP");
-            return UP;
+            result = 2;
             break;
         case 's':
             Serial.println("DOWN");
-            return DOWN;
+            result = 8;
             break;
         case ' ':
             Serial.println("SELECT");
-            return SELECT;
+            result = 5;
             break;
         case 'e':
             Serial.println("ANSWER");
-            return ANSWER;
+            result = 7;
             break;
         case 'q':
             Serial.println("BACK");
-            return BACK;
+            result = 9;
             break;
         case '*':
             Serial.println(input);
-            return input;
+            result = 19;
             break;
         case '#':
             Serial.println(input);
-            return input;
+            result = 21;
             break;
         default:
             if (input >= '0' && input <= '9') {
                 Serial.println(input);
-                return input;
+                result +=10;
+                result -= '1';
             }
             break;
         }
     }
+    switch (result) {
+        case 2:
+            return UP;
+        case 4:
+            return LEFT;
+        case 5:
+            return SELECT;
+        case 6:
+            return RIGHT;
+        case 7:
+            return ANSWER;
+        case 8:
+            return DOWN;
+        case 9:
+            return DECLINE;
+        case 19:
+            return '*';
+    
+        case 20:
+            return '0';
+    
+        case 21:
+            return '#';
+    
+        default:
+            if (result > 9 && result < 19) {
+                result -= 10;
+                result += '1';
+                return result;
+            }
+            break;
+        }
+    
     return -1;
 }
-
+//Message example = Message(Contact("JAKEPH12","00000000","",0),"Hello","Nigga where the fuck are you","03/25","23/05/2026 20:34",false,78,1);
 // Parse SMS messages from SIM Card
 void parseMessages(Message *&msgs, int &count) {
-    String response     = sendATCommand("AT+CMGL=\"ALL\",1");
+
+    String response     = "+CMGL: 1,\"REC UNREAD\",\"+31628870634\",,\"11/01/09,10:26:26+04\"\nThis is text message 1\n+CMGL: 2,\"REC UNREAD\",\"+31628870634\",,\"11/01/09,10:26:49+04\"\nThis is text message 2\nOK";
+    // sendATCommand("AT+CMGL=\"ALL\",1");
     int    lastIndexOf  = 0;
     int    messageCount = 0;
 
