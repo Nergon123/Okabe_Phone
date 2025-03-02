@@ -1,0 +1,13 @@
+This information for jakeph12.
+
+BL-5C Battery
+PCM Audio for 2 modes (loudspeaker and default talk), 2 Speakers and one microphone
++MCP23017 GPIO Expander
+23 buttons + reset button + boot button ( can be from default gpio (not expander))
+sim card module (preferably 4G since 2G not supported in some regions)
+ESP32
+16 MBIT (4Mbytes) flash (built-in in modules)
+Vibration motor
+1S charger IC
+Serial IC
+Type-C port (maybe)
