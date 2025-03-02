@@ -72,21 +72,19 @@ String currentMailRingtonePath = "";
 String currentNotificationPath = "";
 String currentWallpaperPath    = "/null";
 String resPath                 = "/FIRMWARE/IMAGES.SG";
-String lastSIMerror = "";
+String lastSIMerror            = "";
 
-void   TaskIdleHandler(void *parameter);
-void   initSim();
-bool   initSDCard(bool fast);
+void TaskIdleHandler(void *parameter);
+void initSim();
+bool initSDCard(bool fast);
 void setup() {
 
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     pinMode(TFT_BL, OUTPUT);
-    analogWrite(TFT_BL, 0);                            // boot blinking prevention
+    analogWrite(TFT_BL, 0); // boot blinking prevention
 
     // INIT display
     tft.init();
-    mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
-    mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
     tft.fillScreen(0x0000);
 
     // INIT Serial
@@ -96,13 +94,17 @@ void setup() {
 
     chrg.begin(21, 22);
 
-    /*if (chrg.isChargerConnected() == 1)
-    {
-      offlineCharging();
-      tft.setTextFont(1);
-    } */
+    // RESET KEYBOARD
+    mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
+    mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
 
-    analogWrite(TFT_BL, (256 * brightness) / 100);
+    // set brightness
+    analogWrite(TFT_BL, (255 * brightness) / 100);
+
+    if (chrg.isChargerConnected() == 1) {
+        offlineCharging();
+        tft.setTextFont(1);
+    }
 
     preferences.begin("settings", false);
     resPath = preferences.getString("resPath", "/FIRMWARE/IMAGES.SG");
@@ -192,12 +194,12 @@ void setup() {
 }
 
 void suspendCore(bool suspend) {
-    if(TaskHCommand)
-    if (suspend) {
-        vTaskSuspend(TaskHCommand);
-        simIsBusy = false;
-    } else
-        vTaskResume(TaskHCommand);
+    if (TaskHCommand)
+        if (suspend) {
+            vTaskSuspend(TaskHCommand);
+            simIsBusy = false;
+        } else
+            vTaskResume(TaskHCommand);
 }
 
 void TaskIdleHandler(void *parameter) {
@@ -241,7 +243,7 @@ void loop() {
 void idle() {
 
     if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
-        setBrightness(brightness*0.1);
+        setBrightness(brightness * 0.1);
     } else if (millis() > millSleep + delayBeforeSleep) {
         setBrightness(0);
     } else {
@@ -296,19 +298,17 @@ void initSim() {
 }
 
 bool initSDCard(bool fast) {
-    SD.end();  
+    SD.end();
     ulong sd_freq = MAX_SD_FREQ;
 
     if (fast) {
         while (sd_freq >= MIN_SD_FREQ) {
             if (SD.begin(chipSelect, SPI, sd_freq)) {
-                return true;  
+                return true;
             }
-            sd_freq -= 1000000;  
+            sd_freq -= 1000000;
         }
-       
     }
 
     return SD.begin(chipSelect, SPI, SAFE_SD_FREQ);
 }
-
