@@ -9,19 +9,31 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
 void ringtoneSelector(bool isMail);
 void SerialGetFile();
 bool confirmation(String reason) {
-    //"ARE YOU SURE YOU WANT TO DO THIS?"
     drawWallpaper();
     drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
     changeFont(1);
     tft.setCursor(45, 110);
     tft.setTextColor(0);
     tft.println("CONFIRMATION");
-    button("YES", 120, 190, 80, 30);
-    //TODO
-    while (true)
-        ;
-
-    return true;
+    if (tft.textWidth(reason) < 240)
+        tft.setCursor((230 - tft.textWidth(reason)) / 2, 130);
+    else
+        tft.setCursor(0, 130);
+    tft.println(reason);
+    bool choice[2] = {false, false};
+    int  pos       = 0;
+    int  direction;
+    bool exit = false;
+    while (!exit) {
+        if (button("YES", 120, 190, 80, 30, pos, &direction)) {
+            return true;
+        } else if (button("NO", 30, 190, 80, 30, !pos, &direction)) {
+            return false;
+        }
+        if (direction > 1)
+            pos = !pos;
+    }
+    return false;
 }
 void ErrorWindow(String reason) {
 
@@ -345,15 +357,13 @@ void MainScreen() {
     drawWallpaper();
     // bool exit = false;
     int c = -1;
-    while (c != UP) {
+    while (1) {
         int c = buttonsHelding();
 
         if ((c >= '0' || c == '*' || c == '#') && c <= '9') {
             numberInput(c);
-
             drawWallpaper();
-        }
-        if (c == UP)
+        }else if (c == UP|| c == SELECT)
             break;
     }
 
@@ -365,43 +375,39 @@ void offlineCharging() {
     tft.fillRect(195, 120, 10, 40, 0xFFFF);
     tft.setCursor(70, 310);
     bool exit = false;
-    while (buttonsHelding() == -1 || !exit) {
+    while (true) {
 
-        int mill = millis();
-        if (buttonsHelding() != -1)
-            break;
+        ulong mill = millis();
+        if (buttonsHelding(false) != -1)
+        return;
         int icc = chrg.isChargerConnected();
-        int bp  = chrg.getBatteryLevel();
+        int bp  = getChargeLevel();
         tft.fillRect(40, 105, 150, 70, 0x0000);
-        if (chrg.isChargerConnected() && bp < 25)
+        if (chrg.isChargerConnected() && bp < 1)
             while (millis() - mill < 500)
-                if (buttonsHelding() != -1) {
-                    exit = true;
-                    break;
+                if (buttonsHelding(false) != -1) {
+                    return;
                 }
 
         tft.fillRect(45, 110, 43, 60, 0xffff);
-
-        if (chrg.isChargerConnected() && bp < 75)
-            while (millis() - mill < 1000)
-                if (buttonsHelding() != -1) {
-                    exit = true;
-                    break;
+        mill = millis();
+        if (chrg.isChargerConnected() && bp < 2)
+            while (millis() - mill < 500)
+                if (buttonsHelding(false) != -1) {
+                    return;
                 }
         tft.fillRect(45 + 48, 110, 43, 60, 0xffff);
-
-        if (chrg.isChargerConnected() && bp < 100)
-            while (millis() - mill < 1500)
-                if (buttonsHelding() != -1) {
-                    exit = true;
-                    break;
+        mill = millis();
+        if (chrg.isChargerConnected() && bp < 3)
+            while (millis() - mill < 500)
+                if (buttonsHelding(false) != -1) {
+                    return;
                 }
         tft.fillRect(45 + 96, 110, 43, 60, 0xffff);
 
         while (chrg.getBatteryLevel() == 100)
-            if (buttonsHelding() != -1) {
-                exit = true;
-                break;
+            if (buttonsHelding(false) != -1) {
+                return;
             }
     }
     tft.fillScreen(0x0000);
@@ -409,7 +415,6 @@ void offlineCharging() {
 
 void incomingCall(Contact contact) {
     drawWallpaper();
-
     drawFromSd(0x5F7A25, 0, 90, 240, 134);
     changeFont(1);
     tft.setTextColor(0);
@@ -451,7 +456,6 @@ void makeCall(Contact contact) {
     }
     isAnswered = true;
     sendATCommand("ATD" + contact.phone + ";");
-
     callActivity(contact);
 }
 void callActivity(Contact contact) {
@@ -596,7 +600,7 @@ void inbox(bool outbox) {
     if (outbox)
         title = "Outbox";
     else
-        title = "Inbox ";
+        title = "Inbox";
 
     int      count    = 0;
     bool     exit     = false;

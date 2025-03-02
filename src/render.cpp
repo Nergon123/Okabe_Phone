@@ -1,7 +1,6 @@
 #include "render.h"
 const int lastImage = 42;
 
-
 bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
 
     tft.fillRect(xpos, ypos, w, h, 0xFFFF);
@@ -27,26 +26,11 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
     if (selected)
         while (!exit) {
             char c = buttonsHelding();
-            switch (c) {
-            case SELECT:
+            if (c == SELECT)
                 return true;
-                break;
-            case LEFT:
-                *direction = LEFT;
-                exit       = true;
-                break;
-            case RIGHT:
-                *direction = RIGHT;
-                exit       = true;
-                break;
-            case UP:
-                *direction = UP;
-                exit       = true;
-                break;
-            case DOWN:
-                *direction = DOWN;
-                exit       = true;
-                break;
+            else if (c >= UP && c <= RIGHT) {
+                *direction == c;
+                exit = true;
             }
         }
     tft.setTextColor(0);
@@ -321,13 +305,13 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
 int8_t _signal = 0;
 int8_t charge  = 0;
 
-void   drawStatusBar() {
-    bool messageViewport = tft.getViewportY() == 51;
-    int curx = tft.getCursorX();
-    int cury = tft.getCursorY();
-    int fontt = currentFont;
-    int size = tft.textsize;
-    uint16_t color = tft.textcolor;
+void drawStatusBar() {
+    bool     messageViewport = tft.getViewportY() == 51;
+    int      curx            = tft.getCursorX();
+    int      cury            = tft.getCursorY();
+    int      fontt           = currentFont;
+    int      size            = tft.textsize;
+    uint16_t color           = tft.textcolor;
     if (sBarChanged) {
         if (messageViewport) {
             tft.resetViewport();
@@ -341,9 +325,9 @@ void   drawStatusBar() {
             drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26); // signal
         drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26);    // battery
         //  tft.print(String(charge) + String("%"));
-        if(isScreenLocked){
+        if (isScreenLocked) {
             changeFont(0);
-            tft.setCursor(0,0);
+            tft.setCursor(0, 0);
             tft.setTextSize(1);
             tft.setTextColor(TFT_WHITE);
             tft.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
@@ -353,10 +337,9 @@ void   drawStatusBar() {
             tft.setViewport(0, 51, 240, 269, true);
         }
         changeFont(fontt);
-            tft.setCursor(curx,cury);
-            tft.setTextSize(size);
-            tft.setTextColor(color);
-
+        tft.setCursor(curx, cury);
+        tft.setTextSize(size);
+        tft.setTextColor(color);
     }
 }
 
@@ -365,8 +348,8 @@ void drawCutoutFromSd(SDImage image,
                       int cutout_width, int cutout_height,
                       int display_x, int display_y,
                       String file_path) {
-fastMode(true);
-File file = SD.open(file_path);
+    fastMode(true);
+    File file = SD.open(file_path);
     if (!file || !file.available()) {
         sysError("FILE_NOT_AVAILABLE");
         return;
@@ -452,9 +435,9 @@ void sysError(const char *reason) {
         ;
 }
 
-void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path , bool transp, uint16_t tc) {
+void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path, bool transp, uint16_t tc) {
     fastMode(true);
-    File file =  SD.open(resPath, FILE_READ);
+    File file = SD.open(resPath, FILE_READ);
     if (!file.available())
         sysError("FILE_NOT_AVAILABLE");
     file.seek(pos);
@@ -633,8 +616,8 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
     } else if (choices[0].icon.address != 0 || forceIcons) {
         x = 29;
     }
-    //tft.fillRect(0, 26, 240, 25, 0x32B3);
-     drawFromSd(0x5DAF1F, 0, 26, 240, 25); 
+    // tft.fillRect(0, 26, 240, 25, 0x32B3);
+    drawFromSd(0x5DAF1F, 0, 26, 240, 25);
     if (type >= 0 && type < 3) // with icon to draw...
         drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
     int items_per_page = 269 / mult; // max items per page (empty space height divided by spacing)
@@ -646,18 +629,19 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
     uint16_t color_active   = 0xFDD3;
     uint16_t color_inactive = 0x0000;
     int      choice         = findex;
-fastMode(true);
+    fastMode(true);
     tft.setTextSize(1);
     tft.setTextColor(color_inactive);
     changeFont(1);
-    
+
     listMenu_sub(label, type, page, pages);
     drawFromSd(0x639365, 0, 51, 240, 269);
     tft.setTextColor(color_inactive);
     if (empty) {
         tft.setCursor(75, 70);
         tft.print("< Empty >");
-        while (buttonsHelding() == -1);
+        while (buttonsHelding() == -1)
+            ;
         return -2;
     }
     tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
@@ -724,40 +708,39 @@ fastMode(true);
             tft.setTextColor(color_inactive);
             tft.setCursor(x, y + (mult * old_choice));
             if (!changed) {
-                
+
                 indexx = items_per_page * page + old_choice;
                 lM_entryRender(x, y, old_choice, indexx, scale, mult, icon_x, choices[indexx], images);
-                
+
                 tft.setCursor(x, y + (mult * choice));
                 tft.print(choices[items_per_page * page + choice].label);
-                
+
                 indexx = items_per_page * page + choice;
-                
+
                 lM_entryRender(x, y, choice, indexx, scale, mult, icon_x, choices[indexx], images);
             }
             fastMode(false);
             break;
         }
         case DOWN: { // Down button
-        fastMode(true);
+            fastMode(true);
             int  old_choice = choice;
             bool changed    = false;
             if (choice < (items_per_page - 1) && items_per_page * page + choice < icount - 1) {
                 choice++;
             } else if (page < pages) {
-                
+
                 page++;
                 changed = true;
                 choice  = 0;
-                
+
                 drawFromSd(0x639365, 0, 51, 240, 269);
                 tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
-                
+
                 for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++) {
-                
+
                     indexx = items_per_page * page + i;
                     lM_entryRender(x, y, i, indexx, scale, mult, icon_x, choices[indexx], images);
-                
                 }
                 drawFromSd(0x5DAF1F, 0, 26, 240, 25);
                 if (type >= 0 && type < 3)
@@ -805,7 +788,6 @@ fastMode(true);
             break;
         }
         }
-        
     }
 
     return -1;
@@ -823,15 +805,15 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
 
 int lmng_offset = 0;
 // Render entry of listMenuNonGraphical()
-void renderlmng(mOption* choices, int x, int y, int icount, String label, int index, uint16_t color_active, uint16_t color_inactive) {
+void renderlmng(mOption *choices, int x, int y, int icount, String label, int index, uint16_t color_active, uint16_t color_inactive) {
     uint max_per_page = ((320 - y - tft.fontHeight()) / tft.fontHeight());
 
     if (index >= max_per_page + lmng_offset) {
-        tft.fillRect(x,y,240-x,320-y,0);
+        tft.fillRect(x, y, 240 - x, 320 - y, 0);
         tft.fillScreen(0);
     } else if (index < lmng_offset) {
         lmng_offset = index;
-        tft.fillRect(x,y,240-x,320-y,0);
+        tft.fillRect(x, y, 240 - x, 320 - y, 0);
     }
     tft.setCursor(x, y);
     tft.setTextColor(color_inactive);
@@ -848,12 +830,12 @@ void renderlmng(mOption* choices, int x, int y, int icount, String label, int in
 }
 
 // listMenu that doesn't use graphics
-int listMenuNonGraphical(mOption* choices, int icount, String label,int y) {
+int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
     suspendCore(true);
     int x     = 0;
     int index = 0;
     changeFont(0);
-    tft.fillRect(x,y,240-x,320-y,0);
+    tft.fillRect(x, y, 240 - x, 320 - y, 0);
     uint     max_per_page   = ((320 - y - tft.fontHeight()) / tft.fontHeight());
     uint16_t color_active   = TFT_RED;
     uint16_t color_inactive = TFT_WHITE;
@@ -878,11 +860,11 @@ int listMenuNonGraphical(mOption* choices, int icount, String label,int y) {
             renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
             break;
         case SELECT:
-        suspendCore(false);
-        return index;
-        break;
+            suspendCore(false);
+            return index;
+            break;
         case BACK:
-        suspendCore(false);
+            suspendCore(false);
             return -1;
             break;
         }
@@ -1094,7 +1076,6 @@ int choiceMenu(const String choices[], int count, bool context) {
             break;
         }
         }
-       
     }
     return -1;
 }
@@ -1259,7 +1240,7 @@ void drawWallpaper() {
 
 int lastpercentage;
 // progress bar that used on boot screen
-void progressBar(int val, int max, int y, int h, uint16_t color, bool log,bool fast) {
+void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool fast) {
 
     int percentage = (val * 100) / max;
     if (lastpercentage > percentage)
@@ -1269,16 +1250,16 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log,bool f
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.drawRect(69, y, 100, h, color);
             tft.fillRect(69, y, i, h, color);
-            if(!fast)
-            delay(13);
+            if (!fast)
+                delay(13);
         }
     } else {
 #ifndef LOG
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.drawRect(69, y, 100, h, color);
             tft.fillRect(69, y, i, h, color);
-            if(!fast)
-            delay(13);
+            if (!fast)
+                delay(13);
         }
 #endif
     }
