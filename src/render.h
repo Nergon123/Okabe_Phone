@@ -3,8 +3,11 @@
 #define RENDER_H
 #include "file_include.h"
 extern String resPath;
+extern uint16_t *screenbuffer;
+
 struct SDImage;
 struct mOption;
+
 void changeFont(int ch);
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, String file_path = resPath);
 void writeText(int x, int y, char *str);

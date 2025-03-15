@@ -410,7 +410,7 @@ int buttonsHelding(bool _idle) {
     
     return -1;
 }
-//Message example = Message(Contact("JAKEPH12","00000000","",0),"Hello","Nigga where the fuck are you","03/25","23/05/2026 20:34",false,78,1);
+
 // Parse SMS messages from SIM Card
 void parseMessages(Message *&msgs, int &count) {
 

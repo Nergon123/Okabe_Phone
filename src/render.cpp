@@ -1,6 +1,8 @@
 #include "render.h"
 const int lastImage = 42;
 
+
+
 bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
 
     tft.fillRect(xpos, ypos, w, h, 0xFFFF);
@@ -251,7 +253,7 @@ void pngDraw(PNGDRAW *pDraw) {
 }
 
 // Function to draw the PNG image
-void drawPNG(const char *filename ) {
+void drawPNG(const char *filename) {
     fastMode(true);
     File file = SD.open(filename, FILE_READ);
     if (!file) {
@@ -274,31 +276,74 @@ void drawPNG(const char *filename ) {
 
 // Draw and downscale image
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, String file_path) {
-    // PARTIALLY STOLEN FROM CHATGPT
+    // Enable fast mode for TFT display
     fastMode(true);
+
+    // Open the file from the SD card
     File file = SD.open(file_path);
-    if (!file.available())
+    if (!file.available()) {
         sysError("SD_CARD_NOT_AVAILABLE");
+        return;
+    }
     file.seek(pos);
 
+    // Calculate downscaled dimensions
     const int downscaled_width = size_x / scale;
-    const int buffer_size      = size_x * 2; // 2 bytes per pixel
-    uint8_t   buffer[buffer_size];
+    const int downscaled_height = size_y / scale;
 
-    for (int a = 0; a < size_y; a += scale) {
-        file.read(buffer, buffer_size);
+    // Allocate buffer for the full image (16-bit color, 2 bytes per pixel)
+    const int image_size = size_x * size_y * 2;
+    uint8_t* image_buffer = (uint8_t*)malloc(image_size);
+    if (!image_buffer) {
+        sysError("MEMORY_ALLOCATION_FAILED");
+        file.close();
+        fastMode(false);
+        return;
+    }
 
-        uint16_t line[downscaled_width];
-        for (int i = 0; i < downscaled_width; i++) {
-            line[i] = (buffer[2 * i * scale] << 8) | buffer[2 * i * scale + 1];
-        }
-
-        tft.pushImage(pos_x, pos_y + (a / scale), downscaled_width, 1, line);
-
-        // Skip the lines that won't be drawn (vertical downscaling)
-        file.seek(file.position() + (size_x * 2 * (scale - 1)));
+    // Read the entire image into the buffer
+    if (file.read(image_buffer, image_size) != image_size) {
+        sysError("FILE_READ_ERROR");
+        free(image_buffer);
+        file.close();
+        fastMode(false);
+        return;
     }
     file.close();
+
+    // Allocate buffer for the downscaled image
+    uint16_t* downscaled_buffer = (uint16_t*)malloc(downscaled_width * downscaled_height * sizeof(uint16_t));
+    if (!downscaled_buffer) {
+        sysError("MEMORY_ALLOCATION_FAILED");
+        free(image_buffer);
+        fastMode(false);
+        return;
+    }
+
+    // Downscale the image
+    for (int y = 0; y < downscaled_height; y++) {
+        for (int x = 0; x < downscaled_width; x++) {
+            // Calculate the position in the original image buffer
+            int src_x = x * scale;
+            int src_y = y * scale;
+            int src_index = (src_y * size_x + src_x) * 2;
+
+            // Combine two bytes into a 16-bit color value
+            uint16_t pixel = (image_buffer[src_index] << 8) | image_buffer[src_index + 1];
+
+            // Store the pixel in the downscaled buffer
+            downscaled_buffer[y * downscaled_width + x] = pixel;
+        }
+    }
+    Serial.printf("Y:%d\n",downscaled_height);
+    // Push the downscaled image to the screen
+    tft.pushImage(pos_x, pos_y, downscaled_width, downscaled_height, downscaled_buffer);
+
+    // Free allocated memory
+    free(image_buffer);
+    free(downscaled_buffer);
+
+    // Disable fast mode
     fastMode(false);
 }
 
@@ -349,6 +394,8 @@ void drawCutoutFromSd(SDImage image,
                       int display_x, int display_y,
                       String file_path) {
     fastMode(true);
+
+    // Open the file from the SD card
     File file = SD.open(file_path);
     if (!file || !file.available()) {
         sysError("FILE_NOT_AVAILABLE");
@@ -357,16 +404,18 @@ void drawCutoutFromSd(SDImage image,
 
     int image_width = image.w;
 
+    // Calculate the starting offset for the cutout in the file
     uint32_t start_offset = image.address + (cutout_y * image_width + cutout_x) * 2;
 
-    const int buffer_size = cutout_width * 2;
+    const int buffer_size = cutout_width * 2; // 2 bytes per pixel (16-bit color)
     uint8_t   buffer[buffer_size];
 
     for (int row = 0; row < cutout_height; row++) {
-
+        // Calculate the offset for the current row
         uint32_t row_offset = start_offset + (row * image_width * 2);
         file.seek(row_offset);
 
+        // Read the row of pixel data into the buffer
         int bytesRead = file.read(buffer, buffer_size);
         if (bytesRead != buffer_size) {
             Serial.println("Error reading row from SD card.");
@@ -435,30 +484,27 @@ void sysError(const char *reason) {
         ;
 }
 
-
 struct touch_action {
     int pos_x;
     int pos_y;
     int size_x;
     int size_y;
-    void (*_function)(void); 
+    void (*_function)(void);
 
- 
     touch_action(int posx, int posy, int sizex, int sizey, void (*function)(void))
         : pos_x(posx), pos_y(posy), size_x(sizex), size_y(sizey), _function(function) {}
 };
 
-
 void checkPosition(int touch_x, int touch_y, touch_action *tacs) {
     if (touch_y > tacs[0].pos_y && touch_y < tacs[0].pos_y + tacs[0].size_y &&
         touch_x > tacs[0].pos_x && touch_x < tacs[0].pos_x + tacs[0].size_x) {
-        if (tacs[0]._function) {  
+        if (tacs[0]._function) {
             tacs[0]._function();
         }
     }
 }
 
-touch_action curr_ta[1]={touch_action(0,0,0,0,nullptr)};
+touch_action curr_ta[1] = {touch_action(0, 0, 0, 0, nullptr)};
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path, bool transp, uint16_t tc) {
     fastMode(true);
@@ -569,7 +615,9 @@ void writeCustomFont(int x, int y, String input, int type) {
 
 // listMenu header
 void listMenu_sub(String label, int type, int page, int pages) {
-
+    drawFromSd(0x5DAF1F, 0, 26, 240, 25);
+    if (type >= 0 && type < 3)
+        drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
     tft.setCursor(30, 45);
     tft.setTextSize(1);
     changeFont(1);
@@ -583,12 +631,13 @@ void listMenu_sub(String label, int type, int page, int pages) {
 
 // listMenu entry
 void lM_entryRender(int x, int y, int i, int index, int scale, int height, int icon_x, mOption choice, bool images = false) {
+
     if (images) {
 
         tft.drawLine(0, 50 + height * (i + 1), 240, 50 + height * (i + 1), 0x0000);
         tft.drawLine(0, 50 + height * i, 240, 50 + height * i, 0x0000);
         if (index != lastImage) // Do not draw image if its "Pick wallpaper"
-            drawFromSdDownscale((uint32_t)(0xE) + ((uint32_t)(0x22740) * index), 10, 51 + height * i, 240, 294, scale);
+            drawFromSd((uint32_t)(0x66E7C9) + ((uint32_t)(0xB28) * index), 10, 51 + height * i, 34, 42);
     } else if (choice.icon.address != 0) {
         drawFromSd(icon_x, 51 + height * i, choice.icon);
     }
@@ -623,9 +672,6 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
 
         At some point I will learn how to write clean code...
     */
-    bool empty = false;
-    if (icount == 0)
-        empty = true;
 
     // load file with graphical resources
     int scale  = 7;  // downscale multiplier for images
@@ -642,19 +688,19 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
         x = 29;
     }
     // tft.fillRect(0, 26, 240, 25, 0x32B3);
-    drawFromSd(0x5DAF1F, 0, 26, 240, 25);
-    if (type >= 0 && type < 3) // with icon to draw...
-        drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
-    int items_per_page = 269 / mult; // max items per page (empty space height divided by spacing)
-    int count          = icount;
-    int pages          = (icount + items_per_page - 1) / items_per_page - 1;
-    int page           = pages > 0 ? findex / pages : 0;
-    int icon_addr;
 
+    int      items_per_page = 269 / mult; // max items per page (empty space height divided by spacing)
+    int      count          = icount;
+    int      pages          = (icount + items_per_page - 1) / items_per_page - 1;
+    int      page           = pages > 0 ? findex / pages : 0;
+    int      icon_addr;
     uint16_t color_active   = 0xFDD3;
     uint16_t color_inactive = 0x0000;
     int      choice         = findex;
     fastMode(true);
+    drawFromSd(0x5DAF1F, 0, 26, 240, 25);
+    if (type >= 0 && type < 3) // which icon to draw...
+        drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
     tft.setTextSize(1);
     tft.setTextColor(color_inactive);
     changeFont(1);
@@ -662,7 +708,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
     listMenu_sub(label, type, page, pages);
     drawFromSd(0x639365, 0, 51, 240, 269);
     tft.setTextColor(color_inactive);
-    if (empty) {
+    if (icount == 0) {
         tft.setCursor(75, 70);
         tft.print("< Empty >");
         while (buttonsHelding() == -1)
@@ -674,6 +720,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
         indexx = items_per_page * page + i;
         lM_entryRender(x, y, i, indexx, scale, mult, icon_x, choices[indexx], images);
     }
+    tft.pushSprite(0,0);
     fastMode(false);
     bool exit = false;
     while (!exit) {
@@ -692,33 +739,17 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
             if (choice > 0) {
                 choice--;
                 tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
-            } else if (page > 0) {
-
-                drawFromSd(0x5DAF1F, 0, 26, 240, 25);
-                if (type >= 0 && type < 3)
-                    drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
-                page--;
-                changed = true;
-                drawFromSd(0x639365, 0, 51, 240, 269);
-                choice = (items_per_page - 1);
-                tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
-                for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++) {
-                    indexx = items_per_page * page + i;
-                    lM_entryRender(x, y, i, indexx, scale, mult, icon_x, choices[indexx], images);
-                }
-
             } else {
 
-                drawFromSd(0x5DAF1F, 0, 26, 240, 25);
-
-                if (type >= 0 && type < 3)
-                    drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
-
-                page    = pages;
+                if (page > 0) {
+                    page--;
+                    choice = (items_per_page - 1);
+                } else {
+                    page   = pages;
+                    choice = (icount % items_per_page) ? (icount % items_per_page) - 1 : (items_per_page - 1);
+                }
                 changed = true;
-
                 drawFromSd(0x639365, 0, 51, 240, 269);
-                choice = (icount % items_per_page) ? (icount % items_per_page) - 1 : (items_per_page - 1);
                 tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
                 for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++) {
                     indexx = items_per_page * page + i;
@@ -753,42 +784,29 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
             bool changed    = false;
             if (choice < (items_per_page - 1) && items_per_page * page + choice < icount - 1) {
                 choice++;
-            } else if (page < pages) {
-
-                page++;
-                changed = true;
-                choice  = 0;
-
-                drawFromSd(0x639365, 0, 51, 240, 269);
-                tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
-
-                for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++) {
-
-                    indexx = items_per_page * page + i;
-                    lM_entryRender(x, y, i, indexx, scale, mult, icon_x, choices[indexx], images);
-                }
-                drawFromSd(0x5DAF1F, 0, 26, 240, 25);
-                if (type >= 0 && type < 3)
-                    drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
             } else {
-                page    = 0;
+                if (page < pages)
+                    page++;
+                else
+                    page = 0;
                 changed = true;
                 choice  = 0;
                 drawFromSd(0x639365, 0, 51, 240, 269);
                 tft.fillRect(0, 51 + mult * choice, 240, mult, color_active);
+
                 for (int i = 0; i < items_per_page && items_per_page * page + i < icount; i++) {
+
                     indexx = items_per_page * page + i;
                     lM_entryRender(x, y, i, indexx, scale, mult, icon_x, choices[indexx], images);
                 }
-
                 drawFromSd(0x5DAF1F, 0, 26, 240, 25);
                 if (type >= 0 && type < 3)
                     drawFromSd(0x5DDDFF + (0x4E2 * type), 0, 26, 25, 25);
             }
-            if (!changed) {
 
+            if (!changed)
                 drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult);
-            }
+
             listMenu_sub(label, type, page, pages);
             tft.setTextColor(color_inactive);
             tft.setCursor(x, y + (mult * old_choice));
@@ -813,6 +831,8 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
             break;
         }
         }
+        tft.pushSprite(0,0);
+
     }
 
     return -1;
@@ -871,12 +891,10 @@ int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
         int c = buttonsHelding();
         switch (c) {
         case UP:
-
             index--;
             if (index < 0)
                 index = icount - 1;
             renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
-
             break;
         case DOWN:
             index++;
@@ -1253,13 +1271,16 @@ String SplitString(String text) {
 }
 
 void drawWallpaper() {
-    if (SD.exists(currentWallpaperPath))
-        drawPNG(currentWallpaperPath.c_str());
-    else if (wallpaperIndex >= 0 || wallpaperIndex < 42)
+
+    if (wallpaperIndex >= 0 || wallpaperIndex < 42)
         drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
     else {
-        wallpaperIndex = 0;
-        drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+        if (SD.exists(currentWallpaperPath))
+            drawPNG(currentWallpaperPath.c_str());
+        else {
+            wallpaperIndex = 0;
+            drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+        }
     }
 }
 
@@ -1272,17 +1293,17 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
         lastpercentage = percentage;
     if (!log) {
         //"for loop" and delay for smooth transition
+        realTFT.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
-            tft.drawRect(69, y, 100, h, color);
-            tft.fillRect(69, y, i, h, color);
+            realTFT.fillRect(69, y, i, h, color);
             if (!fast)
                 delay(13);
         }
     } else {
 #ifndef LOG
+    realTFT.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
-            tft.drawRect(69, y, 100, h, color);
-            tft.fillRect(69, y, i, h, color);
+            realTFT.fillRect(69, y, i, h, color);
             if (!fast)
                 delay(13);
         }

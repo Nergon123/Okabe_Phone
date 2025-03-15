@@ -1,7 +1,8 @@
 #include "init.h"
 
 IP5306      chrg;
-TFT_eSPI    tft = TFT_eSPI();
+TFT_eSPI realTFT =  TFT_eSPI(); 
+TFT_eSprite tft = TFT_eSprite(&realTFT);
 Preferences preferences;
 MCP23017    mcp = MCP23017(MCP23017_ADDR);
 PNG         png;
@@ -11,6 +12,8 @@ SDImage mailimg[4] = {
     SDImage(0x662DB1 + (18 * 21 * 2), 18, 21, 0, true),
     SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
     SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
+
+
 
 // Variable to check if status bar refresh required
 bool sBarChanged = true;
@@ -82,15 +85,15 @@ void setup() {
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
-
-    // INIT display
-    tft.init();
+    realTFT.init();
+    tft.setAttribute(PSRAM_ENABLE,true);
+    tft.createSprite(240,320,1);
     tft.fillScreen(0x0000);
-
+    tft.pushSprite(0,0);
     // INIT Serial
     Serial.begin(115200);
     Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
-    
+    printT_S(String(ESP.getPsramSize()));
     // INIT charging IC
     chrg.begin(21, 22);
 
@@ -124,8 +127,9 @@ void setup() {
 #endif
     if (buttonsHelding(false) == '*')
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
+    
+    gallery();
     progressBar(0, 100, 250);
-
     tft.setCursor(12, 3);
     tft.setTextSize(3);
     tft.setTextColor(tft.color24to16(0x656565));
