@@ -72,7 +72,8 @@ enum SCREENS {
 
 extern MCP23017    mcp;
 extern IP5306      chrg;
-extern TFT_eSPI    tft;
+extern TFT_eSPI realTFT;
+extern TFT_eSprite tft;
 extern Preferences preferences;
 extern PNG         png;
 

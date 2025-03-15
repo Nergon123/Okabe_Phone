@@ -4,7 +4,7 @@
 #define RS485_RX_PIN 35
 #define RS485_TX_PIN 26
 #define RS485_RTS_PIN -1
-#define SIM_INT_PIN 36
+#define SIM_INT_PIN 36 //33 (future)
 #define chipSelect 13
 #define MCP23017_ADDR 0x20
 #define MAX_CONTACTS 100

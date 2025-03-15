@@ -1,3 +1,4 @@
+.venv
 .pio
 .vscode/
 .vscode/extensions.json
@@ -8,3 +9,4 @@ toFlash/
 refresh-toflash.sh
 monitor.sh
 upload.sh
+PLAN.MD
