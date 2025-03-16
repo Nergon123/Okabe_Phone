@@ -1,8 +1,6 @@
 #include "render.h"
 const int lastImage = 42;
 
-
-
 bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
 
     tft.fillRect(xpos, ypos, w, h, 0xFFFF);
@@ -288,12 +286,12 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
     file.seek(pos);
 
     // Calculate downscaled dimensions
-    const int downscaled_width = size_x / scale;
+    const int downscaled_width  = size_x / scale;
     const int downscaled_height = size_y / scale;
 
     // Allocate buffer for the full image (16-bit color, 2 bytes per pixel)
-    const int image_size = size_x * size_y * 2;
-    uint8_t* image_buffer = (uint8_t*)malloc(image_size);
+    const int image_size   = size_x * size_y * 2;
+    uint8_t  *image_buffer = (uint8_t *)malloc(image_size);
     if (!image_buffer) {
         sysError("MEMORY_ALLOCATION_FAILED");
         file.close();
@@ -312,7 +310,7 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
     file.close();
 
     // Allocate buffer for the downscaled image
-    uint16_t* downscaled_buffer = (uint16_t*)malloc(downscaled_width * downscaled_height * sizeof(uint16_t));
+    uint16_t *downscaled_buffer = (uint16_t *)malloc(downscaled_width * downscaled_height * sizeof(uint16_t));
     if (!downscaled_buffer) {
         sysError("MEMORY_ALLOCATION_FAILED");
         free(image_buffer);
@@ -324,8 +322,8 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
     for (int y = 0; y < downscaled_height; y++) {
         for (int x = 0; x < downscaled_width; x++) {
             // Calculate the position in the original image buffer
-            int src_x = x * scale;
-            int src_y = y * scale;
+            int src_x     = x * scale;
+            int src_y     = y * scale;
             int src_index = (src_y * size_x + src_x) * 2;
 
             // Combine two bytes into a 16-bit color value
@@ -335,7 +333,7 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
             downscaled_buffer[y * downscaled_width + x] = pixel;
         }
     }
-    Serial.printf("Y:%d\n",downscaled_height);
+    Serial.printf("Y:%d\n", downscaled_height);
     // Push the downscaled image to the screen
     tft.pushImage(pos_x, pos_y, downscaled_width, downscaled_height, downscaled_buffer);
 
@@ -511,7 +509,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, Stri
     File file = SD.open(resPath, FILE_READ);
     if (!file.available())
         sysError("FILE_NOT_AVAILABLE");
-        file.seek(pos);
+    file.seek(pos);
     if (!transp) {
         const int buffer_size = size_x * 2;
         uint8_t   buffer[buffer_size];
@@ -522,6 +520,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, Stri
             tft.pushImage(pos_x, a + pos_y, size_x, 1, (uint16_t *)buffer);
         }
     } else {
+
         const int buffer_size = size_x * 2; // 2 bytes per pixel
         uint8_t   buffer[buffer_size];
 
@@ -672,7 +671,9 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
 
         At some point I will learn how to write clean code...
     */
-
+   
+    uint16_t *background = (uint16_t *)ps_malloc(240 * 269 * sizeof(uint16_t));
+    
     // load file with graphical resources
     int scale  = 7;  // downscale multiplier for images
     int x      = 10; // coordinates where begin to render text
@@ -720,7 +721,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
         indexx = items_per_page * page + i;
         lM_entryRender(x, y, i, indexx, scale, mult, icon_x, choices[indexx], images);
     }
-    tft.pushSprite(0,0);
+    tft.pushSprite(0, 0);
     fastMode(false);
     bool exit = false;
     while (!exit) {
@@ -757,9 +758,11 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
                 }
             }
 
-            if (!changed)
-                drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult);
-
+            if (!changed) {
+               // drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult);
+                tft.pushImage(0, 51 + (mult * old_choice), 240, mult, (const uint16_t*)background[mult * old_choice * 240]);
+          
+            }
             listMenu_sub(label, type, page, pages);
             tft.setTextColor(color_inactive);
             tft.setCursor(x, y + (mult * old_choice));
@@ -805,7 +808,8 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
             }
 
             if (!changed)
-                drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult);
+            tft.pushImage(0, 51 + (mult * old_choice), 240, mult, (const uint16_t*)background[mult * old_choice * 240]);
+                //drawFromSd(0x639365 + (mult * old_choice * 240 * 2), 0, 51 + (mult * old_choice), 240, mult);
 
             listMenu_sub(label, type, page, pages);
             tft.setTextColor(color_inactive);
@@ -831,8 +835,7 @@ int listMenu(mOption *choices, int icount, bool images, int type, String label, 
             break;
         }
         }
-        tft.pushSprite(0,0);
-
+        tft.pushSprite(0, 0);
     }
 
     return -1;
@@ -872,6 +875,7 @@ void renderlmng(mOption *choices, int x, int y, int icount, String label, int in
         if (i < icount)
             tft.println("  " + choices[i].label);
     }
+    tft.pushSprite(0, 0);
 }
 
 // listMenu that doesn't use graphics
@@ -886,6 +890,7 @@ int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
     uint16_t color_inactive = TFT_WHITE;
     tft.setTextColor(color_inactive);
     renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
+
     bool exit = false;
     while (!exit) {
         int c = buttonsHelding();
@@ -912,6 +917,7 @@ int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
             break;
         }
     }
+
     suspendCore(false);
     return -1;
 }
@@ -1301,7 +1307,7 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
         }
     } else {
 #ifndef LOG
-    realTFT.drawRect(69, y, 100, h, color);
+        realTFT.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             realTFT.fillRect(69, y, i, h, color);
             if (!fast)

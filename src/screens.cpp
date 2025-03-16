@@ -1285,6 +1285,7 @@ void recovery(String message) {
     tft.setTextSize(1);
     tft.setTextColor(0xFFFF);
     tft.println(message);
+    tft.pushSprite(0,0);
     mOption options[2] = {{"Choose resource file"}, {"Try again"}};
     int     choice     = listMenuNonGraphical(options, ArraySize(options), "Choose action.", 150);
     switch (choice) {
@@ -1314,6 +1315,7 @@ void recovery(String message) {
             tft.fillScreen(0);
             tft.setCursor(0, 0);
             tft.println("Choice is invalid!\nPress any key to continue...");
+            tft.pushSprite(0,0);
             while (buttonsHelding() == -1)
                 ;
         }
