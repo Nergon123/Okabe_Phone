@@ -187,14 +187,16 @@ void settings() {
             picch = choiceMenu(galch, 2, true);
             switch (picch) {
             case 0:
-                drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * pic), 0, 26, 240, 294,"/"+resPath,0,0);
+                drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * pic), 0, 26, 240, 294, "/" + resPath, 0, 0);
                 while (buttonsHelding() != BACK)
                     ;
                 break;
             case 1:
                 preferences.putUInt("wallpaperIndex", pic);
                 preferences.putString("wallpaper", "/null");
-                wallpaperIndex       = pic;
+                wallpaperIndex = pic;
+                free(wallpaper);
+                wallpaper            = nullptr;
                 currentWallpaperPath = "/null";
                 currentScreen        = SCREENS::MAINSCREEN;
                 return;
@@ -213,6 +215,8 @@ void settings() {
             case 1:
                 preferences.putUInt("wallpaperIndex", -1);
                 preferences.putString("wallpaper", path);
+                free(wallpaper);
+                wallpaper            = nullptr;
                 wallpaperIndex       = -1;
                 currentWallpaperPath = path;
                 currentScreen        = SCREENS::MAINSCREEN;
@@ -298,52 +302,54 @@ void MainMenu() {
 
 int gallery() {
 
-    const String wallnames[] = {
-        "Wallpaper 1",
-        "Wallpaper 2",
-        "Wallpaper 3",
-        "IBN5100",
-        "Red jelly",
-        "The head of doll",
-        "Mayuri jelly",
-        "Fatty Gero Froggy",
-        "Burning Gero Froggy",
-        "Upa",
-        "Metal Upa",
-        "Seira",
-        "Seira After awaking",
-        "Gero Froggy",
-        "Cat Gero Froggy",
-        "Cow Gero Froggy",
-        "FES",
-        "Gero Froggies",
-        "Calico Gero Froggies",
-        "Gold Upa",
-        "FES2",
-        "Erin 1",
-        "Erin 2",
-        "Orgel Sisters",
-        "Mayuri",
-        "Kurisu",
-        "Moeka",
-        "Luka",
-        "Faris",
-        "Suzuha",
-        "UNCONFIRMED",
-        "Popping steiner",
-        "Wallpaper 4",
-        "NukariyaIce",
-        "MayQueen",
-        "Upa ♪",
-        "Wallpaper 5",
-        "Rabikuro",
-        "Wallpaper 6",
-        "Space Froggies",
-        "Wallpaper 7",
-        "Nae",
-        "Pick wallpaper..."};
+    mOption wallnames[] = {
+        {"Wallpaper 1"},
+        {"Wallpaper 2"},
+        {"Wallpaper 3"},
+        {"IBN5100"},
+        {"Red jelly"},
+        {"The head of doll"},
+        {"Mayuri jelly"},
+        {"Fatty Gero Froggy"},
+        {"Burning Gero Froggy"},
+        {"Upa"},
+        {"Metal Upa"},
+        {"Seira"},
+        {"Seira After awaking"},
+        {"Gero Froggy"},
+        {"Cat Gero Froggy"},
+        {"Cow Gero Froggy"},
+        {"FES"},
+        {"Gero Froggies"},
+        {"Calico Gero Froggies"},
+        {"Gold Upa"},
+        {"FES2"},
+        {"Erin 1"},
+        {"Erin 2"},
+        {"Orgel Sisters"},
+        {"Mayuri"},
+        {"Kurisu"},
+        {"Moeka"},
+        {"Luka"},
+        {"Faris"},
+        {"Suzuha"},
+        {"UNCONFIRMED"},
+        {"Popping steiner"},
+        {"Wallpaper 4"},
+        {"NukariyaIce"},
+        {"MayQueen"},
+        {"Upa ♪"},
+        {"Wallpaper 5"},
+        {"Rabikuro"},
+        {"Wallpaper 6"},
+        {"Space Froggies"},
+        {"Wallpaper 7"},
+        {"Nae"},
+        {"Pick wallpaper..."}};
     // drawWallpaper();
-
+    for (int i = 0; i < ArraySize(wallnames) - 1; i++) {
+        wallnames[i].icon = SDImage(0x66E7C9 + (2856 * i), 34, 42);
+    }
     return listMenu(wallnames, ArraySize(wallnames), true, 2, "Change wallpaper");
 }
 
@@ -579,9 +585,9 @@ void contactss() {
             }
 
         } else {
-           
-            const String choice  = "Create";
-            int CMS = choiceMenu({&choice}, 1, true);
+
+            const String choice = "Create";
+            int          CMS    = choiceMenu({&choice}, 1, true);
             if (!CMS) {
                 editContact(Contact("", "", "", lastContactIndex + 1));
             } else
@@ -1270,7 +1276,7 @@ void imageViewer() {
     tft.setViewport(0, 51, 240, 269, true);
     tft.fillScreen(0);
 
-    //CODE
+    // CODE
     tft.resetViewport();
 }
 

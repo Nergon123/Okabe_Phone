@@ -259,15 +259,20 @@ bool iswallpaper = false;
 void pngDraw(PNGDRAW *pDraw) {
     uint16_t lineBuffer[240];
     png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
-    if (iswallpaper)
-        if (pDraw->y < 294)
-            memcpy(wallpaper + (pDraw->y * 240), lineBuffer, 240);
-        else
-            tft.pushImage(0, pDraw->y + 26, pDraw->iWidth, 1, lineBuffer);
+
+
+    if (iswallpaper) {
+        if (pDraw->y < 294) {
+            memcpy(wallpaper + (pDraw->y * 480), (uint8_t *)lineBuffer, 480);
+        }
+    } else {
+        tft.pushImage(0, pDraw->y + 26, pDraw->iWidth, 1, lineBuffer);
+    }
 }
-// Function to draw the PNG image
+
 void drawPNG(const char *filename, bool _wallpaper) {
     fastMode(true);
+
     File file = SD.open(filename, FILE_READ);
     if (!file) {
         Serial.println("Failed to open file");
@@ -277,9 +282,24 @@ void drawPNG(const char *filename, bool _wallpaper) {
     int rc = png.open(filename, pngOpen, pngClose, pngRead, pngSeek, pngDraw);
     if (rc == PNG_SUCCESS) {
         iswallpaper = _wallpaper;
-        delete[] wallpaper;
+
+        if (_wallpaper) {
+            free(wallpaper);
+            wallpaper = nullptr;
+        }
+
         wallpaper = (uint8_t *)ps_malloc(240 * 294 * sizeof(uint16_t));
+
+        if (!wallpaper) {
+            Serial.println("Failed to allocate wallpaper buffer!");
+            png.close();
+            file.close();
+            fastMode(false);
+            return;
+        }
+
         Serial.printf("Image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
+
         rc = png.decode(NULL, 0);
         png.close();
     } else {
@@ -580,16 +600,16 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
         Serial.printf("POSITION %d\n", pos);
 
         if (resources) {
-            uint16_t *imgData = (uint16_t *)(resources + (pos & ~1)); 
+            uint16_t *imgData = (uint16_t *)(resources + (pos & ~1));
 
             if (!transp) {
-          
+
                 if (is_screen_buffer)
                     screen_buffer.pushImage(pos_x, pos_y, size_x, size_y, imgData);
                 else
                     tft.pushImage(pos_x, pos_y, size_x, size_y, imgData);
             } else {
-                
+
                 if (!sprite.createSprite(size_x, size_y)) {
                     Serial.println("Sprite allocation failed!");
                     return;
@@ -598,7 +618,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
                 sprite.pushImage(0, 0, size_x, size_y, imgData);
 
                 if (is_screen_buffer)
-                    sprite.pushToSprite(&screen_buffer, pos_x, pos_y,tc);
+                    sprite.pushToSprite(&screen_buffer, pos_x, pos_y, tc);
                 else
                     sprite.pushSprite(pos_x, pos_y, tc);
 
@@ -684,7 +704,7 @@ void listMenu_header(int type, String title, int page, int pages, int y, bool up
 void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool lines, bool selected, bool unselected) {
     uint16_t color_active = 0xFDD3;
 
-    int  yy = (lindex * esize) + y;
+    int yy = (lindex * esize) + y;
 
     if (selected)
         screen_buffer.fillRect(0, yy, 240, esize, color_active);
@@ -697,10 +717,9 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
         screen_buffer.drawLine(0, yy + esize, 240, yy + esize, 0);
     }
     screen_buffer.setTextColor(0);
-    screen_buffer.setCursor(x+3, yy + 17);
+    screen_buffer.setCursor(x + 3, yy + 17);
     changeFont(1, 1);
-   screen_buffer.print(choice.label);
-
+    screen_buffer.print(choice.label);
 }
 
 int listMenu(mOption *choices, int icount, bool lines, int type, String label, bool forceIcons, int findex) {
@@ -719,7 +738,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     2 = SETTINGS
 
     */
-    Serial.updateBaudRate(115200);
+    fastMode(true);
+
     screen_buffer.createSprite(240, 294);
     changeFont(2, 1);
     int selected     = 0;
@@ -731,7 +751,6 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     int old_selected = 0;
 
     int entry_size = screen_buffer.fontHeight();
-    lines          = false;
     if (choices[0].icon.h > entry_size) {
         entry_size = choices[0].icon.h;
     }
@@ -740,14 +759,19 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     pages        = (icount + per_page - 1) / per_page;
 
     drawFromSd(0, y + 25, SDImage(0x636485 + 0x2EE0, 240, 269), true);
-    listMenu_header(type, label, page, pages, y, false);
-    if(icount ==0){
-        screen_buffer.setCursor(100,50);
+
+    if (icount == 0) {
+        listMenu_header(type, label, 0, 0, y, false);
+        screen_buffer.setTextColor(0);
+        changeFont(1, 1);
+        screen_buffer.setCursor(75, 45);
         screen_buffer.print("< Empty >");
-        screen_buffer.pushSprite(0,26);
-        while(buttonsHelding()==-1);
-        return -2;
+        screen_buffer.pushSprite(0, 26);
+        while (buttonsHelding() == -1)
+            ;
+        return -1;
     }
+    listMenu_header(type, label, page, pages, y, false);
     int startIndex = page * per_page;
     int endIndex   = std::min(startIndex + per_page, icount);
 
@@ -761,6 +785,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         int c = buttonsHelding();
         switch (c) {
         case SELECT:
+            fastMode(false);
             return selected + (page * per_page);
             break;
         case BACK:
@@ -770,47 +795,48 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         case UP:
             old_selected = selected;
             selected--;
-
+            fastMode(true);
             if (selected < 0) {
                 if (page > 0) {
 
                     page--;
-                    selected = per_page - 1; 
+                    selected = per_page - 1;
                 } else {
-                   
+
                     page     = pages - 1;
-                    selected = (icount % per_page == 0) ? per_page - 1 : (icount % per_page) - 1; 
+                    selected = (icount % per_page == 0) ? per_page - 1 : (icount % per_page) - 1;
                 }
-         
+
                 drawFromSd(0, y + 25, SDImage(0x636485 + 0x2EE0, 240, 269), true);
                 listMenu_header(type, label, page, pages, y, true);
 
                 int startIndex = page * per_page;
-                int endIndex   = std::min(startIndex + per_page, icount); 
+                int endIndex   = std::min(startIndex + per_page, icount);
 
                 for (int i = 0; i < (endIndex - startIndex); i++) {
                     listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false, false);
                 }
             } else {
-                
+
                 listMenu_entry(old_selected, x, y + ly, choices[old_selected + (page * per_page)], entry_size, lines, false, true);
             }
 
-           
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
             screen_buffer.pushSprite(0, 26);
+            fastMode(false);
             break;
         case DOWN:
+            fastMode(true);
             old_selected = selected;
             selected++;
 
-            int total_items_on_page = std::min(per_page, icount - (page * per_page)); 
+            int total_items_on_page = std::min(per_page, icount - (page * per_page));
 
             if (selected >= total_items_on_page) {
                 if (page < pages - 1) {
-                  
+
                     page++;
-                    selected = 0; 
+                    selected = 0;
                 } else {
                     page     = 0;
                     selected = 0;
@@ -832,10 +858,11 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
 
             screen_buffer.pushSprite(0, 26);
-
+            fastMode(false);
             break;
         }
     }
+    return -1;
 }
 
 // Converter from old type of listMenu to new
@@ -1271,22 +1298,27 @@ String SplitString(String text) {
 
     return result; // Return the final string with newlines
 }
-uint8_t *wallpaper;
+uint8_t *wallpaper = nullptr;
 void     drawWallpaper() {
     if (!wallpaper) {
-        if (wallpaperIndex >= 0 || wallpaperIndex < 42)
+        if (wallpaperIndex >= 0 && wallpaperIndex < 42){
             loadResource((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), resPath, &wallpaper, 240, 294);
         // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+        }
         else {
-            if (SD.exists(currentWallpaperPath))
+            if (SD.exists(currentWallpaperPath)){
                 drawPNG(currentWallpaperPath.c_str(), true);
+                }
             else {
                 wallpaperIndex = 0;
                 loadResource((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), resPath, &wallpaper, 240, 294);
             }
         }
-    } else
-        tft.pushImage(0, 26, 240, 294, wallpaper);
+        tft.pushImage(0, 26, 240, 294, (uint16_t *)wallpaper);
+    } else{
+        tft.pushImage(0, 26, 240, 294, (uint16_t *)wallpaper);
+        Serial.println("WALLPAPER");
+    }
 }
 
 int lastpercentage;
