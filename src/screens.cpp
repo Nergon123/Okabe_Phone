@@ -187,7 +187,7 @@ void settings() {
             picch = choiceMenu(galch, 2, true);
             switch (picch) {
             case 0:
-                drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * pic), 0, 26, 240, 294);
+                drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * pic), 0, 26, 240, 294,"/"+resPath,0,0);
                 while (buttonsHelding() != BACK)
                     ;
                 break;
@@ -1285,7 +1285,6 @@ void recovery(String message) {
     tft.setTextSize(1);
     tft.setTextColor(0xFFFF);
     tft.println(message);
-    tft.pushSprite(0,0);
     mOption options[2] = {{"Choose resource file"}, {"Try again"}};
     int     choice     = listMenuNonGraphical(options, ArraySize(options), "Choose action.", 150);
     switch (choice) {
@@ -1315,8 +1314,7 @@ void recovery(String message) {
             tft.fillScreen(0);
             tft.setCursor(0, 0);
             tft.println("Choice is invalid!\nPress any key to continue...");
-            tft.pushSprite(0,0);
-            while (buttonsHelding() == -1)
+            while (buttonsHelding(false) == -1)
                 ;
         }
         break;

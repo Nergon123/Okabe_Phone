@@ -55,6 +55,7 @@
 //Lowest possible speed is 20 MHZ (?)
 #define SLOW_CPU_FREQ_MHZ 20
 
+#define RESOURCE_ADDRESS 0x5A708D
 
 #define MAX_SD_FREQ 80000000
 #define MIN_SD_FREQ 1000000 

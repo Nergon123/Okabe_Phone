@@ -72,8 +72,8 @@ enum SCREENS {
 
 extern MCP23017    mcp;
 extern IP5306      chrg;
-extern TFT_eSPI realTFT;
-extern TFT_eSprite tft;
+extern TFT_eSPI    tft;
+extern TFT_eSprite screen_buffer;
 extern Preferences preferences;
 extern PNG         png;
 
@@ -106,6 +106,8 @@ extern String currentMailRingtonePath;
 extern String currentWallpaperPath;
 extern String resPath;
 
+extern uint8_t *resources;
+
 template <typename T, size_t N>
 size_t ArraySize(T (&)[N]) {
     return N;
@@ -117,4 +119,5 @@ void idle();
 void screens();
 void suspendCore(bool suspend);
 bool initSDCard(bool fast);
+void loadResource(ulong address, String resourcefile, uint8_t **_resources,int w=0,int h=0);
 #endif // INITT_H
