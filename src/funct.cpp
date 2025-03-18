@@ -769,7 +769,9 @@ void execute_application() {
     }
     
     if (file.size() > partition->size) {
-        Serial.printf("File size bigger than partition size %d bytes/%d bytes\n\n", file.size(), partition->size);
+        tft.setCursor(0,210);
+        tft.printf("File size bigger than partition size %d bytes/%d bytes\n\n", file.size(), partition->size);
+        
         return;
     }
     esp_partition_erase_range(partition, 0, partition->size);
