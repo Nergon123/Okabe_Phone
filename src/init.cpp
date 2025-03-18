@@ -1,8 +1,8 @@
 #include "init.h"
 
 IP5306      chrg;
-TFT_eSPI realTFT =  TFT_eSPI(); 
-TFT_eSprite tft = TFT_eSprite(&realTFT);
+TFT_eSPI    tft           = TFT_eSPI();
+TFT_eSprite screen_buffer = TFT_eSprite(&tft);
 Preferences preferences;
 MCP23017    mcp = MCP23017(MCP23017_ADDR);
 PNG         png;
@@ -13,7 +13,7 @@ SDImage mailimg[4] = {
     SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
     SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
 
-
+uint8_t *resources;
 
 // Variable to check if status bar refresh required
 bool sBarChanged = true;
@@ -80,16 +80,18 @@ String lastSIMerror            = "";
 void TaskIdleHandler(void *parameter);
 void initSim();
 bool initSDCard(bool fast);
+void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h);
+
 void setup() {
 
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
-    realTFT.init();
-    tft.setAttribute(PSRAM_ENABLE,true);
-    tft.createSprite(240,320,1);
+    tft.init();
+    tft.setAttribute(PSRAM_ENABLE, true);
+
     tft.fillScreen(0x0000);
-    tft.pushSprite(0,0);
+
     // INIT Serial
     Serial.begin(115200);
     Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
@@ -120,6 +122,9 @@ void setup() {
 
     while (!SD.exists(resPath))
         recovery("No " + resPath + " found");
+    tft.println("LOADING RESOURCE FILE");
+    loadResource(RESOURCE_ADDRESS, resPath, &resources, 0, 0);
+    tft.fillScreen(0);
 #ifndef LOG
     tft.fillScreen(0x0000);
 
@@ -127,7 +132,7 @@ void setup() {
 #endif
     if (buttonsHelding(false) == '*')
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
-    
+
     gallery();
     progressBar(0, 100, 250);
     tft.setCursor(12, 3);
@@ -184,7 +189,7 @@ void setup() {
 
     if (wallpaperIndex < 0 || wallpaperIndex > 42)
         currentWallpaperPath = preferences.getString("wallpaper", "/null");
-        preferences.end();
+    preferences.end();
     if (!SD.exists(currentWallpaperPath)) {
         wallpaperIndex = 0;
         printT_S(currentWallpaperPath + " - NOT FOUND");
@@ -316,4 +321,30 @@ bool initSDCard(bool fast) {
     }
 
     return SD.begin(chipSelect, SPI, SAFE_SD_FREQ);
+}
+void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h) {
+
+    File file = SD.open(resourcefile);
+    if (!file) {
+        Serial.println("Failed to open file!");
+        return;
+    }
+
+    file.seek(address);
+    size_t size;
+    if (w == 0 && h == 0)
+        size = file.size() - address;
+    else
+        size = w * h * 2;
+    *_resources = (uint8_t *)ps_malloc(size); // Allocate memory correctly
+
+    if (!(*_resources)) {
+        Serial.println("Memory allocation failed!");
+        file.close();
+        return;
+    }
+
+    file.read(*_resources, size);
+    file.close();
+    Serial.printf("Loaded %d bytes from %s\n", size, resourcefile.c_str());
 }
