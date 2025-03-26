@@ -113,6 +113,10 @@ size_t ArraySize(T (&)[N]) {
     return N;
 }
 
+extern time_t systemTime;
+extern struct tm systemTimeInfo;
+
+
 void loop(void);
 void setup();
 void idle();

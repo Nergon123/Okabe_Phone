@@ -192,8 +192,10 @@ void settings() {
                     ;
                 break;
             case 1:
+            preferences.begin("settings", false);
                 preferences.putUInt("wallpaperIndex", pic);
                 preferences.putString("wallpaper", "/null");
+                preferences.end();
                 wallpaperIndex = pic;
                 free(wallpaper);
                 wallpaper            = nullptr;
@@ -213,8 +215,10 @@ void settings() {
                 drawPNG(path.c_str());
                 break;
             case 1:
+            preferences.begin("settings", false);
                 preferences.putUInt("wallpaperIndex", -1);
                 preferences.putString("wallpaper", path);
+                preferences.end();
                 free(wallpaper);
                 wallpaper            = nullptr;
                 wallpaperIndex       = -1;
@@ -541,7 +545,7 @@ void contactss() {
         contactNames[i] = contacts[i].name;
     }
 
-    delay(300);
+    //delay(300);
     drawStatusBar();
     bool exit = false;
     while (!exit) {
@@ -1314,7 +1318,9 @@ void recovery(String message) {
             mOption optionss[2] = {{"Yes!"}, {"No..."}};
             choice              = listMenuNonGraphical(optionss, 2, "File is valid!\n\nWould you like to \nsave choice for next boot?");
             if (choice == 0) {
+                preferences.begin("settings",false);
                 preferences.putString("resPath", resPath);
+                preferences.end();
             }
         } else {
             tft.fillScreen(0);

@@ -1,11 +1,13 @@
 #include "render.h"
 const int lastImage = 42;
 
+// ## UI Button
+//  Part of local "UI Kit"
 bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
 
     tft.fillRect(xpos, ypos, w, h, 0xFFFF);
     tft.drawRect(xpos, ypos, w, h, 0);
-
+    changeFont(1);
     if (selected) {
         tft.setTextColor(0xF800);
         tft.drawRect(xpos, ypos, w, h, 0);
@@ -41,6 +43,74 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
     return false;
 }
 
+// Input field for numbers with arrows
+int sNumberChange(int x, int y, int w, int h, int val, int min, int max, bool selected, int *direction, const char *format) {
+    *direction = -1;
+
+    
+    tft.resetViewport();
+    changeFont(1);
+    tft.setTextSize(1);
+    tft.setTextColor(0);
+    tft.setTextWrap(false);
+    tft.setViewport(x, y, w, h);
+    if (selected)
+        tft.setTextColor(TFT_RED);
+    else
+        tft.setTextColor(0);
+        int xx;
+        int yy;
+    tft.setCursor(xx, yy);
+    tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
+    tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
+    tft.printf(format, val);
+    bool exit = false;
+
+    while (!exit && selected) {
+
+        switch (buttonsHelding()) {
+        case DOWN:
+            val--;
+            if (val < min)
+                val = max;
+                tft.setCursor(xx,yy);
+                tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
+                tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
+                tft.printf(format, val);
+            break;
+        case UP:
+            val++;
+            if (val > max)
+                val = max;
+                tft.setCursor(xx, yy);
+                tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
+                tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
+                tft.printf(format, val);
+            break;
+        case LEFT:
+            *direction = LEFT;
+            exit       = true;
+            break;
+        case RIGHT:
+            *direction = RIGHT;
+            exit       = true;
+            break;
+        case BACK:
+            exit = true;
+            break;
+        case SELECT:
+            *direction = RIGHT;
+            exit       = true;
+            break;
+        }
+
+    }
+    tft.resetViewport();
+    return val;
+}
+
+// ## UI Textbox
+//  Part of local "UI Kit"
 String textbox(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers) {
 
     content.trim();
@@ -260,7 +330,6 @@ void pngDraw(PNGDRAW *pDraw) {
     uint16_t lineBuffer[240];
     png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
 
-
     if (iswallpaper) {
         if (pDraw->y < 294) {
             memcpy(wallpaper + (pDraw->y * 480), (uint8_t *)lineBuffer, 480);
@@ -386,14 +455,20 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
 int8_t _signal = 0;
 int8_t charge  = 0;
 
-void drawStatusBar() {
+void drawStatusBar(bool force) {
     bool     messageViewport = tft.getViewportY() == 51;
     int      curx            = tft.getCursorX();
     int      cury            = tft.getCursorY();
     int      fontt           = currentFont;
     int      size            = tft.textsize;
     uint16_t color           = tft.textcolor;
+    sBarChanged += force;
+    tm sbtime = *localtime_r(&systemTime, &systemTimeInfo);
+    if (sbtime.tm_min != systemTimeInfo.tm_min)
+        sBarChanged = true;
+
     if (sBarChanged) {
+
         if (messageViewport) {
             tft.resetViewport();
         }
@@ -406,6 +481,11 @@ void drawStatusBar() {
             drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26); // signal
         drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26);    // battery
         //  tft.print(String(charge) + String("%"));
+        changeFont(1);
+        tft.setTextSize(1);
+        tft.setTextColor(TFT_LIGHTGREY);
+        tft.setCursor(102, 19);
+        tft.printf("%02d:%02d", sbtime.tm_hour, sbtime.tm_min);
         if (isScreenLocked) {
             changeFont(0);
             tft.setCursor(0, 0);
@@ -520,28 +600,6 @@ void sysError(const char *reason) {
         ;
 }
 
-struct touch_action {
-    int pos_x;
-    int pos_y;
-    int size_x;
-    int size_y;
-    void (*_function)(void);
-
-    touch_action(int posx, int posy, int sizex, int sizey, void (*function)(void))
-        : pos_x(posx), pos_y(posy), size_x(sizex), size_y(sizey), _function(function) {}
-};
-
-void checkPosition(int touch_x, int touch_y, touch_action *tacs) {
-    if (touch_y > tacs[0].pos_y && touch_y < tacs[0].pos_y + tacs[0].size_y &&
-        touch_x > tacs[0].pos_x && touch_x < tacs[0].pos_x + tacs[0].size_x) {
-        if (tacs[0]._function) {
-            tacs[0]._function();
-        }
-    }
-}
-
-touch_action curr_ta[1] = {touch_action(0, 0, 0, 0, nullptr)};
-
 TFT_eSprite sprite = TFT_eSprite(&tft);
 
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool is_screen_buffer, String file_path, bool transp, uint16_t tc) {
@@ -597,7 +655,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
         file.close();
     } else {
         pos -= RESOURCE_ADDRESS;
-        Serial.printf("POSITION %d\n", pos);
+        // Serial.printf("POSITION %d\n", pos);
 
         if (resources) {
             uint16_t *imgData = (uint16_t *)(resources + (pos & ~1));
@@ -1300,22 +1358,21 @@ String SplitString(String text) {
 }
 uint8_t *wallpaper = nullptr;
 void     drawWallpaper() {
+
     if (!wallpaper) {
-        if (wallpaperIndex >= 0 && wallpaperIndex < 42){
+        if (wallpaperIndex >= 0 && wallpaperIndex < 42) {
             loadResource((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), resPath, &wallpaper, 240, 294);
-        // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
-        }
-        else {
-            if (SD.exists(currentWallpaperPath)){
+            // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+        } else {
+            if (SD.exists(currentWallpaperPath)) {
                 drawPNG(currentWallpaperPath.c_str(), true);
-                }
-            else {
+            } else {
                 wallpaperIndex = 0;
                 loadResource((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), resPath, &wallpaper, 240, 294);
             }
         }
         tft.pushImage(0, 26, 240, 294, (uint16_t *)wallpaper);
-    } else{
+    } else {
         tft.pushImage(0, 26, 240, 294, (uint16_t *)wallpaper);
         Serial.println("WALLPAPER");
     }
