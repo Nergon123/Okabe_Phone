@@ -273,6 +273,7 @@ int GetState() {
 }
 
 // Button
+int lastresult = -1;
 int buttonsHelding(bool _idle) {
 
     /*
@@ -317,10 +318,12 @@ int buttonsHelding(bool _idle) {
     if (_idle)
         idle();
     int result = checkEXbutton();
+    if(lastresult!=result)
+    millSleep = millis(); 
     if (result != 0)
-        while (result == checkEXbutton())
-            ;
-    millSleep = millis();
+    while (result == checkEXbutton() && millis() - millSleep < 1500)
+        ;
+lastresult=result;
     // setBrightness(brightness);
 
     // For some reason serial control support
@@ -369,55 +372,55 @@ int buttonsHelding(bool _idle) {
         default:
             if (input >= '0' && input <= '9') {
                 Serial.println(input);
-                result +=10;
+                result += 10;
                 result -= '1';
             }
             break;
         }
     }
     switch (result) {
-        case 2:
-            return UP;
-        case 4:
-            return LEFT;
-        case 5:
-            return SELECT;
-        case 6:
-            return RIGHT;
-        case 7:
-            return ANSWER;
-        case 8:
-            return DOWN;
-        case 9:
-            return DECLINE;
-        case 19:
-            return '*';
-    
-        case 20:
-            return '0';
-    
-        case 21:
-            return '#';
-    
-        default:
-            if (result > 9 && result < 19) {
-                result -= 10;
-                result += '1';
-                return result;
-            }
-            break;
+    case 2:
+        return UP;
+    case 4:
+        return LEFT;
+    case 5:
+        return SELECT;
+    case 6:
+        return RIGHT;
+    case 7:
+        return ANSWER;
+    case 8:
+        return DOWN;
+    case 9:
+        return DECLINE;
+    case 19:
+        return '*';
+
+    case 20:
+        return '0';
+
+    case 21:
+        return '#';
+
+    default:
+        if (result > 9 && result < 19) {
+            result -= 10;
+            result += '1';
+            return result;
         }
-    
+        break;
+    }
+
     return -1;
 }
 
 // Parse SMS messages from SIM Card
 void parseMessages(Message *&msgs, int &count) {
 
-    String response     = "+CMGL: 1,\"REC UNREAD\",\"+31628870634\",,\"11/01/09,10:26:26+04\"\nThis is text message 1\n+CMGL: 2,\"REC UNREAD\",\"+31628870634\",,\"11/01/09,10:26:49+04\"\nThis is text message 2\nOK";
+    String response = "+CMGL: 1,\"REC UNREAD\",\"+31628870634\",,\"11/01/09,10:26:26+04\"\nThis is text message 1\n+CMGL: 2,\"REC UNREAD\",\"+31628870634\",,\"11/01/09,10:26:49+04\"\nThis is text message 2\nOK";
     // sendATCommand("AT+CMGL=\"ALL\",1");
-    int    lastIndexOf  = 0;
-    int    messageCount = 0;
+    int lastIndexOf  = 0;
+    int messageCount = 0;
 
     // Count the number of messages
     while ((lastIndexOf = response.indexOf("+CMGL:", lastIndexOf)) != -1) {
@@ -490,7 +493,6 @@ void parseMessages(Message *&msgs, int &count) {
     count = messageCount;
 }
 
-// Measure String Height in pixels
 int measureStringHeight(const String &text) {
     int lines      = 1;
     int lineWidth  = 0;
@@ -585,6 +587,7 @@ void playAudio(String path) {
 void fastMode(bool status) {
     // TODO: REINIT SCREEN and SDCARD
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
+    Serial.updateBaudRate(115200);
     initSDCard(status);
 }
 
@@ -592,18 +595,18 @@ int currentBrightness = brightness;
 // Set screen brightness
 void setBrightness(int percentage) {
     percentage = constrain(percentage, 0, 100);
-
-    if (percentage > currentBrightness) {
-        for (int i = currentBrightness; i <= percentage; i++) {
-            analogWrite(TFT_BL, (256 * i) / 100);
-            delay(5);
+    if (currentBrightness != percentage)
+        if (percentage > currentBrightness) {
+            for (int i = currentBrightness; i <= percentage; i++) {
+                analogWrite(TFT_BL, (256 * i) / 100);
+                delay(5);
+            }
+        } else {
+            for (int i = currentBrightness; i >= percentage; i--) {
+                analogWrite(TFT_BL, (256 * i) / 100);
+                delay(5);
+            }
         }
-    } else {
-        for (int i = currentBrightness; i >= percentage; i--) {
-            analogWrite(TFT_BL, (256 * i) / 100);
-            delay(5);
-        }
-    }
     currentBrightness = percentage;
 }
 
@@ -736,12 +739,11 @@ void parseSDMessages(Message messages[], int &messageCount, String filePath) {
 
 void execute_application() {
     suspendCore(true);
-    String  file_path = fileBrowser(SD.open("/"), "bin");
+    String file_path = fileBrowser(SD.open("/"), "bin");
     tft.fillScreen(0);
-    mOption mOp[2]    = {{"Yes"}, {"No"}};
-    int     choice    = listMenuNonGraphical(mOp, 2, "DO YOU REALLY TRUST THIS APPLICATION?\n\nPATH:sdcard:"+file_path+"\n\nNOTICE: WITH APPLICATION ACTIVE\n\n YOU WOULDN'T RECIEVE ANY\n\n CALLS MESSAGES ETC.\n\n(Unless application designed to)\n\n BY LAUNCHING APPLICATION YOU\n\nGIVING ACCESS TO WHOLE DEVICE\n\n INCLUDING:\n\n SD CARD, SIM CARD,WIFI,\n\n BLUETOOTH,FIRMWARE etc.\n\n\n Continue?");
-    if (choice)
-    {
+    mOption mOp[2] = {{"Yes"}, {"No"}};
+    int     choice = listMenuNonGraphical(mOp, 2, "DO YOU REALLY TRUST THIS APPLICATION?\n\nPATH:sdcard:" + file_path + "\n\nNOTICE: WITH APPLICATION ACTIVE\n\n YOU WOULDN'T RECIEVE ANY\n\n CALLS MESSAGES ETC.\n\n(Unless application designed to)\n\n BY LAUNCHING APPLICATION YOU\n\nGIVING ACCESS TO WHOLE DEVICE\n\n INCLUDING:\n\n SD CARD, SIM CARD,WIFI,\n\n BLUETOOTH,FIRMWARE etc.\n\n\n Continue?");
+    if (choice) {
         sBarChanged = true;
         drawStatusBar();
         suspendCore(false);
@@ -767,11 +769,11 @@ void execute_application() {
         Serial.println("Partition not found!");
         return;
     }
-    
+
     if (file.size() > partition->size) {
-        tft.setCursor(0,210);
+        tft.setCursor(0, 210);
         tft.printf("File size bigger than partition size %d bytes/%d bytes\n\n", file.size(), partition->size);
-        
+
         return;
     }
     esp_partition_erase_range(partition, 0, partition->size);
@@ -782,7 +784,7 @@ void execute_application() {
         size_t bytesRead = sizeof(buffer);
         file.read(buffer, sizeof(buffer));
         esp_partition_write(partition, offset, buffer, bytesRead);
-        progressBar(offset,file.size(),200);
+        progressBar(offset, file.size(), 200);
         offset += bytesRead;
     }
 

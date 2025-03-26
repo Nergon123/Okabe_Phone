@@ -50,6 +50,11 @@ uint32_t wallpaperIndex = 0;
 // index of currentFont used for changeFont()
 int currentFont = 0;
 
+//clock
+time_t systemTime;
+struct tm systemTimeInfo;
+
+
 // is Screen Locked????
 volatile bool isScreenLocked = false;
 
@@ -83,8 +88,14 @@ bool initSDCard(bool fast);
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h);
 
 void setup() {
-
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
+    
+    time(&systemTime);
+    setenv("TZ", "UTC+1", 1);
+    tzset();
+    localtime_r(&systemTime, &systemTimeInfo);
+
+
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
     tft.init();
@@ -133,7 +144,6 @@ void setup() {
     if (buttonsHelding(false) == '*')
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
 
-    gallery();
     progressBar(0, 100, 250);
     tft.setCursor(12, 3);
     tft.setTextSize(3);
@@ -185,13 +195,13 @@ void setup() {
     progressBar(95, 100, 250);
 
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
+    //Serial.println(String(wallpaperIndex) + "WI");
     // contactCount   = preferences.getUInt("contactCount", 0);
 
     if (wallpaperIndex < 0 || wallpaperIndex > 42)
         currentWallpaperPath = preferences.getString("wallpaper", "/null");
     preferences.end();
     if (!SD.exists(currentWallpaperPath)) {
-        wallpaperIndex = 0;
         printT_S(currentWallpaperPath + " - NOT FOUND");
     }
     progressBar(100, 100, 250);
@@ -214,6 +224,7 @@ void suspendCore(bool suspend) {
 
 void TaskIdleHandler(void *parameter) {
     while (true) {
+
         while (!simIsBusy && simIsUsable) {
             backgroundBusy = true;
             if (getSignalLevel() != _signal || getChargeLevel() != charge) {
@@ -251,7 +262,7 @@ void loop() {
     screens();
 }
 void idle() {
-
+    
     if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
         setBrightness(brightness * 0.1);
     } else if (millis() > millSleep + delayBeforeSleep) {
@@ -262,6 +273,9 @@ void idle() {
     if (millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked) {
         LockScreen();
     }
+    tm sbtime = *localtime_r(&systemTime, &systemTimeInfo);
+    if (sbtime.tm_min != systemTimeInfo.tm_min)
+        drawStatusBar(true);
 
     checkVoiceCall();
     delay(50);
@@ -336,7 +350,7 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
         size = file.size() - address;
     else
         size = w * h * 2;
-    *_resources = (uint8_t *)ps_malloc(size); // Allocate memory correctly
+    *_resources = (uint8_t *)ps_malloc(size); 
 
     if (!(*_resources)) {
         Serial.println("Memory allocation failed!");

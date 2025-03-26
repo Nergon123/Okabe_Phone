@@ -10,7 +10,7 @@ struct mOption;
 void   changeFont(int ch,bool is_screen_buffer = false);
 void   drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, String file_path = resPath);
 void   writeText(int x, int y, char *str);
-void   drawStatusBar();
+void   drawStatusBar(bool force = false);
 void   rendermenu(int &choice, int old_choice);
 void   sysError(const char *reason);
 void   drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool is_screen_buffer = false, String file_path = resPath, bool transp = false, uint16_t tc = 0);
