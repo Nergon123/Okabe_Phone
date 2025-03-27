@@ -588,6 +588,7 @@ void fastMode(bool status) {
     // TODO: REINIT SCREEN and SDCARD
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
     Serial.updateBaudRate(115200);
+    if(!isSPIFFS)
     initSDCard(status);
 }
 

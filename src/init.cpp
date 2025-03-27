@@ -34,6 +34,9 @@ volatile bool ongoingCall = false;
 // check if there SIM card available
 volatile bool simIsUsable = false;
 
+// spiffs?
+bool isSPIFFS = false;
+
 // current brightness in percentage
 uint brightness = 100;
 
@@ -50,10 +53,9 @@ uint32_t wallpaperIndex = 0;
 // index of currentFont used for changeFont()
 int currentFont = 0;
 
-//clock
-time_t systemTime;
+// clock
+time_t    systemTime;
 struct tm systemTimeInfo;
-
 
 // is Screen Locked????
 volatile bool isScreenLocked = false;
@@ -80,6 +82,7 @@ String currentMailRingtonePath = "";
 String currentNotificationPath = "";
 String currentWallpaperPath    = "/null";
 String resPath                 = "/FIRMWARE/IMAGES.SG";
+String SPIFFSresPath           = "/IMAGES_CUT.SG";
 String lastSIMerror            = "";
 
 void TaskIdleHandler(void *parameter);
@@ -89,23 +92,20 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
 
 void setup() {
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
-    
+
     time(&systemTime);
     setenv("TZ", "UTC+1", 1);
     tzset();
     localtime_r(&systemTime, &systemTimeInfo);
 
-
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
     tft.init();
     tft.setAttribute(PSRAM_ENABLE, true);
-
     tft.fillScreen(0x0000);
-
     // INIT Serial
     Serial.begin(115200);
-    Serial1.begin(115200, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
+    Serial1.begin(115200, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
     printT_S(String(ESP.getPsramSize()));
     // INIT charging IC
     chrg.begin(21, 22);
@@ -121,30 +121,46 @@ void setup() {
         offlineCharging();
         tft.setTextFont(1);
     }
-
+    tft.fillScreen(0);
+    tft.setCursor(0, 0);
+progressBar(0, 100, 250);
     preferences.begin("settings", false);
-    resPath = preferences.getString("resPath", "/FIRMWARE/IMAGES.SG");
+    resPath = preferences.getString("resPath", resPath);
     Serial.println(resPath);
 
     SPI.begin(14, 2, 15, chipSelect);
+    SPIFFS.begin();
 
-    while (!initSDCard(true))
-        recovery("No MicroSD card.");
+    isSPIFFS = (!initSDCard(true) || !SD.exists(resPath)) && SPIFFS.exists(SPIFFSresPath);
+    printT_S(isSPIFFS ? "Resource file or SD card is not available" : "Using resource card from SD card");
+    if (!isSPIFFS && !SD.exists(resPath))
+        recovery("Seems that you flashed your device wrong Try inserting SDcard with resource file");
 
-    while (!SD.exists(resPath))
-        recovery("No " + resPath + " found");
     tft.println("LOADING RESOURCE FILE");
-    loadResource(RESOURCE_ADDRESS, resPath, &resources, 0, 0);
-    tft.fillScreen(0);
-#ifndef LOG
-    tft.fillScreen(0x0000);
+    progressBar(10, 100, 250);
+    if (!isSPIFFS) {
+        loadResource(RESOURCE_ADDRESS, resPath, &resources, 0, 0);
+    } else {
+        File SPIFFSres = SPIFFS.open(SPIFFSresPath);
+        loadResource(0, SPIFFSresPath, &resources, 0, 0);
+        SPIFFSres.close();
+    }
+    if (!isSPIFFS)
+        if (SPIFFS.open(SPIFFSresPath, FILE_READ).size() != SD.open(resPath).size() - RESOURCE_ADDRESS) {
+            SPIFFS.format();
+            tft.println("Copying resource file...");
 
+            File temp = SPIFFS.open(SPIFFSresPath, FILE_WRITE, true);
+            temp.write(resources, SD.open(resPath).size() - RESOURCE_ADDRESS);
+            temp.close();
+        }
+#ifndef LOG
     drawFromSd(50, 85, SDImage(0x665421, 140, 135)); // draw boot logo
 #endif
     if (buttonsHelding(false) == '*')
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
 
-    progressBar(0, 100, 250);
+    progressBar(20, 100, 250);
     tft.setCursor(12, 3);
     tft.setTextSize(3);
     tft.setTextColor(tft.color24to16(0x656565));
@@ -165,7 +181,7 @@ void setup() {
     printT_S("\n       !!! DEVMODE ENABLED !!!\n\n");
 #endif
 
-    progressBar(10, 100, 250);
+    progressBar(30, 100, 250);
     uint32_t oldtime = millis();
 
     if (sendATCommand("AT").indexOf("OK") != -1) {
@@ -195,8 +211,8 @@ void setup() {
     progressBar(95, 100, 250);
 
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
-    //Serial.println(String(wallpaperIndex) + "WI");
-    // contactCount   = preferences.getUInt("contactCount", 0);
+    // Serial.println(String(wallpaperIndex) + "WI");
+    //  contactCount   = preferences.getUInt("contactCount", 0);
 
     if (wallpaperIndex < 0 || wallpaperIndex > 42)
         currentWallpaperPath = preferences.getString("wallpaper", "/null");
@@ -209,7 +225,6 @@ void setup() {
     millSleep = millis();
     while (buttonsHelding() == '#')
         ;
-    drawStatusBar();
     Serial.updateBaudRate(115200);
 }
 
@@ -262,7 +277,7 @@ void loop() {
     screens();
 }
 void idle() {
-    
+
     if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
         setBrightness(brightness * 0.1);
     } else if (millis() > millSleep + delayBeforeSleep) {
@@ -324,7 +339,10 @@ void initSim() {
 bool initSDCard(bool fast) {
     SD.end();
     ulong sd_freq = MAX_SD_FREQ;
-
+    if (!SD.begin(chipSelect, SPI, SAFE_SD_FREQ))
+        return false;
+    else
+        SD.end();
     if (fast) {
         while (sd_freq >= MIN_SD_FREQ) {
             if (SD.begin(chipSelect, SPI, sd_freq)) {
@@ -337,8 +355,11 @@ bool initSDCard(bool fast) {
     return SD.begin(chipSelect, SPI, SAFE_SD_FREQ);
 }
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h) {
-
-    File file = SD.open(resourcefile);
+    File file;
+    if (isSPIFFS)
+        file = SPIFFS.open(SPIFFSresPath);
+    else
+        file = SD.open(resourcefile);
     if (!file) {
         Serial.println("Failed to open file!");
         return;
@@ -350,7 +371,7 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
         size = file.size() - address;
     else
         size = w * h * 2;
-    *_resources = (uint8_t *)ps_malloc(size); 
+    *_resources = (uint8_t *)ps_malloc(size);
 
     if (!(*_resources)) {
         Serial.println("Memory allocation failed!");
