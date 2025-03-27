@@ -1,13 +1,26 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 #define DISABLE_ALL_LIBRARY_WARNINGS
-#define RS485_RX_PIN 35
-#define RS485_TX_PIN 26
-#define RS485_RTS_PIN -1
-#define SIM_INT_PIN 36 //33 (future)
+#define SIM_RX_PIN 35
+#define SIM_TX_PIN 26 
 #define chipSelect 13
 #define MCP23017_ADDR 0x20
 #define MAX_CONTACTS 100
+
+
+#ifdef OKABE_PHONE_HW_0
+#define SIM_INT_PIN 34
+#define HAVE_AMPL
+#else
+#define SIM_INT_PIN 36 
+#define VIBRO_PIN 34
+#endif
+
+
+#define AMPL_BCLK 12
+#define AMPL_LRCLK 25
+#define AMPL_DIN 19
+
 
 // DELAY BETWEEN CHECKS
 
@@ -48,7 +61,7 @@
 #define DEVMODE //
 //#define SIMDEBUG//
 /////////////////////////
-
+#define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 //CPU frequency for ESP32 by default is 240 MHz  
 #define FAST_CPU_FREQ_MHZ 240
 
@@ -56,6 +69,7 @@
 #define SLOW_CPU_FREQ_MHZ 20
 
 #define RESOURCE_ADDRESS 0x5A708D
+
 
 #define MAX_SD_FREQ 80000000
 #define MIN_SD_FREQ 1000000 

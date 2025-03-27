@@ -13,6 +13,7 @@
 #include <Wire.h>
 #include <MCP23017.h>
 #include <PNGdec.h>
+#include <SPIFFS.h>
 #include "hal/uart_types.h"
 
 #include "init.h"

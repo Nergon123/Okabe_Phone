@@ -47,7 +47,13 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 int sNumberChange(int x, int y, int w, int h, int val, int min, int max, bool selected, int *direction, const char *format) {
     *direction = -1;
 
-    
+    int upTriOffsetY = 10;
+    int downTriOffsetY = -10;
+    int tx1 = x, tx2 = x+3, tx3 = x+5;
+    int ty1 = y, ty2 = x+5, ty3 = y;
+    tft.fillTriangle(tx1,ty1+upTriOffsetY,tx2,ty2+upTriOffsetY,tx3,ty3+upTriOffsetY,selected?TFT_RED:TFT_BLACK);
+    tft.fillTriangle(tx1,ty1+downTriOffsetY,tx2,-ty2+downTriOffsetY,tx3,ty3+downTriOffsetY,selected?TFT_RED:TFT_BLACK);
+
     tft.resetViewport();
     changeFont(1);
     tft.setTextSize(1);
@@ -58,8 +64,8 @@ int sNumberChange(int x, int y, int w, int h, int val, int min, int max, bool se
         tft.setTextColor(TFT_RED);
     else
         tft.setTextColor(0);
-        int xx;
-        int yy;
+    int xx;
+    int yy;
     tft.setCursor(xx, yy);
     tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
     tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
@@ -73,19 +79,19 @@ int sNumberChange(int x, int y, int w, int h, int val, int min, int max, bool se
             val--;
             if (val < min)
                 val = max;
-                tft.setCursor(xx,yy);
-                tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
-                tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
-                tft.printf(format, val);
+            tft.setCursor(xx, yy);
+            tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
+            tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
+            tft.printf(format, val);
             break;
         case UP:
             val++;
             if (val > max)
                 val = max;
-                tft.setCursor(xx, yy);
-                tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
-                tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
-                tft.printf(format, val);
+            tft.setCursor(xx, yy);
+            tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
+            tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
+            tft.printf(format, val);
             break;
         case LEFT:
             *direction = LEFT;
@@ -103,7 +109,6 @@ int sNumberChange(int x, int y, int w, int h, int val, int min, int max, bool se
             exit       = true;
             break;
         }
-
     }
     tft.resetViewport();
     return val;
@@ -379,7 +384,9 @@ void drawPNG(const char *filename, bool _wallpaper) {
     fastMode(false);
 }
 
-// Draw and downscale image
+// ## Downscale and draw image
+// This function was used but was removed because of too long render time
+// still can be used in future to scale down images(?)
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, String file_path) {
     // Enable fast mode for TFT display
     fastMode(true);
@@ -586,7 +593,7 @@ void rendermenu(int &choice, int old_choice) {
         onIcons[onIndex]);
 }
 
-void sysError(const char *reason) {
+void sysError(String reason) {
     tft.fillScreen(0x0000);
     tft.setCursor(10, 40);
     tft.setTextFont(1);
@@ -595,7 +602,7 @@ void sysError(const char *reason) {
     tft.println("==ERROR==");
     tft.setTextColor(0xFFFF);
     tft.setTextSize(1);
-    tft.println(String("\n\n\nThere a problem with your device\nYou can fix it by yourself i guess\nThere some details for you:\n\n\nReason:" + String(int(reason[0]))));
+    tft.println(String("\n\n\nThere a problem with your device\nYou can fix it by yourself i guess\nThere some details for you:\n\n\nReason:" + reason));
     for (;;)
         ;
 }
@@ -658,8 +665,8 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
         // Serial.printf("POSITION %d\n", pos);
 
         if (resources) {
-            uint16_t *imgData = (uint16_t *)(resources + (pos & ~1));
 
+            uint16_t *imgData = (uint16_t *)(resources + (pos & ~1));
             if (!transp) {
 
                 if (is_screen_buffer)
@@ -1358,23 +1365,40 @@ String SplitString(String text) {
 }
 uint8_t *wallpaper = nullptr;
 void     drawWallpaper() {
-
-    if (!wallpaper) {
-        if (wallpaperIndex >= 0 && wallpaperIndex < 42) {
-            loadResource((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), resPath, &wallpaper, 240, 294);
-            // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
-        } else {
-            if (SD.exists(currentWallpaperPath)) {
-                drawPNG(currentWallpaperPath.c_str(), true);
-            } else {
-                wallpaperIndex = 0;
+    if (!isSPIFFS && SD.exists(resPath)) {
+        if (!wallpaper) {
+            if (wallpaperIndex >= 0 && wallpaperIndex < 42) {
                 loadResource((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), resPath, &wallpaper, 240, 294);
+                // drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), 0, 26, 240, 294);
+            } else {
+                if (SD.exists(currentWallpaperPath)) {
+                    drawPNG(currentWallpaperPath.c_str(), true);
+                } else {
+                    wallpaperIndex = 0;
+                    loadResource((uint32_t)(0xD) + ((uint32_t)(0x22740) * wallpaperIndex), resPath, &wallpaper, 240, 294);
+                }
             }
+            tft.pushImage(0, 26, 240, 294, (uint16_t *)wallpaper);
+        } else {
+            tft.pushImage(0, 26, 240, 294, (uint16_t *)wallpaper);
+            Serial.println("WALLPAPER");
         }
-        tft.pushImage(0, 26, 240, 294, (uint16_t *)wallpaper);
     } else {
-        tft.pushImage(0, 26, 240, 294, (uint16_t *)wallpaper);
-        Serial.println("WALLPAPER");
+        if (SD.exists(currentWallpaperPath)) {
+            drawPNG(currentWallpaperPath.c_str(), true);
+        } else {
+            uint16_t colora = random(0, 0x7777);
+            uint16_t colorb = random(0, 0x7777);
+            if (random(0, 1000) % 2 == 0)
+                tft.fillRectVGradient(0, 26, 240, 294, colora, colorb);
+            else
+                tft.fillRectHGradient(0, 26, 240, 294, colora, colorb);
+            changeFont(0);
+            tft.setTextSize(1);
+            tft.setTextColor(~colora);
+            tft.setCursor(0, 26);
+            tft.println("NO SDCARD OR RESOURCE FILE.\nBUILT-IN WALLPAPERS WILL NOT BE VISIBLE");
+        }
     }
 }
 

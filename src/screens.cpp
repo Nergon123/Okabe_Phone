@@ -305,7 +305,8 @@ void MainMenu() {
 }
 
 int gallery() {
-
+    if(!SD.exists(resPath))
+    return lastImage;
     mOption wallnames[] = {
         {"Wallpaper 1"},
         {"Wallpaper 2"},
@@ -1472,7 +1473,7 @@ char textInput(int input, bool onlynumbers, bool nonl) {
     Serial.println("currentIndex" + String(currentIndex));
     if (currentIndex == -1) {
         Serial.println("UNKNOWN BUTTON:" + String(input));
-        return '\0';
+        return 0;
     }
 
     for (int i = 0; i < 12; i++) {
@@ -1533,7 +1534,7 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         tft.setViewport(vx, vy, w, h);
     Serial.println("Result:" + String(result));
     if (result == '\r') {
-        return '\0';
+        return 0;
     }
     return result;
 }
@@ -1550,6 +1551,7 @@ void LockScreen() {
         while (buttonsHelding() == '*') {
             if (millis() > mill + 1000) {
                 exit = true;
+                millSleep = millis();
                 break;
             }
         }
