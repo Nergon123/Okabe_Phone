@@ -331,7 +331,7 @@ lastresult=result;
 
     if (Serial.available()) {
         char input = Serial.read();
-
+        millSleep = millis(); 
         switch (input) {
         case 'a':
             Serial.println("LEFT");
@@ -417,8 +417,7 @@ lastresult=result;
 // Parse SMS messages from SIM Card
 void parseMessages(Message *&msgs, int &count) {
 
-    String response = "+CMGL: 1,\"REC UNREAD\",\"+31628870634\",,\"11/01/09,10:26:26+04\"\nThis is text message 1\n+CMGL: 2,\"REC UNREAD\",\"+31628870634\",,\"11/01/09,10:26:49+04\"\nThis is text message 2\nOK";
-    // sendATCommand("AT+CMGL=\"ALL\",1");
+    String response = sendATCommand("AT+CMGL=\"ALL\",1");
     int lastIndexOf  = 0;
     int messageCount = 0;
 

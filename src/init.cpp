@@ -54,8 +54,8 @@ uint32_t wallpaperIndex = 0;
 int currentFont = 0;
 
 // clock
-time_t    systemTime;
-struct tm systemTimeInfo;
+time_t systemTime;
+tm     systemTimeInfo;
 
 // is Screen Locked????
 volatile bool isScreenLocked = false;
@@ -90,25 +90,58 @@ void initSim();
 bool initSDCard(bool fast);
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h);
 
-void setup() {
-    setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
+void SetUpTime() {
 
-    time(&systemTime);
-    setenv("TZ", "UTC+1", 1);
-    tzset();
-    localtime_r(&systemTime, &systemTimeInfo);
+    struct tm tm_time = {};
+    tm_time.tm_year   = 2025 - 1900;
+    tm_time.tm_mon    = 3;
+    tm_time.tm_mday   = 30;
+    tm_time.tm_hour   = 22;
+    tm_time.tm_min    = 39;
+    tm_time.tm_sec    = 0;
+
+    preferences.begin("TimePhone");
+
+    systemTime         = preferences.getLong("TIME", mktime(&tm_time));
+    struct timeval now = {.tv_sec = systemTime};
+    settimeofday(&now, NULL);
+    preferences.end();
+
+    systemTimeInfo = *gmtime(&systemTime);
+}
+void SaveTime(time_t time) {
+  //  Serial.println("Saved");
+
+    tm tm_time = *gmtime(&time);
+    preferences.begin("TimePhone");
+    preferences.putLong("TIME", time);
+
+    preferences.end();
+
+    time_t         t    = time;
+    struct timeval data = {t, 0};
+    systemTimeInfo      = *gmtime(&time);
+   // Serial.printf("\nSTI %d:%d, TIME: %d:%d\n", systemTimeInfo.tm_hour, systemTimeInfo.tm_min, tm_time.tm_hour, tm_time.tm_min);
+    settimeofday(&data, NULL);
+    
+}
+
+void setup() {
+    SetUpTime();
+    setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
+    // INIT charging IC
+    chrg.begin(21, 22);
 
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
     tft.init();
     tft.setAttribute(PSRAM_ENABLE, true);
     tft.fillScreen(0x0000);
+
     // INIT Serial
     Serial.begin(115200);
     Serial1.begin(115200, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
     printT_S(String(ESP.getPsramSize()));
-    // INIT charging IC
-    chrg.begin(21, 22);
 
     // RESET KEYBOARD
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
@@ -123,7 +156,7 @@ void setup() {
     }
     tft.fillScreen(0);
     tft.setCursor(0, 0);
-progressBar(0, 100, 250);
+    progressBar(0, 100, 250);
     preferences.begin("settings", false);
     resPath = preferences.getString("resPath", resPath);
     Serial.println(resPath);
@@ -147,6 +180,7 @@ progressBar(0, 100, 250);
     }
     if (!isSPIFFS)
         if (SPIFFS.open(SPIFFSresPath, FILE_READ).size() != SD.open(resPath).size() - RESOURCE_ADDRESS) {
+            tft.println("Outdated file, formatting SPIFFS...");
             SPIFFS.format();
             tft.println("Copying resource file...");
 
@@ -159,6 +193,8 @@ progressBar(0, 100, 250);
 #endif
     if (buttonsHelding(false) == '*')
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
+
+
 
     progressBar(20, 100, 250);
     tft.setCursor(12, 3);
@@ -223,9 +259,11 @@ progressBar(0, 100, 250);
     progressBar(100, 100, 250);
 
     millSleep = millis();
-    while (buttonsHelding() == '#')
+    while (buttonsHelding(false) == '#')
         ;
     Serial.updateBaudRate(115200);
+    tft.fillScreen(0);
+    drawStatusBar(true);
 }
 
 void suspendCore(bool suspend) {
@@ -288,9 +326,8 @@ void idle() {
     if (millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked) {
         LockScreen();
     }
-    tm sbtime = *localtime_r(&systemTime, &systemTimeInfo);
-    if (sbtime.tm_min != systemTimeInfo.tm_min)
-        drawStatusBar(true);
+
+        drawStatusBar(false);
 
     checkVoiceCall();
     delay(50);

@@ -115,9 +115,10 @@ size_t ArraySize(T (&)[N]) {
 }
 
 extern time_t systemTime;
-extern struct tm systemTimeInfo;
+extern tm systemTimeInfo;
 
-
+void SetUpTime();
+void SaveTime(time_t time);
 void loop(void);
 void setup();
 void idle();
