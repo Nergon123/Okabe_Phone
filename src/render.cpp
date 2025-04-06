@@ -4,14 +4,13 @@ const int lastImage = 42;
 // ## UI Button
 //  Part of local "UI Kit"
 bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
-
     tft.fillRect(xpos, ypos, w, h, 0xFFFF);
     tft.drawRect(xpos, ypos, w, h, 0);
     changeFont(1);
     if (selected) {
-        tft.setTextColor(0xF800);
+        tft.setTextColor(TFT_RED);
         tft.drawRect(xpos, ypos, w, h, 0);
-        tft.drawRect(xpos, ypos, w, h, 0xF800);
+        tft.drawRect(xpos, ypos, w, h, TFT_RED);
     }
 
     int x = (w - tft.textWidth(title)) / 2;
@@ -27,34 +26,44 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 
     if (selected)
         while (!exit) {
-            char c = buttonsHelding();
-            if (c == SELECT)
+            *direction = buttonsHelding();
+            if (*direction == SELECT) {
                 return true;
-            else if (c >= UP && c <= RIGHT) {
-                *direction == c;
+            } else if (*direction != -1) {
                 exit = true;
             }
         }
+
     tft.setTextColor(0);
     tft.fillRect(xpos, ypos, w, h, 0xFFFF);
     tft.drawRect(xpos, ypos, w, h, 0);
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title);
+
     return false;
 }
 
 // Input field for numbers with arrows
-int sNumberChange(int x, int y, int w, int h, int val, int min, int max, bool selected, int *direction, const char *format) {
-    *direction = -1;
 
-    int upTriOffsetY = 10;
-    int downTriOffsetY = -10;
-    int tx1 = x, tx2 = x+3, tx3 = x+5;
-    int ty1 = y, ty2 = x+5, ty3 = y;
-    tft.fillTriangle(tx1,ty1+upTriOffsetY,tx2,ty2+upTriOffsetY,tx3,ty3+upTriOffsetY,selected?TFT_RED:TFT_BLACK);
-    tft.fillTriangle(tx1,ty1+downTriOffsetY,tx2,-ty2+downTriOffsetY,tx3,ty3+downTriOffsetY,selected?TFT_RED:TFT_BLACK);
+void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format) {
+
+    int upTriOffsetY   = (h / 2);
+    int downTriOffsetY = upTriOffsetY * -1;
+    ;
+
+    int fp  = w / 2;
+    int st  = h / 5;
+    int stf = w / 5;
+
+    int tx1 = x + fp - stf, tx2 = x + fp, tx3 = x + fp + stf;
+    int ty1 = y - st, ty2 = y - st * 2, ty3 = y - st;
+    int ty11 = y + h + st, ty21 = y + h + st * 2, ty31 = y + h + st;
 
     tft.resetViewport();
+
+    tft.fillTriangle(tx1, ty1, tx2, ty2, tx3, ty3, selected ? TFT_RED : TFT_BLACK);
+    tft.fillTriangle(tx1, ty11, tx2, ty21, tx3, ty31, selected ? TFT_RED : TFT_BLACK);
+
     changeFont(1);
     tft.setTextSize(1);
     tft.setTextColor(0);
@@ -64,54 +73,49 @@ int sNumberChange(int x, int y, int w, int h, int val, int min, int max, bool se
         tft.setTextColor(TFT_RED);
     else
         tft.setTextColor(0);
-    int xx;
-    int yy;
-    tft.setCursor(xx, yy);
-    tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
-    tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
-    tft.printf(format, val);
+    int  xx = 0;
+    int  yy = 0;
+    char text[64];
+    snprintf(text, sizeof(text), format, val);
+    int height = tft.fontHeight();
+    tft.setTextSize(h / height);
+
+    height                        = tft.fontHeight();
+    int                   width   = tft.textWidth(text);
+    std::function<void()> DrowBox = [&]() {
+        snprintf(text, sizeof(text), format, val);
+        tft.setCursor(w / 2 - width / 2, h / 2 + height / 4);
+        tft.drawRect(0, 0, w, h, selected ? TFT_RED : TFT_BLACK);
+        tft.fillRect(1, 1, w - 2, h - 2, TFT_WHITE);
+        tft.print(text);
+    };
+    DrowBox();
     bool exit = false;
 
     while (!exit && selected) {
-
-        switch (buttonsHelding()) {
+        *direction = buttonsHelding();
+        switch (*direction) {
         case DOWN:
             val--;
             if (val < min)
                 val = max;
-            tft.setCursor(xx, yy);
-            tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
-            tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
-            tft.printf(format, val);
+            DrowBox();
             break;
         case UP:
             val++;
             if (val > max)
-                val = max;
-            tft.setCursor(xx, yy);
-            tft.drawRect(x, y, w, h, selected ? TFT_RED : TFT_BLACK);
-            tft.fillRect(x + 1, y + 1, w - 2, h - 2, TFT_WHITE);
-            tft.printf(format, val);
+                val = min;
+            DrowBox();
             break;
         case LEFT:
-            *direction = LEFT;
-            exit       = true;
-            break;
-        case RIGHT:
-            *direction = RIGHT;
-            exit       = true;
-            break;
-        case BACK:
             exit = true;
             break;
-        case SELECT:
-            *direction = RIGHT;
-            exit       = true;
+        case RIGHT:
+            exit = true;
             break;
         }
     }
     tft.resetViewport();
-    return val;
 }
 
 // ## UI Textbox
@@ -274,35 +278,36 @@ String textbox(String title, String content, int ypos, bool onlydraw, bool selec
     content.trim();
     return content;
 }
-void chfont(const GFXfont *f, bool is_screen_buffer) {
+
+void chfont(const GFXfont *f, bool is_screen_buffer,TFT_eSprite &sbuffer) {
     if (is_screen_buffer)
-        screen_buffer.setFreeFont(f);
+        sbuffer.setFreeFont(f);
     else
         tft.setFreeFont(f);
 }
-void chfont(uint8_t f, bool is_screen_buffer) {
+void chfont(uint8_t f, bool is_screen_buffer,TFT_eSprite &sbuffer) {
     if (is_screen_buffer)
-        screen_buffer.setTextFont(f);
+        sbuffer.setTextFont(f);
     else
         tft.setTextFont(f);
 }
-void changeFont(int ch, bool is_screen_buffer) {
+void changeFont(int ch, bool is_screen_buffer,TFT_eSprite &sbuffer) {
     currentFont = ch;
     switch (ch) {
     case 0:
-        chfont(1, is_screen_buffer);
+        chfont(1, is_screen_buffer,sbuffer);
         break;
     case 1:
-        chfont(&FreeSans9pt7b, is_screen_buffer);
+        chfont(&FreeSans9pt7b, is_screen_buffer,sbuffer);
         break;
     case 2:
-        chfont(&FreeSansBold9pt7b, is_screen_buffer);
+        chfont(&FreeSansBold9pt7b,is_screen_buffer, sbuffer);
         break;
     case 3:
-        chfont(&FreeMono9pt7b, is_screen_buffer);
+        chfont(&FreeMono9pt7b,is_screen_buffer, sbuffer);
         break;
     case 4:
-        chfont(&FreeSans12pt7b, is_screen_buffer);
+        chfont(&FreeSans12pt7b,is_screen_buffer,sbuffer);
         break;
     }
 }
@@ -463,51 +468,45 @@ int8_t _signal = 0;
 int8_t charge  = 0;
 
 void drawStatusBar(bool force) {
-    bool     messageViewport = tft.getViewportY() == 51;
-    int      curx            = tft.getCursorX();
-    int      cury            = tft.getCursorY();
-    int      fontt           = currentFont;
-    int      size            = tft.textsize;
-    uint16_t color           = tft.textcolor;
     sBarChanged += force;
-    tm sbtime = *localtime_r(&systemTime, &systemTimeInfo);
-    if (sbtime.tm_min != systemTimeInfo.tm_min)
+    time(&systemTime);
+    tm sbtime = *gmtime(&systemTime);
+    if (sbtime.tm_min != systemTimeInfo.tm_min) {
+        //Serial.printf("\nSBTIME MIN %d , STI MIN %d\n", sbtime.tm_min, systemTimeInfo.tm_min);
+        SaveTime(systemTime);
         sBarChanged = true;
+    }
 
     if (sBarChanged) {
+        TFT_eSprite _sprite = TFT_eSprite(&tft);
 
-        if (messageViewport) {
-            tft.resetViewport();
-        }
+        _sprite.createSprite(240, 26);
+
         sBarChanged = false;
         charge      = getChargeLevel();
-        drawFromSd(0X5A708D, 0, 0, 240, 26); // statusbar
-        if (_signal == -1)
-            drawFromSd(0x5AD47D, 0, 0, 37, 26); // no_signal
-        else
-            drawFromSd(0x5ABC1D + (0x618) * _signal, 0, 0, 30, 26); // signal
-        drawFromSd(0X5AA14D + (0x6B4) * charge, 207, 0, 33, 26);    // battery
-        //  tft.print(String(charge) + String("%"));
-        changeFont(1);
-        tft.setTextSize(1);
-        tft.setTextColor(TFT_LIGHTGREY);
-        tft.setCursor(102, 19);
-        tft.printf("%02d:%02d", sbtime.tm_hour, sbtime.tm_min);
-        if (isScreenLocked) {
-            changeFont(0);
-            tft.setCursor(0, 0);
-            tft.setTextSize(1);
-            tft.setTextColor(TFT_WHITE);
-            tft.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
-        }
 
-        if (messageViewport) {
-            tft.setViewport(0, 51, 240, 269, true);
+        drawFromSd(0, 0, SDImage(0X5A708D, 240, 26),true,_sprite); // statusbar
+        if (_signal == -1)
+            drawFromSd(0, 0, SDImage(0x5AD47D, 37, 26),true,_sprite); // no_signal
+        else
+            drawFromSd(0, 0, SDImage(0x5ABC1D + (0x618) * _signal, 30, 26),true,_sprite); // signal
+        drawFromSd(207, 0, SDImage(0X5AA14D + (0x6B4) * charge, 33, 26),true,_sprite);    // battery
+        //  tft.print(String(charge) + String("%"));
+        changeFont(1,true,_sprite);
+        _sprite.setTextSize(1);
+        _sprite.setTextColor(TFT_LIGHTGREY);
+        _sprite.setCursor(102, 19);
+        _sprite.printf("%02d:%02d", sbtime.tm_hour, sbtime.tm_min);
+        if (isScreenLocked) {
+            changeFont(0,true,_sprite);
+            _sprite.setCursor(0, 0);
+            _sprite.setTextSize(1);
+            _sprite.setTextColor(TFT_WHITE);
+            _sprite.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
         }
-        changeFont(fontt);
-        tft.setCursor(curx, cury);
-        tft.setTextSize(size);
-        tft.setTextColor(color);
+        _sprite.pushSprite(0,0);
+        _sprite.deleteSprite();
+
     }
 }
 
@@ -609,7 +608,7 @@ void sysError(String reason) {
 
 TFT_eSprite sprite = TFT_eSprite(&tft);
 
-void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool is_screen_buffer, String file_path, bool transp, uint16_t tc) {
+void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool is_screen_buffer, TFT_eSprite &sbuffer, String file_path, bool transp, uint16_t tc) {
     fastMode(true);
     if (file_path != resPath) {
         File file = SD.open(file_path, FILE_READ);
@@ -670,7 +669,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
             if (!transp) {
 
                 if (is_screen_buffer)
-                    screen_buffer.pushImage(pos_x, pos_y, size_x, size_y, imgData);
+                    sbuffer.pushImage(pos_x, pos_y, size_x, size_y, imgData);
                 else
                     tft.pushImage(pos_x, pos_y, size_x, size_y, imgData);
             } else {
@@ -683,7 +682,7 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
                 sprite.pushImage(0, 0, size_x, size_y, imgData);
 
                 if (is_screen_buffer)
-                    sprite.pushToSprite(&screen_buffer, pos_x, pos_y, tc);
+                    sprite.pushToSprite(&sbuffer, pos_x, pos_y, tc);
                 else
                     sprite.pushSprite(pos_x, pos_y, tc);
 
@@ -695,19 +694,20 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
     fastMode(false);
 }
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path, bool transp, uint16_t tc) {
-    drawFromSd(pos, pos_x, pos_y, size_x, size_y, false, file_path, transp, tc);
+    drawFromSd(pos, pos_x, pos_y, size_x, size_y, false, screen_buffer, file_path, transp, tc);
 }
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool transp, uint16_t tc) {
-    drawFromSd(pos, pos_x, pos_y, size_x, size_y, false, resPath, transp, tc);
+    drawFromSd(pos, pos_x, pos_y, size_x, size_y, false, screen_buffer, resPath, transp, tc);
 }
-void drawFromSd(int x, int y, SDImage sprite, bool is_screen_buffer) {
+void drawFromSd(int x, int y, SDImage sprite, bool is_screen_buffer, TFT_eSprite &sbuffer) {
     if (sprite.address != 0)
-        drawFromSd(sprite.address, x, y, sprite.w, sprite.h, true, resPath, sprite.transp, sprite.tc);
+        drawFromSd(sprite.address, x, y, sprite.w, sprite.h, is_screen_buffer, sbuffer, resPath, sprite.transp, sprite.tc);
 }
 void drawFromSd(int x, int y, SDImage sprite) {
     if (sprite.address != 0)
         drawFromSd(sprite.address, x, y, sprite.w, sprite.h, sprite.transp, sprite.tc);
 }
+
 void writeCustomFont(int x, int y, String input, int type) {
     int      w      = 21;
     int      h      = 27;
@@ -814,15 +814,6 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     int ly           = 25;
     int x            = 10;
     int old_selected = 0;
-
-    int entry_size = screen_buffer.fontHeight();
-    if (choices[0].icon.h > entry_size) {
-        entry_size = choices[0].icon.h;
-    }
-    x += choices[0].icon.w;
-    int per_page = 269 / entry_size;
-    pages        = (icount + per_page - 1) / per_page;
-
     drawFromSd(0, y + 25, SDImage(0x636485 + 0x2EE0, 240, 269), true);
 
     if (icount == 0) {
@@ -832,10 +823,19 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         screen_buffer.setCursor(75, 45);
         screen_buffer.print("< Empty >");
         screen_buffer.pushSprite(0, 26);
-        while (buttonsHelding() == -1)
+        screen_buffer.deleteSprite();
+        while (buttonsHelding() != BACK)
             ;
         return -1;
     }
+    int entry_size = screen_buffer.fontHeight();
+    if (choices[0].icon.h > entry_size) {
+        entry_size = choices[0].icon.h;
+    }
+    x += choices[0].icon.w;
+    int per_page = 269 / entry_size;
+    pages        = (icount + per_page - 1) / per_page;
+
     listMenu_header(type, label, page, pages, y, false);
     int startIndex = page * per_page;
     int endIndex   = std::min(startIndex + per_page, icount);
@@ -850,10 +850,12 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         int c = buttonsHelding();
         switch (c) {
         case SELECT:
+            screen_buffer.deleteSprite();
             fastMode(false);
             return selected + (page * per_page);
             break;
         case BACK:
+            screen_buffer.deleteSprite();
             return -1;
             break;
 
@@ -888,6 +890,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
             screen_buffer.pushSprite(0, 26);
+        
             fastMode(false);
             break;
         case DOWN:
@@ -923,10 +926,12 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
 
             screen_buffer.pushSprite(0, 26);
+            
             fastMode(false);
             break;
         }
     }
+    screen_buffer.deleteSprite();
     return -1;
 }
 
@@ -1084,7 +1089,7 @@ int choiceMenu(const String choices[], int count, bool context) {
         x = 40;
         y = 120;
     } else {
-        drawFromSd(0x5E8A25, 0, 68, 240, 128);
+        drawFromSd(0, 68, SDImage(0x5E8A25, 240, 128));
         x = 30;
         y = 95;
     }
@@ -1130,7 +1135,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawFromSd(0x5E8A25, 0, 68, 240, 128);
+                drawFromSd(0, 68, SDImage(0x5E8A25, 240, 128));
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
@@ -1180,7 +1185,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawFromSd(0x5E8A25, 0, 68, 240, 128);
+                drawFromSd(0, 68, SDImage(0x5E8A25, 240, 128));
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);

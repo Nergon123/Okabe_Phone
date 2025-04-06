@@ -25,4 +25,5 @@ void ErrorWindow(String reason);
 void LockScreen();
 bool confirmation(String reason);
 void AT_test();
+void setTime(time_t *time);
 #endif

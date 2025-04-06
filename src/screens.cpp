@@ -8,6 +8,74 @@ bool messageActivity(Message message);
 void messageActivityOut(Contact contact, String subject, String content, bool sms);
 void ringtoneSelector(bool isMail);
 void SerialGetFile();
+void WiFiList();
+void setTime(time_t *time) {
+    drawFromSd(0, 51, SDImage(0x636485 + 0x2EE0, 240, 269));
+    drawFromSd(0, 26, SDImage(0x5DAF1F, 240, 25));
+    drawFromSd(0, 26, SDImage(0x5DDDFF + (0x4E2 * 2), 25, 25));
+    changeFont(1);
+    tft.setCursor(30, 44);
+    tft.setTextColor(0xFFFF);
+    tft.setTextSize(1);
+    tft.print("Date/Time Settings");
+    tft.setTextColor(0);
+    tft.setCursor(90, 77);
+    tft.print("DATE");
+    tft.setCursor(57 + 28, 109);
+    tft.print("/");
+    tft.setCursor(93 + 28, 109);
+    tft.print("/");
+    tft.setCursor(90, 155);
+    tft.print("TIME");
+    tft.setCursor(111, 187);
+    tft.print(":");
+
+    tm  tm_time   = *gmtime(&systemTime);
+    int temp_year = 1900 + tm_time.tm_year;
+
+    int  choice    = 0;
+    bool exit      = false;
+    bool renderall = true;
+    int  direction = LEFT;
+    while (!exit) {
+
+        Serial.println(choice);
+
+        sNumberChange(57, 90, 25, 25, tm_time.tm_mday, 1, 31, choice == 0 && !renderall, &direction);
+        sNumberChange(93, 90, 25, 25, tm_time.tm_mon, 1, 12, choice == 1 && !renderall, &direction);
+        sNumberChange(129, 90, 50, 25, temp_year, 1900, 2100, choice == 2 && !renderall, &direction);
+        sNumberChange(83, 170, 25, 25, tm_time.tm_hour, 0, 23, choice == 3 && !renderall, &direction);
+        sNumberChange(117, 170, 25, 25, tm_time.tm_min, 0, 59, choice == 4 && !renderall, &direction);
+        bool confirm = button("CONFIRM", 10, 280, 100, 30, choice == 5 && !renderall, &direction);
+        bool cancel  = button("CANCEL", 130, 280, 100, 30, choice == 6 && !renderall, &direction);
+
+        Serial.println(direction);
+
+        if (!renderall) {
+            if (direction == RIGHT)
+                choice++;
+            else if (direction == LEFT)
+                choice--;
+            if (choice > 6)
+                choice = 0;
+            else if (choice < 0)
+                choice = 6;
+        }
+
+        renderall = !renderall;
+
+        if (confirm) {
+            tm_time.tm_year = temp_year - 1900;
+            Serial.println("Local time updated!");
+            SaveTime(mktime(&tm_time));
+            exit = true;
+        }
+        if (cancel) {
+            exit = true;
+        }
+    }
+}
+
 bool confirmation(String reason) {
     drawWallpaper();
     drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
@@ -39,7 +107,7 @@ void ErrorWindow(String reason) {
 
     int xpos = 0;
     drawWallpaper();
-    drawFromSd(0x5F7A25, 0, 90, 240, 134);
+    drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
     tft.setTextSize(1);
     tft.setCursor(80, 120);
     changeFont(1);
@@ -61,11 +129,11 @@ void messages() {
     //     return;
     // }
 
-    drawFromSd(0x613D45, 0, 26, 240, 294);
-    drawFromSd(0x5DECA5, 0, 26, 240, 42);
-    drawFromSd(0x5E8A25, 0, 68, 240, 128);
-    String lol[] = {"Inbox", "Outbox"};
-    int    ch    = choiceMenu(lol, 2, false);
+    drawFromSd(0, 26, SDImage(0x613D45, 240, 294));
+    drawFromSd(0, 26, SDImage(0x5DECA5, 240, 42));
+    drawFromSd(0, 68, SDImage(0x5E8A25, 240, 128));
+    String entries[] = {"Inbox", "Outbox"};
+    int    ch    = choiceMenu(entries, ArraySize(entries), false);
     switch (ch) {
     case 0:
         inbox(false);
@@ -88,7 +156,9 @@ void e() {
             "Cat",
             "Write Message To SD",
             "PC Connection",
-            "Execute Application"};
+            "Execute Application",
+            "Set Date/Time",
+            "Connect To Wi-Fi"};
         choice = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
         String path;
         File   file;
@@ -133,6 +203,12 @@ void e() {
         case 4:
             execute_application();
             break;
+        case 5:
+            setTime(&systemTime);
+            break;
+        case 6:
+            WiFiList();
+            break;
         }
 
         break;
@@ -142,8 +218,8 @@ void e() {
 
 void settings() {
 
-    drawFromSd(0x613D45, 0, 26, 240, 294);
-    drawFromSd(0x5E3B65, 0, 26, 240, 42);
+    drawFromSd(0, 26, SDImage(0x613D45, 240, 294));
+    drawFromSd(0, 26, SDImage(0x5E3B65, 240, 42));
     String lol[] = {
         "Change Wallpaper",
         "Phone ringtone",
@@ -192,7 +268,7 @@ void settings() {
                     ;
                 break;
             case 1:
-            preferences.begin("settings", false);
+                preferences.begin("settings", false);
                 preferences.putUInt("wallpaperIndex", pic);
                 preferences.putString("wallpaper", "/null");
                 preferences.end();
@@ -215,7 +291,7 @@ void settings() {
                 drawPNG(path.c_str());
                 break;
             case 1:
-            preferences.begin("settings", false);
+                preferences.begin("settings", false);
                 preferences.putUInt("wallpaperIndex", -1);
                 preferences.putString("wallpaper", path);
                 preferences.end();
@@ -236,7 +312,7 @@ void settings() {
 }
 void MainMenu() {
 
-    drawFromSd(0x5ADC01, 0, 26, 240, 294);
+    drawFromSd(0, 26, SDImage(0x5ADC01, 240, 294));
     drawFromSd(0x5D0341, 51, 71, 49, 49, true, 0x07e0);
 
     int  choice     = 0;
@@ -269,7 +345,7 @@ void MainMenu() {
                 return;
                 break;
             }
-            drawFromSd(0x5ADC01, 0, 26, 240, 294);
+            drawFromSd(0, 26, SDImage(0x5ADC01, 240, 294));
             rendermenu(choice, choice);
             break;
         }
@@ -305,8 +381,8 @@ void MainMenu() {
 }
 
 int gallery() {
-    if(!SD.exists(resPath))
-    return lastImage;
+    if (!SD.exists(resPath))
+        return lastImage;
     mOption wallnames[] = {
         {"Wallpaper 1"},
         {"Wallpaper 2"},
@@ -422,7 +498,7 @@ void offlineCharging() {
 
 void incomingCall(Contact contact) {
     drawWallpaper();
-    drawFromSd(0x5F7A25, 0, 90, 240, 134);
+    drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
     changeFont(1);
     tft.setTextColor(0);
     tft.setCursor(15, 170);
@@ -515,7 +591,7 @@ void callActivity(Contact contact) {
     tft.fillScreen(0);
     sBarChanged = true;
     drawStatusBar();
-    drawFromSd(0x65D147, 40, 143, 160, 34);
+    drawFromSd(40, 143, SDImage(0x65D147, 160, 34));
     while (stateCall != DISCONNECT) {
         if (buttonsHelding() == DECLINE) {
             sendATCommand("ATH");
@@ -546,8 +622,6 @@ void contactss() {
         contactNames[i] = contacts[i].name;
     }
 
-    //delay(300);
-    drawStatusBar();
     bool exit = false;
     while (!exit) {
 
@@ -591,8 +665,8 @@ void contactss() {
 
         } else {
 
-            const String choice = "Create";
-            int          CMS    = choiceMenu({&choice}, 1, true);
+            const String choice[1] = {"Create"};
+            int          CMS       = choiceMenu({choice}, 1, true);
             if (!CMS) {
                 editContact(Contact("", "", "", lastContactIndex + 1));
             } else
@@ -845,8 +919,8 @@ bool messageActivity(Contact contact, String date, String subject, String conten
         SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false), // "TO"
         SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false), //"SUB"
     };
-    drawFromSd(0x5DAF1F, 0, 26, 240, 25);
-    drawFromSd(0x5DDDFF, 0, 26, 25, 25);
+    drawFromSd(0, 26, SDImage(0x5DAF1F, 240, 25));
+    drawFromSd(0, 26, SDImage(0x5DDDFF, 25, 25));
     int y_jump = 22;
     int y_scr  = 0;
     int y_text = 18;
@@ -863,7 +937,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     while (!exit) {
         deleted = false;
         tft.setTextColor(0);
-        drawFromSd(0x639365, 0, 0, 240, 269);
+        drawFromSd(0, 0, SDImage(0x639365, 240, 269));
         // tft.fillScreen(0xFFFF);
         drawFromSd(0, 0 + y_scr, in_mail[0]);
         tft.setCursor(24, 0 + y_text + y_scr);
@@ -1030,8 +1104,8 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false),
         SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false),
     };
-    drawFromSd(0x5DAF1F, 0, 26, 240, 25);
-    drawFromSd(0x5DDDFF, 0, 26, 25, 25);
+    drawFromSd(0, 26, SDImage(0x5DAF1F, 240, 25));
+    drawFromSd(0, 26, SDImage(0x5DDDFF, 25, 25));
     int y_jump = 22;
     int y_scr  = 0;
     int y_text = 18;
@@ -1048,7 +1122,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     bool exit = false;
     while (!exit) {
         position = 0;
-        drawFromSd(0x639365, 0, 0, 240, 269);
+        drawFromSd(0, 0, SDImage(0x639365, 240, 269));
         // tft.fillScreen(0xFFFF);
         // position += 24;
         drawFromSd(0, position + y_scr, in_mail[2]);
@@ -1185,8 +1259,8 @@ void editContact(Contact contact) {
     int textboxes = 2;
     int buttons   = 2;
     int direction;
-    drawFromSd(0x5DAF1F, 0, 26, 240, 25);
-    drawFromSd(0x5DDDFF + (0x4E2 * 1), 0, 26, 25, 25);
+    drawFromSd(0, 26, SDImage(0x5DAF1F, 240, 25));
+    drawFromSd(0, 26, SDImage(0x5DDDFF + 0x4E2, 25, 25));
     drawStatusBar();
     tft.setCursor(30, 45);
     tft.setTextSize(1);
@@ -1194,7 +1268,7 @@ void editContact(Contact contact) {
     tft.setTextColor(0xffff);
     String boxString[textboxes] = {contact.name, contact.phone};
     tft.print("Edit Contact");
-    drawFromSd(0x639365, 0, 51, 240, 269);
+    drawFromSd(0, 51, SDImage(0x639365, 240, 269));
     textbox("Name", contact.name, 70, true, false, false);
     textbox("Phone Number", contact.phone, 120, true, false, false);
 
@@ -1315,18 +1389,18 @@ void recovery(String message) {
          */
 
         if (buf.indexOf("ELPSYKONGROO") != -1) {
-            resPath             = TempResPath;
             mOption optionss[2] = {{"Yes!"}, {"No..."}};
-            choice              = listMenuNonGraphical(optionss, 2, "File is valid!\n\nWould you like to \nsave choice for next boot?");
+            choice              = listMenuNonGraphical(optionss, 2, "Are you sure you want to change files?");
             if (choice == 0) {
-                preferences.begin("settings",false);
+                resPath = TempResPath;
+                preferences.begin("settings", false);
                 preferences.putString("resPath", resPath);
                 preferences.end();
             }
         } else {
             tft.fillScreen(0);
             tft.setCursor(0, 0);
-            tft.println("Choice is invalid!\nPress any key to continue...");
+            tft.println("File is invalid!\nPress any key to continue...");
             while (buttonsHelding(false) == -1)
                 ;
         }
@@ -1550,7 +1624,7 @@ void LockScreen() {
         mill = millis();
         while (buttonsHelding() == '*') {
             if (millis() > mill + 1000) {
-                exit = true;
+                exit      = true;
                 millSleep = millis();
                 break;
             }
@@ -1562,9 +1636,9 @@ void LockScreen() {
 }
 
 void WiFiList() {
-    WiFi.begin();
+    fastMode(true);
+        WiFi.begin();
     WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
     while (true) {
         int      count = WiFi.scanNetworks();
         String   names[50];
@@ -1574,7 +1648,13 @@ void WiFiList() {
         for (int i = 0; i < count; i++) {
             WiFi.getNetworkInfo(i, names[i], a, c, l, d);
         }
-        listMenu(names, count, false, 0, "WI-FI");
+        int ch =listMenu(names, count, false, 0, "WI-FI");
+        if(ch == -1)
+        return;
+        else{
+            return;
+            // TODO: Actually Connect to WiFi
+        }
     }
 }
 
