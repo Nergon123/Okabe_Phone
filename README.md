@@ -52,7 +52,6 @@ So then I decided that I could do that, but I didn't really announce that anywhe
 
 ## Known Problems
 
-- (CRASH) Watchdog resets when call recieves at core 0 (Background AT Command process)
 - This thing overall unstable, right now it have status "Proof of Concept"
 - This thing probably cannot be used comercially since copyrighted material is being used(I'm not sure about this statement but probably it's true)
 
