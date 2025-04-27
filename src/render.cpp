@@ -47,8 +47,6 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format) {
 
-
-
     int fp  = w / 2;
     int st  = h / 5;
     int stf = w / 5;
@@ -469,6 +467,7 @@ int8_t charge  = 0;
 
 // ## Draw status bar
 void drawStatusBar(bool force) {
+
     sBarChanged += force;
     time(&systemTime);
     tm sbtime = *gmtime(&systemTime);
@@ -479,6 +478,13 @@ void drawStatusBar(bool force) {
     }
 
     if (sBarChanged) {
+        int  viewport_x     = tft.getViewportX();
+        int  viewport_y     = tft.getViewportY();
+        int  viewport_w     = tft.getViewportWidth();
+        int  viewport_h     = tft.getViewportHeight();
+        bool viewport_datum = tft.getViewportDatum();
+        tft.resetViewport();
+        
         TFT_eSprite _sprite = TFT_eSprite(&tft);
 
         _sprite.createSprite(240, 26);
@@ -504,6 +510,7 @@ void drawStatusBar(bool force) {
         }
         _sprite.pushSprite(0, 0);
         _sprite.deleteSprite();
+        tft.setViewport(viewport_x, viewport_y, viewport_w, viewport_h, viewport_datum);
     }
 }
 
