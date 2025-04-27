@@ -1,11 +1,20 @@
-#ifndef DEFINES_H
-#define DEFINES_H
+#pragma once
+#define FIRMVER "0.1.5 ALPHA"
+#define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
+
 #define DISABLE_ALL_LIBRARY_WARNINGS
 #define SIM_RX_PIN 35
 #define SIM_TX_PIN 26 
 #define chipSelect 13
 #define MCP23017_ADDR 0x20
 #define MAX_CONTACTS 100
+
+//For default serial communication
+#define SERIAL_BAUD_RATE 115200
+//For transfering data
+#define FAST_SERIAL_BAUD_RATE 921600
+//For SIM communication
+#define SIM_BAUD_RATE 115200
 
 
 #ifdef OKABE_PHONE_HW_0
@@ -22,18 +31,15 @@
 #define AMPL_DIN 19
 
 
-// DELAY BETWEEN CHECKS
-
-#define DIB_MS 500
 //DELAY TO CONFIRM CHARACTER
+#define DIB_MS 500
 
-#define INPUT_LOCATION_Y 240
 //INPUT OF inputText() WINDOW
+#define INPUT_LOCATION_Y 240
 
+//CURSOR WIDTH (PIXELS)
 #define CWIDTH 1
-//CURSOR WIDTH
 
-#define FIRMVER "0.1.4 ALPHA"
 
 //#define LOG
 
@@ -56,22 +62,21 @@
 #define RIGHT 5
 #define ANSWER 6
 #define DECLINE BACK
-/////////////////////////
+
 // ENABLE DEVELOPER MODE//
 #define DEVMODE //
 //#define SIMDEBUG//
-/////////////////////////
-#define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
+
 //CPU frequency for ESP32 by default is 240 MHz  
 #define FAST_CPU_FREQ_MHZ 240
 
-//Lowest possible speed is 20 MHZ (?)
+//Lowest frequency for ESP32 is 20 MHZ
 #define SLOW_CPU_FREQ_MHZ 20
 
+//Resource offset 
 #define RESOURCE_ADDRESS 0x5A708D
 
 
 #define MAX_SD_FREQ 80000000
 #define MIN_SD_FREQ 1000000 
 #define SAFE_SD_FREQ 500000 
-#endif

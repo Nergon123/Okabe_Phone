@@ -1,20 +1,8 @@
-#ifndef INITT_H
-#define INITT_H
+#pragma once
 
 #include "file_include.h"
 
-struct SDImage {
-    uint32_t address;
-    int      w;
-    int      h;
-    uint16_t tc;
-    bool     transp;
-    SDImage(uint32_t addr, int width, int height, uint16_t trans_color, bool transparency)
-        : address(addr), w(width), h(height), tc(trans_color), transp(transparency) {}
-    SDImage() : address(0), w(0), h(0), tc(0), transp(false) {}
-    SDImage(uint32_t addr, int width, int height)
-        : address(addr), w(width), h(height), tc(0), transp(false) {}
-};
+
 
 extern SDImage mailimg[4];
 
@@ -24,7 +12,7 @@ struct Contact {
     String name;
     String email;
     Contact() : index(-1), phone(""), name(""), email("") {}
-    Contact(String _name, String _phone, String _email = "", int _index = -1) : name(_name), phone(_phone), email(_email), index(_index) {}
+    Contact(String _name, String _phone, String _email = "", int _index = -1) : index(_index), phone(_phone), name(_name), email(_email) {}
 };
 
 struct mOption {
@@ -49,13 +37,17 @@ struct Message {
     String        content;
     String        date;
     String        longdate;
+
     operator mOption() const {
         return mOption{date + " " + contact.name, status == status::NEW ? mailimg[0] : mailimg[1]};
     }
-    Message(Contact _contact, String _subject, String _content, String _date, String _longdate, bool _isOutgoing = false, unsigned char _status = status::NEW, int _index = -1) : contact(_contact), subject(_subject), content(_content), date(_date), longdate(_longdate), isOutgoing(_isOutgoing), index(_index), status(_status) {}
-    Message() : contact(Contact()), subject(""), content(""), date("00/00"), longdate("00/00/00 00:00"), isOutgoing(false), index(-1), status(status::NEW) {}
-};
 
+    Message(Contact _contact, String _subject, String _content, String _date, String _longdate, bool _isOutgoing = false, unsigned char _status = status::NEW, int _index = -1)
+        : index(_index), status(_status), isOutgoing(_isOutgoing), contact(_contact), subject(_subject), content(_content), date(_date), longdate(_longdate) {}
+
+    Message()
+        : index(-1), status(status::NEW), isOutgoing(false), contact(Contact()), subject(""), content(""), date("00/00"), longdate("00/00/00 00:00") {}
+};
 struct STR_DIR {
     String text;
     int    direction;
@@ -126,4 +118,3 @@ void screens();
 void suspendCore(bool suspend);
 bool initSDCard(bool fast);
 void loadResource(ulong address, String resourcefile, uint8_t **_resources,int w=0,int h=0);
-#endif // INITT_H

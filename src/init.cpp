@@ -1,5 +1,5 @@
 #include "init.h"
-
+#include "images.h"
 IP5306      chrg;
 TFT_eSPI    tft           = TFT_eSPI();
 TFT_eSprite screen_buffer = TFT_eSprite(&tft);
@@ -13,6 +13,7 @@ SDImage mailimg[4] = {
     SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
     SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
 
+// pointer to the graphic resources in PSRAM
 uint8_t *resources;
 
 // Variable to check if status bar refresh required
@@ -90,6 +91,9 @@ void initSim();
 bool initSDCard(bool fast);
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h);
 
+// Function to set up the time
+// This function sets the system time to a specific date and time
+// and saves it in the preferences storage
 void SetUpTime() {
 
     struct tm tm_time = {};
@@ -109,10 +113,11 @@ void SetUpTime() {
 
     systemTimeInfo = *gmtime(&systemTime);
 }
-void SaveTime(time_t time) {
-  //  Serial.println("Saved");
 
-    tm tm_time = *gmtime(&time);
+// Function to save the time
+// This function saves the current time in the preferences storage
+// and updates the system time
+void SaveTime(time_t time) {
     preferences.begin("TimePhone");
     preferences.putLong("TIME", time);
 
@@ -121,11 +126,11 @@ void SaveTime(time_t time) {
     time_t         t    = time;
     struct timeval data = {t, 0};
     systemTimeInfo      = *gmtime(&time);
-   // Serial.printf("\nSTI %d:%d, TIME: %d:%d\n", systemTimeInfo.tm_hour, systemTimeInfo.tm_min, tm_time.tm_hour, tm_time.tm_min);
+    // Serial.printf("\nSTI %d:%d, TIME: %d:%d\n", systemTimeInfo.tm_hour, systemTimeInfo.tm_min, tm_time.tm_hour, tm_time.tm_min);
     settimeofday(&data, NULL);
-    
 }
 
+// initialize the system
 void setup() {
     SetUpTime();
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
@@ -139,8 +144,10 @@ void setup() {
     tft.fillScreen(0x0000);
 
     // INIT Serial
-    Serial.begin(115200);
-    Serial1.begin(115200, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
+    Serial.begin(SERIAL_BAUD_RATE);
+    Serial.println("Serial started");
+    Serial1.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
+    Serial.println("Serial1 (SIM CARD COMMUNICATION) started");
     printT_S(String(ESP.getPsramSize()));
 
     // RESET KEYBOARD
@@ -152,9 +159,11 @@ void setup() {
 
     if (chrg.isChargerConnected() == 1) {
         offlineCharging();
-        tft.setTextFont(1);
     }
-    tft.fillScreen(0);
+
+    tft.fillScreen(0x0000);
+
+    tft.setTextFont(1);
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
     preferences.begin("settings", false);
@@ -165,12 +174,14 @@ void setup() {
     SPIFFS.begin();
 
     isSPIFFS = (!initSDCard(true) || !SD.exists(resPath)) && SPIFFS.exists(SPIFFSresPath);
-    printT_S(isSPIFFS ? "Resource file or SD card is not available" : "Using resource card from SD card");
-    if (!isSPIFFS && !SD.exists(resPath))
-        recovery("Seems that you flashed your device wrong Try inserting SDcard with resource file");
+    printT_S(isSPIFFS ? "Resource file or SD card is not available" : "Using resource file from SD card");
 
-    tft.println("LOADING RESOURCE FILE");
+    if (!isSPIFFS && !SD.exists(resPath))
+        recovery(SplitString("Seems that you flashed your device wrongly.Refer to the instructions for more information."));
+
+    printT_S("LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
+
     if (!isSPIFFS) {
         loadResource(RESOURCE_ADDRESS, resPath, &resources, 0, 0);
     } else {
@@ -178,6 +189,7 @@ void setup() {
         loadResource(0, SPIFFSresPath, &resources, 0, 0);
         SPIFFSres.close();
     }
+
     if (!isSPIFFS)
         if (SPIFFS.open(SPIFFSresPath, FILE_READ).size() != SD.open(resPath).size() - RESOURCE_ADDRESS) {
             tft.println("Outdated file, formatting SPIFFS...");
@@ -188,15 +200,15 @@ void setup() {
             temp.write(resources, SD.open(resPath).size() - RESOURCE_ADDRESS);
             temp.close();
         }
+
 #ifndef LOG
-    drawFromSd(50, 85, SDImage(0x665421, 140, 135)); // draw boot logo
+    drawFromSd(50, 85, LOGO_IMAGE); // Draw boot logo
 #endif
-    if (buttonsHelding(false) == '*')
+    if (buttonsHelding(false) == '*') {
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
+    }
 
-
-
-    progressBar(20, 100, 250);
+    progressBar(70, 100, 250);
     tft.setCursor(12, 3);
     tft.setTextSize(3);
     tft.setTextColor(tft.color24to16(0x656565));
@@ -217,24 +229,6 @@ void setup() {
     printT_S("\n       !!! DEVMODE ENABLED !!!\n\n");
 #endif
 
-    progressBar(30, 100, 250);
-    uint32_t oldtime = millis();
-
-    if (sendATCommand("AT").indexOf("OK") != -1) {
-        printT_S("Setting up sim card please wait...");
-        initSim();
-
-        while (!_checkSim() && millis() - oldtime < 10000)
-            ; // check if sim card is usable for 10 whole seconds...
-
-        populateContacts();
-        progressBar(90, 100, 250);
-        printT_S("Done!");
-    }
-
-#ifdef SIMDEBUG
-    AT_test();
-#endif
     xTaskCreatePinnedToCore(
         TaskIdleHandler,
         "Core0Checker",
@@ -243,9 +237,7 @@ void setup() {
         1,
         &TaskHCommand,
         0);
-
-    progressBar(95, 100, 250);
-
+    progressBar(90, 100, 250);
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
     // Serial.println(String(wallpaperIndex) + "WI");
     //  contactCount   = preferences.getUInt("contactCount", 0);
@@ -261,21 +253,39 @@ void setup() {
     millSleep = millis();
     while (buttonsHelding(false) == '#')
         ;
-    Serial.updateBaudRate(115200);
-    tft.fillScreen(0);
-    drawStatusBar(true);
+    Serial.updateBaudRate(SERIAL_BAUD_RATE);
 }
 
+// Function to suspend/resume the freeRTOS task on core 0
 void suspendCore(bool suspend) {
-    if (TaskHCommand)
+    if (TaskHCommand) {
         if (suspend) {
             vTaskSuspend(TaskHCommand);
             simIsBusy = false;
         } else
             vTaskResume(TaskHCommand);
+    }
 }
 
+
+// Function to handle the idle task
 void TaskIdleHandler(void *parameter) {
+
+    uint32_t oldtime = millis();
+
+    if (sendATCommand("AT").indexOf("OK") != -1) {
+        printT_S("Setting up sim card please wait...");
+        initSim();
+
+        while (!_checkSim() && millis() - oldtime < 10000)
+            ; // check if sim card is usable for 10 whole seconds...
+        populateContacts();
+        printT_S("Done!");
+    } else {
+        printT_S("SIM card not responding");
+        simIsUsable = false;
+    }
+
     while (true) {
 
         while (!simIsBusy && simIsUsable) {
@@ -311,9 +321,13 @@ void TaskIdleHandler(void *parameter) {
         vTaskDelay(pdMS_TO_TICKS(DBC_MS));
     }
 }
+
+// Function to handle the main loop
 void loop() {
     screens();
 }
+
+// Function to handle the idle state
 void idle() {
 
     if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
@@ -327,7 +341,7 @@ void idle() {
         LockScreen();
     }
 
-        drawStatusBar(false);
+    drawStatusBar(false);
 
     checkVoiceCall();
     delay(50);
@@ -336,6 +350,9 @@ void idle() {
         drawStatusBar();
     }
 }
+
+// Function to handle the screens
+// This function is responsible for displaying the current screen
 void screens() {
     switch (currentScreen) {
     case SCREENS::MAINSCREEN:
@@ -358,24 +375,23 @@ void screens() {
         break;
     }
 }
-void initSim() {
 
+// Function to initialize the SIM card
+// This function sends AT commands to the SIM card to set it up
+void initSim() {
     printT_S(sendATCommand("AT+CMEE=2"));
-    progressBar(25, 100, 250);
     printT_S(sendATCommand("AT+CLIP=1"));
-    progressBar(30, 100, 250);
     printT_S(sendATCommand("AT+CLCC=1"));
-    progressBar(45, 100, 250);
     printT_S(sendATCommand("AT+CSCS=\"GSM\""));
-    progressBar(50, 100, 250);
     printT_S(sendATCommand("AT+CMGF=1"));
     simIsUsable = _checkSim();
-    progressBar(80, 100, 250);
 }
 
+// Function to initialize the SD card
+// This function initializes the SD card and sets the frequency
 bool initSDCard(bool fast) {
     SD.end();
-    ulong sd_freq = MAX_SD_FREQ;
+    uint32_t sd_freq = MAX_SD_FREQ;
     if (!SD.begin(chipSelect, SPI, SAFE_SD_FREQ))
         return false;
     else
@@ -391,6 +407,8 @@ bool initSDCard(bool fast) {
 
     return SD.begin(chipSelect, SPI, SAFE_SD_FREQ);
 }
+
+// Function to load a resource file from the SD card to the PSRAM
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h) {
     File file;
     if (isSPIFFS)
@@ -412,6 +430,7 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
 
     if (!(*_resources)) {
         Serial.println("Memory allocation failed!");
+        sysError("MEMORY_ALLOCATION_FAILED" + address);
         file.close();
         return;
     }

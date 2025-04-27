@@ -1,6 +1,7 @@
 #include "funct.h"
 // TaskHandle_t TaskHandleATCommand;
 
+// get index of Nth occurance of string
 unsigned int getIndexOfCount(int count, String input, String str, unsigned int fromIndex) {
     for (int i = 0; i < count; i++) {
         fromIndex = input.indexOf(str, fromIndex + 1);
@@ -9,7 +10,7 @@ unsigned int getIndexOfCount(int count, String input, String str, unsigned int f
 }
 
 /*
- * Print to Serial and LOG (if LOG defined)
+ * Print to Serial and Screen (if LOG defined)
  * Used at setup only
  */
 void printT_S(String str) {
@@ -66,7 +67,7 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
         bool _isCalling = response.indexOf("RING\r") != -1;
         if (_isCalling) {
             int indexClip = response.indexOf("+CLIP:");
-            int endindex  = response.indexOf("\r", indexClip);
+            // int endindex  = response.indexOf("\r", indexClip);
             int firIndex  = response.indexOf("\"", indexClip);
             currentNumber = response.substring(firIndex, response.indexOf("\"", firIndex + 1));
             currentNumber.replace("\"", "");
@@ -140,16 +141,19 @@ int getSignalLevel() {
 
     if (a.charAt(2) == '1' || a.charAt(2) == '5') {
         String b = getATvalue("AT+CSQ");
+
         if (b != "ERROR") {
+
             char buf[5];
             b.substring(0, b.indexOf(',')).toCharArray(buf, 5);
             int strength = atoi(buf);
-            if (strength != 99)
-                if (signal > 3 || signal < 0)
-                    signal = strength / 8;
+
+            if (strength != 99) {
+                signal = strength / 8;
+            }
         }
     }
-    return signal;
+    return signal + 1;
 }
 
 // Populate contact list
@@ -205,8 +209,8 @@ void populateContacts() {
     }
 }
 
-// check if certain button is pressed (Deprecated?)
-bool checkButton(int pin) {
+// check if certain GPIO button is pressed (Deprecated?)
+bool checkEXButton(int pin) {
     if (digitalRead(pin) == LOW) {
         delay(50);
         while (digitalRead(pin) == LOW)
@@ -216,16 +220,12 @@ bool checkButton(int pin) {
     return false;
 }
 
-/*
- *check if MCP23017 button is pressed
- *
- */
-int checkEXbutton() {
+// check which MCP23017 button is pressed
+int checkButton() {
 
     mcp.portMode(MCP23017Port::A, 0xFF);
     mcp.portMode(MCP23017Port::B, 0);
     mcp.writePort(MCP23017Port::B, 0x00);
-
     uint8_t a = mcp.readPort(MCP23017Port::A);
 
     mcp.portMode(MCP23017Port::B, 0xFF);
@@ -272,14 +272,14 @@ int GetState() {
     return atoi(result.c_str());
 }
 
-// Button
 int lastresult = -1;
+// Check which button is pressed
 int buttonsHelding(bool _idle) {
 
     /*
      * SIDE BUTTON 10
      *  7 8 9
-     * |M|I|B|
+     * |M|I|B||
      *      ^=W
      * <=A  0=SP >=D
      * A=Q  V=S  D=E
@@ -288,15 +288,11 @@ int buttonsHelding(bool _idle) {
      * 7   8   9
      * *   0   #
      *
-     * M-MESSAGES
-     * I-INFORMATION(????)
-     * B-CONTACTS
-     * C-CAMERA(???)
      * A-ANSWER
      * D-DECLINE
      * 0-SELECT
      *
-     * because we don't have BACK button Button D also acts as BACK
+     * because we don't have BACK button Button D (Decline) also acts as BACK
      *
      *
      */
@@ -317,13 +313,16 @@ int buttonsHelding(bool _idle) {
     // #endif
     if (_idle)
         idle();
-    int result = checkEXbutton();
-    if(lastresult!=result)
-    millSleep = millis(); 
+
+    int result = checkButton();
+    if (lastresult != result)
+        millSleep = millis();
+
     if (result != 0)
-    while (result == checkEXbutton() && millis() - millSleep < 1500)
-        ;
-lastresult=result;
+        while (result == checkButton() && millis() - millSleep < 1500)
+            ;
+
+    lastresult = result;
     // setBrightness(brightness);
 
     // For some reason serial control support
@@ -331,7 +330,7 @@ lastresult=result;
 
     if (Serial.available()) {
         char input = Serial.read();
-        millSleep = millis(); 
+        millSleep  = millis();
         switch (input) {
         case 'a':
             Serial.println("LEFT");
@@ -417,9 +416,9 @@ lastresult=result;
 // Parse SMS messages from SIM Card
 void parseMessages(Message *&msgs, int &count) {
 
-    String response = sendATCommand("AT+CMGL=\"ALL\",1");
-    int lastIndexOf  = 0;
-    int messageCount = 0;
+    String response     = sendATCommand("AT+CMGL=\"ALL\",1");
+    int    lastIndexOf  = 0;
+    int    messageCount = 0;
 
     // Count the number of messages
     while ((lastIndexOf = response.indexOf("+CMGL:", lastIndexOf)) != -1) {
@@ -438,8 +437,8 @@ void parseMessages(Message *&msgs, int &count) {
 
             int firstComma  = response.indexOf(",", lastIndexOf);
             int secondComma = response.indexOf(",", firstComma + 1);
-            int thirdComma  = response.indexOf(",", secondComma + 1);
-            int fourthComma = response.indexOf(",", thirdComma + 1);
+            // int thirdComma  = response.indexOf(",", secondComma + 1);
+            // int fourthComma = response.indexOf(",", thirdComma + 1);
 
             // Extract index
             msgs[i].index = response.substring(lastIndexOf + 7, firstComma).toInt();
@@ -473,9 +472,9 @@ void parseMessages(Message *&msgs, int &count) {
             else
                 curContact.name = number;
             curContact.index = -1;
-            for (int i = 0; i < contactCount; i++) {
-                if (contacts[i].phone.indexOf(checknumber) != -1) {
-                    curContact = contacts[i];
+            for (int u = 0; u < contactCount; u++) {
+                if (contacts[u].phone.indexOf(checknumber) != -1) {
+                    curContact = contacts[u];
                     break;
                 }
             }
@@ -492,6 +491,7 @@ void parseMessages(Message *&msgs, int &count) {
     count = messageCount;
 }
 
+//  measures text height (duh)
 int measureStringHeight(const String &text) {
     int lines      = 1;
     int lineWidth  = 0;
@@ -587,16 +587,17 @@ void fastMode(bool status) {
     // TODO: REINIT SCREEN and SDCARD
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
     Serial.updateBaudRate(115200);
-    if(!isSPIFFS)
-    initSDCard(status);
+    if (!isSPIFFS)
+        initSDCard(status);
 }
 
 int currentBrightness = brightness;
 // Set screen brightness
 void setBrightness(int percentage) {
     percentage = constrain(percentage, 0, 100);
-    if (currentBrightness != percentage)
+    if (currentBrightness != percentage) {
         if (percentage > currentBrightness) {
+            // smooth brightness change
             for (int i = currentBrightness; i <= percentage; i++) {
                 analogWrite(TFT_BL, (256 * i) / 100);
                 delay(5);
@@ -607,136 +608,17 @@ void setBrightness(int percentage) {
                 delay(5);
             }
         }
+    }
     currentBrightness = percentage;
 }
 
 /*
-OUT_MESSAGES[NULL]count of messages in two bytes[NL]
-[0x2][NL]
-phone[NL]
-name[0xF]
-email[NL]
-[0x19]
-subject[0xF]
-content[0xF]
-date[NL]
-longdate[NL]
-[0x3][NL]
-*/
-
-// Save message to sdcard file
-void saveMessage(Message message, String fileName) {
-
-    // Open the file in read-write mode
-    File file = SD.open(fileName, FILE_WRITE);
-
-    if (!file) {
-        Serial.println("Failed to open file!");
-        return;
-    }
-    file.flush();
-    size_t filesize = file.size();
-    // Check if the file is empty or doesn't have the MESSAGES header
-    if (file.size() == 0) {
-        Serial.println("File is empty. Writing header...");
-        // Write the MESSAGES header
-        file.print("MESSAGES\0");                // [NULL] is \0
-        uint16_t initialCount = 0;               // Initial count of messages is 0
-        file.write((uint8_t *)&initialCount, 2); // Write count as two raw bytes
-        file.print("\n");                        // [NL] is \n
-    }
-
-    // Read the current count of messages
-    file.seek(0); // Go to the beginning of the file
-    String header = file.readStringUntil('\n');
-    file.seek(9); // Move to the position of the count (after "MESSAGES\0")
-    uint16_t messageCount;
-    file.read((uint8_t *)&messageCount, 2); // Read the count as two raw bytes
-
-    // Increment the message count
-    messageCount++;
-
-    // Update the header with the new count
-    file.seek(9);                            // Move to the position of the count (after "MESSAGES\0")
-    file.write((uint8_t *)&messageCount, 2); // Write the updated count as two raw bytes
-    file.flush();
-    // Move to the end of the file to append the new message
-    file.seek(filesize);
-    Serial.println(String(filesize) + "/" + String(file.position()));
-    // Write the message in the specified format
-    file.print("\x2\n"); // [0x2] is \x2, [NL] is \n
-    file.print(message.contact.phone + "\n");
-    file.print(message.contact.name + "\x0F\n"); // [0xF] is \x0F
-    file.print(message.contact.email + "\n");
-    file.print("\x19\n");                   // [0x19] is \x19
-    file.print(message.subject + "\x0F\n"); // [0xF] is \x0F
-    file.print(message.content + "\x0F\n"); // [0xF] is \x0F
-    file.print(message.date + "\n");
-    file.print(message.longdate + "\n");
-    file.print("\x3\n"); // [0x3] is \x3, [NL] is \n
-
-    // Close the file
-    file.close();
-
-    Serial.println("Message written to SD card successfully!");
-}
-
-void parseSDMessages(Message messages[], int &messageCount, String filePath) {
-
-    // Open the file in read mode
-    File file = SD.open(filePath, FILE_READ);
-
-    if (!file) {
-        Serial.println("Failed to open file!");
-        return;
-    }
-
-    // Read the header
-    String header = file.readStringUntil('\n');
-    file.read((uint8_t *)&messageCount, 2); // Read the count as two raw bytes
-
-    // Parse each message
-    for (int i = 0; i < messageCount; i++) {
-        // Read and ignore the message start marker
-        file.readStringUntil('\n');
-
-        // Read phone
-        messages[i].contact.phone = file.readStringUntil('\n');
-
-        // Read name (ends with \x0F)
-        messages[i].contact.name = file.readStringUntil('\x0F');
-        file.read(); // Read and ignore the newline after \x0F
-
-        // Read email
-        messages[i].contact.email = file.readStringUntil('\n');
-
-        // Read and ignore the subject marker
-        file.readStringUntil('\n');
-
-        // Read subject (ends with \x0F)
-        messages[i].subject = file.readStringUntil('\x0F');
-        file.read(); // Read and ignore the newline after \x0F
-
-        // Read content (ends with \x0F)
-        messages[i].content = file.readStringUntil('\x0F');
-        file.read(); // Read and ignore the newline after \x0F
-
-        // Read date
-        messages[i].date = file.readStringUntil('\n');
-
-        // Read longdate
-        messages[i].longdate = file.readStringUntil('\n');
-
-        // Read and ignore the message end marker
-        file.readStringUntil('\n');
-    }
-
-    // Close the file
-    file.close();
-
-    Serial.println("Messages parsed successfully!");
-}
-
+ * ## Executes application from sdcard
+ *
+ *  Not really an "application", but more like second bootable image.
+ *  It's just flashes image into second partition and boots it from it.
+ *
+ */
 void execute_application() {
     suspendCore(true);
     String file_path = fileBrowser(SD.open("/"), "bin");
