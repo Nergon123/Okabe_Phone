@@ -1,3 +1,6 @@
+# ADRESSES
+This file is to write down images firmware adresses 
+see [src/images.h](src/images.h)
 
 # OFFSET
 
@@ -128,7 +131,7 @@ END AT 0x5A708D
   location at 0x636485
   size 240,294
 
-##  DOTS
+##  DOTS FOR CALL ANIMATION
   COUNT 8
   location 0x658BC5
   size 7,7 , 0x62

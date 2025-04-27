@@ -1,5 +1,4 @@
-#ifndef screens_h
-#define screens_h
+#pragma once
 #include "file_include.h"
 struct Contact;
 void messages();
@@ -26,4 +25,3 @@ void LockScreen();
 bool confirmation(String reason);
 void AT_test();
 void setTime(time_t *time);
-#endif

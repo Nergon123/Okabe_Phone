@@ -7,12 +7,15 @@ void numberInput(char first);
 bool messageActivity(Message message);
 void messageActivityOut(Contact contact, String subject, String content, bool sms);
 void ringtoneSelector(bool isMail);
-void SerialGetFile();
+void SerialConnection();
 void WiFiList();
+
+// Function to set the time
+// This function is called when the user wants to set the time
 void setTime(time_t *time) {
-    drawFromSd(0, 51, SDImage(0x636485 + 0x2EE0, 240, 269));
-    drawFromSd(0, 26, SDImage(0x5DAF1F, 240, 25));
-    drawFromSd(0, 26, SDImage(0x5DDDFF + (0x4E2 * 2), 25, 25));
+    drawFromSd(0, 51, BACKGROUND_IMAGE);
+    drawFromSd(0, 26, BLUEBAR_IMAGE);
+    drawFromSd(0, 26, BLUEBAR_ICONS[2]); // Bluebar icon
     changeFont(1);
     tft.setCursor(30, 44);
     tft.setTextColor(0xFFFF);
@@ -76,9 +79,11 @@ void setTime(time_t *time) {
     }
 }
 
+// Function to show a confirmation window
+// This function is called when the user wants to confirm an action
 bool confirmation(String reason) {
     drawWallpaper();
-    drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
+    drawFromSd(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     changeFont(1);
     tft.setCursor(45, 110);
     tft.setTextColor(0);
@@ -87,11 +92,12 @@ bool confirmation(String reason) {
         tft.setCursor((230 - tft.textWidth(reason)) / 2, 130);
     else
         tft.setCursor(0, 130);
-    tft.println(reason);
-    bool choice[2] = {false, false};
-    int  pos       = 0;
+    tft.println(SplitString(reason));
+
+    int  pos = 0;
     int  direction;
     bool exit = false;
+
     while (!exit) {
         if (button("YES", 120, 190, 80, 30, pos, &direction)) {
             return true;
@@ -103,11 +109,14 @@ bool confirmation(String reason) {
     }
     return false;
 }
+
+// Function to show an error window
+// This function is called when an error occurs
 void ErrorWindow(String reason) {
 
     int xpos = 0;
     drawWallpaper();
-    drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
+    drawFromSd(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     tft.setTextSize(1);
     tft.setCursor(80, 120);
     changeFont(1);
@@ -118,22 +127,19 @@ void ErrorWindow(String reason) {
         xpos = (240 - tft.textWidth(reason)) / 2;
     }
     tft.setCursor(xpos, 150);
-    SplitString(reason);
+    tft.print(SplitString(reason));
     while (buttonsHelding() == -1)
         ;
 }
+
+// Function to show the messages menu
 void messages() {
 
-    // if (!checkSim()) {
-    //     currentScreen = SCREENS::MAINMENU;
-    //     return;
-    // }
-
-    drawFromSd(0, 26, SDImage(0x613D45, 240, 294));
-    drawFromSd(0, 26, SDImage(0x5DECA5, 240, 42));
-    drawFromSd(0, 68, SDImage(0x5E8A25, 240, 128));
+    drawFromSd(0, 26, SUBMENU_BACKGROUND);
+    drawFromSd(0, 26, MAIL_HEADER_IMAGE);
+    drawFromSd(0, 68, WHITE_BOTTOM_IMAGE);
     String entries[] = {"Inbox", "Outbox"};
-    int    ch    = choiceMenu(entries, ArraySize(entries), false);
+    int    ch        = choiceMenu(entries, ArraySize(entries), false);
     switch (ch) {
     case 0:
         inbox(false);
@@ -147,6 +153,7 @@ void messages() {
     currentScreen = SCREENS::MAINMENU;
 }
 
+// Function to show menu with additional features
 void e() {
 
     int choice = -2;
@@ -154,7 +161,6 @@ void e() {
         String debug[] = {
             "Delete File",
             "Cat",
-            "Write Message To SD",
             "PC Connection",
             "Execute Application",
             "Set Date/Time",
@@ -187,26 +193,15 @@ void e() {
             drawStatusBar();
             break;
         case 2:
-            saveMessage(
-                Message(
-                    Contact("Example", "+0000000000"),
-                    "SUBJECT.",
-                    "Example message\n Not-So-Long Message \n with newlines \n ",
-                    "00/00",
-                    "00/00/00 23:32:23"),
-                "/DATA/OUTMESSAGES.SGDB");
-
+            SerialConnection();
             break;
         case 3:
-            SerialGetFile();
-            break;
-        case 4:
             execute_application();
             break;
-        case 5:
+        case 4:
             setTime(&systemTime);
             break;
-        case 6:
+        case 5:
             WiFiList();
             break;
         }
@@ -216,10 +211,13 @@ void e() {
     currentScreen = SCREENS::MAINMENU;
 }
 
+// Function to show the settings menu
+// This function is called when the user wants to change settings
+// It allows the user to change the wallpaper, ringtones, etc.
 void settings() {
 
-    drawFromSd(0, 26, SDImage(0x613D45, 240, 294));
-    drawFromSd(0, 26, SDImage(0x5E3B65, 240, 42));
+    drawFromSd(0, 26, SUBMENU_BACKGROUND); // Menu background
+    drawFromSd(0, 26, SETTINGS_HEADER_IMAGE);
     String lol[] = {
         "Change Wallpaper",
         "Phone ringtone",
@@ -263,7 +261,7 @@ void settings() {
             picch = choiceMenu(galch, 2, true);
             switch (picch) {
             case 0:
-                drawFromSd((uint32_t)(0xD) + ((uint32_t)(0x22740) * pic), 0, 26, 240, 294, "/" + resPath, 0, 0);
+                drawFromSd(WALLPAPER_IMAGES_BASE.address + WALLPAPER_IMAGES_MULTIPLIER * pic, 0, 26, WALLPAPER_IMAGES_BASE.w, WALLPAPER_IMAGES_BASE.h, "/" + resPath, 0, 0);
                 while (buttonsHelding() != BACK)
                     ;
                 break;
@@ -310,14 +308,15 @@ void settings() {
     }
     currentScreen = SCREENS::MAINMENU;
 }
+
+// Function to show the main menu
 void MainMenu() {
 
-    drawFromSd(0, 26, SDImage(0x5ADC01, 240, 294));
-    drawFromSd(0x5D0341, 51, 71, 49, 49, true, 0x07e0);
+    drawFromSd(0, 26, MENU_BACKGROUND);   // Menu background
+    drawFromSd(51, 71, MENU_ON_ICONS[0]); // Menu icon
 
-    int  choice     = 0;
-    int  old_choice = 0;
-    bool exit       = false;
+    int choice     = 0;
+    int old_choice = 0;
     while (true) {
         switch (buttonsHelding()) {
         case BACK: {
@@ -345,7 +344,7 @@ void MainMenu() {
                 return;
                 break;
             }
-            drawFromSd(0, 26, SDImage(0x5ADC01, 240, 294));
+            drawFromSd(0, 26, MENU_BACKGROUND);
             rendermenu(choice, choice);
             break;
         }
@@ -380,6 +379,8 @@ void MainMenu() {
     }
 }
 
+// Function to show the gallery menu
+// This function is called when the user wants to change the wallpaper
 int gallery() {
     if (!SD.exists(resPath))
         return lastImage;
@@ -429,19 +430,21 @@ int gallery() {
         {"Pick wallpaper..."}};
     // drawWallpaper();
     for (int i = 0; i < ArraySize(wallnames) - 1; i++) {
-        wallnames[i].icon = SDImage(0x66E7C9 + (2856 * i), 34, 42);
+        wallnames[i].icon = SDImage(WALLPAPER_ICONS_BASE.address + (WALLPAPER_ICONS_MULTIPLIER * i), WALLPAPER_ICONS_BASE.w, WALLPAPER_ICONS_BASE.h);
     }
     return listMenu(wallnames, ArraySize(wallnames), true, 2, "Change wallpaper");
 }
 
+// Function to show the main screen, root screen
 void MainScreen() {
     Serial.println("MAINSCREEN");
     changeFont(0);
     drawWallpaper();
+    drawStatusBar(true);
     // bool exit = false;
     int c = -1;
     while (1) {
-        int c = buttonsHelding();
+        c = buttonsHelding();
 
         if ((c >= '0' || c == '*' || c == '#') && c <= '9') {
             numberInput(c);
@@ -457,14 +460,12 @@ void offlineCharging() {
     tft.fillRect(35, 100, 160, 80, 0xffff);
     tft.fillRect(195, 120, 10, 40, 0xFFFF);
     tft.setCursor(70, 310);
-    bool exit = false;
     while (true) {
 
         ulong mill = millis();
         if (buttonsHelding(false) != -1)
             return;
-        int icc = chrg.isChargerConnected();
-        int bp  = getChargeLevel();
+        int bp = getChargeLevel();
         tft.fillRect(40, 105, 150, 70, 0x0000);
         if (chrg.isChargerConnected() && bp < 1)
             while (millis() - mill < 500)
@@ -498,7 +499,7 @@ void offlineCharging() {
 
 void incomingCall(Contact contact) {
     drawWallpaper();
-    drawFromSd(0, 90, SDImage(0x5F7A25, 240, 134));
+    drawFromSd(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     changeFont(1);
     tft.setTextColor(0);
     tft.setCursor(15, 170);
@@ -508,10 +509,10 @@ void incomingCall(Contact contact) {
     changeFont(4);
     tft.setTextSize(1);
     tft.print("Ca l l ing");
-    drawFromSd(0x661AF3, 45, 105, 42, 50, true, 0xD6BA);
+    drawFromSd(45, 105, PHONE_ICON);
 
     writeCustomFont(55, 185, contact.phone, 1);
-    drawFromSd(0x662B5B, 73, 90, 13, 14, true, 0xD6BA);
+    drawFromSd(73, 90, LIGHTNING_ANIMATION[0]);
     int button = buttonsHelding();
     while (isCalling) {
         button = buttonsHelding();
@@ -591,7 +592,7 @@ void callActivity(Contact contact) {
     tft.fillScreen(0);
     sBarChanged = true;
     drawStatusBar();
-    drawFromSd(40, 143, SDImage(0x65D147, 160, 34));
+    drawFromSd(40, 143, VOICE_ONLY_LABEL);
     while (stateCall != DISCONNECT) {
         if (buttonsHelding() == DECLINE) {
             sendATCommand("ATH");
@@ -725,7 +726,7 @@ String fileBrowser(File dir, String format, bool graphical) {
         file = dir.openNextFile();
         Serial.println(currentPath);
         while (file) {
-            if (file.name() != "") {
+            if (strlen(file.name()) != 0) {
 
                 Serial.println();
                 Serial.print(file.name());
@@ -766,6 +767,7 @@ String fileBrowser(File dir, String format, bool graphical) {
     dir.close();
 }
 
+// funny unstable thing, can corrupt your sdcard if interrupted
 void downloadFile(const char *url, const char *path) {
     tft.fillScreen(0);
     tft.setCursor(0, 0);
@@ -836,7 +838,7 @@ void mediaPlayer(String path) {
 void ringtoneSelector(bool isMail) {
     File dir = SD.open("/AUDIO");
     if (!dir) {
-        sysError("NO /AUDIO");
+        ErrorWindow("NO /AUDIO");
         return;
     }
 
@@ -879,7 +881,7 @@ void ringtoneSelector(bool isMail) {
 
     int choice = 0;
     while (choice != -1) {
-        choice = listMenu(opt, count, false, 2, "Ringtone Selector", true, choice);
+        choice = listMenu(opt, count, false, 2, "Set ringtone", true, choice);
         if (choice < 0)
             return;
         if (iconIndex >= 0)
@@ -913,14 +915,9 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     content.trim();
     const String choices[4] = {"Reply", "Return", "Delete", "HEX to ASCII"};
     drawStatusBar();
-    SDImage in_mail[4] = {
-        SDImage(0x663E91, 23, 24, 0, false),                     // TIME
-        SDImage(0x663E91 + (23 * 24 * 2), 23, 24, 0, false),     //"FROM"
-        SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false), // "TO"
-        SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false), //"SUB"
-    };
-    drawFromSd(0, 26, SDImage(0x5DAF1F, 240, 25));
-    drawFromSd(0, 26, SDImage(0x5DDDFF, 25, 25));
+
+    drawFromSd(0, 26, BLUEBAR_IMAGE);
+    drawFromSd(0, 26, BLUEBAR_ICONS[0]);
     int y_jump = 22;
     int y_scr  = 0;
     int y_text = 18;
@@ -937,7 +934,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     while (!exit) {
         deleted = false;
         tft.setTextColor(0);
-        drawFromSd(0, 0, SDImage(0x639365, 240, 269));
+        drawFromSd(0, 0, BACKGROUND_IMAGE_CUTTED);
         // tft.fillScreen(0xFFFF);
         drawFromSd(0, 0 + y_scr, in_mail[0]);
         tft.setCursor(24, 0 + y_text + y_scr);
@@ -1004,6 +1001,8 @@ bool messageActivity(Message message) {
 }
 
 void getCharacterPosition(String str, int &x, int &y, int &index, int direction = 0, int screenWidth = 240) {
+    // if you see that function overflowed with comments its means AI was used...
+
     x                            = 0;  // Current X position
     y                            = 0;  // Current Y position
     int              charCount   = 0;  // Global character count (including wrapped lines)
@@ -1081,8 +1080,10 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
 }
 
 void messageActivityOut(Contact contact, String subject, String content, bool sms) {
-#define TLVP 238
     // TEXT LIMIT VERTICAL VIEWPORT
+#define TLVP 238
+    // (goddamit I forgot what this variable does, for future: do proper naming for variables and defines, that's pro tip.)
+    // I remembered that its just size of accessible height of current viewport
 
     int limit = 0;
     if (sms) {
@@ -1093,8 +1094,6 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     String messagebuf;
     int    curx     = 0;
     int    cury     = 0;
-    int    tcurx    = 0;
-    int    tcury    = 0;
     int    text_pos = 0;
     int    position = 0;
     drawStatusBar();
@@ -1104,8 +1103,8 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false),
         SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false),
     };
-    drawFromSd(0, 26, SDImage(0x5DAF1F, 240, 25));
-    drawFromSd(0, 26, SDImage(0x5DDDFF, 25, 25));
+    drawFromSd(0, 26, BLUEBAR_IMAGE);
+    drawFromSd(0, 26, BLUEBAR_ICONS[0]);
     int y_jump = 22;
     int y_scr  = 0;
     int y_text = 18;
@@ -1115,14 +1114,14 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     changeFont(1);
     tft.setTextColor(0xffff);
 
-    tft.print("Send Mail");
+    tft.print("Outgoing Mail");
     tft.setTextColor(0);
 
     tft.setViewport(0, 51, 240, 269, true);
     bool exit = false;
     while (!exit) {
         position = 0;
-        drawFromSd(0, 0, SDImage(0x639365, 240, 269));
+        drawFromSd(0, 0, BACKGROUND_IMAGE_CUTTED);
         // tft.fillScreen(0xFFFF);
         // position += 24;
         drawFromSd(0, position + y_scr, in_mail[2]);
@@ -1139,12 +1138,10 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         }
         position += 24;
         tft.drawLine(0, position + y_scr, 240, position + y_scr, 0);
-        int height = measureStringHeight(messagebuf);
         tft.print(messagebuf);
         int    r   = -1;
         String a[] = {"Return", "Send Message", "Delete", "Save To Drafts"};
         int    u;
-        bool   returns = false;
         tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20, TFT_BLACK);
         Serial.println("CURX:" + String(curx) + " CURY:" + String(cury));
         while (r == -1) {
@@ -1219,7 +1216,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                         // drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
 
                         if (messagebuf.length() < limit)
-                            if (l != '\r')
+                            if (l != '\r') {
                                 if (l != '\b') {
 
                                     messagebuf = messagebuf.substring(0, text_pos) + l + messagebuf.substring(text_pos, messagebuf.length());
@@ -1228,6 +1225,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                                     messagebuf = messagebuf.substring(0, text_pos - 1) + messagebuf.substring(text_pos, messagebuf.length());
                                     r          = BACK;
                                 }
+                            }
                         if (tft.getCursorY() > TLVP) {
                             y_scr -= y_jump;
                             if (y_scr < min_y)
@@ -1259,8 +1257,8 @@ void editContact(Contact contact) {
     int textboxes = 2;
     int buttons   = 2;
     int direction;
-    drawFromSd(0, 26, SDImage(0x5DAF1F, 240, 25));
-    drawFromSd(0, 26, SDImage(0x5DDDFF + 0x4E2, 25, 25));
+    drawFromSd(0, 26, BLUEBAR_IMAGE);
+    drawFromSd(0, 26, BLUEBAR_ICONS[1]);
     drawStatusBar();
     tft.setCursor(30, 45);
     tft.setTextSize(1);
@@ -1268,7 +1266,7 @@ void editContact(Contact contact) {
     tft.setTextColor(0xffff);
     String boxString[textboxes] = {contact.name, contact.phone};
     tft.print("Edit Contact");
-    drawFromSd(0, 51, SDImage(0x639365, 240, 269));
+    drawFromSd(0, 51, BACKGROUND_IMAGE_CUTTED);
     textbox("Name", contact.name, 70, true, false, false);
     textbox("Phone Number", contact.phone, 120, true, false, false);
 
@@ -1385,7 +1383,7 @@ void recovery(String message) {
         /*
          * Fun fact, if you will open any IMAGES.SG in any
          * text editor you'll see that there ELPSYKONGROO at the beginning.
-         * That's to prevent empty files.
+         * That's to prevent wrong(?) files.
          */
 
         if (buf.indexOf("ELPSYKONGROO") != -1) {
@@ -1416,7 +1414,6 @@ void numberInput(char first) {
     String        number;
     number += first;
     char c   = 255;
-    int  pos = 1;
     tft.setTextColor(TFT_WHITE);
     changeFont(0);
     tft.setTextSize(3);
@@ -1524,6 +1521,8 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         "9WXYZwxyz\r",
         "*\r",
         "#\r"};
+
+    // nonl - disable new line
     if (nonl) {
         buttons[0][5] = '\r';
     }
@@ -1543,8 +1542,6 @@ char textInput(int input, bool onlynumbers, bool nonl) {
          : input == '*' ? 10
          : input == '#' ? 11
                         : -1;
-    Serial.println("INPUT:" + String(input));
-    Serial.println("currentIndex" + String(currentIndex));
     if (currentIndex == -1) {
         Serial.println("UNKNOWN BUTTON:" + String(input));
         return 0;
@@ -1569,23 +1566,21 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         cury = tft.getCursorY();
         // Serial.println("POSITION:" + String(pos));
         int c = buttonsHelding();
-        if (c == input || first)
+        if (c == input || first){
             if (pos < (int)(strchr(buttons[currentIndex], '\r') - buttons[currentIndex])) {
                 mil = millis();
                 pos++;
                 result = buttons[currentIndex][pos];
-                Serial.println("POSITION:" + String(pos));
-
                 showText(buttons[currentIndex], pos);
                 tft.setCursor(curx, cury);
             } else {
-                mil = millis();
-                pos = 0;
-                Serial.println("POSITION:" + String(pos));
+                mil    = millis();
+                pos    = 0;
                 result = buttons[currentIndex][pos];
                 showText(buttons[currentIndex], pos);
                 tft.setCursor(curx, cury);
             }
+        }
         first = false;
     }
 
@@ -1604,9 +1599,9 @@ char textInput(int input, bool onlynumbers, bool nonl) {
     }
 
     drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
-    if (viewport)
+    if (viewport){
         tft.setViewport(vx, vy, w, h);
-    Serial.println("Result:" + String(result));
+    }
     if (result == '\r') {
         return 0;
     }
@@ -1635,9 +1630,12 @@ void LockScreen() {
     drawStatusBar();
 }
 
+void WifiConnect(String ssid, String password) {
+}
+
 void WiFiList() {
     fastMode(true);
-        WiFi.begin();
+    WiFi.begin();
     WiFi.mode(WIFI_STA);
     while (true) {
         int      count = WiFi.scanNetworks();
@@ -1648,12 +1646,13 @@ void WiFiList() {
         for (int i = 0; i < count; i++) {
             WiFi.getNetworkInfo(i, names[i], a, c, l, d);
         }
-        int ch =listMenu(names, count, false, 0, "WI-FI");
-        if(ch == -1)
-        return;
-        else{
+        int ch = listMenu(names, count, false, 0, "WI-FI");
+        if (ch == -1)
             return;
+        else {
             // TODO: Actually Connect to WiFi
+
+            return;
         }
     }
 }
@@ -1734,7 +1733,7 @@ int RunAction(String request) {
         uint8_t       buffer[BUFFER_SIZE];
         int           bytesReceived   = 0;
         unsigned long lastReceiveTime = millis();
-        int           flushCounter    = 0;
+
 
         while (true) {
             int availableBytes = Serial.available();
@@ -1918,14 +1917,14 @@ int RunAction(String request) {
     return action;
 }
 
-void SerialGetFile() {
+void SerialConnection() {
     suspendCore(true);
     fastMode(true);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE);
     tft.setTextSize(1);
     tft.setCursor(10, 30);
-    Serial.updateBaudRate(1000000);
+    Serial.updateBaudRate(FAST_SERIAL_BAUD_RATE);
     tft.println("WAITING FOR CONNECTION...");
     bool exit = false;
     while (!exit) {
@@ -1944,7 +1943,7 @@ void SerialGetFile() {
             break;
     }
 
-    Serial.updateBaudRate(115200);
+    Serial.updateBaudRate(FAST_SERIAL_BAUD_RATE);
     fastMode(false);
     suspendCore(false);
 }

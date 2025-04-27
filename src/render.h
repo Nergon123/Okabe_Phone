@@ -1,7 +1,6 @@
-
-#ifndef RENDER_H
-#define RENDER_H
+#pragma once
 #include "file_include.h"
+
 extern String      resPath;
 extern TFT_eSprite screen_buffer;
 struct SDImage;
@@ -46,4 +45,3 @@ extern const int lastImage;
 
 extern uint8_t *wallpaper;
 
-#endif
