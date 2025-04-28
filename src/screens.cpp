@@ -460,12 +460,16 @@ void offlineCharging() {
     tft.fillRect(35, 100, 160, 80, 0xffff);
     tft.fillRect(195, 120, 10, 40, 0xFFFF);
     tft.setCursor(70, 310);
+    int bp = 0;
     while (true) {
 
         ulong mill = millis();
         if (buttonsHelding(false) != -1)
             return;
-        int bp = getChargeLevel();
+        int bpp = getChargeLevel();
+        if (bpp > bp) {
+            bp = bpp;
+        }
         tft.fillRect(40, 105, 150, 70, 0x0000);
         if (chrg.isChargerConnected() && bp < 1)
             while (millis() - mill < 500)
@@ -488,7 +492,11 @@ void offlineCharging() {
                     return;
                 }
         tft.fillRect(45 + 96, 110, 43, 60, 0xffff);
-
+        mill = millis();
+        while (millis() - mill < 500)
+            if (buttonsHelding(false) != -1) {
+                return;
+            }
         while (chrg.getBatteryLevel() == 100)
             if (buttonsHelding(false) != -1) {
                 return;
@@ -543,8 +551,8 @@ void makeCall(Contact contact) {
     callActivity(contact);
 }
 void callActivity(Contact contact) {
-    ongoingCall  = true;
-    //bool calling = true;
+    ongoingCall = true;
+    // bool calling = true;
     tft.fillScreen(0);
     sBarChanged = true;
     drawStatusBar();
@@ -572,11 +580,11 @@ void callActivity(Contact contact) {
             spinAnim(55, 60, 12, 6, i);
             delay(40);
             if (buttonsHelding() == DECLINE) {
-                hang    = true;
-                //calling = false;
+                hang = true;
+                // calling = false;
                 break;
             } else if (buttonsHelding() == UP) {
-                //calling = false;
+                // calling = false;
                 break;
             }
         }
@@ -1003,13 +1011,13 @@ bool messageActivity(Message message) {
 void getCharacterPosition(String str, int &x, int &y, int &index, int direction = 0, int screenWidth = 240) {
     // if you see that function overflowed with comments its means AI was used...
 
-    x                            = 0;  // Current X position
-    y                            = 0;  // Current Y position
-    int              charCount   = 0;  // Global character count (including wrapped lines)
-    String           currentLine = ""; // Accumulating the current line
-    //int              lineStart   = 0;  // Store the starting index of the current line
-    //int              lineEnd     = 0;  // Store the end of the current line for wrapping
-    std::vector<int> lineStarts;       // To store the starting index of each line
+    x                  = 0;  // Current X position
+    y                  = 0;  // Current Y position
+    int    charCount   = 0;  // Global character count (including wrapped lines)
+    String currentLine = ""; // Accumulating the current line
+    // int              lineStart   = 0;  // Store the starting index of the current line
+    // int              lineEnd     = 0;  // Store the end of the current line for wrapping
+    std::vector<int> lineStarts; // To store the starting index of each line
 
     // Step 1: Process the string character by character
     for (int i = 0; i < str.length(); i++) {
@@ -1020,9 +1028,9 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
             // Update Y position and store the start index for the current line
             y += tft.fontHeight();       // Move to the next line
             lineStarts.push_back(i + 1); // Store the start index of the next line
-           // lineStart   = i + 1;         // Start of the next line
-            //lineEnd     = i;             // End of the current line
-            currentLine = "";            // Reset the current line
+                                         // lineStart   = i + 1;         // Start of the next line
+            // lineEnd     = i;             // End of the current line
+            currentLine = ""; // Reset the current line
         } else {
             // If we haven't reached the wrapping width, add the character to the current line
             String tempLine  = currentLine + currentChar;
@@ -1033,8 +1041,8 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
                 y += tft.fontHeight();             // Move to the next line
                 lineStarts.push_back(i);           // Store the start index of the next line
                 currentLine = String(currentChar); // Start a new line with this character
-            //    lineStart   = i;                   // Start of the new line
-             //   lineEnd     = i - 1;               // End of the previous line
+                //    lineStart   = i;                   // Start of the new line
+                //   lineEnd     = i - 1;               // End of the previous line
             } else {
                 // Otherwise, keep adding characters to the current line
                 currentLine = tempLine;
@@ -1139,8 +1147,8 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         position += 24;
         tft.drawLine(0, position + y_scr, 240, position + y_scr, 0);
         tft.print(messagebuf);
-        int    input   = -1;
-        String a[] = {"Return", "Send Message", "Delete", "Save To Drafts"};
+        int    input = -1;
+        String a[]   = {"Return", "Send Message", "Delete", "Save To Drafts"};
         int    u;
         tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20, TFT_BLACK);
         Serial.println("CURX:" + String(curx) + " CURY:" + String(cury));
@@ -1179,11 +1187,11 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 tft.setTextColor(0);
                 switch (u) {
                 case -1:
-                    input    = -2;
-                    exit = true;
+                    input = -2;
+                    exit  = true;
                     break;
                 case 1:
-                    ESP_LOGI("INFO","SEND MESSAGE");
+                    ESP_LOGI("INFO", "SEND MESSAGE");
                     if (sendATCommand("AT+CMGF=1").indexOf("OK") != -1) {
                         sendATCommand("AT+CMGS=\"" + contact.phone + "\"");
                         sendATCommand(messagebuf + char(26));
@@ -1192,11 +1200,11 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                     return;
                     break;
                 case 2:
-                    ESP_LOGI("INFO","DELETE");
+                    ESP_LOGI("INFO", "DELETE");
 
                     break;
                 case 3:
-                    ESP_LOGI("INFO","Save to Drafts");
+                    ESP_LOGI("INFO", "Save to Drafts");
                     break;
 
                 default:
@@ -1207,11 +1215,11 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 if (input >= '0' && input <= '9') {
 
                     char l = textInput(input);
-                    input      = buttonsHelding();
+                    input  = buttonsHelding();
                     if (l != 0) {
 
-                        //ESP_LOGI("INFO","Y:" + String(tft.getCursorY()));
-                        // drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
+                        // ESP_LOGI("INFO","Y:" + String(tft.getCursorY()));
+                        //  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
 
                         if (messagebuf.length() < limit)
                             if (l != '\r') {
@@ -1221,7 +1229,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                                     text_pos++;
                                 } else {
                                     messagebuf = messagebuf.substring(0, text_pos - 1) + messagebuf.substring(text_pos, messagebuf.length());
-                                    input          = BACK;
+                                    input      = BACK;
                                 }
                             }
                         if (tft.getCursorY() > TLVP) {
@@ -1233,9 +1241,9 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
 
                         if (y_scr != min_y) {
                             y_scr = min_y;
-                            input     = BACK;
+                            input = BACK;
                         }
-                        //ESP_LOGI("INFO","MINIMUM:" + String(y_scr));
+                        // ESP_LOGI("INFO","MINIMUM:" + String(y_scr));
                         findSplitPosition(messagebuf, text_pos, curx, cury);
                         input = BACK;
                     }
@@ -1411,7 +1419,7 @@ void numberInput(char first) {
     const uint8_t max_char = 13;
     String        number;
     number += first;
-    char c   = 255;
+    char c = 255;
     tft.setTextColor(TFT_WHITE);
     changeFont(0);
     tft.setTextSize(3);
@@ -1531,9 +1539,9 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         }
     }
     bool first = true;
-    //int  sizes[12];
+    // int  sizes[12];
     char result = 0;
-    int  pos = 0;
+    int  pos    = 0;
     int  currentIndex =
         input >= '0' && input <= '9'
              ? input - 48
@@ -1551,8 +1559,8 @@ char textInput(int input, bool onlynumbers, bool nonl) {
             if (buttons[i][b] == '\r')
                 break;
         }
-        //sizes[i] = b;
-        // Serial.println(b, DEC);
+        // sizes[i] = b;
+        //  Serial.println(b, DEC);
         b = 0;
     }
     int mil  = millis();
@@ -1564,7 +1572,7 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         cury = tft.getCursorY();
         // Serial.println("POSITION:" + String(pos));
         int c = buttonsHelding();
-        if (c == input || first){
+        if (c == input || first) {
             if (pos < (int)(strchr(buttons[currentIndex], '\r') - buttons[currentIndex])) {
                 mil = millis();
                 pos++;
@@ -1597,7 +1605,7 @@ char textInput(int input, bool onlynumbers, bool nonl) {
     }
 
     drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
-    if (viewport){
+    if (viewport) {
         tft.setViewport(vx, vy, w, h);
     }
     if (result == '\r') {
@@ -1731,7 +1739,6 @@ int RunAction(String request) {
         uint8_t       buffer[BUFFER_SIZE];
         int           bytesReceived   = 0;
         unsigned long lastReceiveTime = millis();
-
 
         while (true) {
             int availableBytes = Serial.available();
