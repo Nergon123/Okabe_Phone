@@ -3,7 +3,7 @@
 
 This is a fun personal hardware project I started out of boredom... and obsession with weird retro-futuristic phones.
 
-The project is a **real-world, functional flip phone** based on a fictional design from a certain visual novel series. It’s built on an [ESP32 microcontroller](https://lilygo.cc/products/t4) using the LILYGO T4 board.
+The project is a **real-world, functional cellular phone** based on a fictional design from a certain visual novel series. It’s built on an [ESP32 microcontroller](https://lilygo.cc/products/t4) using the LILYGO T4 board.
 
 ---
 
