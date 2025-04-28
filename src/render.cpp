@@ -43,8 +43,7 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
     return false;
 }
 
-// Input field for numbers with arrows
-
+// Input field for numbers
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format) {
 
     int fp  = w / 2;
@@ -77,14 +76,14 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 
     height                        = tft.fontHeight();
     int                   width   = tft.textWidth(text);
-    std::function<void()> DrowBox = [&]() {
+    std::function<void()> DrawBox = [&]() {
         snprintf(text, sizeof(text), format, val);
         tft.setCursor(w / 2 - width / 2, h / 2 + height / 4);
         tft.drawRect(0, 0, w, h, selected ? TFT_RED : TFT_BLACK);
         tft.fillRect(1, 1, w - 2, h - 2, TFT_WHITE);
         tft.print(text);
     };
-    DrowBox();
+    DrawBox();
     bool exit = false;
 
     while (!exit && selected) {
@@ -94,13 +93,13 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
             val--;
             if (val < min)
                 val = max;
-            DrowBox();
+            DrawBox();
             break;
         case UP:
             val++;
             if (val > max)
                 val = min;
-            DrowBox();
+            DrawBox();
             break;
         case LEFT:
             exit = true;
@@ -115,7 +114,8 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 
 // ## UI Textbox
 //  Part of local "UI Kit"
-String textbox(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers) {
+//  Textbox for text input
+String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers) {
 
     content.trim();
     if (used)
@@ -617,7 +617,11 @@ TFT_eSprite sprite = TFT_eSprite(&tft);
 //  This function draws an image from the SD card to the screen or a sprite buffer.
 void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool is_screen_buffer, TFT_eSprite &sbuffer, String file_path, bool transp, uint16_t tc) {
     fastMode(true);
-    if (file_path != resPath) {
+    if (file_path != resPath || !resources) {
+        ESP_LOGI("DRAWING", "resource path is different from default or resources not available");
+        #ifndef PSRAM_ENABLED
+        ESP_LOGW("DRAWING", "PSRAM not available");
+        #endif
         File file = SD.open(file_path, FILE_READ);
         if (!file.available())
             sysError("FILE_NOT_AVAILABLE");
@@ -1131,7 +1135,6 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
 }
 
 int choiceMenu(const String choices[], int count, bool context) {
-    // TODO ?
     int      x              = 30;
     int      y              = 95;
     int      mul            = 20;
@@ -1148,7 +1151,7 @@ int choiceMenu(const String choices[], int count, bool context) {
         y = 95;
     }
 
-    // tft.setCursor(36, 95);
+
     tft.setTextSize(1);
     tft.setTextColor(color_inactive);
     changeFont(1);
@@ -1300,6 +1303,8 @@ void findSplitPosition(String text, int charIndex, int &posX, int &posY, int dir
         }
     }
 }
+
+// Find the character index in the text based on the current position and direction
 int findCharIndex(String text, int &charIndex, int direction) {
     int prevNL       = 0;             // Start of the previous line
     int lastNewLine  = 0;             // Start of the current line
@@ -1375,6 +1380,7 @@ int findCharIndex(String text, int &charIndex, int direction) {
     return charIndex;
 }
 
+// Split a string into lines based on the screen width
 String SplitString(String text) {
     String result           = "";            // Final string with newlines
     int    wordStart        = 0;             // Start index of a word

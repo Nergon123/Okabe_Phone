@@ -1,5 +1,6 @@
 #include "init.h"
 #include "images.h"
+
 IP5306      chrg;
 TFT_eSPI    tft           = TFT_eSPI();
 TFT_eSprite screen_buffer = TFT_eSprite(&tft);
@@ -7,11 +8,7 @@ Preferences preferences;
 MCP23017    mcp = MCP23017(MCP23017_ADDR);
 PNG         png;
 
-SDImage mailimg[4] = {
-    SDImage(0x662DB1, 18, 21, 0, true),
-    SDImage(0x662DB1 + (18 * 21 * 2), 18, 21, 0, true),
-    SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
-    SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
+
 
 // pointer to the graphic resources in PSRAM
 uint8_t *resources;
@@ -97,12 +94,6 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
 void SetUpTime() {
 
     struct tm tm_time = {};
-    tm_time.tm_year   = 2025 - 1900;
-    tm_time.tm_mon    = 3;
-    tm_time.tm_mday   = 30;
-    tm_time.tm_hour   = 22;
-    tm_time.tm_min    = 39;
-    tm_time.tm_sec    = 0;
 
     preferences.begin("TimePhone");
 
@@ -130,56 +121,66 @@ void SaveTime(time_t time) {
     settimeofday(&data, NULL);
 }
 
-// initialize the system
-void setup() {
-    SetUpTime();
-    setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
-    // INIT charging IC
-    chrg.begin(21, 22);
+void restart_handler() {
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_RED);
+    tft.setCursor(0, 0);
+    tft.println("RESTARTING...");
+    delay(100);
+}
 
+// Function to initialize the hardware components
+void hardwareInit() {
+    setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
+    // INIT charging IC as well as I2C
+    chrg.begin(21, 22);
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
     tft.init();
+#ifdef PSRAM_ENABLE
     tft.setAttribute(PSRAM_ENABLE, true);
+#else
+    ESP_LOGW("PSRAM", "PSRAM DISABLED");
+#endif
     tft.fillScreen(0x0000);
 
     // INIT Serial
     Serial.begin(SERIAL_BAUD_RATE);
-    Serial.println("Serial started");
+    ESP_LOGI("SERIAL", "Serial started at %d baud", SERIAL_BAUD_RATE);
     Serial1.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
-    Serial.println("Serial1 (SIM CARD COMMUNICATION) started");
-    printT_S(String(ESP.getPsramSize()));
-
+    ESP_LOGI("SIM_CARD_SERIAL", "Serial1 (SIM CARD COMMUNICATION) started");
+#ifdef PSRAM_ENABLE
+    ESP_LOGI("PSRAM", "PSRAM SIZE: %d bytes", ESP.getPsramSize());
+#else
+    ESP_LOGW("PSRAM", "PSRAM DISABLED");
+#endif
     // RESET KEYBOARD
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
     mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
-
+    ESP_LOGI("KEYPAD", "KEYPAD RESET");
+    SPI.begin(14, 2, 15, chipSelect);
+    ESP_LOGI("SD", "SPI started");
+    SPIFFS.begin();
+    ESP_LOGI("SPIFFS", "SPIFFS started");
     // set brightness
     analogWrite(TFT_BL, (255 * brightness) / 100);
+}
 
-    if (chrg.isChargerConnected() == 1) {
-        offlineCharging();
-    }
-
-    tft.fillScreen(0x0000);
-
-    tft.setTextFont(1);
-    tft.setCursor(0, 0);
-    progressBar(0, 100, 250);
+// Function to initialize the SD card and check if it is available
+void storageInit() {
     preferences.begin("settings", false);
-    resPath = preferences.getString("resPath", resPath);
-    Serial.println(resPath);
-
-    SPI.begin(14, 2, 15, chipSelect);
-    SPIFFS.begin();
-
+    resPath  = preferences.getString("resPath", resPath);
     isSPIFFS = (!initSDCard(true) || !SD.exists(resPath)) && SPIFFS.exists(SPIFFSresPath);
-    printT_S(isSPIFFS ? "Resource file or SD card is not available" : "Using resource file from SD card");
-
+    if (isSPIFFS) {
+        ESP_LOGI("RESOURCES", "Resource file or SD card is not available");
+    } else {
+        ESP_LOGI("RESOURCES", "Using resource file from SD card");
+    }
     if (!isSPIFFS && !SD.exists(resPath))
         recovery(SplitString("Seems that you flashed your device wrongly.Refer to the instructions for more information."));
 
-    printT_S("LOADING RESOURCE FILE");
+    ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
 
     if (!isSPIFFS) {
@@ -201,59 +202,50 @@ void setup() {
             temp.close();
         }
 
-#ifndef LOG
-    drawFromSd(50, 85, LOGO_IMAGE); // Draw boot logo
-#endif
-    if (buttonsHelding(false) == '*') {
-        recovery("Manually triggered recovery."); // Chance to change resource file to custom one
-    }
-
-    progressBar(70, 100, 250);
-    tft.setCursor(12, 3);
-    tft.setTextSize(3);
-    tft.setTextColor(tft.color24to16(0x656565));
-    printT_S("OkabePhone");
-    tft.setCursor(15, 5);
-    tft.setTextColor(0xFFFF);
-    printT_S("OkabePhone");
-#ifdef LOG
-    tft.fillRect(0, 0, 10, 10, TFT_RED);
-    tft.fillRect(0, 10, 10, 10, TFT_GREEN);
-    tft.fillRect(0, 20, 10, 10, TFT_BLUE);
-#endif
-    tft.setTextSize(1);
-    changeFont(0);
-    printT_S("\nOkabePhone " + String(FIRMVER) + "\n\nPhone firmware written by Nergon\n\nResources located in sdcard\nfolder FIRMWARE\n");
-    printT_S(String(ESP.getChipModel()) + String(" REV.") + String(ESP.getChipRevision()) + String(" ") + String(ESP.getCpuFreqMHz()) + String("MHz ") + String(ESP.getChipCores()) + String(" cores\n"));
-#ifdef DEVMODE
-    printT_S("\n       !!! DEVMODE ENABLED !!!\n\n");
-#endif
-
-    xTaskCreatePinnedToCore(
-        TaskIdleHandler,
-        "Core0Checker",
-        10000,
-        NULL,
-        1,
-        &TaskHCommand,
-        0);
-    progressBar(90, 100, 250);
     wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
-    // Serial.println(String(wallpaperIndex) + "WI");
-    //  contactCount   = preferences.getUInt("contactCount", 0);
-
     if (wallpaperIndex < 0 || wallpaperIndex > 42)
         currentWallpaperPath = preferences.getString("wallpaper", "/null");
     preferences.end();
     if (!SD.exists(currentWallpaperPath)) {
-        printT_S(currentWallpaperPath + " - NOT FOUND");
+        ESP_LOGI("SDCARD", "%s - NOT FOUND", currentWallpaperPath.c_str());
     }
-    progressBar(100, 100, 250);
+    progressBar(70, 100, 250);
+}
 
+void initTasks() {
+    xTaskCreatePinnedToCore(TaskIdleHandler, "Core0Checker", 10000, NULL, 1, &TaskHCommand, 0);
+}
+
+// initialize the system
+void setup() {
+
+    esp_register_shutdown_handler(restart_handler);
+
+    SetUpTime();
+    hardwareInit();
+
+    if (chrg.isChargerConnected() == 1) {
+        offlineCharging();
+    }
+    tft.fillScreen(0x0000);
+    tft.setTextFont(1);
+    tft.setCursor(0, 0);
+    progressBar(0, 100, 250);
+
+    if (buttonsHelding(false) == '*') {
+        recovery("Manually triggered recovery."); // Chance to change resource file to custom one
+    }
+    storageInit();
+    drawFromSd(50, 85, LOGO_IMAGE);
+    initTasks();
+    ESP_LOGI("DEVICE", "\nOkabePhone " FIRMVER "\n\nPhone firmware written by Nergon\n\nResources located in sdcard (%s)\n", resPath.c_str());
+    ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getChipCores());
+    progressBar(100, 100, 250);
     millSleep = millis();
     while (buttonsHelding(false) == '#')
         ;
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
+
 }
 
 // Function to suspend/resume the freeRTOS task on core 0
@@ -266,7 +258,6 @@ void suspendCore(bool suspend) {
             vTaskResume(TaskHCommand);
     }
 }
-
 
 // Function to handle the idle task
 void TaskIdleHandler(void *parameter) {
@@ -295,9 +286,9 @@ void TaskIdleHandler(void *parameter) {
                     stateCall = GetState();
                 _signal = getSignalLevel();
                 charge  = getChargeLevel();
-                Serial.println(charge);
-                Serial.println("CHARGE:" + String(chrg.getBatteryLevel() / 25));
+              
                 simIsUsable = _checkSim();
+                ESP_LOGI("SIGNAL", "Signal: %d, Charge: %d, SIM USABLE:%d\n", _signal, charge,simIsUsable);;
                 if (contactCount == 0)
                     populateContacts();
                 sBarChanged = true;
@@ -410,13 +401,14 @@ bool initSDCard(bool fast) {
 
 // Function to load a resource file from the SD card to the PSRAM
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h) {
+#ifdef PSRAM_ENABLE
     File file;
     if (isSPIFFS)
         file = SPIFFS.open(SPIFFSresPath);
     else
         file = SD.open(resourcefile);
     if (!file) {
-        Serial.println("Failed to open file!");
+        ESP_LOGE("FS","Failed to open file!");
         return;
     }
 
@@ -426,10 +418,11 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
         size = file.size() - address;
     else
         size = w * h * 2;
+
     *_resources = (uint8_t *)ps_malloc(size);
 
     if (!(*_resources)) {
-        Serial.println("Memory allocation failed!");
+        ESP_LOGE("MALLOC","Memory allocation failed!");
         sysError("MEMORY_ALLOCATION_FAILED" + address);
         file.close();
         return;
@@ -437,5 +430,8 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
 
     file.read(*_resources, size);
     file.close();
-    Serial.printf("Loaded %d bytes from %s\n", size, resourcefile.c_str());
+    ESP_LOGI("PSRAM", "Loaded %d bytes from %s\n", size, resourcefile.c_str());
+#else
+    ESP_LOGW("PSRAM", "PSRAM not enabled ! ! !");
+#endif
 }

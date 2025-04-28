@@ -544,7 +544,7 @@ void makeCall(Contact contact) {
 }
 void callActivity(Contact contact) {
     ongoingCall  = true;
-    bool calling = true;
+    //bool calling = true;
     tft.fillScreen(0);
     sBarChanged = true;
     drawStatusBar();
@@ -573,10 +573,10 @@ void callActivity(Contact contact) {
             delay(40);
             if (buttonsHelding() == DECLINE) {
                 hang    = true;
-                calling = false;
+                //calling = false;
                 break;
             } else if (buttonsHelding() == UP) {
-                calling = false;
+                //calling = false;
                 break;
             }
         }
@@ -1007,8 +1007,8 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
     y                            = 0;  // Current Y position
     int              charCount   = 0;  // Global character count (including wrapped lines)
     String           currentLine = ""; // Accumulating the current line
-    int              lineStart   = 0;  // Store the starting index of the current line
-    int              lineEnd     = 0;  // Store the end of the current line for wrapping
+    //int              lineStart   = 0;  // Store the starting index of the current line
+    //int              lineEnd     = 0;  // Store the end of the current line for wrapping
     std::vector<int> lineStarts;       // To store the starting index of each line
 
     // Step 1: Process the string character by character
@@ -1020,8 +1020,8 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
             // Update Y position and store the start index for the current line
             y += tft.fontHeight();       // Move to the next line
             lineStarts.push_back(i + 1); // Store the start index of the next line
-            lineStart   = i + 1;         // Start of the next line
-            lineEnd     = i;             // End of the current line
+           // lineStart   = i + 1;         // Start of the next line
+            //lineEnd     = i;             // End of the current line
             currentLine = "";            // Reset the current line
         } else {
             // If we haven't reached the wrapping width, add the character to the current line
@@ -1033,8 +1033,8 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
                 y += tft.fontHeight();             // Move to the next line
                 lineStarts.push_back(i);           // Store the start index of the next line
                 currentLine = String(currentChar); // Start a new line with this character
-                lineStart   = i;                   // Start of the new line
-                lineEnd     = i - 1;               // End of the previous line
+            //    lineStart   = i;                   // Start of the new line
+             //   lineEnd     = i - 1;               // End of the previous line
             } else {
                 // Otherwise, keep adding characters to the current line
                 currentLine = tempLine;
@@ -1139,18 +1139,18 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         position += 24;
         tft.drawLine(0, position + y_scr, 240, position + y_scr, 0);
         tft.print(messagebuf);
-        int    r   = -1;
+        int    input   = -1;
         String a[] = {"Return", "Send Message", "Delete", "Save To Drafts"};
         int    u;
         tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20, TFT_BLACK);
         Serial.println("CURX:" + String(curx) + " CURY:" + String(cury));
-        while (r == -1) {
+        while (input == -1) {
 
             if (y_scr < min_y) {
                 min_y = y_scr;
             }
-            r = buttonsHelding();
-            switch (r) {
+            input = buttonsHelding();
+            switch (input) {
             case DOWN:
                 // if (y_scr > -height)
                 //   y_scr -= y_jump;
@@ -1164,7 +1164,6 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 findSplitPosition(messagebuf, text_pos, curx, cury);
                 break;
             case RIGHT:
-                Serial.println(text_pos);
                 if (text_pos >= 0)
                     findSplitPosition(messagebuf, ++text_pos, curx, cury);
 
@@ -1180,12 +1179,11 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 tft.setTextColor(0);
                 switch (u) {
                 case -1:
-                    Serial.println("Return");
-                    r    = -2;
+                    input    = -2;
                     exit = true;
                     break;
                 case 1:
-                    Serial.println("SEND MESSAGE");
+                    ESP_LOGI("INFO","SEND MESSAGE");
                     if (sendATCommand("AT+CMGF=1").indexOf("OK") != -1) {
                         sendATCommand("AT+CMGS=\"" + contact.phone + "\"");
                         sendATCommand(messagebuf + char(26));
@@ -1194,11 +1192,11 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                     return;
                     break;
                 case 2:
-                    Serial.println("DELETE");
+                    ESP_LOGI("INFO","DELETE");
 
                     break;
                 case 3:
-                    Serial.println("Save to Drafts");
+                    ESP_LOGI("INFO","Save to Drafts");
                     break;
 
                 default:
@@ -1206,13 +1204,13 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 }
                 break;
             default:
-                if (r >= '0' && r <= '9') {
+                if (input >= '0' && input <= '9') {
 
-                    char l = textInput(r);
-                    r      = buttonsHelding();
+                    char l = textInput(input);
+                    input      = buttonsHelding();
                     if (l != 0) {
 
-                        Serial.println("Y:" + String(tft.getCursorY()));
+                        //ESP_LOGI("INFO","Y:" + String(tft.getCursorY()));
                         // drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
 
                         if (messagebuf.length() < limit)
@@ -1223,23 +1221,23 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                                     text_pos++;
                                 } else {
                                     messagebuf = messagebuf.substring(0, text_pos - 1) + messagebuf.substring(text_pos, messagebuf.length());
-                                    r          = BACK;
+                                    input          = BACK;
                                 }
                             }
                         if (tft.getCursorY() > TLVP) {
                             y_scr -= y_jump;
                             if (y_scr < min_y)
                                 min_y = y_scr;
-                            r = BACK;
+                            input = BACK;
                         }
 
                         if (y_scr != min_y) {
                             y_scr = min_y;
-                            r     = BACK;
+                            input     = BACK;
                         }
-                        Serial.println("MINIMUM:" + String(y_scr));
+                        //ESP_LOGI("INFO","MINIMUM:" + String(y_scr));
                         findSplitPosition(messagebuf, text_pos, curx, cury);
-                        r = BACK;
+                        input = BACK;
                     }
                 }
                 break;
@@ -1267,8 +1265,8 @@ void editContact(Contact contact) {
     String boxString[textboxes] = {contact.name, contact.phone};
     tft.print("Edit Contact");
     drawFromSd(0, 51, BACKGROUND_IMAGE_CUTTED);
-    textbox("Name", contact.name, 70, true, false, false);
-    textbox("Phone Number", contact.phone, 120, true, false, false);
+    InputField("Name", contact.name, 70, true, false, false);
+    InputField("Phone Number", contact.phone, 120, true, false, false);
 
     button("SAVE", 10, 285, 100, 28);
     button("CANCEL", 120, 285, 100, 28);
@@ -1278,10 +1276,10 @@ void editContact(Contact contact) {
     while (!exit) {
         switch (pos) {
         case 0:
-            boxString[pos] = textbox("Name", boxString[pos], 70, false, false, true, &direction);
+            boxString[pos] = InputField("Name", boxString[pos], 70, false, false, true, &direction);
             break;
         case 1:
-            boxString[pos] = textbox("Phone Number", boxString[pos], 120, false, false, true, &direction, true);
+            boxString[pos] = InputField("Phone Number", boxString[pos], 120, false, false, true, &direction, true);
             break;
         case 2:
             save = button("SAVE", 10, 285, 100, 28, true, &direction);
@@ -1533,8 +1531,8 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         }
     }
     bool first = true;
-    int  sizes[12];
-    char result;
+    //int  sizes[12];
+    char result = 0;
     int  pos = 0;
     int  currentIndex =
         input >= '0' && input <= '9'
@@ -1553,7 +1551,7 @@ char textInput(int input, bool onlynumbers, bool nonl) {
             if (buttons[i][b] == '\r')
                 break;
         }
-        sizes[i] = b;
+        //sizes[i] = b;
         // Serial.println(b, DEC);
         b = 0;
     }

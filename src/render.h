@@ -30,7 +30,7 @@ void   drawCutoutFromSd(SDImage image, int cutout_x, int cutout_y,
                         int display_x, int display_y, String file_path = resPath);
 int    findCharIndex(String text, int &charIndex, int direction);
 
-String textbox(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction = nullptr, bool onlynumbers = false);
+String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction = nullptr, bool onlynumbers = false);
 bool   button(String title, int xpos, int ypos, int w, int h, bool selected = false, int *direction = nullptr);
 void   sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected = false, int *direction = nullptr, const char *format = "%02d");
 

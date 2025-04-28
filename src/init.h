@@ -3,9 +3,6 @@
 #include "file_include.h"
 
 
-
-extern SDImage mailimg[4];
-
 struct Contact {
     int    index;
     String phone;
@@ -101,6 +98,9 @@ extern String resPath;
 extern uint8_t *resources;
 
 extern bool isSPIFFS;
+
+// Function to get the size of an array
+// kinda hacky but works
 template <typename T, size_t N>
 size_t ArraySize(T (&)[N]) {
     return N;

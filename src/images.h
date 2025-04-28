@@ -67,6 +67,12 @@ const SDImage in_mail[4] = {
     SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false), //"SUB"
 };
 
+const SDImage mailimg[4] = {
+    SDImage(0x662DB1, 18, 21, 0, true),
+    SDImage(0x662DB1 + (18 * 21 * 2), 18, 21, 0, true),
+    SDImage(0x662DB1 + (18 * 21 * 2 * 2), 18, 21, 0, true),
+    SDImage(0x662DB1 + (18 * 21 * 2 * 3), 18, 21, 0, true)};
+
 const SDImage MAIL_HEADER_IMAGE(0x5DECA5, 240, 42);
 const SDImage SETTINGS_HEADER_IMAGE(0x5E3B65, 240, 42);
 const SDImage WHITE_BOTTOM_IMAGE(0x5E8A25, 240, 128);
