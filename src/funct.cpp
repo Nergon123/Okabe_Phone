@@ -9,13 +9,16 @@ unsigned int getIndexOfCount(int count, String input, String str, unsigned int f
     return fromIndex;
 }
 
+
+
+
 /*
  * Print to Serial and Screen (if LOG defined)
  * Used at setup only
  */
 void printT_S(String str) {
 
-    Serial.println(str);
+    ESP_LOGI("BOOT","%s", str.c_str()); 
 #ifdef LOG
     tft.println(str);
 #endif

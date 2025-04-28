@@ -1,5 +1,9 @@
 #pragma once
 
+
+#include <esp_system.h>
+#include <esp_log.h>
+#include <esp_core_dump.h>
 #include <defines.h>
 #include <esp_ota_ops.h>
 #include <Arduino.h>
