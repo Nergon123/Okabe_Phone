@@ -1,7 +1,7 @@
 # Okabe's Phone  
 [![Discord](https://img.shields.io/discord/1333879897860603905?label=Discord%20Server)](https://discord.gg/TdPYUj9fAj) ![GitHub last commit](https://img.shields.io/github/last-commit/Nergon123/Okabe_Phone) ![GitHub Repo stars](https://img.shields.io/github/stars/Nergon123/Okabe_Phone)
 
-This is a fun personal hardware project I started out of boredom... and obsession with weird retro-futuristic phones.
+This is a fun personal hardware project I started out of boredom...
 
 The project is a **real-world, functional cellular phone** based on a fictional design from a certain visual novel series. It’s built on an [ESP32 microcontroller](https://lilygo.cc/products/t4) using the LILYGO T4 board.
 
@@ -9,7 +9,7 @@ The project is a **real-world, functional cellular phone** based on a fictional 
 
 ## Why I Made This
 
-In July 2024, I was messing around with resource files from some older games and stumbled upon the UI assets for a certain mad scientist’s phone. Naturally, my first thought was:
+In July 2024, I was messing around with resource files from some visual novels and stumbled upon the UI assets for a certain mad scientist’s phone. Naturally, my first thought was:
 
 > "What if someone built the real thing?"
 
