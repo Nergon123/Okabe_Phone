@@ -3,9 +3,9 @@
 
 This is a fun personal hardware project I started out of boredom...
 
-The project is a **real-world, functional cellular phone** based on a fictional design from a certain visual novel series. It’s built on an [ESP32 microcontroller](https://lilygo.cc/products/t4) using the LILYGO T4 board.
+The project is a **real-world, functional cellular phone** based on a fictional design from a certain visual novel series. It’s built on an ESP32 microcontroller using the [LILYGO T4 board](https://lilygo.cc/products/t4).
 
----
+
 
 ## Why I Made This
 
@@ -17,13 +17,13 @@ I searched GitHub for “Okabe Phone,” “Rintarou Phone,” “Steins Gate Ph
 
 I first posted a photo of the prototype in the Science Adventure Discord server in the [#showcase channel on 09/08/2024, 19:04 UTC](https://discord.com/channels/213420119034953729/453675152287203368/1271529614946074755), and made this repo public on 26/01/2025.
 
----
+
 
 ## DISCLAIMER
 
 This project is a **fan-made, non-commercial tribute**. It is not affiliated with or endorsed by MAGES., 5pb., Nitroplus, or any rights holders of *Steins;Gate*.
 
----
+
 
 ## TODO
 - [ ] Audio  
@@ -37,29 +37,23 @@ This project is a **fan-made, non-commercial tribute**. It is not affiliated wit
 - [ ] 3D-printed case  
 - [ ] Custom PCB  
 
----
-
 ## Current Features
 - [x] Send/receive SMS  
 - [x] Make/receive calls  
 - [x] Read messages  
 - [x] Change wallpapers  
----
 
 ## Known Issues
 - Still a **Proof of Concept**—not stable for daily use *yet*
 
----
 
 ## Build Instructions  
 See [DEVBUILD.MD](./DEVBUILD.MD)
 
----
 
 ## For Developers & Contributors  
 See [DEVINFO.MD](./DEVINFO.MD)
 
----
 
 ## Showcase  
 See [SHOWCASE.MD](./SHOWCASE.MD)
