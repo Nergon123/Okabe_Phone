@@ -58,7 +58,6 @@ See [DEVINFO.MD](./DEVINFO.MD)
 ## Showcase  
 See [SHOWCASE.MD](./SHOWCASE.MD)
 
----
 
 ## Contact
 - GitHub Issues  
