@@ -1,5 +1,5 @@
 #pragma once
-#include "file_include.h"
+#include <Arduino.h>
 
 
 struct SDImage {
