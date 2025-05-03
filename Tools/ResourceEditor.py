@@ -3,7 +3,7 @@ from tkinter import ttk, filedialog, messagebox
 import struct
 from PIL import Image, ImageTk, ImageDraw
 import pyperclip  
-
+import re
 
 
 _offset = 0
@@ -194,8 +194,42 @@ def decrement_address():
     except Exception as e:
         label_status.config(text=f"Error: {e}", foreground="red")
 
+
+def parse_sdimage_output():
+    try:
+        output_text = entry_output.get()
+        match = re.search(r"SDImage\s*(\w+)\((0x[0-9a-fA-F]+|\w+),\s*(\d+),\s*(\d+)(?:,\s*(0x[0-9a-fA-F]+|\w+),\s*(true|false))?\);", output_text)
+        if match:
+            variable_name = match.group(1)
+            address = match.group(2)
+            width = int(match.group(3))
+            height = int(match.group(4))
+            is_transparent = match.group(6) == 'true' if match.group(6) else False
+            transparent_color = match.group(5) if match.group(5) else None
+
+            entry_address.delete(0, tk.END)
+            entry_address.insert(0, address)
+
+            entry_width.delete(0, tk.END)
+            entry_width.insert(0, str(width))
+
+            entry_height.delete(0, tk.END)
+            entry_height.insert(0, str(height))
+
+            checkbox_transparent_var.set(is_transparent)
+
+            label_status.config(
+                text=f"Parsed: Variable={variable_name}, Address={address}, Width={width}, Height={height}, Transparent={is_transparent}, Color={transparent_color}",
+                foreground="green"
+            )
+        else:
+            label_status.config(text="Failed to parse SDImage output", foreground="red")
+    except Exception as e:
+        label_status.config(text=f"Error: {e}", foreground="red")
+
+
 root = tk.Tk()
-root.title("Okabe Phone Image Resources Editor v0.4.4 Alpha")
+root.title("Okabe Phone Image Resources Editor v0.4.5 Alpha")
 
 frame_input = ttk.Frame(root, padding="10")
 frame_input.grid(row=0, column=0, sticky=(tk.W, tk.E))
@@ -227,7 +261,7 @@ ttk.Label(frame_input, text="Width:").grid(row=2, column=0, sticky=tk.W)
 entry_width = ttk.Entry(frame_input, width=10)
 entry_width.insert(0, "240");
 entry_width.grid(row=2, column=1, sticky=tk.W)
-entry_width.bind("<KeyRelease>", lambda e: update_output())
+
 
 ttk.Label(frame_input, text="Height:").grid(row=3, column=0, sticky=tk.W)
 entry_height = ttk.Entry(frame_input, width=10)
@@ -252,11 +286,16 @@ ttk.Label(frame_input, text="Output:").grid(row=7, column=0, sticky=tk.W)
 entry_output = ttk.Entry(frame_input, width=50)
 entry_output.grid(row=7, column=1, sticky=tk.W)
 
+
 button_copy = ttk.Button(frame_input, text="Copy to Clipboard", command=copy_to_clipboard)
-button_copy.grid(row=7, column=2, sticky=tk.W)
+button_copy.grid(row=8, column=1, sticky=tk.W)
 
 label_status = ttk.Label(frame_input, text="Click on the image to get RGB565 color", font=("Arial", 10), foreground="blue")
-label_status.grid(row=8, column=0, columnspan=3, pady=(10, 0))
+label_status.grid(row=9, column=0, columnspan=3, pady=(10, 0))
+
+# Add a button to trigger the parsing function
+button_parse = ttk.Button(frame_input, text="Parse SDImage", command=parse_sdimage_output)
+button_parse.grid(row=8, column=0, columnspan=3)
 
 frame_images = ttk.Frame(root, padding="10")
 frame_images.grid(row=1, column=0, sticky=(tk.W, tk.E))
