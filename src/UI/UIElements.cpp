@@ -3,7 +3,14 @@
 
 // ## UI Button
 //  Part of local "UI Kit"
-
+//  @param title: Button title
+//  @param xpos: X position on the screen
+//  @param ypos: Y position on the screen
+//  @param w: Button width
+//  @param h: Button height
+//  @param selected: Boolean indicating if the button is selected
+//  @param direction: Pointer to the direction variable
+//  @return: Boolean indicating if the button was pressed
 bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
     tft.fillRect(xpos, ypos, w, h, 0xFFFF);
     tft.drawRect(xpos, ypos, w, h, 0);
@@ -45,6 +52,16 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 }
 
 // Input field for numbers
+// @param x: X position on the screen
+// @param y: Y position on the screen
+// @param w: Width of the input field
+// @param h: Height of the input field
+// @param val: Reference to the value to be changed
+// @param min: Minimum value
+// @param max: Maximum value
+// @param selected: Boolean indicating if the input field is selected
+// @param direction: Pointer to the direction variable
+// @param format: Format string for the value
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format) {
 
     int fp  = w / 2;
@@ -116,6 +133,15 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 // ## UI Textbox
 //  Part of local "UI Kit"
 //  Textbox for text input
+//  @param title: Title of the textbox
+//  @param content: Content of the textbox
+//  @param ypos: Y position on the screen
+//  @param onlydraw: Boolean indicating if the textbox should be drawn
+//  @param selected: Boolean indicating if the textbox is selected
+//  @param used: Boolean indicating if the textbox is used
+//  @param direction: Pointer to the direction variable
+//  @param onlynumbers: Boolean indicating if only numbers are allowed
+//  @return: String containing the input
 String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers) {
 
     content.trim();
@@ -275,7 +301,14 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
     content.trim();
     return content;
 }
+
 // Animation of spinning circles in rectangle, used in outgoing call
+// @param x: X position on the screen
+// @param y: Y position on the screen
+// @param size_x: Width of the rectangle
+// @param size_y: Height of the rectangle
+// @param offset: Offset for the animation
+// @param spacing: Spacing between the circles
 void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     // FIRSTLY WAS WRITED MANUALLY BUT AFTER ENCOURING A BUG
     // I WROTE THIS WITH HELP FROM CHATGPT
@@ -339,6 +372,13 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
 
 int lastpercentage;
 // progress bar that used on boot screen
+// @param val: Current value
+// @param max: Maximum value
+// @param y: Y position on the screen
+// @param h: Height of the progress bar
+// @param color: Color of the progress bar
+// @param log: Boolean indicating if the progress bar is in log mode
+// @param fast: Boolean indicating if the progress bar should be fast or smooth
 void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool fast) {
 
     int percentage = (val * 100) / max;
@@ -364,8 +404,10 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
     }
     lastpercentage = percentage;
 }
+
 // ## Critical system error
 //  This function is called when a critical error occurs in the system.
+// @param reason String containing the reason for the error
 void sysError(String reason) {
     tft.fillScreen(0x0000);
     tft.setCursor(10, 40);

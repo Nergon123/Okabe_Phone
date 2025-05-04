@@ -1,13 +1,15 @@
 #include "Messages.h"
-#include "../System/DrawGraphics.h"
-#include "../images.h"
 #include "../GlobalVariables.h"
 #include "../Input/Input.h"
+#include "../System/DrawGraphics.h"
+#include "../System/TextManipulation.h"
 #include "../UI/ListMenu.h"
 #include "../UI/UIElements.h"
-#include "../System/TextManipulation.h"
+#include "../images.h"
 
 // Parse SMS messages from SIM Card
+// @param msgs Array of Message objects to store parsed messages
+// @param count Number of messages parsed
 void parseMessages(Message *&msgs, int &count) {
 
     String response     = sendATCommand("AT+CMGL=\"ALL\",1");
@@ -84,6 +86,8 @@ void parseMessages(Message *&msgs, int &count) {
     }
     count = messageCount;
 }
+
+// messages menu
 void messages() {
 
     drawFromSd(0, 26, SUBMENU_BACKGROUND);
@@ -104,13 +108,21 @@ void messages() {
     currentScreen = SCREENS::MAINMENU;
 }
 
+/*
+* Outgoing message activity
+*
+* In this function, the user can write and send a message to a contact.
+*
+* @param contact Contact object containing contact information
+* @param subject Subject of the message
+* @param content Content of the message
+* @param sms Boolean indicating if the message is an SMS
+*/
 void messageActivityOut(Contact contact, String subject, String content, bool sms) {
-    // TEXT LIMIT VERTICAL VIEWPORT
+    // size of accessible height of current viewport
     const int TLVP = 238;
-        // (goddamit I forgot what this variable does, for future: do proper naming for variables and defines, that's pro tip.)
-        // I remembered that its just size of accessible height of current viewport
 
-        int limit = 0;
+    int limit = 0;
     if (sms) {
         limit = 160;
     } else {
@@ -275,6 +287,19 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     tft.resetViewport();
 }
 
+/*
+* Incoming message activity
+*
+* In this function, the user can read and reply to a message.
+* @param contact Contact object containing contact information
+* @param date Date of the message
+* @param subject Subject of the message
+* @param content Content of the message
+* @param index Index of the message
+* @param outcoming Boolean indicating if the message is outgoing
+* @param sms Boolean indicating if the message is an SMS
+* @return Boolean indicating if the message was deleted
+*/
 bool messageActivity(Contact contact, String date, String subject, String content, int index, bool outcoming, bool sms) {
     tft.setTextWrap(true);
     // returns if deleted
@@ -379,10 +404,23 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     return deleted;
 }
 
+/*
+* Incoming message activity
+*
+* In this function, the user can read and reply to a message.
+* @param message Message object containing message information
+* @return Boolean indicating if the message was deleted
+*/
 bool messageActivity(Message message) {
     return messageActivity(message.contact, message.date, message.subject, message.content, message.index, false, true);
 }
 
+/*
+* Inbox and Outbox menu
+* 
+* In this function, the user can view and select messages from the inbox or outbox.
+* @param outbox Boolean indicating if the menu is for the outbox
+*/
 void inbox(bool outbox) {
     const char *title;
     if (outbox)

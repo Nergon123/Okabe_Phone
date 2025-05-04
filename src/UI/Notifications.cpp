@@ -1,6 +1,8 @@
 #include "Notifications.h"
 
 // ## Draw status bar
+// This function draws the status bar on the screen
+// @param force: If true, force redraw of the status bar if false only redraw if time has changed
 void drawStatusBar(bool force) {
 
     sBarChanged += force;
@@ -53,6 +55,8 @@ void drawStatusBar(bool force) {
 }
 // Function to show a confirmation window
 // This function is called when the user wants to confirm an action
+// @param reason The reason for the confirmation
+// @return true if the user confirms, false if the user cancels
 bool confirmation(String reason) {
     drawWallpaper();
     drawFromSd(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
@@ -84,6 +88,7 @@ bool confirmation(String reason) {
 
 // Function to show an error window
 // This function is called when an error occurs
+// @param reason The reason for the error
 void ErrorWindow(String reason) {
 
     int xpos = 0;

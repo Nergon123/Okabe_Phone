@@ -1,4 +1,11 @@
 #include "TextManipulation.h"
+
+// Function to get the index of the nth occurrence of a substring in a string
+// @param count The occurrence number to find
+// @param input The input string
+// @param str The substring to find
+// @param fromIndex The index to start searching from
+// @return The index of the nth occurrence of the substring
 unsigned int getIndexOfCount(int count, String input, String str, unsigned int fromIndex) {
     for (int i = 0; i < count; i++) {
         fromIndex = input.indexOf(str, fromIndex + 1);
@@ -6,7 +13,12 @@ unsigned int getIndexOfCount(int count, String input, String str, unsigned int f
     return fromIndex;
 }
 
-
+// Function to find the split position of a string
+// @param text The input string
+// @param charIndex The character index to find the split position for
+// @param posX The x-coordinate of the split position
+// @param posY The y-coordinate of the split position
+// @param direction The direction to search (UP or DOWN)
 void findSplitPosition(String text, int charIndex, int &posX, int &posY, int direction) {
     int lastNewLine  = 0; 
     int curPosInText = 0; 
@@ -79,6 +91,9 @@ int findCharIndex(String text, int &charIndex, int direction) {
     return charIndex;
 }
 
+// Function to split a string into lines that fit within the screen width
+// @param text The input string
+// @return The formatted string with line breaks
 String SplitString(String text) {
     String result           = "";            
     int    wordStart        = 0;             
@@ -113,6 +128,13 @@ String SplitString(String text) {
     return result; 
 }
 
+// Function to get the position of a character in a string
+// @param str The input string
+// @param x reference to the x-coordinate of the character position
+// @param y reference to the y-coordinate of the character position
+// @param index reference to the index of the character
+// @param direction The direction to search
+// @param screenWidth The width of the screen
 void getCharacterPosition(String str, int &x, int &y, int &index, int direction = 0, int screenWidth = 240) {
     x                  = 0;  
     y                  = 0;  
@@ -164,6 +186,8 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
 }
 
 // Convert HEX to ASCII
+// @param hex The input hexadecimal string
+// @return The converted ASCII string
 String HEXTOASCII(String hex) {
     hex.toUpperCase();
     String output;
@@ -179,7 +203,9 @@ String HEXTOASCII(String hex) {
     return output;
 }
 
-//  measures text height (duh)
+//  measures text height in pixels
+//  @param text The input string
+//  @return The height of the text in pixels
 int measureStringHeight(const String &text) {
     int lines      = 1;
     int lineWidth  = 0;

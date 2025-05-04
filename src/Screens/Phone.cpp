@@ -13,6 +13,12 @@ volatile bool simIsUsable = false;
 // Variable that indicate if there incoming call
 bool isCalling = false;
 
+/*
+ * incoming call screen
+ *
+ * In this function, the user can answer or decline an incoming call.
+ * @param contact Contact object containing contact information
+ */
 void incomingCall(Contact contact) {
     drawWallpaper();
     drawFromSd(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
@@ -50,6 +56,11 @@ void incomingCall(Contact contact) {
         }
     }
 }
+
+/*
+ * Function to make a call
+ * @param contact Contact object containing contact information
+ */
 void makeCall(Contact contact) {
     if (!checkSim()) {
         return;
@@ -58,6 +69,11 @@ void makeCall(Contact contact) {
     sendATCommand("ATD" + contact.phone + ";");
     callActivity(contact);
 }
+
+/*
+ * call activity screen
+ * @param contact Contact object containing contact information
+ */
 void callActivity(Contact contact) {
     ongoingCall = true;
     // bool calling = true;
@@ -122,6 +138,10 @@ void callActivity(Contact contact) {
     isAnswered  = false;
 }
 
+
+/*
+* Contact list screen
+*/
 void contactss() {
     // if (!checkSim()) {
     //     currentScreen = SCREENS::MAINMENU;
@@ -193,6 +213,10 @@ void contactss() {
     currentScreen = SCREENS::MAINMENU;
 }
 
+/*
+ * Function to edit a contact
+ * @param contact Contact object containing contact information
+ */
 void editContact(Contact contact) {
     int pos       = 0;
     int textboxes = 2;

@@ -1,5 +1,7 @@
 #include "Serial.h"
 
+
+// Highly experimental
 int RunAction(String request) {
     String actions[] = {"RECEIVE", "SEND", "LIST", "DELETE", "WRITE", "READ", "EXIT"};
     int    action    = -1;
@@ -228,6 +230,7 @@ int RunAction(String request) {
     return action;
 }
 
+// Highly experimental
 void SerialConnection() {
     suspendCore(true);
     fastMode(true);

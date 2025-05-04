@@ -1,6 +1,12 @@
 #include "SIM.h"
 
-// Send AT command to Sim Card module
+/*
+ * Send AT command to Sim Card module
+ * @param command AT command to send
+ * @param timeout Timeout for the command in milliseconds
+ * @param background If true, then command is not important
+ * @return Response from the SIM card module
+ */
 String sendATCommand(String command, uint32_t timeout, bool background) {
     bool _simIsBusy = simIsBusy;
     while (_simIsBusy) {
@@ -56,7 +62,11 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
     return response;
 }
 
-// Get string value after first colon
+/* Get string value after first colon
+ * @param command AT command to send
+ * @param background If true, then command is not important
+ * @return Response from the SIM card module
+ */
 String getATvalue(String command, bool background = false) {
 
     String response = sendATCommand(command, 1000, background);
@@ -82,7 +92,11 @@ String getATvalue(String command, bool background = false) {
 
     return result;
 }
-// Check if sim card is there
+
+/*
+ * Check if SIM card is usable
+ * @return true if SIM card is usable, false otherwise
+ */
 bool _checkSim() {
     lastSIMerror = sendATCommand("AT+CPIN?");
     if (lastSIMerror.indexOf("READY") == -1) {
@@ -110,7 +124,6 @@ void checkVoiceCall() {
     }
 }
 
-
 // Throw full screen error if there no sim card
 bool checkSim() {
     if (!simIsUsable)
@@ -119,7 +132,18 @@ bool checkSim() {
 }
 
 
-// Get Call status from SIM Card Module
+/*
+* Get Call status from SIM Card Module
+* 
+* Status defined (see Defines.h):
+* `0 ACTIVE`
+* 1 HELD
+* 2 DIALING
+* 3 ALERTING
+* 4 INCOMING
+* 5 WAITING
+* 6 DISCONNECT
+*/
 int GetState() {
     String result = sendATCommand("AT+CLCC");
     Serial.println("AAA" + result);
@@ -133,17 +157,19 @@ int GetState() {
     return atoi(result.c_str());
 }
 
+// @link 
 // Function to initialize the SIM card
 // This function sends AT commands to the SIM card to set it up
 void initSim() {
-    printT_S(sendATCommand("AT+CMEE=2"));
-    printT_S(sendATCommand("AT+CLIP=1"));
-    printT_S(sendATCommand("AT+CLCC=1"));
-    printT_S(sendATCommand("AT+CSCS=\"GSM\""));
-    printT_S(sendATCommand("AT+CMGF=1"));
-    simIsUsable = _checkSim();
+    printT_S(sendATCommand("AT+CMEE=2")); // Enable verbose error reporting
+    printT_S(sendATCommand("AT+CLIP=1")); // Enable caller ID reporting
+    printT_S(sendATCommand("AT+CLCC=1")); // Report a list of current calls of ME automatically when the current call status changes.
+    printT_S(sendATCommand("AT+CSCS=\"GSM\"")); // Set character set to GSM
+    printT_S(sendATCommand("AT+CMGF=1")); // Set SMS mode to text
+    simIsUsable = _checkSim(); // Check if SIM card is usable
 }
 
+// Enable AT commands console
 void AT_test() {
     tft.fillScreen(0);
     changeFont(0);
@@ -174,7 +200,7 @@ void AT_test() {
         }
     }
 }
-// Get cellular signal level (from -1 as "unavaliable" to 3)
+// Get cellular signal level (from 0 as "unavaliable" to 4)
 int getSignalLevel() {
 
     int signal = -1;

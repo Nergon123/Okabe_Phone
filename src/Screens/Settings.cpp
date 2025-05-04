@@ -1,20 +1,21 @@
 #include "Settings.h"
 
 const int lastImage = 42;
+
 // Function to show the settings menu
 // This function is called when the user wants to change settings
 // It allows the user to change the wallpaper, ringtones, etc.
 void settings() {
 
-    drawFromSd(0, 26, SUBMENU_BACKGROUND); 
+    drawFromSd(0, 26, SUBMENU_BACKGROUND);
     drawFromSd(0, 26, SETTINGS_HEADER_IMAGE);
     String settingsOptions[] = {
         "Change Wallpaper",
         "Set call ringtone",
         "Set mail ringtone",
     };
-    int menuSelection     = choiceMenu(settingsOptions, 3, false);
-    int pictureIndex   = -1;
+    int menuSelection    = choiceMenu(settingsOptions, 3, false);
+    int pictureIndex     = -1;
     int confPictureIndex = -2;
 
     while (true) {
@@ -72,8 +73,8 @@ void settings() {
                 break;
             }
         } else if (pictureIndex == lastImage) {
-            String path = fileBrowser(SD.open("/"), ".png");
-            confPictureIndex       = choiceMenu(galch, 2, true);
+            String path      = fileBrowser(SD.open("/"), ".png");
+            confPictureIndex = choiceMenu(galch, 2, true);
             switch (confPictureIndex) {
             case 0:
                 drawPNG(path.c_str());
@@ -99,9 +100,12 @@ void settings() {
     currentScreen = SCREENS::MAINMENU;
 }
 
-
 // Function to show the gallery menu
+//
 // This function is called when the user wants to change the wallpaper
+//
+// If "Pick wallpaper..." is selected, it allows the user to select a custom wallpaper
+// @return The index of the selected wallpaper
 int gallery() {
     if (!SD.exists(resPath))
         return lastImage;
@@ -156,8 +160,9 @@ int gallery() {
     return listMenu(wallpaperOptions, ArraySize(wallpaperOptions), true, 2, "Change wallpaper");
 }
 
-// Function to set the time
+// Set time screen
 // This function is called when the user wants to set the time
+// @param time Pointer to the time_t variable
 void setTime(time_t *time) {
     drawFromSd(0, 51, BACKGROUND_IMAGE);
     drawFromSd(0, 26, BLUEBAR_IMAGE);
@@ -224,8 +229,12 @@ void setTime(time_t *time) {
         }
     }
 }
-void ringtoneSelector(bool isMail)
- {
+
+/*Ringtone selector
+ * not fully implemented yet
+ * @param isMail true if the ringtone is for mail, false if it is for call
+ */
+void ringtoneSelector(bool isMail) {
     File dir = SD.open("/AUDIO");
     if (!dir) {
         ErrorWindow("NO /AUDIO");
