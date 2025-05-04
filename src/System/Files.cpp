@@ -1,7 +1,14 @@
 #include "Files.h"
 
 
-
+// ## File browser
+//
+// This function allows the user to browse files on the SD card
+//
+// @param dir: Directory to browse
+// @param format: File format to filter (e.g., ".txt")
+// @param graphical: If true, use graphical interface
+// @return The path of the selected file or "/null" if cancelled
 String fileBrowser(File dir, String format, bool graphical) {
     SDImage folderIcon  = SDImage(0x663983, 18, 18, 0, true);
     SDImage fileIcon    = SDImage(0x663984 + (18 * 18 * 2), 18, 18, 0, true);

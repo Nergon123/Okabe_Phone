@@ -1,8 +1,11 @@
 #include "_WiFi.h"
 #include "../System/Generic.h"
+
+// TODO: Implement WiFi functionality
 void WifiConnect(String ssid, String password) {
 }
 
+// List available WiFi networks
 void WiFiList() {
     fastMode(true);
     WiFi.begin();

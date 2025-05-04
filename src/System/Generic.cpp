@@ -1,5 +1,8 @@
 #include "Generic.h"
-// Get battery charge (from 0 to 3)
+/*
+* Get the current charge level of the battery
+* @return `int`: 0-3 of 3
+*/
 int getChargeLevel() {
 
     int toIcon = (chrg.getBatteryLevel() / 25) - 1;
@@ -9,6 +12,8 @@ int getChargeLevel() {
     return toIcon;
 }
 
+// Set frequencies to fast or slow mode
+// @param status: true for fast mode, false for slow mode
 void fastMode(bool status) {
     // TODO: REINIT SCREEN and SDCARD
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
@@ -19,6 +24,7 @@ void fastMode(bool status) {
 
 int currentBrightness = brightness;
 // Set screen brightness
+// @param percentage: brightness percentage (0-100)
 void setBrightness(int percentage) {
     percentage = constrain(percentage, 0, 100);
     if (currentBrightness != percentage) {

@@ -36,6 +36,10 @@ void changeFont(int ch, bool is_screen_buffer, TFT_eSprite &sbuffer) {
 
 // ## Write custom font
 //  This function writes a custom font to the screen.
+//  @param x: x position on the screen
+//  @param y: y position on the screen
+//  @param input: string to be written
+//  @param type: type of font (0: white outcoming call font , 1: black incoming call font)
 void writeCustomFont(int x, int y, String input, int type) {
     int      w      = 21;
     int      h      = 27;

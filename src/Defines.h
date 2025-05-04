@@ -65,6 +65,7 @@
 
 // ENABLE DEVELOPER MODE//
 #define DEVMODE //
+
 //#define SIMDEBUG//
 
 //CPU frequency for ESP32 by default is 240 MHz  

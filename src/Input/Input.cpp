@@ -1,6 +1,7 @@
 #include "Input.h"
 
 int millDelay = 0;
+
 // Function to handle the idle state
 void idle() {
 
@@ -74,6 +75,11 @@ int checkButton() {
     return 0;
 }
 
+/*
+* Number input field (used on Main screen)
+* @param first first number to be displayed (since it being called by button press)
+*/
+
 void numberInput(char first) {
     tft.fillRect(0, 300, 240, 20, 0);
     sBarChanged = true;
@@ -132,6 +138,11 @@ void numberInput(char first) {
     DBC_MS = 1000;
 }
 
+/*
+* Show character selection screen
+* @param text text to be displayed
+* @param pos selected character position
+*/
 void showText(const char *text, int pos) {
 
     int  h        = tft.getViewportHeight();
@@ -173,6 +184,13 @@ void showText(const char *text, int pos) {
         tft.setViewport(vx, vy, w, h);
 }
 
+/*
+* Character selection 
+* @param input pressed button
+* @param onlynumbers if true, only numbers are allowed
+* @param nonl disable new line
+* @return selected character
+*/
 char textInput(int input, bool onlynumbers, bool nonl) {
     if (input == -1)
         return 0;
@@ -190,7 +208,6 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         "*\r",
         "#\r"};
 
-    // nonl - disable new line
     if (nonl) {
         buttons[0][5] = '\r';
     }
@@ -277,8 +294,10 @@ char textInput(int input, bool onlynumbers, bool nonl) {
 }
 
 int lastresult = -1;
-// Returns pressed button
-// _idle - execute background function if true
+/*
+ * Returns pressed button
+ * @param _idle execute background `idle()` function if true
+ */
 int buttonsHelding(bool _idle) {
 
     /*

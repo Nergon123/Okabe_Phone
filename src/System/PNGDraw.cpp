@@ -40,6 +40,8 @@ void pngDraw(PNGDRAW *pDraw) {
 
 // ## Draw PNG image
 // This function draws a PNG image from the SD card to the screen
+// @param filename: Path to the PNG file on the SD card
+// @param _wallpaper: Boolean indicating if the image is a wallpaper
 void drawPNG(const char *filename, bool _wallpaper) {
     fastMode(true);
 

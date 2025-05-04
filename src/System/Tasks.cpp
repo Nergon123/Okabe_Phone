@@ -5,6 +5,7 @@
 
 
 // Function to suspend/resume the freeRTOS task on core 0
+// @param suspend: true to suspend the task, false to resume it
 void suspendCore(bool suspend) {
     if (TaskHCommand) {
         if (suspend) {
@@ -69,6 +70,8 @@ void TaskIdleHandler(void *parameter) {
         vTaskDelay(pdMS_TO_TICKS(DBC_MS));
     }
 }
+
+// Function to initialize the tasks
 void initTasks() {
     xTaskCreatePinnedToCore(TaskIdleHandler, "Core0Checker", 10000, NULL, 1, &TaskHCommand, 0);
 }

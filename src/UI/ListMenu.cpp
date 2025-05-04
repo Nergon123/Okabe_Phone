@@ -3,7 +3,13 @@
 #include "../System/FontManagement.h"
 #include "../images.h"
 
-void listMenu_header(int type, String title, int page, int pages, int y, bool update) {
+// Header for the list menu
+// @param type Type of menu (0: messages, 1: phone, 2: settings)
+// @param title Title of the menu
+// @param page Current page number
+// @param pages Total number of pages
+// @param y Y-coordinate for the header
+void listMenu_header(int type, String title, int page, int pages, int y) {
     drawFromSd(0, y, BLUEBAR_IMAGE, true);
     drawFromSd(0, y, BLUEBAR_ICONS[type], true);
     screen_buffer.setTextColor(0xFFFF);
@@ -17,6 +23,15 @@ void listMenu_header(int type, String title, int page, int pages, int y, bool up
     }
 }
 
+/// Function to display a single entry in the list menu
+/// @param lindex Index of the entry
+/// @param x X-coordinate for the entry
+/// @param y Y-coordinate for the entry
+/// @param choice mOption object representing the menu option
+/// @param esize Entry size
+/// @param lines Boolean indicating if lines should be drawn between options
+/// @param selected Boolean indicating if the entry is selected
+/// @param unselected Boolean indicating if the entry is unselected (I dont fucking remember why its not just selected = false)
 void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool lines, bool selected, bool unselected) {
     uint16_t color_active = 0xFDD3;
 
@@ -38,22 +53,17 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
     screen_buffer.print(choice.label);
 }
 
+/// Function to display a list menu
+/// @param choices Array of mOption objects representing the menu options
+/// @param icount Number of options in the menu
+/// @param lines Boolean indicating if lines should be drawn between options
+/// @param type Icon to display in the header 0: `messages` 1: `phone` 2: `settings`
+/// @param label Title of the menu
+/// @param forceIcons Boolean indicating if icons should be forced
+/// @param findex Index of the selected option
 int listMenu(mOption *choices, int icount, bool lines, int type, String label, bool forceIcons, int findex) {
     screen_buffer.setTextWrap(false, false);
-    /*
 
-    int icount count of entries
-
-    label = Title of Menu
-
-    bool lines will it render lines entries
-
-    int type
-    0 = MESSAGES
-    1 = CONTACTS
-    2 = SETTINGS
-
-    */
     fastMode(true);
 
     screen_buffer.createSprite(240, 294);
@@ -71,7 +81,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     drawFromSd(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
 
     if (icount == 0) {
-        listMenu_header(type, label, 0, 0, y, false);
+        listMenu_header(type, label, 0, 0, y);
         screen_buffer.setTextColor(0);
         changeFont(1, 1);
         screen_buffer.setCursor(75, 45);
@@ -90,7 +100,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     int per_page = 269 / entry_size;
     pages        = (icount + per_page - 1) / per_page;
 
-    listMenu_header(type, label, page, pages, y, false);
+    listMenu_header(type, label, page, pages, y);
     int startIndex = page * per_page;
     int endIndex   = std::min(startIndex + per_page, icount);
 
@@ -131,7 +141,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 }
 
                 drawFromSd(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
-                listMenu_header(type, label, page, pages, y, true);
+                listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -168,7 +178,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 }
 
                 drawFromSd(0, y + ly, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
-                listMenu_header(type, label, page, pages, y, true);
+                listMenu_header(type, label, page, pages, y);
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
 
@@ -191,7 +201,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 page     = (page + 1) % pages;
                 selected = 0;
                 drawFromSd(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
-                listMenu_header(type, label, page, pages, y, true);
+                listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -208,7 +218,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 page     = (page - 1 + pages) % pages;
                 selected = 0;
                 drawFromSd(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
-                listMenu_header(type, label, page, pages, y, true);
+                listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -227,6 +237,13 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 }
 
 // Converter from old type of listMenu to new
+// @param choices Array of strings representing the menu options
+// @param icount Number of options in the menu
+// @param images Boolean indicating if images should be used
+// @param type Icon to display in the header 0: `messages` 1: `phone` 2: `settings`
+// @param label Title of the menu
+// @param forceIcons Boolean indicating if icons should be forced
+// @param findex Index of the selected option
 int listMenu(const String choices[], int icount, bool images, int type, String label, bool forceIcons, int findex) {
     mOption *optionArr = new mOption[icount];
     for (int i = 0; i < icount; i++) {
@@ -238,6 +255,14 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
 
 int lmng_offset = 0;
 // Render entry of listMenuNonGraphical()
+// @param choices Array of mOption objects representing the menu options
+// @param x X-coordinate for the entry
+// @param y Y-coordinate for the entry
+// @param icount Number of options in the menu
+// @param label Title of the menu
+// @param index Index of the selected option
+// @param color_active Color for the active option
+// @param color_inactive Color for the inactive options
 void renderlmng(mOption *choices, int x, int y, int icount, String label, int index, uint16_t color_active, uint16_t color_inactive) {
     uint max_per_page = ((320 - y - tft.fontHeight()) / tft.fontHeight());
 
@@ -263,6 +288,12 @@ void renderlmng(mOption *choices, int x, int y, int icount, String label, int in
 }
 
 // listMenu that doesn't use images
+// @param choices Array of mOption objects representing the menu options
+// @param icount Number of options in the menu
+// @param label Title of the menu
+// @param y Y-coordinate for the menu
+// @return Index of the selected option
+// @note This function is used for non-graphical list menus
 int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
     suspendCore(true);
     int x     = 0;
@@ -306,6 +337,10 @@ int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
     return -1;
 }
 
+// mini list menu
+// @param choices Array of strings representing the menu options
+// @param count Number of options in the menu
+// @param context Boolean indicating if the menu is in context
 int choiceMenu(const String choices[], int count, bool context) {
     int      x              = 30;
     int      y              = 95;

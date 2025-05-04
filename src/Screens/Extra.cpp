@@ -64,6 +64,7 @@ void execute_application() {
     ESP.restart();
 }
 
+// Additional features screen
 void e() {
 
     int choice = -2;

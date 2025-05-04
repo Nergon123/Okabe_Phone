@@ -1,6 +1,6 @@
 #include "Main.h"
 
-
+// Current screen selection based on currentScreen variable
 void screens() {
     switch (currentScreen) {
     case SCREENS::MAINSCREEN:
@@ -58,6 +58,7 @@ void rendermenu(int &choice, int old_choice) {
         IconPositions[onIndex + 4].y,
         MENU_ON_ICONS[onIndex]);
 }
+
 // Function to show the main menu
 void MainMenu() {
 
@@ -128,7 +129,6 @@ void MainMenu() {
     }
 }
 
-
 // Function to show the main screen, root screen
 void MainScreen() {
     Serial.println("MAINSCREEN");
@@ -150,6 +150,7 @@ void MainScreen() {
     currentScreen = SCREENS::MAINMENU;
 }
 
+// Function to show battery when its conected to charger and "powered off"
 void offlineCharging() {
     tft.fillRect(35, 100, 160, 80, 0xffff);
     tft.fillRect(195, 120, 10, 40, 0xFFFF);
@@ -199,6 +200,10 @@ void offlineCharging() {
     tft.fillScreen(0x0000);
 }
 
+/*
+ *Function to show recovery screen
+ * param @message message to be displayed
+ */
 void recovery(String message) {
 
     tft.setCursor(0, 40);
@@ -248,8 +253,7 @@ void recovery(String message) {
     }
 }
 
-
-
+// Function to lock keypad
 void LockScreen() {
     Serial.println("LockScreen");
     sBarChanged    = true;
@@ -271,4 +275,3 @@ void LockScreen() {
     sBarChanged    = true;
     drawStatusBar();
 }
-

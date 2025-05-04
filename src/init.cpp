@@ -1,20 +1,19 @@
 #include "init.h"
 
-
 // Function to set up the time
 // This function sets the system time to a specific date and time
 // and saves it in the preferences storage
 
-
 // Function to initialize the SD card
 // This function initializes the SD card and sets the frequency
+// @param fast If true, set the frequency to the maximum value
+// @return true if the SD card is initialized successfully, false otherwise
 bool initSDCard(bool fast) {
     SD.end();
     uint32_t sd_freq = MAX_SD_FREQ;
-    if (!SD.begin(chipSelect, SPI, SAFE_SD_FREQ))
-        return false;
-    else
-        SD.end();
+    if (!SD.begin(chipSelect, SPI, SAFE_SD_FREQ)) 
+            return false;
+
     if (fast) {
         while (sd_freq >= MIN_SD_FREQ) {
             if (SD.begin(chipSelect, SPI, sd_freq)) {
@@ -26,6 +25,7 @@ bool initSDCard(bool fast) {
 
     return SD.begin(chipSelect, SPI, SAFE_SD_FREQ);
 }
+
 // Function to initialize the hardware components
 void hardwareInit() {
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
@@ -108,11 +108,15 @@ void storageInit() {
     progressBar(70, 100, 250);
 }
 
-
 // Function to load a resource file from the SD card to the PSRAM
+// @param address: address in the file
+// @param resourcefile: path to the resource file
+// @param _resources: pointer to the resources buffer
+// @param w: width of the image
+// @param h: height of the image
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h) {
 #ifdef PSRAM_ENABLE
-    if(*_resources)
+    if (*_resources)
         free(*_resources);
     File file;
     if (isSPIFFS)
@@ -120,7 +124,7 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
     else
         file = SD.open(resourcefile);
     if (!file) {
-        ESP_LOGE("FS","Failed to open file!");
+        ESP_LOGE("FS", "Failed to open file!");
         return;
     }
 
@@ -134,7 +138,7 @@ void loadResource(ulong address, String resourcefile, uint8_t **_resources, int 
     *_resources = (uint8_t *)ps_malloc(size);
 
     if (!(*_resources)) {
-        ESP_LOGE("MALLOC","Memory allocation failed!");
+        ESP_LOGE("MALLOC", "Memory allocation failed!");
         sysError("MEMORY_ALLOCATION_FAILED" + address);
         file.close();
         return;
