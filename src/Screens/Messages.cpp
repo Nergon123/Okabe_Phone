@@ -191,13 +191,13 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
             case DOWN:
                 // if (y_scr > -height)
                 //   y_scr -= y_jump;
-                text_pos = findCharIndex(messagebuf, text_pos, DOWN);
+                text_pos = findCharPosX(messagebuf, text_pos, DOWN);
                 findSplitPosition(messagebuf, text_pos, curx, cury);
                 break;
             case UP:
                 // if (y_scr < 0)
                 //   y_scr += y_jump;
-                text_pos = findCharIndex(messagebuf, text_pos, UP);
+                text_pos = findCharPosX(messagebuf, text_pos, UP);
                 findSplitPosition(messagebuf, text_pos, curx, cury);
                 break;
             case RIGHT:
