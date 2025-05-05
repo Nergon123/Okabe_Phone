@@ -4,7 +4,7 @@
  * ## Executes application from sdcard
  *
  *  Not really an "application", but more like second bootable image.
- *  It's just flashes image into second partition and boots it from it.
+ *  This thing just flashes image into second partition and boots it from it.
  *
  */
 void execute_application() {
@@ -43,8 +43,8 @@ void execute_application() {
 
     if (file.size() > partition->size) {
         tft.setCursor(0, 210);
-        tft.printf("File size bigger than partition size %d bytes/%d bytes\n\n", file.size(), partition->size);
-
+        tft.printf("File size bigger than partition size (%d bytes/%d bytes)\n\n", file.size(), partition->size);
+        
         return;
     }
     esp_partition_erase_range(partition, 0, partition->size);

@@ -1,8 +1,8 @@
 #include "Generic.h"
 /*
-* Get the current charge level of the battery
-* @return `int`: 0-3 of 3
-*/
+ * Get the current charge level of the battery
+ * @return `int`: 0-3 of 3
+ */
 int getChargeLevel() {
 
     int toIcon = (chrg.getBatteryLevel() / 25) - 1;
@@ -15,7 +15,10 @@ int getChargeLevel() {
 // Set frequencies to fast or slow mode
 // @param status: true for fast mode, false for slow mode
 void fastMode(bool status) {
-    // TODO: REINIT SCREEN and SDCARD
+    if ((status && getCpuFrequencyMhz() == FAST_CPU_FREQ_MHZ) || (!status && getCpuFrequencyMhz() == SLOW_CPU_FREQ_MHZ)) {
+        // No need to change frequency
+        return;
+    }
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
     Serial.updateBaudRate(115200);
     if (!isSPIFFS)

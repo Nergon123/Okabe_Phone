@@ -37,7 +37,12 @@ void findSplitPosition(String text, int charIndex, int &posX, int &posY, int dir
     }
 }
 
-int findCharIndex(String text, int &charIndex, int direction) {
+// Function to find the x position of a character in next or previous line based on the direction
+// @param text The input string
+// @param charIndex The character index to find the next x position for
+// @param direction The direction to search (UP or DOWN)
+// @return The new character index after moving in the specified direction
+int findCharPosX(String text, int &charIndex, int direction) {
     int prevNL       = 0;             
     int lastNewLine  = 0;             
     int nextNL       = text.length(); 
