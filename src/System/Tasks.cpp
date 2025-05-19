@@ -22,15 +22,15 @@ void TaskIdleHandler(void *parameter) {
     uint32_t oldtime = millis();
 
     if (sendATCommand("AT").indexOf("OK") != -1) {
-        printT_S("Setting up sim card please wait...");
+        ESP_LOGI("BOOT/SIM", "%s","Setting up sim card please wait...");
         initSim();
 
         while (!_checkSim() && millis() - oldtime < 10000)
             ; // check if sim card is usable for 10 whole seconds...
         populateContacts();
-        printT_S("Done!");
+        ESP_LOGI("BOOT/SIM", "%s","Done!");
     } else {
-        printT_S("SIM card not responding");
+        ESP_LOGI("BOOT/SIM", "%s","SIM card not responding");
         simIsUsable = false;
     }
 

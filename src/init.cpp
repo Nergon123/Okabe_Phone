@@ -45,6 +45,7 @@ void hardwareInit() {
     Serial.begin(SERIAL_BAUD_RATE);
     ESP_LOGI("SERIAL", "Serial started at %d baud", SERIAL_BAUD_RATE);
     Serial1.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
+
     ESP_LOGI("SIM_CARD_SERIAL", "Serial1 (SIM CARD COMMUNICATION) started");
 #ifdef PSRAM_ENABLE
     ESP_LOGI("PSRAM", "PSRAM SIZE: %d bytes", ESP.getPsramSize());

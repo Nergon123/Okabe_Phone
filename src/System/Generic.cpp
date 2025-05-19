@@ -47,10 +47,3 @@ void setBrightness(int percentage) {
     currentBrightness = percentage;
 }
 
-void printT_S(String str) {
-
-    ESP_LOGI("BOOT", "%s", str.c_str());
-#ifdef LOG
-    tft.println(str);
-#endif
-}

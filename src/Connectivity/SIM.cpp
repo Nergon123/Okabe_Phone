@@ -161,11 +161,11 @@ int GetState() {
 // Function to initialize the SIM card
 // This function sends AT commands to the SIM card to set it up
 void initSim() {
-    printT_S(sendATCommand("AT+CMEE=2")); // Enable verbose error reporting
-    printT_S(sendATCommand("AT+CLIP=1")); // Enable caller ID reporting
-    printT_S(sendATCommand("AT+CLCC=1")); // Report a list of current calls of ME automatically when the current call status changes.
-    printT_S(sendATCommand("AT+CSCS=\"GSM\"")); // Set character set to GSM
-    printT_S(sendATCommand("AT+CMGF=1")); // Set SMS mode to text
+    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CMEE=2")); // Enable verbose error reporting
+    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CLIP=1")); // Enable caller ID reporting
+    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CLCC=1")); // Report a list of current calls of ME automatically when the current call status changes.
+    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CSCS=\"GSM\"")); // Set character set to GSM
+    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CMGF=1")); // Set SMS mode to text
     simIsUsable = _checkSim(); // Check if SIM card is usable
 }
 
@@ -174,7 +174,7 @@ void AT_test() {
     tft.fillScreen(0);
     changeFont(0);
     tft.setCursor(0, 0);
-    tft.println("Waiting for connection...");
+    tft.println("AT COMMANDS CONSOLE\n\nWaiting for connection...\n\nIf you got here by mistake \ntry to press RESET \nand make sure # button didn't stuck...");
     while (true) {
         if (Serial.available()) {
             tft.fillScreen(0);
