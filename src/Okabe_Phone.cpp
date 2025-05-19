@@ -1,8 +1,8 @@
 #include "GlobalVariables.h"
-#include "images.h"
-#include "init.h"
 #include "Screens/Main.h"
 #include "System/Time.h"
+#include "images.h"
+#include "init.h"
 
 void restart_handler() {
     tft.fillScreen(TFT_BLACK);
@@ -39,10 +39,10 @@ void setup() {
     ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getChipCores());
     progressBar(100, 100, 250);
     millSleep = millis();
-    while (buttonsHelding(false) == '#')
-        ;
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
-
+    
+    if (buttonsHelding(false) == '#')
+        AT_test();
 }
 
 // Function to handle the main loop
