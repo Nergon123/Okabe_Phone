@@ -48,12 +48,12 @@ void rendermenu(int &choice, int old_choice) {
 
     int onIndex = choice;
     if (old_choice != choice)
-        drawFromSd(
+        drawImage(
             IconPositions[offIndex].x,
             IconPositions[offIndex].y,
             MENU_OFF_ICONS[offIndex]);
 
-    drawFromSd(
+    drawImage(
         IconPositions[onIndex + 4].x,
         IconPositions[onIndex + 4].y,
         MENU_ON_ICONS[onIndex]);
@@ -62,8 +62,8 @@ void rendermenu(int &choice, int old_choice) {
 // Function to show the main menu
 void MainMenu() {
 
-    drawFromSd(0, 26, MENU_BACKGROUND);   // Menu background
-    drawFromSd(51, 71, MENU_ON_ICONS[0]); // Menu icon
+    drawImage(0, 26, MENU_BACKGROUND);   // Menu background
+    drawImage(51, 71, MENU_ON_ICONS[0]); // Menu icon
 
     int choice     = 0;
     int old_choice = 0;
@@ -94,7 +94,7 @@ void MainMenu() {
                 return;
                 break;
             }
-            drawFromSd(0, 26, MENU_BACKGROUND);
+            drawImage(0, 26, MENU_BACKGROUND);
             rendermenu(choice, choice);
             break;
         }

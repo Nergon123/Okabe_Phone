@@ -10,8 +10,8 @@
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
 void listMenu_header(int type, String title, int page, int pages, int y) {
-    drawFromSd(0, y, BLUEBAR_IMAGE, true);
-    drawFromSd(0, y, BLUEBAR_ICONS[type], true);
+    drawImage(0, y, BLUEBAR_IMAGE, true);
+    drawImage(0, y, BLUEBAR_ICONS[type], true);
     screen_buffer.setTextColor(0xFFFF);
     changeFont(1, 1);
     screen_buffer.setCursor(28, y + 19);
@@ -40,8 +40,8 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
     if (selected)
         screen_buffer.fillRect(0, yy, 240, esize, color_active);
     else if (unselected)
-        drawFromSd(0, yy, SDImage(BACKGROUND_IMAGE.address + (yy * 240 * 2), 240, esize), true);
-    drawFromSd(x - choice.icon.w, yy, choice.icon, true);
+        drawImage(0, yy, SDImage(BACKGROUND_IMAGE.address + (yy * 240 * 2), 240, esize), true);
+    drawImage(x - choice.icon.w, yy, choice.icon, true);
 
     if (lines) {
         screen_buffer.drawLine(0, yy, 240, yy, 0);
@@ -64,8 +64,6 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 int listMenu(mOption *choices, int icount, bool lines, int type, String label, bool forceIcons, int findex) {
     screen_buffer.setTextWrap(false, false);
 
-    fastMode(true);
-
     screen_buffer.createSprite(240, 294);
     screen_buffer.setTextSize(1);
     screen_buffer.setTextColor(0);
@@ -78,7 +76,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     int ly           = 25;
     int x            = 10;
     int old_selected = 0;
-    drawFromSd(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+    drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
 
     if (icount == 0) {
         listMenu_header(type, label, 0, 0, y);
@@ -117,7 +115,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         switch (c) {
         case SELECT:
             screen_buffer.deleteSprite();
-            fastMode(false);
+
             return selected + (page * per_page);
             break;
         case BACK:
@@ -128,7 +126,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         case UP:
             old_selected = selected;
             selected--;
-            fastMode(true);
+
             if (selected < 0) {
                 if (page > 0) {
 
@@ -140,7 +138,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                     selected = (icount % per_page == 0) ? per_page - 1 : (icount % per_page) - 1;
                 }
 
-                drawFromSd(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+                drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -157,11 +155,10 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
             screen_buffer.pushSprite(0, 26);
 
-            fastMode(false);
             break;
 
         case DOWN:
-            fastMode(true);
+
             old_selected = selected;
             selected++;
 
@@ -177,7 +174,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                     selected = 0;
                 }
 
-                drawFromSd(0, y + ly, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+                drawImage(0, y + ly, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
                 listMenu_header(type, label, page, pages, y);
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -194,13 +191,12 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 
             screen_buffer.pushSprite(0, 26);
 
-            fastMode(false);
             break;
         case RIGHT:
             if (pages > 1) {
                 page     = (page + 1) % pages;
                 selected = 0;
-                drawFromSd(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+                drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -217,7 +213,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             if (pages > 1) {
                 page     = (page - 1 + pages) % pages;
                 selected = 0;
-                drawFromSd(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+                drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -349,11 +345,11 @@ int choiceMenu(const String choices[], int count, bool context) {
     uint16_t color_inactive = 0x0000;
 
     if (context) {
-        drawFromSd(16, 100, CONTEXT_MENU_IMAGE);
+        drawImage(16, 100, CONTEXT_MENU_IMAGE);
         x = 40;
         y = 120;
     } else {
-        drawFromSd(0, 68, WHITE_BOTTOM_IMAGE);
+        drawImage(0, 68, WHITE_BOTTOM_IMAGE);
         x = 30;
         y = 95;
     }
@@ -389,7 +385,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawFromSd(16, 100, CONTEXT_MENU_IMAGE);
+                drawImage(16, 100, CONTEXT_MENU_IMAGE);
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
@@ -398,7 +394,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawFromSd(0, 68, WHITE_BOTTOM_IMAGE);
+                drawImage(0, 68, WHITE_BOTTOM_IMAGE);
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
@@ -439,7 +435,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawFromSd(16, 100, CONTEXT_MENU_IMAGE);
+                drawImage(16, 100, CONTEXT_MENU_IMAGE);
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
@@ -448,7 +444,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawFromSd(0, 68, WHITE_BOTTOM_IMAGE);
+                drawImage(0, 68, WHITE_BOTTOM_IMAGE);
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);

@@ -7,10 +7,12 @@ void idle() {
 
     if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
         setBrightness(brightness * 0.1);
+        fastMode(false);
     } else if (millis() > millSleep + delayBeforeSleep) {
         setBrightness(0);
     } else {
         setBrightness(brightness);
+        fastMode(true);
     }
     if (millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked) {
         LockScreen();
@@ -76,9 +78,9 @@ int checkButton() {
 }
 
 /*
-* Number input field (used on Main screen)
-* @param first first number to be displayed (since it being called by button press)
-*/
+ * Number input field (used on Main screen)
+ * @param first first number to be displayed (since it being called by button press)
+ */
 
 void numberInput(char first) {
     tft.fillRect(0, 300, 240, 20, 0);
@@ -139,10 +141,10 @@ void numberInput(char first) {
 }
 
 /*
-* Show character selection screen
-* @param text text to be displayed
-* @param pos selected character position
-*/
+ * Show character selection screen
+ * @param text text to be displayed
+ * @param pos selected character position
+ */
 void showText(const char *text, int pos) {
 
     int  h        = tft.getViewportHeight();
@@ -185,13 +187,13 @@ void showText(const char *text, int pos) {
 }
 
 /*
-* Character selection 
-* @param input pressed button
-* @param onlynumbers if true, only numbers are allowed
-* @param nonl disable new line
-* @return selected character
-*/
-char textInput(int input, bool onlynumbers, bool nonl) {
+ * Character selection
+ * @param input pressed button
+ * @param onlynumbers if true, only numbers are allowed
+ * @param nonl disable new line
+ * @return selected character
+ */
+char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *retButton) {
     if (input == -1)
         return 0;
     char buttons[12][12] = {
@@ -265,11 +267,15 @@ char textInput(int input, bool onlynumbers, bool nonl) {
                 showText(buttons[currentIndex], pos);
                 tft.setCursor(curx, cury);
             }
+        } 
+        if(c!=input&&c!=-1) {
+            mil = DIB_MS + 1;
+            if (retButton != nullptr) {
+                *retButton = c;
+            }
         }
         first = false;
     }
-
-    tft.fillRect(0, 300, 240, 30, 0);
 
     tft.setCursor(curx, cury);
     bool viewport = false;
@@ -282,8 +288,9 @@ char textInput(int input, bool onlynumbers, bool nonl) {
         tft.resetViewport();
         viewport = true;
     }
-
-    drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
+    if (!dontRedraw) {
+        drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
+    }
     if (viewport) {
         tft.setViewport(vx, vy, w, h);
     }

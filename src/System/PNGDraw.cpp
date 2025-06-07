@@ -43,7 +43,7 @@ void pngDraw(PNGDRAW *pDraw) {
 // @param filename: Path to the PNG file on the SD card
 // @param _wallpaper: Boolean indicating if the image is a wallpaper
 void drawPNG(const char *filename, bool _wallpaper) {
-    fastMode(true);
+    
 
     File file = SD.open(filename, FILE_READ);
     if (!file) {
@@ -66,7 +66,7 @@ void drawPNG(const char *filename, bool _wallpaper) {
             Serial.println("Failed to allocate wallpaper buffer!");
             png.close();
             file.close();
-            fastMode(false);
+            
             return;
         }
 
@@ -79,5 +79,5 @@ void drawPNG(const char *filename, bool _wallpaper) {
     }
 
     file.close();
-    fastMode(false);
+    
 }

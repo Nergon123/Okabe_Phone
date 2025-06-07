@@ -1,5 +1,6 @@
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
 ColumnLimit: 0
 IndentWidth: 4
 

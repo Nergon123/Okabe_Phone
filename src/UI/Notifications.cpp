@@ -32,9 +32,9 @@ void drawStatusBar(bool force) {
 
         sBarChanged = false;
         charge      = getChargeLevel();
-        drawFromSd(0, 0, STATUSBAR_IMAGE, true, _sprite); // statusbar
-        drawFromSd(0, 0, SIGNAL_IMAGES[_signal], true, _sprite);
-        drawFromSd(207, 0, BATTERY_IMAGES[charge], true, _sprite);
+        drawImage(0, 0, STATUSBAR_IMAGE, true, _sprite); // statusbar
+        drawImage(0, 0, SIGNAL_IMAGES[_signal], true, _sprite);
+        drawImage(207, 0, BATTERY_IMAGES[charge], true, _sprite);
         //  tft.print(String(charge) + String("%"));
         changeFont(1, true, _sprite);
         _sprite.setTextSize(1);
@@ -59,7 +59,7 @@ void drawStatusBar(bool force) {
 // @return true if the user confirms, false if the user cancels
 bool confirmation(String reason) {
     drawWallpaper();
-    drawFromSd(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
+    drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     changeFont(1);
     tft.setCursor(45, 110);
     tft.setTextColor(0);
@@ -93,7 +93,7 @@ void ErrorWindow(String reason) {
 
     int xpos = 0;
     drawWallpaper();
-    drawFromSd(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
+    drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     tft.setTextSize(1);
     tft.setCursor(80, 120);
     changeFont(1);

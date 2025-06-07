@@ -27,7 +27,7 @@ void execute_application() {
     tft.println("BOOTING INTO APPLICATION...");
     if (file_path == "/null")
         return;
-    fastMode(true);
+    
     File file = SD.open(file_path);
     if (!file) {
         Serial.println("Failed to open file!");

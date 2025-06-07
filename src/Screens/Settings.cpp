@@ -7,8 +7,8 @@ const int lastImage = 42;
 // It allows the user to change the wallpaper, ringtones, etc.
 void settings() {
 
-    drawFromSd(0, 26, SUBMENU_BACKGROUND);
-    drawFromSd(0, 26, SETTINGS_HEADER_IMAGE);
+    drawImage(0, 26, SUBMENU_BACKGROUND);
+    drawImage(0, 26, SETTINGS_HEADER_IMAGE);
     String settingsOptions[] = {
         "Change Wallpaper",
         "Set call ringtone",
@@ -52,7 +52,7 @@ void settings() {
             confPictureIndex = choiceMenu(galch, 2, true);
             switch (confPictureIndex) {
             case 0:
-                drawFromSd(WALLPAPER_IMAGES_BASE.address + WALLPAPER_IMAGES_MULTIPLIER * pictureIndex, 0, 26, WALLPAPER_IMAGES_BASE.w, WALLPAPER_IMAGES_BASE.h, "/" + resPath, 0, 0);
+                drawImage(WALLPAPER_IMAGES_BASE.address + WALLPAPER_IMAGES_MULTIPLIER * pictureIndex, 0, 26, WALLPAPER_IMAGES_BASE.w, WALLPAPER_IMAGES_BASE.h, "/" + resPath, 0, 0);
                 while (buttonsHelding() != BACK)
                     ;
                 break;
@@ -109,54 +109,54 @@ void settings() {
 int gallery() {
     if (!SD.exists(resPath))
         return lastImage;
+
+    auto getWallpaper = [&](int wallpaperID) {
+        return SDImage(WALLPAPER_ICONS_BASE.address + (WALLPAPER_ICONS_MULTIPLIER * wallpaperID), WALLPAPER_ICONS_BASE.w, WALLPAPER_ICONS_BASE.h);
+    };
     mOption wallpaperOptions[] = {
-        {"Wallpaper 1"},
-        {"Wallpaper 2"},
-        {"Wallpaper 3"},
-        {"IBN5100"},
-        {"Red jelly"},
-        {"The head of doll"},
-        {"Mayuri jelly"},
-        {"Fatty Gero Froggy"},
-        {"Burning Gero Froggy"},
-        {"Upa"},
-        {"Metal Upa"},
-        {"Seira"},
-        {"Seira After awaking"},
-        {"Gero Froggy"},
-        {"Cat Gero Froggy"},
-        {"Cow Gero Froggy"},
-        {"FES"},
-        {"Gero Froggies"},
-        {"Calico Gero Froggies"},
-        {"Gold Upa"},
-        {"FES2"},
-        {"Erin 1"},
-        {"Erin 2"},
-        {"Orgel Sisters"},
-        {"Mayuri"},
-        {"Kurisu"},
-        {"Moeka"},
-        {"Luka"},
-        {"Faris"},
-        {"Suzuha"},
-        {"UNCONFIRMED"},
-        {"Popping steiner"},
-        {"Wallpaper 4"},
-        {"NukariyaIce"},
-        {"MayQueen"},
-        {"Upa ♪"},
-        {"Wallpaper 5"},
-        {"Rabikuro"},
-        {"Wallpaper 6"},
-        {"Space Froggies"},
-        {"Wallpaper 7"},
-        {"Nae"},
-        {"Pick wallpaper..."}};
-    // drawWallpaper();
-    for (int i = 0; i < ArraySize(wallpaperOptions) - 1; i++) {
-        wallpaperOptions[i].icon = SDImage(WALLPAPER_ICONS_BASE.address + (WALLPAPER_ICONS_MULTIPLIER * i), WALLPAPER_ICONS_BASE.w, WALLPAPER_ICONS_BASE.h);
-    }
+        {"Wallpaper 1", getWallpaper(0)},
+        {"Wallpaper 2", getWallpaper(1)},
+        {"Wallpaper 3", getWallpaper(2)},
+        {"IBN5100", getWallpaper(3)},
+        {"Red jelly", getWallpaper(4)},
+        {"The head of doll", getWallpaper(5)},
+        {"Mayuri jelly", getWallpaper(6)},
+        {"Fatty Gero Froggy", getWallpaper(7)},
+        {"Burning Gero Froggy", getWallpaper(8)},
+        {"Upa", getWallpaper(9)},
+        {"Metal Upa", getWallpaper(10)},
+        {"Seira", getWallpaper(11)},
+        {"Seira After awaking", getWallpaper(12)},
+        {"Gero Froggy", getWallpaper(13)},
+        {"Cat Gero Froggy", getWallpaper(14)},
+        {"Cow Gero Froggy", getWallpaper(15)},
+        {"FES", getWallpaper(16)},
+        {"Gero Froggies", getWallpaper(17)},
+        {"Calico Gero Froggies", getWallpaper(18)},
+        {"Gold Upa", getWallpaper(19)},
+        {"FES2", getWallpaper(20)},
+        {"Erin 1", getWallpaper(21)},
+        {"Erin 2", getWallpaper(22)},
+        {"Orgel Sisters", getWallpaper(23)},
+        {"Mayuri", getWallpaper(24)},
+        {"Kurisu", getWallpaper(25)},
+        {"Moeka", getWallpaper(26)},
+        {"Luka", getWallpaper(27)},
+        {"Faris", getWallpaper(28)},
+        {"Suzuha", getWallpaper(29)},
+        {"UNCONFIRMED", getWallpaper(30)},
+        {"Popping steiner", getWallpaper(31)},
+        {"Wallpaper 4", getWallpaper(32)},
+        {"NukariyaIce", getWallpaper(33)},
+        {"MayQueen", getWallpaper(34)},
+        {"Upa ♪", getWallpaper(35)},
+        {"Wallpaper 5", getWallpaper(36)},
+        {"Rabikuro", getWallpaper(37)},
+        {"Wallpaper 6", getWallpaper(38)},
+        {"Space Froggies", getWallpaper(39)},
+        {"Wallpaper 7", getWallpaper(40)},
+        {"Nae", getWallpaper(41)},
+        {"Pick wallpaper...", getWallpaper(42)}};
     return listMenu(wallpaperOptions, ArraySize(wallpaperOptions), true, 2, "Change wallpaper");
 }
 
@@ -164,9 +164,9 @@ int gallery() {
 // This function is called when the user wants to set the time
 // @param time Pointer to the time_t variable
 void setTime(time_t *time) {
-    drawFromSd(0, 51, BACKGROUND_IMAGE);
-    drawFromSd(0, 26, BLUEBAR_IMAGE);
-    drawFromSd(0, 26, BLUEBAR_ICONS[2]); // Bluebar icon
+    drawImage(0, 51, BACKGROUND_IMAGE);
+    drawImage(0, 26, BLUEBAR_IMAGE);
+    drawImage(0, 26, BLUEBAR_ICONS[2]); // Bluebar icon
     changeFont(1);
     tft.setCursor(30, 44);
     tft.setTextColor(0xFFFF);

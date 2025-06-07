@@ -66,23 +66,23 @@ void writeCustomFont(int x, int y, String input, int type) {
         Serial.println(String(buf[i - 1]) + " " + String(w * (i - 1) + x));
         switch (buf[i - 1]) {
         case '#':
-            drawFromSd(addr + (size * 10), w * (i - 1) + x, y, w, h, transp, tc);
+            drawImage(addr + (size * 10), w * (i - 1) + x, y, w, h, transp, tc);
             break;
         case '*':
-            drawFromSd(addr + (size * 11), w * (i - 1) + x, y, w, h, transp, tc);
+            drawImage(addr + (size * 11), w * (i - 1) + x, y, w, h, transp, tc);
             break;
         case 'X':
-            drawFromSd(addr + (size * 12), w * (i - 1) + x, y, w, h, transp, tc);
+            drawImage(addr + (size * 12), w * (i - 1) + x, y, w, h, transp, tc);
             break;
         case '/':
-            drawFromSd(addr + (size * 13), w * (i - 1) + x, y, w, h, transp, tc);
+            drawImage(addr + (size * 13), w * (i - 1) + x, y, w, h, transp, tc);
             break;
         case ':':
-            drawFromSd(addr + (size * 14), w * (i - 1) + x, y, w, h, transp, tc);
+            drawImage(addr + (size * 14), w * (i - 1) + x, y, w, h, transp, tc);
             break;
         default:
             if (buf[i - 1] > 47 && buf[i - 1] < 58)
-                drawFromSd(addr + (size * (buf[i - 1] - 48)), w * (i - 1) + x, y, w, h, transp, tc);
+                drawImage(addr + (size * (buf[i - 1] - 48)), w * (i - 1) + x, y, w, h, transp, tc);
             break;
         }
     }
