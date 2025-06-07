@@ -59,6 +59,7 @@ Contact contacts[MAX_CONTACTS];
 // Handle for background SIM checks
 TaskHandle_t TaskHCommand;
 
+bool lockFastMode = false;
 // Number of person who calling us
 String currentNumber = "";
 

@@ -12,8 +12,6 @@
 // @param scale: downscale factor
 // @param file_path: path to the file on the SD card
 void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, int scale, String file_path) {
-    // Enable fast mode for TFT display
-    fastMode(true);
 
     // Open the file from the SD card
     File file = SD.open(file_path);
@@ -33,7 +31,7 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
     if (!image_buffer) {
         sysError("MEMORY_ALLOCATION_FAILED");
         file.close();
-        fastMode(false);
+        
         return;
     }
 
@@ -42,7 +40,7 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
         sysError("FILE_READ_ERROR");
         free(image_buffer);
         file.close();
-        fastMode(false);
+        
         return;
     }
     file.close();
@@ -52,7 +50,7 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
     if (!downscaled_buffer) {
         sysError("MEMORY_ALLOCATION_FAILED");
         free(image_buffer);
-        fastMode(false);
+        
         return;
     }
 
@@ -79,8 +77,8 @@ void drawFromSdDownscale(uint32_t pos, int pos_x, int pos_y, int size_x, int siz
     free(image_buffer);
     free(downscaled_buffer);
 
-    // Disable fast mode
-    fastMode(false);
+ 
+    
 }
 
 
@@ -102,7 +100,7 @@ void drawCutoutFromSd(SDImage image,
                       int cutout_width, int cutout_height,
                       int display_x, int display_y,
                       String file_path) {
-    fastMode(true);
+    
 
     // Open the file from the SD card
     File file = SD.open(file_path);
@@ -133,7 +131,7 @@ void drawCutoutFromSd(SDImage image,
         tft.pushImage(display_x, display_y + row, cutout_width, 1, (uint16_t *)buffer);
     }
     file.close();
-    fastMode(false);
+    
 }
 
 
@@ -154,8 +152,8 @@ TFT_eSprite sprite = TFT_eSprite(&tft);
 //  @param file_path: path to the file on the SD card
 //  @param transp: true if the image has transparent pixels
 //  @param tc: transparent color (default is black)
-void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool is_screen_buffer, TFT_eSprite &sbuffer, String file_path, bool transp, uint16_t tc) {
-    fastMode(true);
+void drawImage(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool is_screen_buffer, TFT_eSprite &sbuffer, String file_path, bool transp, uint16_t tc) {
+    
     if (file_path != resPath || !resources) {
         ESP_LOGI("DRAWING", "resource path is different from default or resources not available");
         #ifndef PSRAM_ENABLED
@@ -241,16 +239,16 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
         }
     }
 
-    fastMode(false);
+    
 }
 
 
-void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path, bool transp, uint16_t tc) {
-    drawFromSd(pos, pos_x, pos_y, size_x, size_y, false, screen_buffer, file_path, transp, tc);
+void drawImage(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, String file_path, bool transp, uint16_t tc) {
+    drawImage(pos, pos_x, pos_y, size_x, size_y, false, screen_buffer, file_path, transp, tc);
 }
 
-void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool transp, uint16_t tc) {
-    drawFromSd(pos, pos_x, pos_y, size_x, size_y, false, screen_buffer, resPath, transp, tc);
+void drawImage(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool transp, uint16_t tc) {
+    drawImage(pos, pos_x, pos_y, size_x, size_y, false, screen_buffer, resPath, transp, tc);
 }
 
 // ## Draw image from SD card to sprite buffer
@@ -259,18 +257,18 @@ void drawFromSd(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool
 // @param sprite: SDImage object containing the image data
 // @param is_screen_buffer: true if the image should be drawn to a sprite buffer
 // @param sbuffer: sprite buffer to draw the image to
-void drawFromSd(int x, int y, SDImage sprite, bool is_screen_buffer, TFT_eSprite &sbuffer) {
+void drawImage(int x, int y, SDImage sprite, bool is_screen_buffer, TFT_eSprite &sbuffer) {
     if (sprite.address != 0)
-        drawFromSd(sprite.address, x, y, sprite.w, sprite.h, is_screen_buffer, sbuffer, resPath, sprite.transp, sprite.tc);
+        drawImage(sprite.address, x, y, sprite.w, sprite.h, is_screen_buffer, sbuffer, resPath, sprite.transp, sprite.tc);
 }
 
 // ## Draw image from SD card to screen
 // @param x: x position on the screen
 // @param y: y position on the screen
 // @param sprite: SDImage object containing the image data
-void drawFromSd(int x, int y, SDImage sprite) {
+void drawImage(int x, int y, SDImage sprite) {
     if (sprite.address != 0)
-        drawFromSd(sprite.address, x, y, sprite.w, sprite.h, sprite.transp, sprite.tc);
+        drawImage(sprite.address, x, y, sprite.w, sprite.h, sprite.transp, sprite.tc);
 }
 
 uint8_t *wallpaper = nullptr;

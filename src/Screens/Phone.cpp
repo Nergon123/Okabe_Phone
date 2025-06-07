@@ -21,7 +21,7 @@ bool isCalling = false;
  */
 void incomingCall(Contact contact) {
     drawWallpaper();
-    drawFromSd(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
+    drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     changeFont(1);
     tft.setTextColor(0);
     tft.setCursor(15, 170);
@@ -31,10 +31,10 @@ void incomingCall(Contact contact) {
     changeFont(4);
     tft.setTextSize(1);
     tft.print("Ca l l ing");
-    drawFromSd(45, 105, PHONE_ICON);
+    drawImage(45, 105, PHONE_ICON);
 
     writeCustomFont(55, 185, contact.phone, 1);
-    drawFromSd(73, 90, LIGHTNING_ANIMATION[0]);
+    drawImage(73, 90, LIGHTNING_ANIMATION[0]);
     int button = buttonsHelding();
     while (isCalling) {
         button = buttonsHelding();
@@ -124,7 +124,7 @@ void callActivity(Contact contact) {
     tft.fillScreen(0);
     sBarChanged = true;
     drawStatusBar();
-    drawFromSd(40, 143, VOICE_ONLY_LABEL);
+    drawImage(40, 143, VOICE_ONLY_LABEL);
     while (stateCall != DISCONNECT) {
         if (buttonsHelding() == DECLINE) {
             sendATCommand("ATH");
@@ -222,8 +222,8 @@ void editContact(Contact contact) {
     int textboxes = 2;
     int buttons   = 2;
     int direction;
-    drawFromSd(0, 26, BLUEBAR_IMAGE);
-    drawFromSd(0, 26, BLUEBAR_ICONS[1]);
+    drawImage(0, 26, BLUEBAR_IMAGE);
+    drawImage(0, 26, BLUEBAR_ICONS[1]);
     drawStatusBar();
     tft.setCursor(30, 45);
     tft.setTextSize(1);
@@ -231,7 +231,7 @@ void editContact(Contact contact) {
     tft.setTextColor(0xffff);
     String boxString[textboxes] = {contact.name, contact.phone};
     tft.print("Edit Contact");
-    drawFromSd(0, 51, BACKGROUND_IMAGE_CUTTED);
+    drawImage(0, 51, BACKGROUND_IMAGE_CUTTED);
     InputField("Name", contact.name, 70, true, false, false);
     InputField("Phone Number", contact.phone, 120, true, false, false);
 

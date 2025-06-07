@@ -9,6 +9,8 @@
 #define MCP23017_ADDR 0x20
 #define MAX_CONTACTS 100
 
+#define SimSerial Serial1
+
 //For default serial communication
 #define SERIAL_BAUD_RATE 115200
 //For transfering data
@@ -78,6 +80,5 @@
 #define RESOURCE_ADDRESS 0x5A708D
 
 
-#define MAX_SD_FREQ 80000000
-#define MIN_SD_FREQ 1000000 
-#define SAFE_SD_FREQ 500000 
+#define FAST_SD_FREQ 5000000
+#define SAFE_SD_FREQ 5000000

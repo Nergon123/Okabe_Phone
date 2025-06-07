@@ -89,6 +89,7 @@ extern bool          isAbleToCall;
 extern bool          isCalling;
 extern bool          isAnswered;
 extern bool          backgroundBusy;
+extern bool          lockFastMode;
 extern volatile bool isScreenLocked;
 extern volatile bool simIsBusy;
 extern volatile bool ongoingCall;

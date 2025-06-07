@@ -33,7 +33,7 @@ void setup() {
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
     }
     storageInit();
-    drawFromSd(50, 85, LOGO_IMAGE);
+    drawImage(50, 85, LOGO_IMAGE);
     initTasks();
     ESP_LOGI("DEVICE", "\nOkabePhone " FIRMVER "\n\nPhone firmware written by Nergon\n\nResources located in sdcard (%s)\n", resPath.c_str());
     ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getChipCores());
@@ -43,6 +43,7 @@ void setup() {
     
     if (buttonsHelding(false) == '#')
         AT_test();
+    messageActivityOut(Contact("Assistant","+0000000000"));
 }
 
 // Function to handle the main loop

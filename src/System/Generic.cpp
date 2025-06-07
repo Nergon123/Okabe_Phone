@@ -12,6 +12,17 @@ int getChargeLevel() {
     return toIcon;
 }
 
+ulong funcTime = 0;
+#ifdef DEVMODE
+void GetFuncTime(bool start,const char* who = "UNKNOWN") {
+    if (start) {
+        funcTime = micros();
+    } else {
+        Serial.printf("\n%s run for %.3f ms\n" ,who,(float)(micros() - funcTime)/1000);
+    }
+}
+#endif
+
 // Set frequencies to fast or slow mode
 // @param status: true for fast mode, false for slow mode
 void fastMode(bool status) {
@@ -20,9 +31,11 @@ void fastMode(bool status) {
         return;
     }
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
-    Serial.updateBaudRate(115200);
+    Serial.updateBaudRate(SERIAL_BAUD_RATE);
+    SimSerial.updateBaudRate(SIM_BAUD_RATE);
     if (!isSPIFFS)
         initSDCard(status);
+
 }
 
 int currentBrightness = brightness;
@@ -46,4 +59,3 @@ void setBrightness(int percentage) {
     }
     currentBrightness = percentage;
 }
-

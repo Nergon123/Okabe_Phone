@@ -7,7 +7,7 @@ void WifiConnect(String ssid, String password) {
 
 // List available WiFi networks
 void WiFiList() {
-    fastMode(true);
+    
     WiFi.begin();
     WiFi.mode(WIFI_STA);
     while (true) {

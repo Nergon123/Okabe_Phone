@@ -233,7 +233,7 @@ int RunAction(String request) {
 // Highly experimental
 void SerialConnection() {
     suspendCore(true);
-    fastMode(true);
+    
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE);
     tft.setTextSize(1);
@@ -258,6 +258,6 @@ void SerialConnection() {
     }
 
     Serial.updateBaudRate(FAST_SERIAL_BAUD_RATE);
-    fastMode(false);
+    
     suspendCore(false);
 }

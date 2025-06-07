@@ -10,25 +10,40 @@
 // @return true if the SD card is initialized successfully, false otherwise
 bool initSDCard(bool fast) {
     SD.end();
-    uint32_t sd_freq = MAX_SD_FREQ;
-    if (!SD.begin(chipSelect, SPI, SAFE_SD_FREQ)) 
-            return false;
-
+    uint32_t freq;
+    int tries = 0;
     if (fast) {
-        while (sd_freq >= MIN_SD_FREQ) {
-            if (SD.begin(chipSelect, SPI, sd_freq)) {
-                return true;
-            }
-            sd_freq -= 1000000;
+        freq = FAST_SD_FREQ;
+        if (freq >= getCpuFrequencyMhz() * 1000000) {
+            freq /= 4;
         }
+        if (SD.begin(chipSelect, SPI, freq)) {
+            return true;
+        } else {
+            SD.end();
+            freq = SAFE_SD_FREQ;
+            while (freq >= getCpuFrequencyMhz() * 1000000) {
+                freq /= 4;
+                tries++;
+                if(tries>5)break;
+            }
+            return SD.begin(chipSelect, SPI, freq);
+        }
+    } else {
+        freq = SAFE_SD_FREQ;
+        while (freq >= getCpuFrequencyMhz() * 1000000) {
+            freq /= 4;
+            if(tries>5)break;
+        }
+        SD.end();
+        return SD.begin(chipSelect, SPI, freq);
     }
-
-    return SD.begin(chipSelect, SPI, SAFE_SD_FREQ);
+    return false;
 }
 
 // Function to initialize the hardware components
 void hardwareInit() {
-    setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
+    setCpuFrequencyMhz(SLOW_CPU_FREQ_MHZ);
     // INIT charging IC as well as I2C
     chrg.begin(21, 22);
     pinMode(TFT_BL, OUTPUT);
@@ -44,7 +59,7 @@ void hardwareInit() {
     // INIT Serial
     Serial.begin(SERIAL_BAUD_RATE);
     ESP_LOGI("SERIAL", "Serial started at %d baud", SERIAL_BAUD_RATE);
-    Serial1.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
+    SimSerial.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
 
     ESP_LOGI("SIM_CARD_SERIAL", "Serial1 (SIM CARD COMMUNICATION) started");
 #ifdef PSRAM_ENABLE

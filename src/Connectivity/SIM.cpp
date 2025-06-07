@@ -8,23 +8,26 @@
  * @return Response from the SIM card module
  */
 String sendATCommand(String command, uint32_t timeout, bool background) {
+    if (SimSerial.baudRate() != SIM_BAUD_RATE) {
+        SimSerial.updateBaudRate(SIM_BAUD_RATE);
+    }
     bool _simIsBusy = simIsBusy;
     while (_simIsBusy) {
         delay(50);
         _simIsBusy = simIsBusy;
     }
     simIsBusy = true;
-    Serial1.println(command); // Send the AT command
+    SimSerial.println(command); // Send the AT command
 
     String   response  = "";
     uint32_t startTime = millis();
 
     // Wait for response or timeout
     while (millis() - startTime < timeout) {
-        while (Serial1.available()) {
+        while (SimSerial.available()) {
 
-            char c = Serial1.read(); // Read a single character
-            response += c;           // Append it to the response
+            char c = SimSerial.read(); // Read a single character
+            response += c;             // Append it to the response
         }
     }
     if (response.indexOf("+CLIP:") != -1) {
@@ -131,19 +134,18 @@ bool checkSim() {
     return simIsUsable;
 }
 
-
 /*
-* Get Call status from SIM Card Module
-* 
-* Status defined (see Defines.h):
-* `0 ACTIVE`
-* 1 HELD
-* 2 DIALING
-* 3 ALERTING
-* 4 INCOMING
-* 5 WAITING
-* 6 DISCONNECT
-*/
+ * Get Call status from SIM Card Module
+ *
+ * Status defined (see Defines.h):
+ * `0 ACTIVE`
+ * 1 HELD
+ * 2 DIALING
+ * 3 ALERTING
+ * 4 INCOMING
+ * 5 WAITING
+ * 6 DISCONNECT
+ */
 int GetState() {
     String result = sendATCommand("AT+CLCC");
     Serial.println("AAA" + result);
@@ -157,16 +159,16 @@ int GetState() {
     return atoi(result.c_str());
 }
 
-// @link 
+// @link
 // Function to initialize the SIM card
 // This function sends AT commands to the SIM card to set it up
 void initSim() {
-    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CMEE=2")); // Enable verbose error reporting
-    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CLIP=1")); // Enable caller ID reporting
-    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CLCC=1")); // Report a list of current calls of ME automatically when the current call status changes.
-    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CSCS=\"GSM\"")); // Set character set to GSM
-    ESP_LOGI("BOOT/SIM", "%s",sendATCommand("AT+CMGF=1")); // Set SMS mode to text
-    simIsUsable = _checkSim(); // Check if SIM card is usable
+    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CMEE=2"));       // Enable verbose error reporting
+    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CLIP=1"));       // Enable caller ID reporting
+    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CLCC=1"));       // Report a list of current calls of ME automatically when the current call status changes.
+    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CSCS=\"GSM\"")); // Set character set to GSM
+    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CMGF=1"));       // Set SMS mode to text
+    simIsUsable = _checkSim();                                    // Check if SIM card is usable
 }
 
 // Enable AT commands console
