@@ -15,7 +15,7 @@ In July 2024, I was messing around with resource files from some visual novels a
 
 I searched GitHub for “Okabe Phone,” “Rintarou Phone,” “Steins Gate Phone”… and found *nothing*. So, I decided to be that someone.
 
-I first posted a photo of the prototype in the Science Adventure Discord server in the [#showcase channel on 09/08/2024, 19:04 UTC](https://discord.com/channels/213420119034953729/453675152287203368/1271529614946074755), and made this repo public on 26/01/2025.
+I first posted a photo of the prototype in the [Science Adventure Discord Server](https://discord.com/invite/YBmZzfA) in the [#showcase channel on 09/08/2024, 19:04 UTC](https://discord.com/channels/213420119034953729/453675152287203368/1271529614946074755), and made this repo public on 26/01/2025.
 
 
 
