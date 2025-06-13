@@ -1,6 +1,5 @@
 #include "UIElements.h"
 
-
 // ## UI Button
 //  Part of local "UI Kit"
 //  @param title: Button title
@@ -64,13 +63,22 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 // @param format: Format string for the value
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format) {
 
+
+    //calculation of triangle corners
     int fp  = w / 2;
     int st  = h / 5;
     int stf = w / 5;
-
-    int tx1 = x + fp - stf, tx2 = x + fp, tx3 = x + fp + stf;
-    int ty1 = y - st, ty2 = y - st * 2, ty3 = y - st;
-    int ty11 = y + h + st, ty21 = y + h + st * 2, ty31 = y + h + st;
+    
+    int tx1 = x + fp - stf,
+        tx2 = x + fp,
+        tx3 = x + fp + stf;
+    int ty1 = y - st,
+        ty2 = y - st * 2,
+        ty3 = y - st;
+    int
+        ty11 = y + h + st,
+        ty21 = y + h + st * 2,
+        ty31 = y + h + st;
 
     tft.resetViewport();
 

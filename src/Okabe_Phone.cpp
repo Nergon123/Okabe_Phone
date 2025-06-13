@@ -43,7 +43,7 @@ void setup() {
     
     if (buttonsHelding(false) == '#')
         AT_test();
-    messageActivityOut(Contact("Assistant","+0000000000"));
+   
 }
 
 // Function to handle the main loop

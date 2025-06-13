@@ -143,7 +143,9 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     screen_buffer.createSprite(240, 269);
     drawImage(0, 26, BLUEBAR_IMAGE);
     drawImage(0, 26, BLUEBAR_ICONS[0]);
+    //jump in pixels per one button press
     int y_jump = 22;
+    //offset of screen in height
     int y_scr  = 0;
     int y_text = 18;
     int min_y  = y_scr;
@@ -440,6 +442,7 @@ void inbox(bool outbox) {
         exit = true;
 
         parseMessages(messages, count);
+        //Potential memory leak???
         mOption *messagesList = new mOption[count];
         for (int i = 0; i < count; i++) {
             messagesList[count - i - 1] = messages[i];
@@ -452,8 +455,9 @@ void inbox(bool outbox) {
             if (choice >= 0) {
                 exit = !messageActivity(messages[count - choice - 1]);
                 if (!exit)
-                    choice = -1;
+                choice = -1;
             }
         }
+    
     }
 }
