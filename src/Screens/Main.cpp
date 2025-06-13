@@ -205,7 +205,7 @@ void offlineCharging() {
  * param @message message to be displayed
  */
 void recovery(String message) {
-
+    initSDCard(true);
     tft.setCursor(0, 40);
     tft.fillScreen(0);
     tft.setTextFont(1);

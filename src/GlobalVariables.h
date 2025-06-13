@@ -8,6 +8,8 @@
 #include <Preferences.h>
 #include <SD.h>
 #include <TFT_eSPI.h>
+
+
 struct Contact {
     int    index;
     String phone;
@@ -17,12 +19,14 @@ struct Contact {
     Contact(String _name, String _phone, String _email = "", int _index = -1) : index(_index), phone(_phone), name(_name), email(_email) {}
 };
 
+//Options for list Menu
 struct mOption {
 
     String  label;
     SDImage icon;
 };
 
+//SMS status
 enum status {
 
     NEW     = 'N',

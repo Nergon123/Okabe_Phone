@@ -2,6 +2,7 @@
 #include "../System/Generic.h"
 
 // TODO: Implement WiFi functionality
+// Why do I even need wifi here?
 void WifiConnect(String ssid, String password) {
 }
 

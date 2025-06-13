@@ -46,10 +46,10 @@ void settings() {
             break;
         }
         Serial.println(pictureIndex);
-        String galch[] = {"Preview", "Confirm"};
+        String GalleryChoice[] = {"Preview", "Confirm"};
         if (pictureIndex != -1 && pictureIndex != lastImage) {
 
-            confPictureIndex = choiceMenu(galch, 2, true);
+            confPictureIndex = choiceMenu(GalleryChoice, 2, true);
             switch (confPictureIndex) {
             case 0:
                 drawImage(WALLPAPER_IMAGES_BASE.address + WALLPAPER_IMAGES_MULTIPLIER * pictureIndex, 0, 26, WALLPAPER_IMAGES_BASE.w, WALLPAPER_IMAGES_BASE.h, "/" + resPath, 0, 0);
@@ -74,7 +74,7 @@ void settings() {
             }
         } else if (pictureIndex == lastImage) {
             String path      = fileBrowser(SD.open("/"), ".png");
-            confPictureIndex = choiceMenu(galch, 2, true);
+            confPictureIndex = choiceMenu(GalleryChoice, 2, true);
             switch (confPictureIndex) {
             case 0:
                 drawPNG(path.c_str());

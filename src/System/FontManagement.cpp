@@ -1,6 +1,5 @@
 #include "FontManagement.h"
 
-
 void chfont(const GFXfont *f, bool is_screen_buffer, TFT_eSprite &sbuffer) {
     if (is_screen_buffer)
         sbuffer.setFreeFont(f);
@@ -15,22 +14,15 @@ void chfont(uint8_t f, bool is_screen_buffer, TFT_eSprite &sbuffer) {
 }
 void changeFont(int ch, bool is_screen_buffer, TFT_eSprite &sbuffer) {
     currentFont = ch;
-    switch (ch) {
-    case 0:
-        chfont(1, is_screen_buffer, sbuffer);
-        break;
-    case 1:
-        chfont(&FreeSans9pt7b, is_screen_buffer, sbuffer);
-        break;
-    case 2:
-        chfont(&FreeSansBold9pt7b, is_screen_buffer, sbuffer);
-        break;
-    case 3:
-        chfont(&FreeMono9pt7b, is_screen_buffer, sbuffer);
-        break;
-    case 4:
-        chfont(&FreeSans12pt7b, is_screen_buffer, sbuffer);
-        break;
+    const GFXfont* GFXFonts[] = {&FONT1, &FONT2, &FONT3, &FONT4};
+
+    if (ch == 0) {
+        chfont(FONT0, is_screen_buffer, sbuffer);
+    } else if (ch > 0 && ch <= ArraySize(GFXFonts)) {
+        chfont(GFXFonts[ch - 1], is_screen_buffer, sbuffer);
+    } else {
+ 
+        chfont(FONT0, is_screen_buffer, sbuffer); 
     }
 }
 
