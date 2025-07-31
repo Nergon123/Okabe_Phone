@@ -1,14 +1,14 @@
 #pragma once
 #include "Defines.h"
 #include "ExtDep/IP5306.h"
-#include "images.h"
 #include <Arduino.h>
 #include <MCP23017.h>
 #include <PNGdec.h>
 #include <Preferences.h>
+#include "images.h"
 #include <SD.h>
 #include <TFT_eSPI.h>
-
+#include "esp_heap_caps.h"
 
 struct Contact {
     int    index;
@@ -19,14 +19,14 @@ struct Contact {
     Contact(String _name, String _phone, String _email = "", int _index = -1) : index(_index), phone(_phone), name(_name), email(_email) {}
 };
 
-//Options for list Menu
+// Options for list Menu
 struct mOption {
 
     String  label;
     SDImage icon;
 };
 
-//SMS status
+// SMS status
 enum status {
 
     NEW     = 'N',
@@ -74,6 +74,8 @@ extern TFT_eSPI    tft;
 extern TFT_eSprite screen_buffer;
 extern Preferences preferences;
 extern PNG         png;
+
+
 
 extern uint          contactCount;
 extern int           currentScreen;

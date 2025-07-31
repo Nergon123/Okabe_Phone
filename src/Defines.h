@@ -90,3 +90,8 @@
 #define FONT2 FreeSansBold9pt7b
 #define FONT3 FreeMono9pt7b
 #define FONT4 FreeSans12pt7b
+
+#define FILE_VERSION 1
+
+#define RES_DEFAULT_WALLPAPER 0
+#define RES_DEFAULT_

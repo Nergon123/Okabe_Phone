@@ -3,6 +3,7 @@
 #include "../Input/Input.h"
 #include "../System/DrawGraphics.h"
 #include "../System/FontManagement.h"
+#include "../System/ResourceSystem.h"
 bool   button(String title, int xpos, int ypos, int w, int h, bool selected = false, int *direction = nullptr);
 void   sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected = false, int *direction = nullptr, const char *format = "%02d");
 String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction = nullptr, bool onlynumbers = false);

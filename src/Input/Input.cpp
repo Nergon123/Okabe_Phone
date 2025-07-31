@@ -267,8 +267,8 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
                 showText(buttons[currentIndex], pos);
                 tft.setCursor(curx, cury);
             }
-        } 
-        if(c!=input&&c!=-1) {
+        }
+        if (c != input && c != -1) {
             mil = DIB_MS + 1;
             if (retButton != nullptr) {
                 *retButton = c;
@@ -361,7 +361,7 @@ int buttonsHelding(bool _idle) {
 
     if (Serial.available()) {
         char input = Serial.read();
-        millSleep  = millis();
+        millSleep = millis();
         switch (input) {
         case 'a':
             Serial.println("LEFT");

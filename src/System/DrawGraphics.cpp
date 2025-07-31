@@ -233,6 +233,7 @@ void drawImage(uint32_t pos, int pos_x, int pos_y, int size_x, int size_y, bool 
                     sprite.pushToSprite(&sbuffer, pos_x, pos_y, tc);
                 else
                     sprite.pushSprite(pos_x, pos_y, tc);
+                    
 
                 sprite.deleteSprite();
             }
