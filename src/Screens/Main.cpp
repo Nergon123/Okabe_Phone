@@ -27,43 +27,30 @@ void screens() {
 // ## Render menu
 //  This function renders the menu icons on the screen.
 void rendermenu(int &choice, int old_choice) {
+    uint8_t menuEntries[4] = {
+        R_MENU_MAIL_ICON,
+        R_MENU_CONTACTS_ICON,
+        R_MENU_E_ICON,
+        R_MENU_SETTINGS_ICON};
 
     if (choice > 3)
         choice = 0;
     if (choice < 0)
         choice = 3;
-    const struct {
-        int x, y;
-    } IconPositions[] = {
-        {49, 43 + 26}, // Off Icons
-        {138, 42 + 26},
-        {49, 122 + 26},
-        {137, 123 + 26},
-        {51, (45 + 26)}, // On Icons
-        {141, (44 + 26)},
-        {52, (125 + 26)},
-        {140, (125 + 26)}};
 
     int offIndex = old_choice;
+    int onIndex  = choice;
 
-    int onIndex = choice;
-    if (old_choice != choice)
-        drawImage(
-            IconPositions[offIndex].x,
-            IconPositions[offIndex].y,
-            MENU_OFF_ICONS[offIndex]);
-
-    drawImage(
-        IconPositions[onIndex + 4].x,
-        IconPositions[onIndex + 4].y,
-        MENU_ON_ICONS[onIndex]);
+    if (old_choice != choice) {
+        res.DrawImage(menuEntries[offIndex]);
+        res.DrawImage(menuEntries[onIndex], 1);
+    }
 }
 
 // Function to show the main menu
 void MainMenu() {
-
-    drawImage(0, 26, MENU_BACKGROUND);   // Menu background
-    drawImage(51, 71, MENU_ON_ICONS[0]); // Menu icon
+    res.DrawImage(R_MENU_BACKGROUND);
+    res.DrawImage(R_MENU_MAIL_ICON, 1);
 
     int choice     = 0;
     int old_choice = 0;
@@ -94,7 +81,7 @@ void MainMenu() {
                 return;
                 break;
             }
-            drawImage(0, 26, MENU_BACKGROUND);
+            res.DrawImage(R_MENU_BACKGROUND);
             rendermenu(choice, choice);
             break;
         }

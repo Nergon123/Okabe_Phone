@@ -1,5 +1,5 @@
 #include "Notifications.h"
-
+#include "../System/ResourceSystem.h"
 // ## Draw status bar
 // This function draws the status bar on the screen
 // @param force: If true, force redraw of the status bar if false only redraw if time has changed
@@ -21,10 +21,10 @@ void drawStatusBar(bool force) {
         int  viewport_h     = tft.getViewportHeight();
         bool viewport_datum = tft.getViewportDatum();
         tft.resetViewport();
-        
-        if(_signal<0)
+
+        if (_signal < 0)
             _signal = 0;
-        if(_signal>3)
+        if (_signal > 3)
             _signal = 3;
         TFT_eSprite _sprite = TFT_eSprite(&tft);
 
@@ -32,9 +32,10 @@ void drawStatusBar(bool force) {
 
         sBarChanged = false;
         charge      = getChargeLevel();
-        drawImage(0, 0, STATUSBAR_IMAGE, true, _sprite); // statusbar
-        drawImage(0, 0, SIGNAL_IMAGES[_signal], true, _sprite);
-        drawImage(207, 0, BATTERY_IMAGES[charge], true, _sprite);
+
+        res.DrawImage(R_STATUSBAR_BACKGROUND, 0, true, _sprite);
+        res.DrawImage(R_SIGNAL_STRENGTH, _signal, true, _sprite);
+        res.DrawImage(R_BATTERY_CHARGE, charge, true, _sprite);
         //  tft.print(String(charge) + String("%"));
         changeFont(1, true, _sprite);
         _sprite.setTextSize(1);
@@ -59,7 +60,7 @@ void drawStatusBar(bool force) {
 // @return true if the user confirms, false if the user cancels
 bool confirmation(String reason) {
     drawWallpaper();
-    drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
+    res.DrawImage(R_FULL_NOTIFICATION);
     changeFont(1);
     tft.setCursor(45, 110);
     tft.setTextColor(0);
@@ -93,7 +94,7 @@ void ErrorWindow(String reason) {
 
     int xpos = 0;
     drawWallpaper();
-    drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
+    res.DrawImage(R_FULL_NOTIFICATION);
     tft.setTextSize(1);
     tft.setCursor(80, 120);
     changeFont(1);

@@ -63,12 +63,11 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 // @param format: Format string for the value
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format) {
 
-
-    //calculation of triangle corners
+    // calculation of triangle corners
     int fp  = w / 2;
     int st  = h / 5;
     int stf = w / 5;
-    
+
     int tx1 = x + fp - stf,
         tx2 = x + fp,
         tx3 = x + fp + stf;
@@ -318,65 +317,60 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
 // @param offset: Offset for the animation
 // @param spacing: Spacing between the circles
 void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
-    // FIRSTLY WAS WRITED MANUALLY BUT AFTER ENCOURING A BUG
-    // I WROTE THIS WITH HELP FROM CHATGPT
-    //
+    // Get image data and allocate buffer
+    ImageData img = res.GetImageDataByID(R_CALL_ANIM_DOTS);
+    const int frame_pixel_count = 49; // 7x7 pixels per frame
+    const int total_frames = img.count;
+    const int buffer_size = frame_pixel_count * total_frames;
 
-    //  Open the file and seek to the position where image data starts
-    File file = SD.open(resPath);
-    file.seek(0x658BC4);
-    // Read data from SD card into buffer
-    const int buffer_size = 400 * 2;
-    uint8_t   buffer[buffer_size];
-    file.read(buffer, buffer_size);
-    file.close();
+    // Get buffer (uint16_t*, already in RGB565 format)
+    uint16_t *buffer = res.GetRGB565(img, buffer_size * 2); // buffer_size * 2 bytes total
 
-    // Define max frames and set up variables for animation path
-    int  max_count     = (2 * size_x) + (2 * (size_y - 1)); // Adjusted max_count for full frames
-    int  printed_count = 0;
-    int  xt            = 0;
-    int  yt            = 0;
-    bool draw          = true;
+    int max_count = (2 * size_x) + (2 * (size_y - 1));
+    int printed_count = 0;
+    int xt = 0, yt = 0;
+    bool draw = true;
 
-    // Array for the current 7x7 frame, as uint16_t (16-bit color for pushImage)
-    uint16_t currentcircle[49]; // 7x7 frame requires 49 pixels
+    uint16_t currentcircle[49];
 
-    // Main animation loop
     while (printed_count < max_count) {
         for (int j = offset; j >= 0 && printed_count < max_count; j--) {
             if (draw) {
-                int start_index = 98 * j; // Starting index for the 7x7 frame in buffer
+                int start_index = frame_pixel_count * j;
 
-                // Ensure we're within buffer bounds
-                if (start_index + 98 <= buffer_size) {
-                    for (int i = 0; i < 49; i++) {
-                        // Convert two bytes per pixel into 16-bit color
-                        currentcircle[i] = (buffer[start_index + (i * 2)] << 8) | buffer[start_index + (i * 2) + 1];
+                if (start_index + frame_pixel_count <= buffer_size) {
+                    // Copy 7x7 frame from buffer
+                    for (int i = 0; i < frame_pixel_count; i++) {
+                        currentcircle[i] = buffer[start_index + i];
                     }
 
-                    // Display the frame at the calculated position
                     tft.pushImage(x + xt, y + yt, 7, 7, currentcircle);
                 }
             }
 
+            // Update position in spin path
             if (printed_count < size_x) {
                 xt += spacing;
             } else if (printed_count < size_x + size_y - 1) {
                 yt += spacing;
             } else if (printed_count < (2 * size_x) + size_y - 1) {
                 xt -= spacing;
-            } else { // Move up
+            } else {
                 yt -= spacing;
                 if (yt <= -((size_y - 1) * spacing)) {
-                    draw = false; // End animation once reaching the top again
+                    draw = false;
                 }
             }
 
             printed_count++;
         }
-        offset = 7; // Reset offset after each loop iteration
+
+        offset = 7; // Reset offset after each full circle iteration
     }
+
+    delete[] buffer;
 }
+
 
 int lastpercentage;
 // progress bar that used on boot screen
@@ -425,7 +419,7 @@ void sysError(String reason) {
     tft.println("==ERROR==");
     tft.setTextColor(0xFFFF);
     tft.setTextSize(1);
-    tft.println(String("\n\n\nThere a problem with your device\n\nTechnical details:\n\n\nReason:" + reason + "\n\n\nyou can found contact info at\n\n" REPOSITORY_LINK "\n\n"));
+    tft.println(String("\n\n\nThere a problem with your device\n\nTechnical details:\n\n\nReason:" + reason + "\n\n\n\n\n" REPOSITORY_LINK "\n\n"));
 
     tft.println("Press any button to restart\nor reset button to reset the device");
 

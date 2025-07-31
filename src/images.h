@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 
-
 struct SDImage {
     uint32_t address;
     int      w;

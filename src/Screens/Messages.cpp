@@ -90,9 +90,9 @@ void parseMessages(Message *&msgs, int &count) {
 // messages menu
 void messages() {
 
-    drawImage(0, 26, SUBMENU_BACKGROUND);
-    drawImage(0, 26, MAIL_HEADER_IMAGE);
-    drawImage(0, 68, WHITE_BOTTOM_IMAGE);
+    res.DrawImage(R_MENU_BACKGROUND);
+    res.DrawImage(R_MAIL_MENU_L_HEADER);
+    res.DrawImage(R_MENU_L_HEADER);
     String entries[] = {"Inbox", "Outbox"};
     int    ch        = choiceMenu(entries, ArraySize(entries), false);
     switch (ch) {

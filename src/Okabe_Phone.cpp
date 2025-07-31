@@ -1,5 +1,6 @@
 #include "GlobalVariables.h"
 #include "Screens/Main.h"
+#include "System/ResourceSystem.h"
 #include "System/Time.h"
 #include "images.h"
 #include "init.h"
@@ -33,17 +34,20 @@ void setup() {
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
     }
     storageInit();
-    drawImage(50, 85, LOGO_IMAGE);
+
+    res.DrawImage(R_BOOT_LOGO);
     initTasks();
-    ESP_LOGI("DEVICE", "\nOkabePhone " FIRMVER "\n\nPhone firmware written by Nergon\n\nResources located in sdcard (%s)\n", resPath.c_str());
+    ESP_LOGI("DEVICE",
+             "\nOkabePhone " FIRMVER "\n\n Phone firmware written by Nergon\n\n "
+             "Resources located in sdcard (%s)\n",
+             resPath.c_str());
     ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getChipCores());
     progressBar(100, 100, 250);
     millSleep = millis();
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
-    
+
     if (buttonsHelding(false) == '#')
         AT_test();
-   
 }
 
 // Function to handle the main loop

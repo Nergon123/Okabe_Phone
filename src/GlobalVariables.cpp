@@ -2,8 +2,8 @@
 IP5306      chrg;
 TFT_eSPI    tft           = TFT_eSPI();
 TFT_eSprite screen_buffer = TFT_eSprite(&tft);
+MCP23017    mcp           = MCP23017(MCP23017_ADDR);
 Preferences preferences;
-MCP23017    mcp = MCP23017(MCP23017_ADDR);
 PNG         png;
 
 int8_t _signal = 0;
@@ -20,14 +20,12 @@ bool backgroundBusy = false;
 // Check if there any new messages (Status Bar indicator)
 bool haveNewMessages = false;
 
-// spiffs?
+// is spiffs used?
 bool isSPIFFS = false;
 
 // current brightness in percentage
 uint brightness = 100;
 
-
-// Current Screen variable, for recursion prevention
 int currentScreen = SCREENS::MAINSCREEN;
 // index of last Contact
 int lastContactIndex = 0;
@@ -59,6 +57,7 @@ Contact contacts[MAX_CONTACTS];
 // Handle for background SIM checks
 TaskHandle_t TaskHCommand;
 
+// forbid to change fastMode
 bool lockFastMode = false;
 // Number of person who calling us
 String currentNumber = "";
@@ -68,5 +67,5 @@ String currentMailRingtonePath = "";
 String currentNotificationPath = "";
 String currentWallpaperPath    = "/null";
 String resPath                 = "/FIRMWARE/IMAGES.SG";
-String SPIFFSresPath           = "/IMAGES_CUT.SG";
+String SPIFFSresPath           = "/MAIN.nph";
 String lastSIMerror            = "";

@@ -1,5 +1,5 @@
 #include "init.h"
-
+#include "System/ResourceSystem.h"
 // Function to set up the time
 // This function sets the system time to a specific date and time
 // and saves it in the preferences storage
@@ -95,12 +95,14 @@ void storageInit() {
     ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
 
+
+
     if (!isSPIFFS) {
         loadResource(RESOURCE_ADDRESS, resPath, &resources, 0, 0);
     } else {
         File SPIFFSres = SPIFFS.open(SPIFFSresPath);
         loadResource(0, SPIFFSresPath, &resources, 0, 0);
-        SPIFFSres.close();
+        res.Init(SPIFFSres);
     }
 
     if (!isSPIFFS)
@@ -124,6 +126,9 @@ void storageInit() {
     progressBar(70, 100, 250);
 }
 
+
+
+
 // Function to load a resource file from the SD card to the PSRAM
 // @param address: address in the file
 // @param resourcefile: path to the resource file
@@ -131,7 +136,13 @@ void storageInit() {
 // @param w: width of the image
 // @param h: height of the image
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h) {
-#ifdef PSRAM_ENABLE
+
+    ////////////////////////////
+    return;
+    //we dont need this function for now I guess...
+    ////////////////////////////
+
+    #ifdef PSRAM_ENABLE
     if (*_resources)
         free(*_resources);
     File file;

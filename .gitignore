@@ -10,3 +10,4 @@ refresh-toflash.sh
 monitor.sh
 upload.sh
 PLAN.MD
+/data
