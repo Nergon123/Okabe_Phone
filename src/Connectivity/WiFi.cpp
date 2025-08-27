@@ -1,9 +1,9 @@
 #include "_WiFi.h"
 #include "../System/Generic.h"
-
 // TODO: Implement WiFi functionality
 // Why do I even need wifi here?
 void WifiConnect(String ssid, String password) {
+    WiFi.begin(ssid,password);
 }
 
 // List available WiFi networks
@@ -21,8 +21,9 @@ void WiFiList() {
             WiFi.getNetworkInfo(i, names[i], a, c, l, d);
         }
         int ch = listMenu(names, count, false, 0, "WI-FI");
-        if (ch == -1)
+        if (ch == -1){
             return;
+        }
         else {
             // TODO: Actually Connect to WiFi
 

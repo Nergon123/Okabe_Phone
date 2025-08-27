@@ -1,17 +1,19 @@
 #include "ListMenu.h"
-#include "../System/DrawGraphics.h"
+
 #include "../System/FontManagement.h"
-#include "../images.h"
 
 // Header for the list menu
-// @param type Type of menu (0: messages, 1: phone, 2: settings)
+// @param type Type of menu (0: messages, 1: contacts, 2: settings)
 // @param title Title of the menu
 // @param page Current page number
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
 void listMenu_header(int type, String title, int page, int pages, int y) {
-    drawImage(0, y, BLUEBAR_IMAGE, true);
-    drawImage(0, y, BLUEBAR_ICONS[type], true);
+    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {0, y}, {0, 0}, {0, 0}, RES_MAIN, true);
+    // drawImage(0, y, BLUEBAR_IMAGE, true);
+    res.DrawImage(R_LIST_HEADER_ICONS, type, {0, y}, {0, 0}, {0, 0}, RES_MAIN, true);
+    // drawImage(0, y, BLUEBAR_ICONS[type], true);
+
     screen_buffer.setTextColor(0xFFFF);
     changeFont(1, 1);
     screen_buffer.setCursor(28, y + 19);
@@ -37,11 +39,15 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 
     int yy = (lindex * esize) + y;
 
-    if (selected)
+    if (selected) {
         screen_buffer.fillRect(0, yy, 240, esize, color_active);
-    else if (unselected)
-        drawImage(0, yy, SDImage(BACKGROUND_IMAGE.address + (yy * 240 * 2), 240, esize), true);
-    drawImage(x - choice.icon.w, yy, choice.icon, true);
+    } else if (unselected) {
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.y = yy}, {.y = yy}, {.y = yy + esize}, RES_MAIN, true);
+        // drawImage(0, yy, SDImage(BACKGROUND_IMAGE.address + (yy * 240 * 2), 240, esize), true);
+    }
+    ImageData imgData = res.GetImageDataByID(choice.icon, choice.fileId);
+    res.DrawImage(choice.icon, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0}, choice.fileId, true);
+    // drawImage(x - choice.icon.w, yy, choice.icon, true);
 
     if (lines) {
         screen_buffer.drawLine(0, yy, 240, yy, 0);
@@ -60,7 +66,7 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param type Icon to display in the header 0: `messages` 1: `phone` 2: `settings`
 /// @param label Title of the menu
 /// @param forceIcons Boolean indicating if icons should be forced
-/// @param findex Index of the selected option
+/// @param findex Force index of the selected option
 int listMenu(mOption *choices, int icount, bool lines, int type, String label, bool forceIcons, int findex) {
     screen_buffer.setTextWrap(false, false);
 
@@ -76,7 +82,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     int ly           = 25;
     int x            = 10;
     int old_selected = 0;
-    drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
+    // drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
 
     if (icount == 0) {
         listMenu_header(type, label, 0, 0, y);
@@ -86,15 +93,24 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         screen_buffer.print("< Empty >");
         screen_buffer.pushSprite(0, 26);
         screen_buffer.deleteSprite();
-        while (buttonsHelding() != BACK)
-            ;
+        while (true) {
+            int bh = buttonsHelding();
+            if (bh == SELECT) {
+                return LISTMENU_OPTIONS;
+            } else if (bh != -1) {
+                return LISTMENU_EXIT;
+            }
+        };
         return -1;
     }
     int entry_size = screen_buffer.fontHeight();
-    if (choices[0].icon.h > entry_size) {
-        entry_size = choices[0].icon.h;
+    if (choices[0].icon != R_NULL_IMAGE) {
+        ImageData icon = res.GetImageDataByID(choices[0].icon, choices[0].fileId);
+        if (icon.height > entry_size) {
+            entry_size = icon.height;
+        }
+        x += icon.width;
     }
-    x += choices[0].icon.w;
     int per_page = 269 / entry_size;
     pages        = (icount + per_page - 1) / per_page;
 
@@ -120,7 +136,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             break;
         case BACK:
             screen_buffer.deleteSprite();
-            return -1;
+            return LISTMENU_EXIT;
             break;
 
         case UP:
@@ -138,7 +154,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                     selected = (icount % per_page == 0) ? per_page - 1 : (icount % per_page) - 1;
                 }
 
-                drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -174,7 +190,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                     selected = 0;
                 }
 
-                drawImage(0, y + ly, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
                 listMenu_header(type, label, page, pages, y);
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -196,7 +212,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             if (pages > 1) {
                 page     = (page + 1) % pages;
                 selected = 0;
-                drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -213,7 +229,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             if (pages > 1) {
                 page     = (page - 1 + pages) % pages;
                 selected = 0;
-                drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
+                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -229,7 +245,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         }
     }
     screen_buffer.deleteSprite();
-    return -1;
+    return LISTMENU_EXIT;
 }
 
 // Converter from old type of listMenu to new
@@ -243,8 +259,10 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 int listMenu(const String choices[], int icount, bool images, int type, String label, bool forceIcons, int findex) {
     mOption *optionArr = new mOption[icount];
     for (int i = 0; i < icount; i++) {
-        optionArr[i].label = choices[i];
-        optionArr[i].icon  = SDImage();
+        optionArr[i].label      = choices[i];
+        optionArr[i].icon       = R_NULL_IMAGE;
+        optionArr[i].fileId     = 0;
+        optionArr[i].icon_index = 0;
     }
     return listMenu(optionArr, icount, images, type, label, forceIcons, findex);
 }
@@ -345,11 +363,13 @@ int choiceMenu(const String choices[], int count, bool context) {
     uint16_t color_inactive = 0x0000;
 
     if (context) {
-        drawImage(16, 100, CONTEXT_MENU_IMAGE);
+        res.DrawImage(R_CTXT_MENU_BACKGROUND);
+        // drawImage(16, 100, CONTEXT_MENU_IMAGE);
         x = 40;
         y = 120;
     } else {
-        drawImage(0, 68, WHITE_BOTTOM_IMAGE);
+        // drawImage(0, 68, WHITE_BOTTOM_IMAGE);
+        res.DrawImage(R_MENU_L_HEADER);
         x = 30;
         y = 95;
     }
@@ -385,7 +405,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawImage(16, 100, CONTEXT_MENU_IMAGE);
+                res.DrawImage(R_CTXT_MENU_BACKGROUND);
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
@@ -394,7 +414,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawImage(0, 68, WHITE_BOTTOM_IMAGE);
+                res.DrawImage(R_MENU_L_HEADER);
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
@@ -435,7 +455,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawImage(16, 100, CONTEXT_MENU_IMAGE);
+                res.DrawImage(R_CTXT_MENU_BACKGROUND);
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
@@ -444,7 +464,7 @@ int choiceMenu(const String choices[], int count, bool context) {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
-                drawImage(0, 68, WHITE_BOTTOM_IMAGE);
+                res.DrawImage(R_MENU_L_HEADER);
                 for (int i = 0; i < count; i++) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);

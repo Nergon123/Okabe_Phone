@@ -289,7 +289,8 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         viewport = true;
     }
     if (!dontRedraw) {
-        drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
+        //drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
+        //TODO
     }
     if (viewport) {
         tft.setViewport(vx, vy, w, h);

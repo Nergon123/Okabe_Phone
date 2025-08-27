@@ -71,8 +71,7 @@ void e() {
     while (choice != -1) {
         String debug[] = {
             "Delete File",
-            "Cat",
-            "PC Connection",
+            "View Text File content",
             "Execute Application",
             "Set Date/Time",
             "Connect To Wi-Fi"};
@@ -104,15 +103,12 @@ void e() {
             drawStatusBar();
             break;
         case 2:
-            SerialConnection();
-            break;
-        case 3:
             execute_application();
             break;
-        case 4:
+        case 3:
             setTime(&systemTime);
             break;
-        case 5:
+        case 4:
             WiFiList();
             break;
         }

@@ -2,7 +2,9 @@
 #define FIRMVER "0.1.5 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 
-#define DISABLE_ALL_LIBRARY_WARNINGS
+#define LISTMENU_OPTIONS -2
+#define LISTMENU_EXIT -1
+
 #define SIM_RX_PIN 35
 #define SIM_TX_PIN 26 
 #define chipSelect 13
@@ -56,6 +58,7 @@
 #define DISCONNECT 6
 ///////////////////////////
 
+// buttonsHelding() returns:
 #define BACK 0
 #define SELECT 1
 #define UP 2

@@ -1,7 +1,7 @@
 #pragma once
 #include "GlobalVariables.h"
 #include "../Input/Input.h"
-#include "../System/DrawGraphics.h"
+
 #include "../System/FontManagement.h"
 #include "../System/ResourceSystem.h"
 bool   button(String title, int xpos, int ypos, int w, int h, bool selected = false, int *direction = nullptr);

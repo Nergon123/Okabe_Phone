@@ -1,12 +1,13 @@
 #include "ResourceSystem.h"
 #include "Generic.h"
-
-void ResourceSystem::Init(File Main, File Wallpapers) {
+Coords czero = {0, 0};
+Coords cnone = {-1, -1};
+void   ResourceSystem::Init(File Main, File Wallpapers) {
     Files[RES_MAIN]       = Main;
     Files[RES_WALLPAPERS] = Wallpapers;
     for (int i = 0; i < sizeof(Files) / sizeof(Files[0]); i++) {
         if (!Files[i].available()) {
-            log_w("%s resource file is not available. Using Built-in.", names[i]);
+            ESP_LOGW("RES", "%s resource file is not available. Using Built-in.", names[i]);
         } else {
             parseResourceFile(Files[i], Headers[i], i, i == RES_MAIN);
         }
@@ -40,13 +41,13 @@ void ResourceSystem::parseResourceFile(File file, Header &header, uint8_t type, 
             failure("Error reading ImageData", important);
             return;
         }
-        log_v("Parsed image %d: ID: %d, Count: %d, X: %d, Y: %d, Width: %d, Height: %d, Offset: %d\n", i, img.id, img.count, img.x, img.y, img.width, img.height, img.offset);
+        ESP_LOGV("RES", "Parsed image %d: ID: %d, Count: %d, X: %d, Y: %d, Width: %d, Height: %d, Offset: %d\n", i, img.id, img.count, img.x, img.y, img.width, img.height, img.offset);
         Images[type].push_back(img);
     }
 }
 
 void ResourceSystem::failure(const char *msg, bool important) {
-    log_w("%s", msg);
+    ESP_LOGE("RES", "%s", msg);
     if (important)
         sysError(msg);
 }
@@ -57,16 +58,29 @@ ImageData ResourceSystem::GetImageDataByID(uint16_t id, uint8_t type) {
             return img;
         }
     }
-    return ImageData(-1);
+    return ImageData(R_NULL_IMAGE);
 }
 
-void ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords startpos, Coords endpos, uint8_t type, bool is_screen_buffer, TFT_eSprite &sbuffer) {
+bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords startpos, Coords endpos, uint8_t type, bool is_screen_buffer, TFT_eSprite &sbuffer) {
+
     ImageData img = GetImageDataByID(id, type);
-    if (pos.x < 0 || pos.y < 0) {
-        pos = {.x = img.x, .y = img.y};
+    if (img.id == R_NULL_IMAGE && id != R_NULL_IMAGE) {
+        ESP_LOGE("RES", "Requested Sprite %d:%d not found", id, index);
+        return false;
+    } else if (id == R_NULL_IMAGE) {
+        return false;
     }
-    if (endpos.x <= 0 || endpos.y <= 0) {
-        endpos = {.x = img.width, .y = img.height};
+    if (pos.x < 0) {
+        pos.x = img.x;
+    }
+    if (pos.y < 0) {
+        pos.y = img.y;
+    }
+    if (endpos.x <= 0) {
+        endpos.x = img.width;
+    }
+    if (endpos.y <= 0) {
+        endpos.y = img.height;
     }
     if (startpos.y < 0)
         startpos.y = 0;
@@ -77,12 +91,14 @@ void ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     if (endpos.x > img.width)
         endpos.x = img.width;
 
-    if (startpos.y >= endpos.y)
-        return;
+    if (startpos.y >= endpos.y) {
+        return false;
+    }
     uint32_t start = (startpos.y * img.width * 2 + (img.width * img.height * 2 * index));
     uint32_t size  = (endpos.y - startpos.y) * img.width * 2;
-    if (size == 0)
-        return;
+    if (size == 0) {
+        return false;
+    }
 
     uint16_t   *imageBuffer = GetRGB565(img, size, start, type);
     TFT_eSprite spr(&tft);
@@ -103,9 +119,10 @@ void ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     }
     spr.deleteSprite();
     delete[] imageBuffer;
+    return true;
 }
-void ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer) {
-    DrawImage(id, index, {-1, -1}, {0, 0}, {-1, -1}, RES_MAIN, is_screen_buffer, sbuffer);
+bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer) {
+    return DrawImage(id, index, {-1, -1}, {0, 0}, {-1, -1}, RES_MAIN, is_screen_buffer, sbuffer);
 }
 uint16_t *ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {
     uint16_t *buffer = new uint16_t[size / 2]; // safer than using uint8_t*
@@ -115,3 +132,7 @@ uint16_t *ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, 
 }
 
 ResourceSystem res;
+
+void drawWallpaper() {
+    res.DrawImage(R_DEFAULT_WALLPAPER);
+}

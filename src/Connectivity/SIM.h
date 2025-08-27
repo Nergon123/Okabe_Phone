@@ -1,7 +1,7 @@
 #pragma once
 #include "../GlobalVariables.h"
 #include "../Input/Input.h"
-#include "../System/DrawGraphics.h"
+
 #include "../System/Generic.h"
 #include "../System/TextManipulation.h"
 #include "../UI/UIElements.h"

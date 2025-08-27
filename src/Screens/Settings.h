@@ -1,6 +1,6 @@
 #pragma once
 #include "../GlobalVariables.h"
-#include "../System/DrawGraphics.h"
+
 #include "../System/Files.h"
 #include "../System/FontManagement.h"
 #include "../UI/ListMenu.h"
