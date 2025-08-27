@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include "../GlobalVariables.h"
 #include "../Input/Input.h"
-#include "../System/DrawGraphics.h"
+
 #include "../System/TextManipulation.h"
 #include "../System/FontManagement.h"
 #include "../System/Time.h"

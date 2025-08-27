@@ -3,7 +3,7 @@
 #include "../Connectivity/SIM.h"
 #include "../GlobalVariables.h"
 #include "../System/FontManagement.h"
-#include "../System/DrawGraphics.h"
+
 #include "../Screens/Main.h"
 #include "../System/Generic.h"
 

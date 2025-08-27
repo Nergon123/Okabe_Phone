@@ -43,22 +43,19 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
             int firIndex  = response.indexOf("\"", indexClip);
             currentNumber = response.substring(firIndex, response.indexOf("\"", firIndex + 1));
             currentNumber.replace("\"", "");
-            Serial.println(currentNumber);
+            ESP_LOGI("SIM","Calling number: %s",currentNumber);
         }
         isCalling = _isCalling;
     } else {
         if (response.indexOf("NO CARRIER") != -1) {
-            Serial.println("Call Ended.");
+            ESP_LOGI("SIM","Call Ended.");
             isCalling     = false;
             currentNumber = "";
         }
     }
     if (response.indexOf("ERROR") != -1) {
-        Serial.println("AT COMMAND FAILED :" + command);
 
-        Serial.println("===========FAILED===========\nRESPONSE:\n" +
-                       response +
-                       "\n============================\n");
+        ESP_LOGE("SIM", "ERR FOR %s : %s", command, response);
     }
 
     simIsBusy = false;
@@ -148,7 +145,7 @@ bool checkSim() {
  */
 int GetState() {
     String result = sendATCommand("AT+CLCC");
-    Serial.println("AAA" + result);
+    ESP_LOGI("GET CALL STATE","AT+CLCC Result:%s",result);
     if (result.indexOf("+CLCC") == -1 && result.indexOf("OK") != -1)
         return -1;
     int indexState = getIndexOfCount(2, result, ",", result.indexOf("+CLCC"));

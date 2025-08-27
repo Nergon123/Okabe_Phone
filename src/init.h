@@ -1,10 +1,10 @@
 #pragma once
-#include "images.h"
+
 #include "GlobalVariables.h"
 #include "UI/UIElements.h"
 #include "Input/Input.h"
 #include "Screens/Main.h"
-#include "System/DrawGraphics.h"
+
 #include "System/TextManipulation.h"
 #include "UI/UIElements.h"
 #include "System/Files.h"

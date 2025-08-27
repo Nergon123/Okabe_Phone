@@ -1,8 +1,10 @@
 #pragma once
-#include "../GlobalVariables.h"
+#include <SD.h>
+#include <TFT_eSPI.h>
 #include <vector>
-// Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32 bits 
-#pragma pack(push, 1) 
+extern TFT_eSprite screen_buffer;
+// Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32 bits
+#pragma pack(push, 1)
 struct Header {
     const char MAGIC[6] = "NerPh";
     uint8_t    version  = 1;
@@ -59,6 +61,9 @@ struct Coords {
     int x, y;
 };
 
+extern Coords czero;
+extern Coords cnone;
+
 enum MainResID {
 
     R_DEFAULT_WALLPAPER      = 0,
@@ -89,6 +94,7 @@ enum MainResID {
     R_FILE_MANAGER_ICONS     = 25,
     R_RESERVED3              = 26,
     R_BOOT_LOGO              = 27,
+    R_NULL_IMAGE             = 0xFFFF,
 
 };
 
@@ -107,8 +113,8 @@ class ResourceSystem {
 
     void      Init(File Main, File Wallpapers = File());
     Coords    GetCoordsByID(uint16_t id, uint8_t type = RES_MAIN);
-    void      DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {-1, -1}, Coords startendy = {0, 0}, Coords endxy = {0, 0}, uint8_t type = RES_MAIN, bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
-    void      DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer = screen_buffer);
+    bool      DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {-1, -1}, Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN, bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
+    bool      DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer = screen_buffer);
     uint16_t *GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0, uint8_t type = RES_MAIN);
 
   private:
@@ -117,4 +123,5 @@ class ResourceSystem {
     void failure(const char *msg = "Unknown Error", bool important = false);
     void parseResourceFile(File file, Header &header, uint8_t type = RES_MAIN, bool important = false);
 };
+void                  drawWallpaper();
 extern ResourceSystem res;

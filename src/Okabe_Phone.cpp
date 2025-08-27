@@ -2,9 +2,10 @@
 #include "Screens/Main.h"
 #include "System/ResourceSystem.h"
 #include "System/Time.h"
-#include "images.h"
-#include "init.h"
 
+#include "init.h"
+#include "System/Tasks.h"
+#include "esp_task_wdt.h"
 void restart_handler() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextSize(1);
@@ -16,7 +17,8 @@ void restart_handler() {
 
 // initialize the system
 void setup() {
-
+    esp_task_wdt_deinit();
+    esp_task_wdt_init(10000,false);
     esp_register_shutdown_handler(restart_handler);
 
     SetUpTime();

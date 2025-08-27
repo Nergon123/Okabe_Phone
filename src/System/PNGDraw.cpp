@@ -28,13 +28,13 @@ bool iswallpaper = false;
 void pngDraw(PNGDRAW *pDraw) {
     uint16_t lineBuffer[240];
     png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
-
+//TODO WALLPAPER
     if (iswallpaper) {
         if (pDraw->y < 294) {
-            memcpy(wallpaper + (pDraw->y * 480), (uint8_t *)lineBuffer, 480);
+           // memcpy(wallpaper + (pDraw->y * 480), (uint8_t *)lineBuffer, 480);
         }
     } else {
-        tft.pushImage(0, pDraw->y + 26, pDraw->iWidth, 1, lineBuffer);
+       // tft.pushImage(0, pDraw->y + 26, pDraw->iWidth, 1, lineBuffer);
     }
 }
 
@@ -53,23 +53,7 @@ void drawPNG(const char *filename, bool _wallpaper) {
 
     int rc = png.open(filename, pngOpen, pngClose, pngRead, pngSeek, pngDraw);
     if (rc == PNG_SUCCESS) {
-        iswallpaper = _wallpaper;
-
-        if (_wallpaper) {
-            free(wallpaper);
-            wallpaper = nullptr;
-        }
-
-        wallpaper = (uint8_t *)ps_malloc(240 * 294 * sizeof(uint16_t));
-
-        if (!wallpaper) {
-            Serial.println("Failed to allocate wallpaper buffer!");
-            png.close();
-            file.close();
-            
-            return;
-        }
-
+        //TODO
         Serial.printf("Image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
 
         rc = png.decode(NULL, 0);

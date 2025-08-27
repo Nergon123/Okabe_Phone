@@ -1,14 +1,20 @@
 #pragma once
 #include "Defines.h"
 #include "ExtDep/IP5306.h"
+#include "esp_heap_caps.h"
+
 #include <Arduino.h>
 #include <MCP23017.h>
 #include <PNGdec.h>
 #include <Preferences.h>
-#include "images.h"
 #include <SD.h>
 #include <TFT_eSPI.h>
-#include "esp_heap_caps.h"
+
+
+//hmm....
+extern TFT_eSprite screen_buffer;
+#include "System/ResourceSystem.h"
+
 
 struct Contact {
     int    index;
@@ -22,8 +28,10 @@ struct Contact {
 // Options for list Menu
 struct mOption {
 
-    String  label;
-    SDImage icon;
+    String   label;
+    uint16_t icon;
+    uint8_t  icon_index ;
+    uint8_t  fileId ;
 };
 
 // SMS status
@@ -35,17 +43,17 @@ enum status {
 };
 
 struct Message {
-    int           index;
-    unsigned char status;
-    bool          isOutgoing;
-    Contact       contact;
-    String        subject;
-    String        content;
-    String        date;
-    String        longdate;
+    int     index;
+    int     status;
+    bool    isOutgoing;
+    Contact contact;
+    String  subject;
+    String  content;
+    String  date;
+    String  longdate;
 
     operator mOption() const {
-        return mOption{date + " " + contact.name, status == status::NEW ? mailimg[0] : mailimg[1]};
+        return mOption{date + " " + contact.name, .icon = R_LIST_MAIL_ICONS, .icon_index = (status == status::NEW ? (uint8_t)0 : (uint8_t)1),.fileId = 0};
     }
 
     Message(Contact _contact, String _subject, String _content, String _date, String _longdate, bool _isOutgoing = false, unsigned char _status = status::NEW, int _index = -1)
@@ -71,11 +79,9 @@ enum SCREENS {
 extern MCP23017    mcp;
 extern IP5306      chrg;
 extern TFT_eSPI    tft;
-extern TFT_eSprite screen_buffer;
+
 extern Preferences preferences;
 extern PNG         png;
-
-
 
 extern uint          contactCount;
 extern int           currentScreen;
@@ -118,8 +124,7 @@ extern bool isSPIFFS;
 
 extern TaskHandle_t TaskHCommand;
 
-// Function to get the size of an array
-// kinda hacky but works
+// Function to get the size of an array ... bruh
 template <typename T, size_t N>
 size_t ArraySize(T (&)[N]) {
     return N;

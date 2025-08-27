@@ -21,7 +21,8 @@ bool isCalling = false;
  */
 void incomingCall(Contact contact) {
     drawWallpaper();
-    drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
+    res.DrawImage(R_FULL_NOTIFICATION);
+    //drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     changeFont(1);
     tft.setTextColor(0);
     tft.setCursor(15, 170);
@@ -31,10 +32,12 @@ void incomingCall(Contact contact) {
     changeFont(4);
     tft.setTextSize(1);
     tft.print("Ca l l ing");
-    drawImage(45, 105, PHONE_ICON);
+    res.DrawImage(R_PHONE_ICON);
+    //drawImage(45, 105, PHONE_ICON);
 
     writeCustomFont(55, 185, contact.phone, 1);
-    drawImage(73, 90, LIGHTNING_ANIMATION[0]);
+    res.DrawImage(R_PHONE_ICON_LIGHTNING,0);
+    //drawImage(73, 90, LIGHTNING_ANIMATION[0]);
     int button = buttonsHelding();
     while (isCalling) {
         button = buttonsHelding();
@@ -124,7 +127,7 @@ void callActivity(Contact contact) {
     tft.fillScreen(0);
     sBarChanged = true;
     drawStatusBar();
-    drawImage(40, 143, VOICE_ONLY_LABEL);
+    res.DrawImage(R_VOICE_ONLY_LABEL);
     while (stateCall != DISCONNECT) {
         if (buttonsHelding() == DECLINE) {
             sendATCommand("ATH");
@@ -222,8 +225,9 @@ void editContact(Contact contact) {
     int textboxes = 2;
     int buttons   = 2;
     int direction;
-    drawImage(0, 26, BLUEBAR_IMAGE);
-    drawImage(0, 26, BLUEBAR_ICONS[1]);
+    
+    res.DrawImage(R_LIST_HEADER_BACKGROUND);
+    res.DrawImage(R_LIST_HEADER_ICONS,1);
     drawStatusBar();
     tft.setCursor(30, 45);
     tft.setTextSize(1);
@@ -231,7 +235,7 @@ void editContact(Contact contact) {
     tft.setTextColor(0xffff);
     String boxString[textboxes] = {contact.name, contact.phone};
     tft.print("Edit Contact");
-    drawImage(0, 51, BACKGROUND_IMAGE_CUTTED);
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 51}, {0, 25}, {0, 0}, RES_MAIN, true);
     InputField("Name", contact.name, 70, true, false, false);
     InputField("Phone Number", contact.phone, 120, true, false, false);
 

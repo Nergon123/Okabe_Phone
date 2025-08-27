@@ -2,98 +2,127 @@
 
 const int lastImage = 42;
 
+void advancedSettings() {
+    String options[] = {
+        "System",
+        "Connectivity",
+        "Look and feel",
+        "Experimental",
+    };
+    int menuSelection = -2;
+    while (menuSelection != -1) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+
+        menuSelection = choiceMenu(options, ArraySize(options), false);
+        switch (menuSelection) {
+        default:
+            break;
+        }
+    }
+}
+
 // Function to show the settings menu
 // This function is called when the user wants to change settings
 // It allows the user to change the wallpaper, ringtones, etc.
 void settings() {
-
-    drawImage(0, 26, SUBMENU_BACKGROUND);
-    drawImage(0, 26, SETTINGS_HEADER_IMAGE);
     String settingsOptions[] = {
         "Change Wallpaper",
         "Set call ringtone",
         "Set mail ringtone",
-    };
-    int menuSelection    = choiceMenu(settingsOptions, 3, false);
-    int pictureIndex     = -1;
-    int confPictureIndex = -2;
+        "Advanced Settings"};
+    int menuSelection = -2;
+    while (menuSelection != -1) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+        menuSelection        = choiceMenu(settingsOptions, ArraySize(settingsOptions), false);
+        int pictureIndex     = -1;
+        int confPictureIndex = -2;
 
-    while (true) {
-        switch (menuSelection) {
-        case -1:
-            currentScreen = SCREENS::MAINMENU;
-            return;
-            break;
-        case 0:
-            pictureIndex = gallery();
-
-            if (pictureIndex == -1) {
+        while (true) {
+            switch (menuSelection) {
+            case -1:
                 currentScreen = SCREENS::MAINMENU;
                 return;
-            }
-            break;
-        case 1:
-            ringtoneSelector(false);
-            return;
-            break;
-        case 2:
-            ringtoneSelector(true);
-            return;
-            break;
-        default:
-            currentScreen = SCREENS::MAINMENU;
-            return;
-            break;
-        }
-        Serial.println(pictureIndex);
-        String GalleryChoice[] = {"Preview", "Confirm"};
-        if (pictureIndex != -1 && pictureIndex != lastImage) {
-
-            confPictureIndex = choiceMenu(GalleryChoice, 2, true);
-            switch (confPictureIndex) {
+                break;
             case 0:
-                drawImage(WALLPAPER_IMAGES_BASE.address + WALLPAPER_IMAGES_MULTIPLIER * pictureIndex, 0, 26, WALLPAPER_IMAGES_BASE.w, WALLPAPER_IMAGES_BASE.h, "/" + resPath, 0, 0);
-                while (buttonsHelding() != BACK)
-                    ;
+                pictureIndex = gallery();
+
+                if (pictureIndex == -1) {
+                    currentScreen = SCREENS::MAINMENU;
+                    return;
+                }
                 break;
             case 1:
-                preferences.begin("settings", false);
-                preferences.putUInt("wallpaperIndex", pictureIndex);
-                preferences.putString("wallpaper", "/null");
-                preferences.end();
-                wallpaperIndex = pictureIndex;
-                free(wallpaper);
-                wallpaper            = nullptr;
-                currentWallpaperPath = "/null";
-                currentScreen        = SCREENS::MAINSCREEN;
-                return;
+                ringtoneSelector(false);
+
+                break;
+            case 2:
+                ringtoneSelector(true);
+
+                break;
+            case 3:
+                advancedSettings();
                 break;
             default:
-
+                currentScreen = SCREENS::MAINMENU;
+                return;
                 break;
             }
-        } else if (pictureIndex == lastImage) {
-            String path      = fileBrowser(SD.open("/"), ".png");
-            confPictureIndex = choiceMenu(GalleryChoice, 2, true);
-            switch (confPictureIndex) {
-            case 0:
-                drawPNG(path.c_str());
-                break;
-            case 1:
-                preferences.begin("settings", false);
-                preferences.putUInt("wallpaperIndex", -1);
-                preferences.putString("wallpaper", path);
-                preferences.end();
-                free(wallpaper);
-                wallpaper            = nullptr;
-                wallpaperIndex       = -1;
-                currentWallpaperPath = path;
-                currentScreen        = SCREENS::MAINSCREEN;
-                return;
-                break;
-            default:
+            Serial.println(pictureIndex);
+            String GalleryChoice[] = {"Preview", "Confirm"};
+            if (pictureIndex != -1 && pictureIndex != lastImage) {
 
-                break;
+                confPictureIndex = choiceMenu(GalleryChoice, 2, true);
+                switch (confPictureIndex) {
+                case 0:
+                    // drawImage(WALLPAPER_IMAGES_BASE.address + WALLPAPER_IMAGES_MULTIPLIER * pictureIndex, 0, 26, WALLPAPER_IMAGES_BASE.w, WALLPAPER_IMAGES_BASE.h, "/" + resPath, 0, 0);
+                    tft.fillScreen(0);
+                    tft.setTextColor(TFT_RED);
+                    tft.print("wallpapers are gone...");
+                    while (buttonsHelding() != BACK)
+                        ;
+                    break;
+                case 1:
+                    preferences.begin("settings", false);
+                    preferences.putUInt("wallpaperIndex", pictureIndex);
+                    preferences.putString("wallpaper", "/null");
+                    preferences.end();
+                    wallpaperIndex = pictureIndex;
+                    // TODO WALLPAPER
+                    currentWallpaperPath = "/null";
+                    currentScreen        = SCREENS::MAINSCREEN;
+                    return;
+                    break;
+                default:
+
+                    break;
+                }
+            } else if (pictureIndex == lastImage) {
+                String path = fileBrowser(SD.open("/"), ".png");
+                if (SD.exists(path)) {
+                    confPictureIndex = choiceMenu(GalleryChoice, 2, true);
+                } else {
+                    break;
+                }
+                switch (confPictureIndex) {
+                case 0:
+                    drawPNG(path.c_str());
+                    break;
+                case 1:
+                    preferences.begin("settings", false);
+                    preferences.putUInt("wallpaperIndex", -1);
+                    preferences.putString("wallpaper", path);
+                    preferences.end();
+                    // TODO WALLPAPER
+                    currentWallpaperPath = path;
+                    currentScreen        = SCREENS::MAINSCREEN;
+                    return;
+                    break;
+                default:
+
+                    break;
+                }
             }
         }
     }
@@ -110,12 +139,8 @@ int gallery() {
     if (!SD.exists(resPath))
         return lastImage;
 
-    auto getWallpaper = [&](int wallpaperID) {
-        return SDImage(WALLPAPER_ICONS_BASE.address + (WALLPAPER_ICONS_MULTIPLIER * wallpaperID), WALLPAPER_ICONS_BASE.w, WALLPAPER_ICONS_BASE.h);
-    };
     mOption wallpaperOptions[] = {
-        {"Pick wallpaper...", getWallpaper(42)}
-    };
+        {"Pick wallpaper...", R_NULL_IMAGE}};
     return listMenu(wallpaperOptions, ArraySize(wallpaperOptions), true, 2, "Change wallpaper");
 }
 
@@ -123,9 +148,9 @@ int gallery() {
 // This function is called when the user wants to set the time
 // @param time Pointer to the time_t variable
 void setTime(time_t *time) {
-    drawImage(0, 51, BACKGROUND_IMAGE);
-    drawImage(0, 26, BLUEBAR_IMAGE);
-    drawImage(0, 26, BLUEBAR_ICONS[2]); // Bluebar icon
+    res.DrawImage(R_LIST_MENU_BACKGROUND);
+    res.DrawImage(R_LIST_HEADER_BACKGROUND);
+    res.DrawImage(R_LIST_HEADER_ICONS, 2);
     changeFont(1);
     tft.setCursor(30, 44);
     tft.setTextColor(0xFFFF);
@@ -230,8 +255,8 @@ void ringtoneSelector(bool isMail) {
             opt[count].label.replace(".SGAUDIO", "");
 
             if (pathes[count].equals(*compareRingtone)) {
-                opt[count].icon = mailimg[0]; // REPLACE WITH NOTE ICON
-                iconIndex       = count;
+                // TODO DRAW NOTE ICON
+                iconIndex = count;
             }
             count++;
         }
@@ -243,8 +268,8 @@ void ringtoneSelector(bool isMail) {
         if (choice < 0)
             return;
         if (iconIndex >= 0)
-            opt[iconIndex].icon = SDImage();
-        opt[choice].icon = mailimg[0];
+            opt[iconIndex].icon = R_NULL_IMAGE;
+        // TODO DRAW NOTE ICON
         iconIndex        = choice;
         *compareRingtone = pathes[choice];
     }

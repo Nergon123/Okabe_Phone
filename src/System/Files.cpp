@@ -1,6 +1,4 @@
 #include "Files.h"
-
-
 // ## File browser
 //
 // This function allows the user to browse files on the SD card
@@ -10,13 +8,12 @@
 // @param graphical: If true, use graphical interface
 // @return The path of the selected file or "/null" if cancelled
 String fileBrowser(File dir, String format, bool graphical) {
-    SDImage folderIcon  = SDImage(0x663983, 18, 18, 0, true);
-    SDImage fileIcon    = SDImage(0x663984 + (18 * 18 * 2), 18, 18, 0, true);
-    String  currentPath = dir.path();
-    File    file        = dir.openNextFile();
+
+    String currentPath = dir.path();
+    File   file        = dir.openNextFile();
     dir.rewindDirectory();
     mOption *options = new mOption[64];
-    int      choice  = -2;
+    int      choice  = -3;
     int      i       = 0;
     format.toLowerCase();
     do {
@@ -33,14 +30,16 @@ String fileBrowser(File dir, String format, bool graphical) {
                 if (file.isDirectory()) {
                     Serial.print("/");
 
-                    options[i].icon  = folderIcon;
-                    options[i].label = file.name() + String("/");
+                    options[i].icon       = R_FILE_MANAGER_ICONS;
+                    options[i].icon_index = 1;
+                    options[i].label      = file.name() + String("/");
                 } else {
                     String fileLow = String(file.name());
                     fileLow.toLowerCase();
                     if (format == "*" || fileLow.endsWith(format)) {
-                        options[i].icon  = fileIcon;
-                        options[i].label = file.name();
+                        options[i].icon       = R_FILE_MANAGER_ICONS;
+                        options[i].icon_index = 0; // I absolutely not sure about this...
+                        options[i].label      = file.name();
                     } else
                         i--;
                 }
@@ -61,7 +60,10 @@ String fileBrowser(File dir, String format, bool graphical) {
             return currentPath;
         }
         dir.close();
-    } while (choice != -1);
+    } while (choice >= 0);
+    if(choice==-2){
+        return "--";
+    }
     return "/null";
     file.close();
     dir.close();

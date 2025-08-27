@@ -1,11 +1,11 @@
 #include "Messages.h"
 #include "../GlobalVariables.h"
 #include "../Input/Input.h"
-#include "../System/DrawGraphics.h"
+
 #include "../System/TextManipulation.h"
 #include "../UI/ListMenu.h"
 #include "../UI/UIElements.h"
-#include "../images.h"
+
 
 // Parse SMS messages from SIM Card
 // @param msgs Array of Message objects to store parsed messages
@@ -134,18 +134,13 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     int    text_pos = 0;
     int    position = 0;
     drawStatusBar();
-    SDImage in_mail[4] = {
-        SDImage(0x663E91, 23, 24, 0, false),
-        SDImage(0x663E91 + (23 * 24 * 2), 23, 24, 0, false),
-        SDImage(0x663E91 + (23 * 24 * 2 * 2), 23, 24, 0, false),
-        SDImage(0x663E91 + (23 * 24 * 2 * 3), 23, 24, 0, false),
-    };
+
     screen_buffer.createSprite(240, 269);
-    drawImage(0, 26, BLUEBAR_IMAGE);
-    drawImage(0, 26, BLUEBAR_ICONS[0]);
-    //jump in pixels per one button press
+    res.DrawImage(R_LIST_HEADER_BACKGROUND);
+    res.DrawImage(R_LIST_HEADER_ICONS, 0);
+    // jump in pixels per one button press
     int y_jump = 22;
-    //offset of screen in height
+    // offset of screen in height
     int y_scr  = 0;
     int y_text = 18;
     int min_y  = y_scr;
@@ -162,10 +157,12 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     bool exit = false;
     while (!exit) {
         position = 0;
-        drawImage(0, 0, BACKGROUND_IMAGE_CUTTED, true);
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
+        // drawImage(0, 0, BACKGROUND_IMAGE_CUTTED, true);
         // tft.fillScreen(0xFFFF);
         // position += 24;
-        drawImage(0, position + y_scr, in_mail[2], true);
+        res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {0, position + y_scr}, {0, 0}, {0, 0}, RES_MAIN, true);
+        // drawImage(0, position + y_scr, in_mail[2], true);
         screen_buffer.setCursor(24, position + y_text + y_scr);
         screen_buffer.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
                                                                    : !contact.email.isEmpty()   ? contact.email
@@ -173,7 +170,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         messagebuf = SplitString(messagebuf);
         if (!subject.isEmpty() || !sms) {
             position += 24;
-            drawImage(0, position + y_scr, in_mail[3], true);
+            res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {0, position + y_scr}, {0, 0}, {0, 0}, RES_MAIN, true);
             screen_buffer.setCursor(24, position + y_text + y_scr);
             screen_buffer.println(subject);
         }
@@ -247,10 +244,10 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 break;
             default:
                 if (input >= '0' && input <= '9') {
-                    
-                    char l           = textInput(input, 0, 0, 1);
-                    
-                    input            = buttonsHelding();
+
+                    char l = textInput(input, 0, 0, 1);
+
+                    input = buttonsHelding();
                     if (l != 0) {
 
                         // ESP_LOGI("INFO","Y:" + String(screen_buffer.getCursorY()));
@@ -330,9 +327,8 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     content.trim();
     const String choices[4] = {"Reply", "Return", "Delete", "HEX to ASCII"};
     drawStatusBar();
-
-    drawImage(0, 26, BLUEBAR_IMAGE);
-    drawImage(0, 26, BLUEBAR_ICONS[0]);
+    res.DrawImage(R_LIST_HEADER_BACKGROUND);
+    res.DrawImage(R_LIST_HEADER_ICONS, 0);
     int y_jump = 22;
     int y_scr  = 0;
     int y_text = 18;
@@ -349,13 +345,13 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     while (!exit) {
         deleted = false;
         tft.setTextColor(0);
-        drawImage(0, 0, BACKGROUND_IMAGE_CUTTED);
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0});
         // tft.fillScreen(0xFFFF);
-        drawImage(0, 0 + y_scr, in_mail[0]);
+        res.DrawImage(R_IN_MSG_MAIL_ICONS, 0, {0, y_scr});
         tft.setCursor(24, 0 + y_text + y_scr);
         tft.println(date);
 
-        drawImage(0, 24 + y_scr, in_mail[1]);
+        res.DrawImage(R_IN_MSG_MAIL_ICONS, 1, {0, y_scr + 24});
         tft.setCursor(24, 24 + y_text + y_scr);
         tft.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
                                                          : !contact.email.isEmpty()   ? contact.email
@@ -442,7 +438,7 @@ void inbox(bool outbox) {
         exit = true;
 
         parseMessages(messages, count);
-        //Potential memory leak???
+        // Potential memory leak???
         mOption *messagesList = new mOption[count];
         for (int i = 0; i < count; i++) {
             messagesList[count - i - 1] = messages[i];
@@ -455,9 +451,8 @@ void inbox(bool outbox) {
             if (choice >= 0) {
                 exit = !messageActivity(messages[count - choice - 1]);
                 if (!exit)
-                choice = -1;
+                    choice = -1;
             }
         }
-    
     }
 }
