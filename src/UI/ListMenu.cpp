@@ -82,7 +82,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     int ly           = 25;
     int x            = 10;
     int old_selected = 0;
-    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
+    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, true);
     // drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
 
     if (icount == 0) {
@@ -124,7 +124,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
     screen_buffer.pushSprite(0, 26);
     bool exit                = false;
-    int  total_items_on_page = 0; // Move declaration outside the switch statement
+    int  total_items_on_page = 0; 
     while (!exit) {
         int c = buttonsHelding();
 
@@ -154,7 +154,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                     selected = (icount % per_page == 0) ? per_page - 1 : (icount % per_page) - 1;
                 }
 
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
+                    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -178,7 +178,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             old_selected = selected;
             selected++;
 
-            total_items_on_page = std::min(per_page, icount - (page * per_page)); // Update value here
+            total_items_on_page = std::min(per_page, icount - (page * per_page));
 
             if (selected >= total_items_on_page) {
                 if (page < pages - 1) {
@@ -190,7 +190,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                     selected = 0;
                 }
 
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
+                    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, true);
                 listMenu_header(type, label, page, pages, y);
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -212,7 +212,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             if (pages > 1) {
                 page     = (page + 1) % pages;
                 selected = 0;
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
+                    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -229,7 +229,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             if (pages > 1) {
                 page     = (page - 1 + pages) % pages;
                 selected = 0;
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
+                    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, true);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
