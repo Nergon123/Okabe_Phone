@@ -22,7 +22,6 @@ bool haveNewMessages = false;
 
 // is spiffs used?
 bool isSPIFFS = false;
-
 // current brightness in percentage
 uint brightness = 100;
 

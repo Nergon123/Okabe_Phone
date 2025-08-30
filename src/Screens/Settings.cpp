@@ -17,7 +17,7 @@ void advancedSettings() {
         menuSelection = choiceMenu(options, ArraySize(options), false);
         switch (menuSelection) {
         default:
-            break;
+            return;
         }
     }
 }
@@ -39,7 +39,6 @@ void settings() {
         int pictureIndex     = -1;
         int confPictureIndex = -2;
 
-        while (true) {
             switch (menuSelection) {
             case -1:
                 currentScreen = SCREENS::MAINMENU;
@@ -124,7 +123,7 @@ void settings() {
                     break;
                 }
             }
-        }
+        
     }
     currentScreen = SCREENS::MAINMENU;
 }
@@ -204,7 +203,7 @@ void setTime(time_t *time) {
 
         if (confirm) {
             tm_time.tm_year = temp_year - 1900;
-            Serial.println("Local time updated!");
+            ESP_LOGI("TIME","Local time updated!");
             SaveTime(mktime(&tm_time));
             exit = true;
         }

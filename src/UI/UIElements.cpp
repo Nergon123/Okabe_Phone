@@ -1,4 +1,74 @@
 #include "UIElements.h"
+const uint16_t clr_selected   = TFT_RED;
+const uint16_t clr_normal     = TFT_BLACK;
+const uint16_t clr_disabled   = TFT_LIGHTGREY;
+const uint16_t clr_background = TFT_WHITE;
+
+enum UITypes {
+    UI_BUTTON,
+    UI_INPUT,
+    UI_SWITCHNUMBERS
+};
+struct UIElement {
+    int         type;
+    int         x, y;
+    int         w, h;
+    String      title;
+    String     *input;
+    int        *value;
+    bool       *bvalue;
+    int        *selected;
+    bool        usable;
+    bool        onlynumbers;
+    const char *format;
+    void       *callback(void *value);
+};
+
+void UIElementsLoop(UIElement *elements, int count, bool *exit) {
+    Serial.println(WiFi.isConnected() ? "CONNECTED" : "DISCONNECTED");
+    if (elements == nullptr) {
+        ESP_LOGE("UI", "elements nullptr");
+    }
+    if (exit == nullptr) {
+    }
+    while (!exit) {
+        int direction     = -1;
+        int cur_selection = 0;
+        for (int i = 0; i < count; i++) {
+            UIElement el         = elements[i];
+            bool      isCallback = true; // replace with null check.
+            switch (el.type) {
+            case UI_BUTTON:
+                *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection, &direction, el.usable);
+                break;
+            case UI_INPUT:
+                break;
+            case UI_SWITCHNUMBERS:
+                break;
+            }
+            if (direction == LEFT) {
+                direction = UP;
+            }
+            if (direction == RIGHT) {
+                direction = DOWN;
+            }
+            switch (direction) {
+            case UP:
+                cur_selection++;
+                if (cur_selection >= count) {
+                    cur_selection = 0;
+                }
+                break;
+            case DOWN:
+                cur_selection--;
+                if (cur_selection < 0) {
+                    cur_selection = count - 1;
+                }
+                break;
+            }
+        }
+    }
+}
 
 // ## UI Button
 //  Part of local "UI Kit"
@@ -10,21 +80,18 @@
 //  @param selected: Boolean indicating if the button is selected
 //  @param direction: Pointer to the direction variable
 //  @return: Boolean indicating if the button was pressed
-bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
-    tft.fillRect(xpos, ypos, w, h, 0xFFFF);
-    tft.drawRect(xpos, ypos, w, h, 0);
+bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction, bool usable,void *callback(void* params)) {
+
+    tft.fillRect(xpos, ypos, w, h, clr_background);
+    tft.drawRect(xpos, ypos, w, h, clr_normal);
     changeFont(1);
     if (selected) {
-        tft.setTextColor(TFT_RED);
-        tft.drawRect(xpos, ypos, w, h, 0);
-        tft.drawRect(xpos, ypos, w, h, TFT_RED);
+        tft.setTextColor(clr_selected);
+        tft.drawRect(xpos, ypos, w, h, clr_selected);
     }
 
     int x = (w - tft.textWidth(title)) / 2;
     int y = h - ((h - tft.fontHeight()));
-
-    // Serial.println("X:" + String(x));
-    // Serial.println("Y:" + String(y));
 
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title);
@@ -41,9 +108,9 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
             }
         }
 
-    tft.setTextColor(0);
-    tft.fillRect(xpos, ypos, w, h, 0xFFFF);
-    tft.drawRect(xpos, ypos, w, h, 0);
+    tft.setTextColor(clr_normal);
+    tft.fillRect(xpos, ypos, w, h, clr_background);
+    tft.drawRect(xpos, ypos, w, h, clr_normal);
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title);
 
@@ -61,7 +128,7 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 // @param selected: Boolean indicating if the input field is selected
 // @param direction: Pointer to the direction variable
 // @param format: Format string for the value
-void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format) {
+void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format,bool usable,void *callback(void* params)) {
 
     // calculation of triangle corners
     int fp  = w / 2;
@@ -81,18 +148,18 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 
     tft.resetViewport();
 
-    tft.fillTriangle(tx1, ty1, tx2, ty2, tx3, ty3, selected ? TFT_RED : TFT_BLACK);
-    tft.fillTriangle(tx1, ty11, tx2, ty21, tx3, ty31, selected ? TFT_RED : TFT_BLACK);
+    tft.fillTriangle(tx1, ty1, tx2, ty2, tx3, ty3, selected ? clr_selected : clr_normal);
+    tft.fillTriangle(tx1, ty11, tx2, ty21, tx3, ty31, selected ? clr_selected : clr_normal);
 
     changeFont(1);
     tft.setTextSize(1);
-    tft.setTextColor(0);
+    tft.setTextColor(clr_normal);
     tft.setTextWrap(false);
     tft.setViewport(x, y, w, h);
     if (selected) {
-        tft.setTextColor(TFT_RED);
+        tft.setTextColor(clr_selected);
     } else {
-        tft.setTextColor(0);
+        tft.setTextColor(clr_normal);
     }
     char text[64];
     snprintf(text, sizeof(text), format, val);
@@ -104,8 +171,8 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
     std::function<void()> DrawBox = [&]() {
         snprintf(text, sizeof(text), format, val);
         tft.setCursor(w / 2 - width / 2, h / 2 + height / 4);
-        tft.drawRect(0, 0, w, h, selected ? TFT_RED : TFT_BLACK);
-        tft.fillRect(1, 1, w - 2, h - 2, TFT_WHITE);
+        tft.drawRect(0, 0, w, h, selected ? clr_selected : clr_normal);
+        tft.fillRect(1, 1, w - 2, h - 2, clr_background);
         tft.print(text);
     };
     DrawBox();
@@ -143,8 +210,8 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 //  @param title: Title of the textbox
 //  @param content: Content of the textbox
 //  @param ypos: Y position on the screen
-//  @param onlydraw: Boolean indicating if the textbox should be drawn
-//  @param selected: Boolean indicating if the textbox is selected
+//  @param onlydraw: Boolean indicating if the textbox should be drawn and return
+//  @param selected: Boolean indicating if the textbox is selected (draw borders red)
 //  @param used: Boolean indicating if the textbox is used
 //  @param direction: Pointer to the direction variable
 //  @param onlynumbers: Boolean indicating if only numbers are allowed
@@ -155,19 +222,19 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
     if (used)
         selected = true;
     tft.resetViewport();
-    tft.setTextColor(0);
+    tft.setTextColor(clr_normal);
     tft.setTextWrap(false);
     tft.setCursor(5, ypos - 5);
     changeFont(1);
     tft.setTextSize(1);
 
     if (selected)
-        tft.setTextColor(TFT_RED);
+        tft.setTextColor(clr_selected);
     else
-        tft.setTextColor(0);
+        tft.setTextColor(clr_normal);
 
     tft.print(title);
-    tft.setTextColor(0);
+    tft.setTextColor(clr_normal);
     changeFont(3);
 
     int cursorPos = content.length();
@@ -192,11 +259,11 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
     if (selected)
         tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
 
-    tft.fillRect(xpos, dypos, width, height, 0xFFFF);
-    tft.drawRect(xpos, dypos, width, height, 0);
+    tft.fillRect(xpos, dypos, width, height, clr_background);
+    tft.drawRect(xpos, dypos, width, height, clr_normal);
 
     if (selected) {
-        tft.drawRect(xpos, dypos, width, height, 0xF800);
+        tft.drawRect(xpos, dypos, width, height, clr_selected);
     }
 
     tft.print(content);
@@ -210,9 +277,9 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
             if (length > width)
                 c_offset = width - length;
 
-            tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0);
+            tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_normal);
 
-            tft.drawRect(xpos, ypos, width, height, 0xF800);
+            tft.drawRect(xpos, ypos, width, height, clr_selected);
 
             while (!exit) {
 
@@ -237,11 +304,11 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
                         length = tft.textWidth(content.substring(0, cursorPos)) + 15;
                         if (length > width)
                             c_offset = width - length;
-                        tft.fillRect(xpos, dypos, width, height, 0xFFFF);
-                        tft.drawRect(xpos, dypos, width, height, 0xF800);
+                        tft.fillRect(xpos, dypos, width, height, clr_background);
+                        tft.drawRect(xpos, dypos, width, height, clr_selected);
                         tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
                         tft.println(content);
-                        tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0);
+                        tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_normal);
                         c = buttonsHelding();
                     } else {
                         switch (c) {
@@ -252,12 +319,12 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
                                 length = tft.textWidth(content.substring(0, cursorPos)) + 15;
                                 if (length > width)
                                     c_offset = width - length;
-                                tft.fillRect(xpos, dypos, width, height, 0xFFFF);
-                                tft.drawRect(xpos, dypos, width, height, 0xF800);
+                                tft.fillRect(xpos, dypos, width, height, clr_background);
+                                tft.drawRect(xpos, dypos, width, height, clr_selected);
                                 tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
                                 tft.println(content);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos + 1)) + c_offset + 5, 3, CWIDTH, height - 6, 0xffff);
+                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_normal);
+                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos + 1)) + c_offset + 5, 3, CWIDTH, height - 6, clr_background);
                             }
                             break;
                         case RIGHT:
@@ -266,12 +333,12 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
                                 length = tft.textWidth(content.substring(0, cursorPos)) + 15;
                                 if (length > width)
                                     c_offset = width - length;
-                                tft.fillRect(xpos, dypos, width, height, 0xFFFF);
-                                tft.drawRect(xpos, dypos, width, height, 0xF800);
+                                tft.fillRect(xpos, dypos, width, height, clr_background);
+                                tft.drawRect(xpos, dypos, width, height, clr_selected);
                                 tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
                                 tft.println(content);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos - 1)) + c_offset + 5, 3, CWIDTH, height - 6, 0xffff);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0);
+                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos - 1)) + c_offset + 5, 3, CWIDTH, height - 6, clr_normal);
+                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_background);
                             }
                             break;
 
@@ -294,16 +361,16 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
             }
         }
 
-    tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, 0xFFFF);
-    tft.fillRect(xpos, dypos, width, height, 0xFFFF);
-    tft.drawRect(xpos, dypos, width, height, 0);
+    tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_background);
+    tft.fillRect(xpos, dypos, width, height, clr_background);
+    tft.drawRect(xpos, dypos, width, height, clr_normal);
     tft.setCursor(xpos + 5, dypos + yoff);
     tft.println(content);
     tft.resetViewport();
     tft.setCursor(5, ypos - 5);
     changeFont(1);
     tft.setTextSize(1);
-    tft.setTextColor(0);
+    tft.setTextColor(clr_normal);
     tft.print(title);
     content.trim();
     return content;
@@ -318,17 +385,17 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
 // @param spacing: Spacing between the circles
 void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     // Get image data and allocate buffer
-    ImageData img = res.GetImageDataByID(R_CALL_ANIM_DOTS);
+    ImageData img               = res.GetImageDataByID(R_CALL_ANIM_DOTS);
     const int frame_pixel_count = 49; // 7x7 pixels per frame
-    const int total_frames = img.count;
-    const int buffer_size = frame_pixel_count * total_frames;
+    const int total_frames      = img.count;
+    const int buffer_size       = frame_pixel_count * total_frames;
 
     // Get buffer (uint16_t*, already in RGB565 format)
     uint16_t *buffer = res.GetRGB565(img, buffer_size * 2); // buffer_size * 2 bytes total
 
-    int max_count = (2 * size_x) + (2 * (size_y - 1));
-    int printed_count = 0;
-    int xt = 0, yt = 0;
+    int  max_count     = (2 * size_x) + (2 * (size_y - 1));
+    int  printed_count = 0;
+    int  xt = 0, yt = 0;
     bool draw = true;
 
     uint16_t currentcircle[49];
@@ -370,7 +437,6 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
 
     delete[] buffer;
 }
-
 
 int lastpercentage;
 // progress bar that used on boot screen
@@ -422,7 +488,7 @@ void sysError(String reason) {
     tft.println(String("\n\n\nThere a problem with your device\n\nTechnical details:\n\n\nReason:" + reason + "\n\n\n\n\n" REPOSITORY_LINK "\n\n"));
 
     tft.println("Press any button to restart\nor reset button to reset the device");
-
+    ESP_LOGE("ERROR", "%s", reason);
     while (buttonsHelding(false) == -1)
         ;
     ESP.restart();
