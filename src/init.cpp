@@ -81,6 +81,7 @@ void hardwareInit() {
 
 // Function to initialize the SD card and check if it is available
 void storageInit() {
+    bootText("Setting up storage");
     preferences.begin("settings", false);
     resPath  = preferences.getString("resPath", resPath);
     isSPIFFS = (!initSDCard(true) || !SD.exists(resPath)) && SPIFFS.exists(SPIFFSresPath);
@@ -92,16 +93,20 @@ void storageInit() {
     if (!isSPIFFS && !SD.exists(resPath))
         recovery(SplitString("Seems that you flashed your device wrongly.Refer to the instructions for more information."));
 
+
+
+        
     ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
+    bootText("Loading resource file...");
 
 
 
     if (!isSPIFFS) {
-        loadResource(RESOURCE_ADDRESS, resPath, &resources, 0, 0);
+        File SDres = SD.open(resPath);
+        res.Init(SDres);
     } else {
         File SPIFFSres = SPIFFS.open(SPIFFSresPath);
-        loadResource(0, SPIFFSresPath, &resources, 0, 0);
         res.Init(SPIFFSres);
     }
 

@@ -2,7 +2,8 @@
 #include "Generic.h"
 Coords czero = {0, 0};
 Coords cnone = {-1, -1};
-void   ResourceSystem::Init(File Main, File Wallpapers) {
+
+void ResourceSystem::Init(File Main, File Wallpapers) {
     Files[RES_MAIN]       = Main;
     Files[RES_WALLPAPERS] = Wallpapers;
     for (int i = 0; i < sizeof(Files) / sizeof(Files[0]); i++) {
@@ -13,7 +14,6 @@ void   ResourceSystem::Init(File Main, File Wallpapers) {
         }
     }
 };
-
 void ResourceSystem::parseResourceFile(File file, Header &header, uint8_t type, bool important) {
     Images[type].clear();
     if (file.read(reinterpret_cast<uint8_t *>(&header), sizeof(Header)) != sizeof(Header)) {
@@ -100,10 +100,10 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
         return false;
     }
 
-    uint16_t   *imageBuffer = GetRGB565(img, size, start, type);
+    ImageBuffer imageBuffer = GetRGB565(img, size, start, type);
     TFT_eSprite spr(&tft);
     spr.createSprite(endpos.x - startpos.x, endpos.y - startpos.y);
-    spr.pushImage(-startpos.x, 0, img.width, endpos.y - startpos.y, imageBuffer);
+    spr.pushImage(-startpos.x, 0, img.width, endpos.y - startpos.y, imageBuffer.pointer);
     if (img.flags & 1 /*if transparent*/) {
         if (is_screen_buffer) {
             spr.pushToSprite(&sbuffer, pos.x, pos.y, img.transpColor);
@@ -118,17 +118,56 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
         }
     }
     spr.deleteSprite();
-    delete[] imageBuffer;
+    if (imageBuffer.freeNeeded) {
+        free(imageBuffer.pointer);
+    }
     return true;
 }
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer) {
     return DrawImage(id, index, {-1, -1}, {0, 0}, {-1, -1}, RES_MAIN, is_screen_buffer, sbuffer);
 }
-uint16_t *ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {
-    uint16_t *buffer = new uint16_t[size / 2]; // safer than using uint8_t*
+
+ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {
+
+    ImageBuffer buffer;
+    if (cache[type]) {
+        buffer.pointer    = reinterpret_cast<uint16_t *>(cache[type] + img.offset + start);
+        buffer.freeNeeded = false;
+        return buffer;
+    }
+    buffer.freeNeeded = true;
+    if (psramFound()) {
+        buffer.pointer = (uint16_t *)ps_malloc(size);
+    } else {
+        buffer.pointer = (uint16_t *)malloc(size);
+    }
+
     Files[type].seek(img.offset + start);
-    Files[type].read(reinterpret_cast<uint8_t *>(buffer), size);
+    Files[type].read(reinterpret_cast<uint8_t *>(buffer.pointer), size);
+
     return buffer;
+}
+
+void ResourceSystem::CopyToRam(uint8_t type) {
+    bootText("Copying file to RAM...");
+    
+    if (psramFound() && heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) > Files[type].size()) {
+
+        Files[type].seek(0);
+        cache[type] = (uint8_t *)ps_malloc(Files[type].size());
+
+        if (cache[type]) {
+            size_t readB = Files[type].read(reinterpret_cast<uint8_t *>(cache[type]), Files[type].size());
+
+            if (readB != Files[type].size()) {
+                ESP_LOGE("CopyToRam", "Size mismatch %d != %d", Files[type].size(), readB);
+                bootText("copying to ram not successfull.");
+
+                free(cache[type]);
+                cache[type] = nullptr;
+            }
+        }
+    }
 }
 
 ResourceSystem res;

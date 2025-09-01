@@ -80,7 +80,7 @@ void UIElementsLoop(UIElement *elements, int count, bool *exit) {
 //  @param selected: Boolean indicating if the button is selected
 //  @param direction: Pointer to the direction variable
 //  @return: Boolean indicating if the button was pressed
-bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction, bool usable,void *callback(void* params)) {
+bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction, bool usable, void *callback(void *params)) {
 
     tft.fillRect(xpos, ypos, w, h, clr_background);
     tft.drawRect(xpos, ypos, w, h, clr_normal);
@@ -128,7 +128,7 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 // @param selected: Boolean indicating if the input field is selected
 // @param direction: Pointer to the direction variable
 // @param format: Format string for the value
-void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format,bool usable,void *callback(void* params)) {
+void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format, bool usable, void *callback(void *params)) {
 
     // calculation of triangle corners
     int fp  = w / 2;
@@ -391,7 +391,8 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     const int buffer_size       = frame_pixel_count * total_frames;
 
     // Get buffer (uint16_t*, already in RGB565 format)
-    uint16_t *buffer = res.GetRGB565(img, buffer_size * 2); // buffer_size * 2 bytes total
+    ImageBuffer Ibuffer = res.GetRGB565(img, buffer_size * 2); // buffer_size * 2 bytes total
+    uint16_t *buffer = Ibuffer.pointer;
 
     int  max_count     = (2 * size_x) + (2 * (size_y - 1));
     int  printed_count = 0;
@@ -471,6 +472,23 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
 #endif
     }
     lastpercentage = percentage;
+}
+
+void bootText(String text, int x, int y, int w, int h) {
+    if (lastpercentage == 100) {
+        return;
+    }
+    tft.fillRect(x, y, w, h, TFT_BLACK);
+    tft.setTextFont(0);
+    tft.setTextSize(1);
+    if (x < 0) {
+        x = 120 - (tft.textWidth(text) / 2);
+    }
+    tft.setViewport(0, y, w, h);
+    tft.setTextColor(TFT_WHITE);
+    tft.setCursor(x, 0);
+    tft.print(text);
+    tft.resetViewport();
 }
 
 // ## Critical system error

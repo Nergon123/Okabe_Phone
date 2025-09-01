@@ -52,7 +52,7 @@ void drawPNG(const char *filename, bool _wallpaper) {
         return;
     }
     int rc = -1;
-    //int rc = png.open(filename, pngOpen, pngClose, pngRead, pngSeek, pngDraw);
+    rc = png.open(filename, pngOpen, pngClose, pngRead, pngSeek, pngDraw);
     if (rc == PNG_SUCCESS) {
         //TODO
         Serial.printf("Image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
