@@ -31,13 +31,15 @@ void setup() {
     tft.setTextFont(1);
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
-
+    storageInit();
+    
     if (buttonsHelding(false) == '*') {
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
     }
-    storageInit();
 
+    res.CopyToRam();
     res.DrawImage(R_BOOT_LOGO);
+    bootText("Initializing RTOS tasks...");
     initTasks();
     ESP_LOGI("DEVICE",
              "\nOkabePhone " FIRMVER "\n\n Phone firmware written by Nergon\n\n "

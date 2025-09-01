@@ -57,6 +57,11 @@ struct ImageData {
 };
 #pragma pack(pop)
 
+struct ImageBuffer {
+    uint16_t *pointer;
+    bool      freeNeeded;
+};
+
 struct Coords {
     int x, y;
 };
@@ -108,14 +113,16 @@ class ResourceSystem {
     Header                 Headers[2];
     std::vector<ImageData> Images[2];
     File                   Files[2];
+    uint8_t               *cache[2];
 
     ImageData GetImageDataByID(uint16_t id, uint8_t type = RES_MAIN);
 
-    void      Init(File Main, File Wallpapers = File());
-    Coords    GetCoordsByID(uint16_t id, uint8_t type = RES_MAIN);
-    bool      DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {-1, -1}, Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN, bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
-    bool      DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer = screen_buffer);
-    uint16_t *GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0, uint8_t type = RES_MAIN);
+    void        CopyToRam(uint8_t type = RES_MAIN);
+    void        Init(File Main, File Wallpapers = File());
+    Coords      GetCoordsByID(uint16_t id, uint8_t type = RES_MAIN);
+    bool        DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {-1, -1}, Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN, bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
+    bool        DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer = screen_buffer);
+    ImageBuffer GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0, uint8_t type = RES_MAIN);
 
   private:
     const char *names[3] = {
