@@ -21,11 +21,11 @@ struct UIElement {
     bool        usable;
     bool        onlynumbers;
     const char *format;
-    void       *callback(void *value);
+    int         min, max;
+    void (*callback)(void *);
 };
 
 void UIElementsLoop(UIElement *elements, int count, bool *exit) {
-    Serial.println(WiFi.isConnected() ? "CONNECTED" : "DISCONNECTED");
     if (elements == nullptr) {
         ESP_LOGE("UI", "elements nullptr");
     }
@@ -35,15 +35,22 @@ void UIElementsLoop(UIElement *elements, int count, bool *exit) {
         int direction     = -1;
         int cur_selection = 0;
         for (int i = 0; i < count; i++) {
-            UIElement el         = elements[i];
-            bool      isCallback = true; // replace with null check.
+            UIElement el = elements[i];
+
             switch (el.type) {
             case UI_BUTTON:
-                *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection, &direction, el.usable);
+                *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection, &direction, el.usable, el.callback);
                 break;
             case UI_INPUT:
+                if (el.input == nullptr) {
+                    el.input = new String();
+                }
+                *el.input = InputField(el.title, *el.input, el.y, false, i == cur_selection, i == cur_selection, &direction, el.onlynumbers, el.usable, el.callback);
                 break;
             case UI_SWITCHNUMBERS:
+
+                sNumberChange(el.x, el.y, el.w, el.h, *el.value, el.min, el.max, i == cur_selection, &direction, el.format, el.usable, el.callback);
+
                 break;
             }
             if (direction == LEFT) {
@@ -80,7 +87,7 @@ void UIElementsLoop(UIElement *elements, int count, bool *exit) {
 //  @param selected: Boolean indicating if the button is selected
 //  @param direction: Pointer to the direction variable
 //  @return: Boolean indicating if the button was pressed
-bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction, bool usable, void *callback(void *params)) {
+bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction, bool usable, void (*callback)(void *)) {
 
     tft.fillRect(xpos, ypos, w, h, clr_background);
     tft.drawRect(xpos, ypos, w, h, clr_normal);
@@ -89,19 +96,28 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
         tft.setTextColor(clr_selected);
         tft.drawRect(xpos, ypos, w, h, clr_selected);
     }
+    if (!usable) {
+        tft.setTextColor(clr_disabled);
+        tft.drawRect(xpos, ypos, w, h, clr_disabled);
+    }
 
     int x = (w - tft.textWidth(title)) / 2;
     int y = h - ((h - tft.fontHeight()));
 
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title);
-
+    if(!usable){
+        return false;
+    }
     bool exit = false;
 
     if (selected)
         while (!exit) {
             *direction = buttonsHelding();
             if (*direction == SELECT) {
+                if (callback != nullptr) {
+                    callback(nullptr);
+                }
                 return true;
             } else if (*direction != -1) {
                 exit = true;
@@ -128,7 +144,7 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 // @param selected: Boolean indicating if the input field is selected
 // @param direction: Pointer to the direction variable
 // @param format: Format string for the value
-void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format, bool usable, void *callback(void *params)) {
+void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format, bool usable, void (*callback)(void *)) {
 
     // calculation of triangle corners
     int fp  = w / 2;
@@ -216,7 +232,7 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 //  @param direction: Pointer to the direction variable
 //  @param onlynumbers: Boolean indicating if only numbers are allowed
 //  @return: String containing the input
-String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers) {
+String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers, bool usable, void (*callback)(void *)) {
 
     content.trim();
     if (used)
@@ -392,7 +408,7 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
 
     // Get buffer (uint16_t*, already in RGB565 format)
     ImageBuffer Ibuffer = res.GetRGB565(img, buffer_size * 2); // buffer_size * 2 bytes total
-    uint16_t *buffer = Ibuffer.pointer;
+    uint16_t   *buffer  = Ibuffer.pointer;
 
     int  max_count     = (2 * size_x) + (2 * (size_y - 1));
     int  printed_count = 0;

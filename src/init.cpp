@@ -43,7 +43,7 @@ bool initSDCard(bool fast) {
 
 // Function to initialize the hardware components
 void hardwareInit() {
-    setCpuFrequencyMhz(SLOW_CPU_FREQ_MHZ);
+    setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     // INIT charging IC as well as I2C
     chrg.begin(21, 22);
     pinMode(TFT_BL, OUTPUT);
@@ -55,7 +55,6 @@ void hardwareInit() {
     ESP_LOGW("PSRAM", "PSRAM DISABLED");
 #endif
     tft.fillScreen(0x0000);
-
     // INIT Serial
     Serial.begin(SERIAL_BAUD_RATE);
     ESP_LOGI("SERIAL", "Serial started at %d baud", SERIAL_BAUD_RATE);
@@ -100,7 +99,7 @@ void storageInit() {
     progressBar(10, 100, 250);
     bootText("Loading resource file...");
 
-
+ 
 
     if (!isSPIFFS) {
         File SDres = SD.open(resPath);
@@ -142,44 +141,5 @@ void storageInit() {
 // @param h: height of the image
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h) {
 
-    ////////////////////////////
-    return;
-    //we dont need this function for now I guess...
-    ////////////////////////////
-
-    #ifdef PSRAM_ENABLE
-    if (*_resources)
-        free(*_resources);
-    File file;
-    if (isSPIFFS)
-        file = SPIFFS.open(SPIFFSresPath);
-    else
-        file = SD.open(resourcefile);
-    if (!file) {
-        ESP_LOGE("FS", "Failed to open file!");
-        return;
-    }
-
-    file.seek(address);
-    size_t size;
-    if (w == 0 && h == 0)
-        size = file.size() - address;
-    else
-        size = w * h * 2;
-
-    *_resources = (uint8_t *)ps_malloc(size);
-
-    if (!(*_resources)) {
-        ESP_LOGE("MALLOC", "Memory allocation failed!");
-        sysError("MEMORY_ALLOCATION_FAILED" + address);
-        file.close();
-        return;
-    }
-
-    file.read(*_resources, size);
-    file.close();
-    ESP_LOGI("PSRAM", "Loaded %d bytes from %s\n", size, resourcefile.c_str());
-#else
-    ESP_LOGW("PSRAM", "PSRAM not enabled ! ! !");
-#endif
+return;
 }

@@ -14,11 +14,11 @@ int getChargeLevel() {
 
 ulong funcTime = 0;
 #ifdef DEVMODE
-void GetFuncTime(bool start,const char* who = "UNKNOWN") {
+void GetFuncTime(bool start, const char *who = "UNKNOWN") {
     if (start) {
         funcTime = micros();
     } else {
-        Serial.printf("\n%s run for %.3f ms\n" ,who,(float)(micros() - funcTime)/1000);
+        Serial.printf("\n%s run for %.3f ms\n", who, (float)(micros() - funcTime) / 1000);
     }
 }
 #endif
@@ -35,7 +35,6 @@ void fastMode(bool status) {
     SimSerial.updateBaudRate(SIM_BAUD_RATE);
     if (!isSPIFFS)
         initSDCard(status);
-
 }
 
 int currentBrightness = brightness;

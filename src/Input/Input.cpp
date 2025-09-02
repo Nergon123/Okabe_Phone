@@ -28,16 +28,6 @@ void idle() {
     }
 }
 
-// check if certain GPIO button is pressed (Deprecated?)
-bool checkEXButton(int pin) {
-    if (digitalRead(pin) == LOW) {
-        delay(50);
-        while (digitalRead(pin) == LOW)
-            ;
-        return true;
-    }
-    return false;
-}
 
 // check which MCP23017 button is pressed
 int checkButton() {
@@ -105,9 +95,8 @@ void numberInput(char first) {
         switch (c) {
         case ANSWER:
             if (!number.isEmpty())
-                makeCall(Contact(number, ""));
+                makeCall(Contact("", number));
             return;
-            break;
         case LEFT:
 
             number.remove(number.length() - 1);
@@ -118,7 +107,6 @@ void numberInput(char first) {
             break;
         case BACK:
             return;
-            break;
         default:
             break;
         }
@@ -289,8 +277,8 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         viewport = true;
     }
     if (!dontRedraw) {
-        //drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
-        //TODO
+        // drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
+        // TODO
     }
     if (viewport) {
         tft.setViewport(vx, vy, w, h);
@@ -362,7 +350,7 @@ int buttonsHelding(bool _idle) {
 
     if (Serial.available()) {
         char input = Serial.read();
-        millSleep = millis();
+        millSleep  = millis();
         switch (input) {
         case 'a':
             Serial.println("LEFT");
@@ -399,6 +387,10 @@ int buttonsHelding(bool _idle) {
         case '#':
             Serial.println(input);
             result = 21;
+            break;
+        case 'l':
+            Serial.println("Restart");
+            ESP.restart();
             break;
         default:
             if (input >= '0' && input <= '9') {
