@@ -52,7 +52,7 @@ volatile int stateCall = 6;
 volatile int DBC_MS = 1000;
 
 // Contacts storage
-Contact contacts[MAX_CONTACTS];
+Contact contacts[MAX_CONTACTS]; // TODO : convert array to vector
 // Handle for background SIM checks
 TaskHandle_t TaskHCommand;
 

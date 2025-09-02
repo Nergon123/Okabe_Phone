@@ -3,9 +3,9 @@
 #include "System/ResourceSystem.h"
 #include "System/Time.h"
 
-#include "init.h"
 #include "System/Tasks.h"
 #include "esp_task_wdt.h"
+#include "init.h"
 void restart_handler() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextSize(1);
@@ -18,7 +18,7 @@ void restart_handler() {
 // initialize the system
 void setup() {
     esp_task_wdt_deinit();
-    esp_task_wdt_init(10000,false);
+    esp_task_wdt_init(10000, false);
     esp_register_shutdown_handler(restart_handler);
 
     SetUpTime();
@@ -32,7 +32,7 @@ void setup() {
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
     storageInit();
-    
+
     if (buttonsHelding(false) == '*') {
         recovery("Manually triggered recovery."); // Chance to change resource file to custom one
     }
@@ -46,12 +46,22 @@ void setup() {
              "Resources located in sdcard (%s)\n",
              resPath.c_str());
     ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getChipCores());
+    
     progressBar(100, 100, 250);
     millSleep = millis();
+    
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
-
+    fastMode(false);
     if (buttonsHelding(false) == '#')
         AT_test();
+
+
+    // changeFont(3);
+    // tft.fillScreen(tft.color24to16(0x00008b));
+    // tft.setTextColor(0xF800);
+    // tft.drawNumber(9292929292929, 150, 1);
+    // for (;;) ;
+
 }
 
 // Function to handle the main loop
