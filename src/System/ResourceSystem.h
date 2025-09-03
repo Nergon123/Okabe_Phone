@@ -64,6 +64,7 @@ struct ImageBuffer {
 
 struct Coords {
     int x, y;
+    
 };
 
 extern Coords czero;

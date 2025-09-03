@@ -20,6 +20,8 @@
 //For SIM communication
 #define SIM_BAUD_RATE 115200
 
+#define lines_to_draw_wo_psram 4
+
 
 #ifdef OKABE_PHONE_HW_0
 #define SIM_INT_PIN 34
