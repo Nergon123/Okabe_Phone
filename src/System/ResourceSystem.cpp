@@ -94,33 +94,50 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     if (startpos.y >= endpos.y) {
         return false;
     }
+    int16_t  width = endpos.x - startpos.x, height = endpos.y - startpos.y;
     uint32_t start = (startpos.y * img.width * 2 + (img.width * img.height * 2 * index));
-    uint32_t size  = (endpos.y - startpos.y) * img.width * 2;
+    uint32_t size  = height * img.width * 2;
     if (size == 0) {
         return false;
     }
 
-    ImageBuffer imageBuffer = GetRGB565(img, size, start, type);
+    bool        isLines = psramFound() && !is_screen_buffer;
+    int         lines   = isLines ? img.height : lines_to_draw_wo_psram;
+  
     TFT_eSprite spr(&tft);
-    spr.createSprite(endpos.x - startpos.x, endpos.y - startpos.y);
-    spr.pushImage(-startpos.x, 0, img.width, endpos.y - startpos.y, imageBuffer.pointer);
-    if (img.flags & 1 /*if transparent*/) {
-        if (is_screen_buffer) {
-            spr.pushToSprite(&sbuffer, pos.x, pos.y, img.transpColor);
-        } else {
-            spr.pushSprite(pos.x, pos.y, img.transpColor);
+    spr.createSprite(width, lines);
+    for (int i = 0; i < height; i += lines) {
+        if (height - i < lines) {
+            lines = height % lines;
         }
-    } else {
-        if (is_screen_buffer) {
-            spr.pushToSprite(&sbuffer, pos.x, pos.y);
+        if(img.id == R_LIST_HEADER_BACKGROUND){
+          printf("lines %d\n",lines);
+        }
+        ImageBuffer imageBuffer = GetRGB565(img, lines * img.width * 2, start + i * img.width * 2, type);
+        spr.pushImage(-startpos.x, 0, width, lines, imageBuffer.pointer);
+
+        if (img.flags & 1 /*if transparent*/) {
+
+            if (is_screen_buffer) {
+                spr.pushToSprite(&sbuffer, pos.x, pos.y + i, img.transpColor);
+            } else {
+                spr.pushSprite(pos.x, pos.y + i, img.transpColor);
+            }
+
         } else {
-            spr.pushSprite(pos.x, pos.y);
+
+            if (is_screen_buffer) {
+                spr.pushToSprite(&sbuffer, pos.x, pos.y + i);
+            } else {
+                spr.pushSprite(pos.x, pos.y + i);
+            }
+        }
+
+        if (imageBuffer.freeNeeded) {
+            free(imageBuffer.pointer);
         }
     }
     spr.deleteSprite();
-    if (imageBuffer.freeNeeded) {
-        free(imageBuffer.pointer);
-    }
     return true;
 }
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer) {
@@ -150,7 +167,7 @@ ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start
 
 void ResourceSystem::CopyToRam(uint8_t type) {
     bootText("Copying file to RAM...");
-    
+
     if (psramFound() && heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) > Files[type].size()) {
 
         Files[type].seek(0);

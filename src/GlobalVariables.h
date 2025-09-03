@@ -10,11 +10,9 @@
 #include <SD.h>
 #include <TFT_eSPI.h>
 
-
-//hmm....
+// hmm....
 extern TFT_eSprite screen_buffer;
 #include "System/ResourceSystem.h"
-
 
 struct Contact {
     int    index;
@@ -30,8 +28,8 @@ struct mOption {
 
     String   label;
     uint16_t icon;
-    uint8_t  icon_index ;
-    uint8_t  fileId ;
+    uint8_t  icon_index;
+    uint8_t  fileId;
 };
 
 // SMS status
@@ -53,7 +51,7 @@ struct Message {
     String  longdate;
 
     operator mOption() const {
-        return mOption{date + " " + contact.name, .icon = R_LIST_MAIL_ICONS, .icon_index = (status == status::NEW ? (uint8_t)0 : (uint8_t)1),.fileId = 0};
+        return mOption{date + " " + contact.name, .icon = R_LIST_MAIL_ICONS, .icon_index = (status == status::NEW ? (uint8_t)0 : (uint8_t)1), .fileId = 0};
     }
 
     Message(Contact _contact, String _subject, String _content, String _date, String _longdate, bool _isOutgoing = false, unsigned char _status = status::NEW, int _index = -1)
@@ -76,9 +74,9 @@ enum SCREENS {
     E,
 };
 
-extern MCP23017    mcp;
-extern IP5306      chrg;
-extern TFT_eSPI    tft;
+extern MCP23017 mcp;
+extern IP5306   chrg;
+extern TFT_eSPI tft;
 
 extern Preferences preferences;
 extern PNG         png;

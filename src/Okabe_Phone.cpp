@@ -23,7 +23,6 @@ void setup() {
 
     SetUpTime();
     hardwareInit();
-
     if (chrg.isChargerConnected() == 1) {
         offlineCharging();
     }
@@ -31,6 +30,12 @@ void setup() {
     tft.setTextFont(1);
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
+    if(!psramFound()){
+        changeFont(2);
+        tft.setTextColor(TFT_RED);
+        tft.setCursor(0,50);
+        tft.print("PSRAM NOT FOUND!!!\nEXPECT PROBLEMS!!!");
+    }
     storageInit();
 
     if (buttonsHelding(false) == '*') {

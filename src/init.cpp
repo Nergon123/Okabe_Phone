@@ -11,7 +11,7 @@
 bool initSDCard(bool fast) {
     SD.end();
     uint32_t freq;
-    int tries = 0;
+    int      tries = 0;
     if (fast) {
         freq = FAST_SD_FREQ;
         if (freq >= getCpuFrequencyMhz() * 1000000) {
@@ -25,7 +25,8 @@ bool initSDCard(bool fast) {
             while (freq >= getCpuFrequencyMhz() * 1000000) {
                 freq /= 4;
                 tries++;
-                if(tries>5)break;
+                if (tries > 5)
+                    break;
             }
             return SD.begin(chipSelect, SPI, freq);
         }
@@ -33,7 +34,8 @@ bool initSDCard(bool fast) {
         freq = SAFE_SD_FREQ;
         while (freq >= getCpuFrequencyMhz() * 1000000) {
             freq /= 4;
-            if(tries>5)break;
+            if (tries > 5)
+                break;
         }
         SD.end();
         return SD.begin(chipSelect, SPI, freq);
@@ -49,11 +51,12 @@ void hardwareInit() {
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
     tft.init();
-#ifdef PSRAM_ENABLE
-    tft.setAttribute(PSRAM_ENABLE, true);
-#else
-    ESP_LOGW("PSRAM", "PSRAM DISABLED");
-#endif
+    if (psramFound()) {
+        tft.setAttribute(PSRAM_ENABLE, true);
+    } else {
+        
+        ESP_LOGW("PSRAM", "PSRAM DISABLED");
+    }
     tft.fillScreen(0x0000);
     // INIT Serial
     Serial.begin(SERIAL_BAUD_RATE);
@@ -61,11 +64,9 @@ void hardwareInit() {
     SimSerial.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
 
     ESP_LOGI("SIM_CARD_SERIAL", "Serial1 (SIM CARD COMMUNICATION) started");
-#ifdef PSRAM_ENABLE
-    ESP_LOGI("PSRAM", "PSRAM SIZE: %d bytes", ESP.getPsramSize());
-#else
-    ESP_LOGW("PSRAM", "PSRAM DISABLED");
-#endif
+    if (psramFound()) {
+        ESP_LOGI("PSRAM", "PSRAM SIZE: %d bytes", ESP.getPsramSize());
+    }
     // RESET KEYBOARD
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
     mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
@@ -92,14 +93,9 @@ void storageInit() {
     if (!isSPIFFS && !SD.exists(resPath))
         recovery(SplitString("Seems that you flashed your device wrongly.Refer to the instructions for more information."));
 
-
-
-        
     ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
     bootText("Loading resource file...");
-
- 
 
     if (!isSPIFFS) {
         File SDres = SD.open(resPath);
@@ -130,9 +126,6 @@ void storageInit() {
     progressBar(70, 100, 250);
 }
 
-
-
-
 // Function to load a resource file from the SD card to the PSRAM
 // @param address: address in the file
 // @param resourcefile: path to the resource file
@@ -141,5 +134,5 @@ void storageInit() {
 // @param h: height of the image
 void loadResource(ulong address, String resourcefile, uint8_t **_resources, int w, int h) {
 
-return;
+    return;
 }
