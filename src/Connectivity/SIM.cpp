@@ -43,12 +43,12 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
             int firIndex  = response.indexOf("\"", indexClip);
             currentNumber = response.substring(firIndex, response.indexOf("\"", firIndex + 1));
             currentNumber.replace("\"", "");
-            ESP_LOGI("SIM","Calling number: %s",currentNumber);
+            ESP_LOGI("SIM", "Calling number: %s", currentNumber);
         }
         isCalling = _isCalling;
     } else {
         if (response.indexOf("NO CARRIER") != -1) {
-            ESP_LOGI("SIM","Call Ended.");
+            ESP_LOGI("SIM", "Call Ended.");
             isCalling     = false;
             currentNumber = "";
         }
@@ -145,9 +145,9 @@ bool checkSim() {
  */
 int GetState() {
     String result = sendATCommand("AT+CLCC");
-    ESP_LOGI("GET CALL STATE","AT+CLCC Result:%s",result);
+    ESP_LOGI("GET CALL STATE", "AT+CLCC Result:%s", result);
     if (result.indexOf("+CLCC") == -1 && result.indexOf("OK") != -1)
-        return -1;
+        return 6;
     int indexState = getIndexOfCount(2, result, ",", result.indexOf("+CLCC"));
     result         = result.substring(indexState, result.indexOf(",", indexState + 1));
     result.replace(",", "");
@@ -187,8 +187,19 @@ void AT_test() {
             String req;
 
             tft.println("REQUEST:");
-            req = Serial.readString();
-            tft.print(req + "\n");
+
+            char t = Serial.read();
+            req += t;
+            tft.print(t);
+            while (t != '\n') {
+                if (Serial.available()) {
+                    t = Serial.read();
+                    req += t;
+                    tft.print(t);
+                }
+            }
+            req.replace('\n', '\0');
+
             if (req.indexOf(":q") != -1) {
                 break;
             }
