@@ -5,6 +5,8 @@
 // Why do I even need wifi here?
 
 void WifiPrompt(String ssid, uint8_t encryptionType) {
+    return;
+    //TODO
     String password;
     res.DrawImage(R_LIST_MENU_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);

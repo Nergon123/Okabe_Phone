@@ -26,10 +26,13 @@ struct UIElement {
 };
 
 void UIElementsLoop(UIElement *elements, int count, bool *exit) {
+    //TODO
     if (elements == nullptr) {
         ESP_LOGE("UI", "elements nullptr");
     }
     if (exit == nullptr) {
+        ESP_LOGE("UI", "exit nullptr");
+        return;
     }
     while (!exit) {
         int direction     = -1;
@@ -402,34 +405,15 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
 void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     // Get image data and allocate buffer
     ImageData img               = res.GetImageDataByID(R_CALL_ANIM_DOTS);
-    const int frame_pixel_count = 49; // 7x7 pixels per frame
-    const int total_frames      = img.count;
-    const int buffer_size       = frame_pixel_count * total_frames;
-
-    // Get buffer (uint16_t*, already in RGB565 format)
-    ImageBuffer Ibuffer = res.GetRGB565(img, buffer_size * 2); // buffer_size * 2 bytes total
-    uint16_t   *buffer  = Ibuffer.pointer;
-
     int  max_count     = (2 * size_x) + (2 * (size_y - 1));
     int  printed_count = 0;
     int  xt = 0, yt = 0;
     bool draw = true;
 
-    uint16_t currentcircle[49];
-
     while (printed_count < max_count) {
         for (int j = offset; j >= 0 && printed_count < max_count; j--) {
             if (draw) {
-                int start_index = frame_pixel_count * j;
-
-                if (start_index + frame_pixel_count <= buffer_size) {
-                    // Copy 7x7 frame from buffer
-                    for (int i = 0; i < frame_pixel_count; i++) {
-                        currentcircle[i] = buffer[start_index + i];
-                    }
-
-                    tft.pushImage(x + xt, y + yt, 7, 7, currentcircle);
-                }
+                res.DrawImage(R_CALL_ANIM_DOTS,j%img.count,{x+xt,y+yt});
             }
 
             // Update position in spin path
@@ -452,7 +436,6 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
         offset = 7; // Reset offset after each full circle iteration
     }
 
-    delete[] buffer;
 }
 
 int lastpercentage;

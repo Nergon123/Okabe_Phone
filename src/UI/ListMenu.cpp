@@ -9,8 +9,8 @@
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
 void listMenu_header(int type, String title, int page, int pages, int y) {
-    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {0, y}, {0, 0}, {0, 0}, RES_MAIN, psramFound());
-    res.DrawImage(R_LIST_HEADER_ICONS, type, {0, y}, {0, 0}, {0, 0}, RES_MAIN, psramFound());
+    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN, psramFound());
+    res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN, psramFound());
 
     changeFont(1, psramFound());
 

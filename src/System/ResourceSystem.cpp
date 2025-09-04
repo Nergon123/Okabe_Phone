@@ -70,10 +70,10 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     } else if (id == R_NULL_IMAGE) {
         return false;
     }
-    if (pos.x < 0) {
+    if (pos.x == OP_UNDEF) {
         pos.x = img.x;
     }
-    if (pos.y < 0) {
+    if (pos.y == OP_UNDEF) {
         pos.y = img.y;
     }
     if (endpos.x <= 0) {
@@ -141,7 +141,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     return true;
 }
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer) {
-    return DrawImage(id, index, {-1, -1}, {0, 0}, {-1, -1}, RES_MAIN, is_screen_buffer, sbuffer);
+    return DrawImage(id, index, {OP_UNDEF, OP_UNDEF}, {0, 0}, {-1, -1}, RES_MAIN, is_screen_buffer, sbuffer);
 }
 
 ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {

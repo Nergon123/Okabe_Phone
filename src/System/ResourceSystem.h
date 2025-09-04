@@ -2,6 +2,7 @@
 #include <SD.h>
 #include <TFT_eSPI.h>
 #include <vector>
+#include "Defines.h"
 extern TFT_eSprite screen_buffer;
 // Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32 bits
 #pragma pack(push, 1)
@@ -121,7 +122,7 @@ class ResourceSystem {
     void        CopyToRam(uint8_t type = RES_MAIN);
     void        Init(File Main, File Wallpapers = File());
     Coords      GetCoordsByID(uint16_t id, uint8_t type = RES_MAIN);
-    bool        DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {-1, -1}, Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN, bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
+    bool        DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF}, Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN, bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
     bool        DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer = screen_buffer);
     ImageBuffer GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0, uint8_t type = RES_MAIN);
 

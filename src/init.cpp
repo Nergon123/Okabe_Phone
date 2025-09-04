@@ -54,7 +54,7 @@ void hardwareInit() {
     if (psramFound()) {
         tft.setAttribute(PSRAM_ENABLE, true);
     } else {
-        
+
         ESP_LOGW("PSRAM", "PSRAM DISABLED");
     }
     tft.fillScreen(0x0000);
@@ -73,18 +73,24 @@ void hardwareInit() {
     ESP_LOGI("KEYPAD", "KEYPAD RESET");
     SPI.begin(14, 2, 15, chipSelect);
     ESP_LOGI("SD", "SPI started");
-    SPIFFS.begin();
-    ESP_LOGI("SPIFFS", "SPIFFS started");
+
     // set brightness
     analogWrite(TFT_BL, (255 * brightness) / 100);
 }
 
 // Function to initialize the SD card and check if it is available
 void storageInit() {
+
     bootText("Setting up storage");
+    
+    SPIFFS.begin();
+    ESP_LOGI("SPIFFS", "SPIFFS started");
     preferences.begin("settings", false);
+
     resPath  = preferences.getString("resPath", resPath);
+
     isSPIFFS = (!initSDCard(true) || !SD.exists(resPath)) && SPIFFS.exists(SPIFFSresPath);
+
     if (isSPIFFS) {
         ESP_LOGI("RESOURCES", "Resource file or SD card is not available");
     } else {

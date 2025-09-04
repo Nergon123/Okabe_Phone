@@ -126,7 +126,7 @@ void callActivity(Contact contact) {
 
     tft.fillScreen(0);
     sBarChanged = true;
-    drawStatusBar();
+    drawStatusBar(true);
     res.DrawImage(R_VOICE_ONLY_LABEL);
     while (stateCall != DISCONNECT) {
         if (buttonsHelding() == DECLINE) {
@@ -136,9 +136,17 @@ void callActivity(Contact contact) {
         stateCall = GetState();
     }
     tft.fillScreen(0);
-    drawStatusBar();
+    tft.setTextColor(TFT_WHITE);
+    changeFont(2);
+    const char* callEnded = "End of Call..";
+    tft.setCursor(120 - tft.textWidth(callEnded)/2,150);
+    tft.print(callEnded);
+    delay(1000);
+    drawStatusBar(true);
     ongoingCall = false;
     isAnswered  = false;
+    millSleep = millis();
+    currentScreen = MAINSCREEN;
 }
 
 
@@ -226,6 +234,7 @@ void editContact(Contact contact) {
     int buttons   = 2;
     int direction;
     
+    res.DrawImage(R_LIST_MENU_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_ICONS,1);
     drawStatusBar();
@@ -235,7 +244,6 @@ void editContact(Contact contact) {
     tft.setTextColor(0xffff);
     String boxString[textboxes] = {contact.name, contact.phone};
     tft.print("Edit Contact");
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 51}, {0, 25}, {0, 0}, RES_MAIN, true);
     InputField("Name", contact.name, 70, true, false, false);
     InputField("Phone Number", contact.phone, 120, true, false, false);
 

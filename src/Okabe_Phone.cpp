@@ -30,10 +30,10 @@ void setup() {
     tft.setTextFont(1);
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
-    if(!psramFound()){
+    if (!psramFound()) {
         changeFont(2);
         tft.setTextColor(TFT_RED);
-        tft.setCursor(0,50);
+        tft.setCursor(0, 50);
         tft.print("PSRAM NOT FOUND!!!\nEXPECT PROBLEMS!!!");
     }
     storageInit();
@@ -51,22 +51,15 @@ void setup() {
              "Resources located in sdcard (%s)\n",
              resPath.c_str());
     ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getChipCores());
-    
+
     progressBar(100, 100, 250);
-    millSleep = millis();
-    
+
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
-    fastMode(false);
+    
     if (buttonsHelding(false) == '#')
         AT_test();
 
-
-    // changeFont(3);
-    // tft.fillScreen(tft.color24to16(0x00008b));
-    // tft.setTextColor(0xF800);
-    // tft.drawNumber(9292929292929, 150, 1);
-    // for (;;) ;
-
+    millSleep = millis();
 }
 
 // Function to handle the main loop

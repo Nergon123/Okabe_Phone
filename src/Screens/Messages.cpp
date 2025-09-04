@@ -6,7 +6,6 @@
 #include "../UI/ListMenu.h"
 #include "../UI/UIElements.h"
 
-
 // Parse SMS messages from SIM Card
 // @param msgs Array of Message objects to store parsed messages
 // @param count Number of messages parsed
@@ -157,11 +156,11 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     bool exit = false;
     while (!exit) {
         position = 0;
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0}, RES_MAIN, true);
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0,0}, {0, 0}, {0, 0}, RES_MAIN, true);
         // drawImage(0, 0, BACKGROUND_IMAGE_CUTTED, true);
         // tft.fillScreen(0xFFFF);
         // position += 24;
-        res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {0, position + y_scr}, {0, 0}, {0, 0}, RES_MAIN, true);
+        res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0}, RES_MAIN, true);
         // drawImage(0, position + y_scr, in_mail[2], true);
         screen_buffer.setCursor(24, position + y_text + y_scr);
         screen_buffer.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
@@ -170,7 +169,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         messagebuf = SplitString(messagebuf);
         if (!subject.isEmpty() || !sms) {
             position += 24;
-            res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {0, position + y_scr}, {0, 0}, {0, 0}, RES_MAIN, true);
+            res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0}, RES_MAIN, true);
             screen_buffer.setCursor(24, position + y_text + y_scr);
             screen_buffer.println(subject);
         }
@@ -331,11 +330,11 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     res.DrawImage(R_LIST_HEADER_ICONS, 0);
     int y_jump = 22;
     int y_scr  = 0;
+    changeFont(1);
     int y_text = 18;
 
     tft.setCursor(30, 45);
     tft.setTextSize(1);
-    changeFont(1);
     tft.setTextColor(0xffff);
     bool deleted = false;
     tft.print("Recieve Mail");
@@ -345,20 +344,20 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     while (!exit) {
         deleted = false;
         tft.setTextColor(0);
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 25}, {0, 0});
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0});
         // tft.fillScreen(0xFFFF);
-        res.DrawImage(R_IN_MSG_MAIL_ICONS, 0, {0, y_scr});
+        res.DrawImage(R_IN_MSG_MAIL_ICONS, 0, {OP_UNDEF, y_scr});
         tft.setCursor(24, 0 + y_text + y_scr);
         tft.println(date);
 
-        res.DrawImage(R_IN_MSG_MAIL_ICONS, 1, {0, y_scr + 24});
+        res.DrawImage(R_IN_MSG_MAIL_ICONS, 1, {OP_UNDEF, y_scr + 24});
         tft.setCursor(24, 24 + y_text + y_scr);
         tft.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
                                                          : !contact.email.isEmpty()   ? contact.email
                                                                                       : "UNKNOWN");
         content = SplitString(content);
         tft.drawLine(0, 48 + y_scr, 240, 48 + y_scr, 0);
-        int height = measureStringHeight(content);
+        int height = measureStringHeight(content)+50;
         tft.print(content);
         int ch = -2;
         int r  = -1;
@@ -366,12 +365,18 @@ bool messageActivity(Contact contact, String date, String subject, String conten
             r = buttonsHelding();
             switch (r) {
             case DOWN:
-                if (y_scr > -height)
+                if (y_scr > -height) {
                     y_scr -= y_jump;
+                } else {
+                    r = -1;
+                }
                 break;
             case UP:
-                if (y_scr < 0)
+                if (y_scr < 0) {
                     y_scr += y_jump;
+                } else {
+                    r = -1;
+                }
                 break;
             case BACK:
                 ch = choiceMenu(choices, 4, true);
@@ -384,11 +389,12 @@ bool messageActivity(Contact contact, String date, String subject, String conten
                     break;
 
                 case 2:
+                tft.resetViewport();
                     if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE?")) {
                         sendATCommand("AT+CMGD=" + String(index), 5000);
-                        exit    = true;
-                        deleted = true;
+                        return true;
                     }
+                        tft.setViewport(0, 51, 240, 269, true);
                     break;
                 case 3:
                     content = HEXTOASCII(content);
@@ -396,6 +402,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
                 }
                 break;
             default:
+            r=-1;
                 break;
             }
         }

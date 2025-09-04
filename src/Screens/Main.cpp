@@ -38,12 +38,9 @@ void rendermenu(int &choice, int old_choice) {
     if (choice < 0)
         choice = 3;
 
-    int offIndex = old_choice;
-    int onIndex  = choice;
-
     if (old_choice != choice) {
-        res.DrawImage(menuEntries[offIndex]);
-        res.DrawImage(menuEntries[onIndex], 1);
+        res.DrawImage(menuEntries[old_choice]);
+        res.DrawImage(menuEntries[choice], 1);
     }
 }
 
@@ -51,8 +48,10 @@ void rendermenu(int &choice, int old_choice) {
 void MainMenu() {
     res.DrawImage(R_MENU_BACKGROUND);
     res.DrawImage(R_MENU_MAIL_ICON, 1);
-
-    int choice     = 0;
+    int choice = 0;
+    for (int i = 0; i < 4; i++) {
+        rendermenu(choice, i);
+    }
     int old_choice = 0;
     while (true) {
         switch (buttonsHelding()) {
@@ -112,6 +111,9 @@ void MainMenu() {
             rendermenu(choice, old_choice);
             break;
         }
+        }
+        if (currentScreen == MAINSCREEN) {
+            return;
         }
     }
 }

@@ -22,6 +22,8 @@
 
 #define lines_to_draw_wo_psram 4
 
+#define OP_UNDEF 0xFFFF
+
 
 #ifdef OKABE_PHONE_HW_0
 #define SIM_INT_PIN 34

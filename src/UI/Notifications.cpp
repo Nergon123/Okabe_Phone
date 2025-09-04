@@ -87,6 +87,10 @@ bool confirmation(String reason) {
     return false;
 }
 
+
+
+
+
 // Function to show an error window
 // This function is called when an error occurs
 // @param reason The reason for the error
