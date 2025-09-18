@@ -27,6 +27,7 @@ void SaveTime(time_t time) {
     time_t         t    = time;
     struct timeval data = {t, 0};
     systemTimeInfo      = *gmtime(&time);
-    // Serial.printf("\nSTI %d:%d, TIME: %d:%d\n", systemTimeInfo.tm_hour, systemTimeInfo.tm_min, tm_time.tm_hour, tm_time.tm_min);
+    // Serial.printf("\nSTI %d:%d, TIME: %d:%d\n", systemTimeInfo.tm_hour, systemTimeInfo.tm_min,
+    // tm_time.tm_hour, tm_time.tm_min);
     settimeofday(&data, NULL);
 }

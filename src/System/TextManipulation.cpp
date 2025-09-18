@@ -7,9 +7,7 @@
 // @param fromIndex The index to start searching from
 // @return The index of the nth occurrence of the substring
 unsigned int getIndexOfCount(int count, String input, String str, unsigned int fromIndex) {
-    for (int i = 0; i < count; i++) {
-        fromIndex = input.indexOf(str, fromIndex + 1);
-    }
+    for (int i = 0; i < count; i++) { fromIndex = input.indexOf(str, fromIndex + 1); }
     return fromIndex;
 }
 
@@ -20,20 +18,18 @@ unsigned int getIndexOfCount(int count, String input, String str, unsigned int f
 // @param posY The y-coordinate of the split position
 // @param direction The direction to search (UP or DOWN)
 void findSplitPosition(String text, int charIndex, int &posX, int &posY, int direction) {
-    int lastNewLine  = 0; 
-    int curPosInText = 0; 
-    posX             = 0; 
-    posY             = 0; 
+    int lastNewLine  = 0;
+    int curPosInText = 0;
+    posX             = 0;
+    posY             = 0;
     for (; curPosInText < charIndex; curPosInText++) {
         posX = tft.textWidth(text.substring(lastNewLine, curPosInText + 1));
         if (posX >= 240 || text[curPosInText] == '\n') {
-            posX = 0; 
-            lastNewLine = curPosInText + 1; 
-            posY += tft.fontHeight();       
+            posX        = 0;
+            lastNewLine = curPosInText + 1;
+            posY += tft.fontHeight();
         }
-        if (curPosInText >= text.length() - 1) {
-            break; 
-        }
+        if (curPosInText >= text.length() - 1) { break; }
     }
 }
 
@@ -43,12 +39,12 @@ void findSplitPosition(String text, int charIndex, int &posX, int &posY, int dir
 // @param direction The direction to search (UP or DOWN)
 // @return The new character index after moving in the specified direction
 int findCharPosX(String text, int &charIndex, int direction) {
-    int prevNL       = 0;             
-    int lastNewLine  = 0;             
-    int nextNL       = text.length(); 
-    int curPosInText = 0;             
-    int posX         = 0;             
-    int targetX      = 0;             
+    int prevNL       = 0;
+    int lastNewLine  = 0;
+    int nextNL       = text.length();
+    int curPosInText = 0;
+    int posX         = 0;
+    int targetX      = 0;
     for (; curPosInText <= charIndex && curPosInText < text.length(); curPosInText++) {
         posX = tft.textWidth(text.substring(lastNewLine, curPosInText));
         if (posX >= 240 || text[curPosInText] == '\n') {
@@ -56,9 +52,7 @@ int findCharPosX(String text, int &charIndex, int direction) {
             lastNewLine = curPosInText + 1;
             posX        = 0;
         }
-        if (curPosInText == charIndex) {
-            targetX = posX; 
-        }
+        if (curPosInText == charIndex) { targetX = posX; }
     }
     for (int i = lastNewLine; i < text.length(); i++) {
         if (text[i] == '\n' || tft.textWidth(text.substring(lastNewLine, i + 1)) >= 240) {
@@ -70,15 +64,14 @@ int findCharPosX(String text, int &charIndex, int direction) {
         curPosInText = prevNL;
         for (; curPosInText < lastNewLine; curPosInText++) {
             posX = tft.textWidth(text.substring(prevNL, curPosInText + 1));
-            if (posX >= targetX + 5 || text[curPosInText] == '\n') {
-                break;
-            }
+            if (posX >= targetX + 5 || text[curPosInText] == '\n') { break; }
         }
     }
     else if (direction == DOWN && nextNL < text.length()) {
         lastNewLine = nextNL + 1;
         for (int i = lastNewLine; i < text.length(); i++) {
-            if (text[i] == '\n' || tft.textWidth(text.substring(lastNewLine, i + 1)) >= 240 || i == text.length() - 1) {
+            if (text[i] == '\n' || tft.textWidth(text.substring(lastNewLine, i + 1)) >= 240 ||
+                i == text.length() - 1) {
                 nextNL = i;
                 break;
             }
@@ -100,37 +93,37 @@ int findCharPosX(String text, int &charIndex, int direction) {
 // @param text The input string
 // @return The formatted string with line breaks
 String SplitString(String text) {
-    String result           = "";            
-    int    wordStart        = 0;             
-    int    wordEnd          = 0;             
-    int    textLen          = text.length(); 
-    int    currentLineWidth = 0;             
+    String result           = "";
+    int    wordStart        = 0;
+    int    wordEnd          = 0;
+    int    textLen          = text.length();
+    int    currentLineWidth = 0;
     while (wordStart < textLen) {
         int newlinePos = text.indexOf('\n', wordStart);
-        if (newlinePos != -1 && (newlinePos < text.indexOf(' ', wordStart) || text.indexOf(' ', wordStart) == -1)) {
+        if (newlinePos != -1 &&
+            (newlinePos < text.indexOf(' ', wordStart) || text.indexOf(' ', wordStart) == -1)) {
             result += text.substring(wordStart, newlinePos + 1);
-            wordStart        = newlinePos + 1; 
-            currentLineWidth = 0;              
+            wordStart        = newlinePos + 1;
+            currentLineWidth = 0;
             continue;
         }
         wordEnd = text.indexOf(' ', wordStart);
-        if (wordEnd == -1)
-            wordEnd = textLen; 
+        if (wordEnd == -1) { wordEnd = textLen; }
         String   word    = text.substring(wordStart, wordEnd);
         uint16_t wordLen = tft.textWidth(word);
         if (currentLineWidth + wordLen > tft.width() && currentLineWidth > 0) {
-            result += "\n";       
-            currentLineWidth = 0; 
+            result += "\n";
+            currentLineWidth = 0;
         }
         result += word;
         if (wordEnd < textLen) {
             result += " ";
-            currentLineWidth += tft.textWidth(" "); 
+            currentLineWidth += tft.textWidth(" ");
         }
-        currentLineWidth += wordLen; 
-        wordStart = wordEnd + 1;     
+        currentLineWidth += wordLen;
+        wordStart = wordEnd + 1;
     }
-    return result; 
+    return result;
 }
 
 // Function to get the position of a character in a string
@@ -140,52 +133,53 @@ String SplitString(String text) {
 // @param index reference to the index of the character
 // @param direction The direction to search
 // @param screenWidth The width of the screen
-void getCharacterPosition(String str, int &x, int &y, int &index, int direction = 0, int screenWidth = 240) {
-    x                  = 0;  
-    y                  = 0;  
-    int    charCount   = 0;  
-    String currentLine = ""; 
-    std::vector<int> lineStarts; 
+void getCharacterPosition(String str, int &x, int &y, int &index, int direction = 0,
+                          int screenWidth = 240) {
+    x                            = 0;
+    y                            = 0;
+    int              charCount   = 0;
+    String           currentLine = "";
+    std::vector<int> lineStarts;
     for (int i = 0; i < str.length(); i++) {
         char currentChar = str[i];
         if (currentChar == '\n') {
-            y += tft.fontHeight();       
-            lineStarts.push_back(i + 1); 
-            currentLine = ""; 
-        } else {
+            y += tft.fontHeight();
+            lineStarts.push_back(i + 1);
+            currentLine = "";
+        }
+        else {
             String tempLine  = currentLine + currentChar;
             int    lineWidth = tft.textWidth(tempLine);
             if (lineWidth > screenWidth) {
-                y += tft.fontHeight();             
-                lineStarts.push_back(i);           
-                currentLine = String(currentChar); 
-            } else {
-                currentLine = tempLine;
+                y += tft.fontHeight();
+                lineStarts.push_back(i);
+                currentLine = String(currentChar);
+            }
+            else { currentLine = tempLine; }
+        }
+        if (direction == 1 && charCount > index) {
+            if (lineStarts.size() > 1) {
+                index = lineStarts[lineStarts.size() - 2];
+                break;
             }
         }
-        if (direction == 1 && charCount > index) 
-        {
-            if (lineStarts.size() > 1) {
-                index = lineStarts[lineStarts.size() - 2]; 
-                break;                                     
-            }
-        } else if (direction == 2 && charCount < index) 
-        {
+        else if (direction == 2 && charCount < index) {
             if (lineStarts.size() > 0 && lineStarts.size() - 1 < lineStarts.size()) {
-                index = lineStarts[lineStarts.size() - 1]; 
-                break;                                     
+                index = lineStarts[lineStarts.size() - 1];
+                break;
             }
         }
         if (charCount == index) {
-            int    b             = 0;           
-            String lineSubstring = currentLine; 
-            while (b < lineSubstring.length() && tft.textWidth(lineSubstring.substring(0, b)) <= screenWidth) {
-                b++; 
+            int    b             = 0;
+            String lineSubstring = currentLine;
+            while (b < lineSubstring.length() &&
+                   tft.textWidth(lineSubstring.substring(0, b)) <= screenWidth) {
+                b++;
             }
             x = tft.textWidth(lineSubstring.substring(0, b));
-            return; 
+            return;
         }
-        charCount++; 
+        charCount++;
     }
     x = tft.textWidth(currentLine);
 }
@@ -236,23 +230,19 @@ int measureStringHeight(const String &text) {
         }
 
         if (c == ' ' || i == text.length() - 1) {
-            if (i == text.length() - 1 && c != ' ') {
-                word += c;
-            }
+            if (i == text.length() - 1 && c != ' ') { word += c; }
 
             int wordWidth = tft.textWidth(word);
 
             if (lineWidth + wordWidth > tft.width()) {
                 lines++;
                 lineWidth = wordWidth + spaceWidth;
-            } else {
-                lineWidth += wordWidth + spaceWidth;
             }
+            else { lineWidth += wordWidth + spaceWidth; }
 
             word = "";
-        } else {
-            word += c;
         }
+        else { word += c; }
     }
 
     return lines * lineHeight;

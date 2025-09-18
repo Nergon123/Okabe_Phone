@@ -1,5 +1,5 @@
 #include "Input.h"
-
+const char* ITAG = "INPUT";
 int millDelay = 0;
 
 // Function to handle the idle state
@@ -8,9 +8,9 @@ void idle() {
     if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
         setBrightness(brightness * 0.1);
         fastMode(false);
-    } else if (millis() > millSleep + delayBeforeSleep) {
-        setBrightness(0);
-    } else {
+    }
+    else if (millis() > millSleep + delayBeforeSleep) { setBrightness(0); }
+    else {
         setBrightness(brightness);
         fastMode(true);
     }
@@ -27,7 +27,6 @@ void idle() {
         drawStatusBar();
     }
 }
-
 
 // check which MCP23017 button is pressed
 int checkButton() {
@@ -48,11 +47,9 @@ int checkButton() {
 
     uint8_t ar = 0xFF, br = 0xFF;
     for (int i = 0; i < 8; ++i) {
-        if (a & (1 << i) && ar == 0xFF)
-            ar = i;
+        if (a & (1 << i) && ar == 0xFF) { ar = i; }
 
-        if (b & (1 << i) && br == 0xFF)
-            br = i;
+        if (b & (1 << i) && br == 0xFF) { br = i; }
     }
     ar++;
     br++;
@@ -88,14 +85,11 @@ void numberInput(char first) {
     tft.print(number);
     DBC_MS = 6000;
     while (true) {
-        while (c == 255) {
-            c = buttonsHelding();
-        }
+        while (c == 255) { c = buttonsHelding(); }
 
         switch (c) {
         case ANSWER:
-            if (!number.isEmpty())
-                makeCall(Contact("", number));
+            if (!number.isEmpty()) { makeCall(Contact("", number)); }
             return;
         case LEFT:
 
@@ -112,8 +106,7 @@ void numberInput(char first) {
         }
 
         if ((c >= '0' || c == '*' || c == '#') && c <= '9' && number.length() < max_char) {
-            if (!simIsBusy)
-                sendATCommand("AT+CLDTMF=15,\"" + String(char(c)) + "\",10", 1);
+            if (!simIsBusy) { sendATCommand("AT+CLDTMF=15,\"" + String(char(c)) + "\",10", 1); }
 
             number += c;
             tft.fillRect(0, 300, 240, 20, 0);
@@ -122,7 +115,7 @@ void numberInput(char first) {
             c = 255;
         }
 
-        Serial.println(c, DEC);
+        ESP_LOGI(ITAG,"%s",c, DEC);
         c = 255;
     }
     DBC_MS = 1000;
@@ -155,23 +148,17 @@ void showText(const char *text, int pos) {
 
     for (int i = 0; i < (int)(strchr(text, '\r') - text); i++) {
 
-        if (i != pos)
-            tft.setTextColor(0xFFFF, 0, true);
-        else
-            tft.setTextColor(0xFFFF, 0x001F, true);
-        if (text[i] == '\n')
-            tft.print("NL");
-        else if (text[i] == '\b')
-            tft.print("<-");
-        else
-            tft.print(text[i]);
+        if (i != pos) { tft.setTextColor(0xFFFF, 0, true); }
+        else { tft.setTextColor(0xFFFF, 0x001F, true); }
+        if (text[i] == '\n') { tft.print("NL"); }
+        else if (text[i] == '\b') { tft.print("<-"); }
+        else { tft.print(text[i]); }
     }
 
     tft.textcolor = textColor;
     changeFont(pfont);
     tft.setTextSize(textSize);
-    if (viewport)
-        tft.setViewport(vx, vy, w, h);
+    if (viewport) { tft.setViewport(vx, vy, w, h); }
 }
 
 /*
@@ -182,54 +169,36 @@ void showText(const char *text, int pos) {
  * @return selected character
  */
 char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *retButton) {
-    if (input == -1)
-        return 0;
-    char buttons[12][12] = {
-        " \b0+@\n\r",
-        "1,.?!()\r",
-        "2ABCabc\r",
-        "3DEFdef\r",
-        "4GHIghi\r",
-        "5JKLjkl\r",
-        "6MNOmno\r",
-        "7PQRSpqrs\r",
-        "8TUVtuv\r",
-        "9WXYZwxyz\r",
-        "*\r",
-        "#\r"};
+    if (input == -1) { return 0; }
+    char buttons[12][12] = {" \b0+@\n\r", "1,.?!()\r",   "2ABCabc\r", "3DEFdef\r",
+                            "4GHIghi\r",  "5JKLjkl\r",   "6MNOmno\r", "7PQRSpqrs\r",
+                            "8TUVtuv\r",  "9WXYZwxyz\r", "*\r",       "#\r"};
 
-    if (nonl) {
-        buttons[0][5] = '\r';
-    }
+    if (nonl) { buttons[0][5] = '\r'; }
     if (onlynumbers) {
         buttons[0][2] = '\r';
-        for (int i = 1; i < 12; i++) {
-            buttons[i][1] = '\r';
-        }
+        for (int i = 1; i < 12; i++) { buttons[i][1] = '\r'; }
     }
     bool first = true;
     // int  sizes[12];
-    char result = 0;
-    int  pos    = 0;
-    int  currentIndex =
-        input >= '0' && input <= '9'
-             ? input - 48
-         : input == '*' ? 10
-         : input == '#' ? 11
-                        : -1;
+    char result       = 0;
+    int  pos          = 0;
+    int  currentIndex = input >= '0' && input <= '9' ? input - 48
+                        : input == '*'               ? 10
+                        : input == '#'               ? 11
+                                                     : -1;
     if (currentIndex == -1) {
-        Serial.println("UNKNOWN BUTTON:" + String(input));
+        ESP_LOGI(ITAG,"%s","UNKNOWN BUTTON:" + String(input));
         return 0;
     }
 
     for (int i = 0; i < 12; i++) {
         int b = 0;
         for (; b < 12; b++) {
-            if (buttons[i][b] == '\r')
-                break;
+            if (buttons[i][b] == '\r') { break; }
         }
         // sizes[i] = b;
-        //  Serial.println(b, DEC);
+        //  ESP_LOGI(ITAG,"%s",b, DEC);
         b = 0;
     }
     int mil  = millis();
@@ -239,8 +208,9 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     while (millis() - mil < DIB_MS) {
         curx = tft.getCursorX();
         cury = tft.getCursorY();
-        // Serial.println("POSITION:" + String(pos));
+        // ESP_LOGI(ITAG,"POSITION:" + String(pos));
         int c = buttonsHelding();
+
         if (c == input || first) {
             if (pos < (int)(strchr(buttons[currentIndex], '\r') - buttons[currentIndex])) {
                 mil = millis();
@@ -248,7 +218,8 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
                 result = buttons[currentIndex][pos];
                 showText(buttons[currentIndex], pos);
                 tft.setCursor(curx, cury);
-            } else {
+            }
+            else {
                 mil    = millis();
                 pos    = 0;
                 result = buttons[currentIndex][pos];
@@ -258,9 +229,7 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         }
         if (c != input && c != -1) {
             mil = DIB_MS + 1;
-            if (retButton != nullptr) {
-                *retButton = c;
-            }
+            if (!retButton) { *retButton = c; }
         }
         first = false;
     }
@@ -277,15 +246,14 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         viewport = true;
     }
     if (!dontRedraw) {
-        // drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120, 20, 0, INPUT_LOCATION_Y);
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, INPUT_LOCATION_Y - 51}, {0, INPUT_LOCATION_Y},
+                      {0, INPUT_LOCATION_Y});
+        // drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120,
+        // 20, 0, INPUT_LOCATION_Y);
         // TODO
     }
-    if (viewport) {
-        tft.setViewport(vx, vy, w, h);
-    }
-    if (result == '\r') {
-        return 0;
-    }
+    if (viewport) { tft.setViewport(vx, vy, w, h); }
+    if (result == '\r') { return 0; }
     return result;
 }
 
@@ -331,16 +299,12 @@ int buttonsHelding(bool _idle) {
     //   if (checkButton(39))
     //     return DOWN;
     // #endif
-    if (_idle)
-        idle();
+    if (_idle) { idle(); }
 
     int result = checkButton();
-    if (lastresult != result)
-        millSleep = millis();
+    if (lastresult != result) { millSleep = millis(); }
 
-    if (result != 0)
-        while (result == checkButton() && millis() - millSleep < 1500)
-            ;
+    if (result != 0) { while (result == checkButton() && millis() - millSleep < 1500); }
 
     lastresult = result;
     // setBrightness(brightness);
@@ -353,48 +317,48 @@ int buttonsHelding(bool _idle) {
         millSleep  = millis();
         switch (input) {
         case 'a':
-            Serial.println("LEFT");
+            ESP_LOGI(ITAG,"LEFT");
             result = 4;
             break;
         case 'd':
-            Serial.println("RIGHT");
+            ESP_LOGI(ITAG,"RIGHT");
             result = 6;
             break;
         case 'w':
-            Serial.println("UP");
+            ESP_LOGI(ITAG,"UP");
             result = 2;
             break;
         case 's':
-            Serial.println("DOWN");
+            ESP_LOGI(ITAG,"DOWN");
             result = 8;
             break;
         case ' ':
-            Serial.println("SELECT");
+            ESP_LOGI(ITAG,"SELECT");
             result = 5;
             break;
         case 'e':
-            Serial.println("ANSWER");
+            ESP_LOGI(ITAG,"ANSWER");
             result = 7;
             break;
         case 'q':
-            Serial.println("BACK");
+            ESP_LOGI(ITAG,"BACK");
             result = 9;
             break;
         case '*':
-            Serial.println(input);
+            ESP_LOGI(ITAG,"%s",input);
             result = 19;
             break;
         case '#':
-            Serial.println(input);
+            ESP_LOGI(ITAG,"%s",input);
             result = 21;
             break;
         case 'l':
-            Serial.println("Restart");
+            ESP_LOGI(ITAG,"Restart");
             ESP.restart();
             break;
         default:
             if (input >= '0' && input <= '9') {
-                Serial.println(input);
+                ESP_LOGI(ITAG,"%s",input);
                 result += 10;
                 result -= '1';
             }

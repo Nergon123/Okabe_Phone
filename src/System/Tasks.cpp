@@ -1,9 +1,5 @@
 #include "Tasks.h"
 
-
-
-
-
 // Function to suspend/resume the freeRTOS task on core 0
 // @param suspend: true to suspend the task, false to resume it
 void suspendCore(bool suspend) {
@@ -11,8 +7,8 @@ void suspendCore(bool suspend) {
         if (suspend) {
             vTaskSuspend(TaskHCommand);
             simIsBusy = false;
-        } else
-            vTaskResume(TaskHCommand);
+        }
+        else { vTaskResume(TaskHCommand); }
     }
 }
 
@@ -22,15 +18,16 @@ void TaskIdleHandler(void *parameter) {
     uint32_t oldtime = millis();
 
     if (sendATCommand("AT").indexOf("OK") != -1) {
-        ESP_LOGI("BOOT/SIM", "%s","Setting up sim card please wait...");
+        ESP_LOGI("BOOT/SIM", "%s", "Setting up sim card please wait...");
         initSim();
 
-        while (!_checkSim() && millis() - oldtime < 10000)
-            ; // check if sim card is usable for 10 whole seconds...
+        while (!_checkSim() &&
+               millis() - oldtime < 10000); // check if sim card is usable for 10 whole seconds...
         populateContacts();
-        ESP_LOGI("BOOT/SIM", "%s","Done!");
-    } else {
-        ESP_LOGI("BOOT/SIM", "%s","SIM card not responding");
+        ESP_LOGI("BOOT/SIM", "%s", "Done!");
+    }
+    else {
+        ESP_LOGI("BOOT/SIM", "%s", "SIM card not responding");
         simIsUsable = false;
     }
 
@@ -39,16 +36,15 @@ void TaskIdleHandler(void *parameter) {
         while (!simIsBusy && simIsUsable) {
             backgroundBusy = true;
             if (getSignalLevel() != _signal || getChargeLevel() != charge) {
-                if (ongoingCall)
-                    stateCall = GetState();
+                if (ongoingCall) { stateCall = GetState(); }
                 _signal = getSignalLevel();
 
-                charge  = getChargeLevel();
-              
+                charge = getChargeLevel();
+
                 simIsUsable = _checkSim();
-                ESP_LOGI("SIGNAL", "Signal: %d, Charge: %d, SIM USABLE:%d\n", _signal, charge,simIsUsable);;
-                if (contactCount == 0)
-                    populateContacts();
+                ESP_LOGI("SIGNAL", "Signal: %d, Charge: %d, SIM USABLE:%d\n", _signal, charge,
+                         simIsUsable);
+                if (contacts.size() == 0) { populateContacts(); }
                 sBarChanged = true;
             }
             vTaskDelay(pdMS_TO_TICKS(DBC_MS));
@@ -62,10 +58,8 @@ void TaskIdleHandler(void *parameter) {
                 _signal     = -1;
                 sBarChanged = true;
             }
-
-        } else {
-            DBC_MS = 3000;
         }
+        else { DBC_MS = 3000; }
         backgroundBusy = false;
         vTaskDelay(pdMS_TO_TICKS(DBC_MS));
     }

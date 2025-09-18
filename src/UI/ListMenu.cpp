@@ -9,8 +9,10 @@
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
 void listMenu_header(int type, String title, int page, int pages, int y) {
-    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN, psramFound());
-    res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN, psramFound());
+    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN,
+                  psramFound());
+    res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN,
+                  psramFound());
 
     changeFont(1, psramFound());
 
@@ -18,7 +20,8 @@ void listMenu_header(int type, String title, int page, int pages, int y) {
         screen_buffer.setTextColor(0xFFFF);
         screen_buffer.setCursor(28, y + 19);
         screen_buffer.print(title);
-    } else {
+    }
+    else {
         tft.setTextColor(0xFFFF);
         tft.setCursor(28, y + 19);
         tft.print(title);
@@ -28,7 +31,8 @@ void listMenu_header(int type, String title, int page, int pages, int y) {
         if (psramFound()) {
             screen_buffer.setCursor(210, y + 15);
             screen_buffer.printf("%d/%d", page + 1, pages);
-        } else {
+        }
+        else {
             tft.setCursor(210, y + 15);
             tft.printf("%d/%d", page + 1, pages);
         }
@@ -43,30 +47,33 @@ void listMenu_header(int type, String title, int page, int pages, int y) {
 /// @param esize Entry size
 /// @param lines Boolean indicating if lines should be drawn between options
 /// @param selected Boolean indicating if the entry is selected
-/// @param unselected Boolean indicating if the entry is unselected (I dont fucking remember why its not just selected = false)
-void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool lines, bool selected, bool unselected) {
+/// @param unselected Boolean indicating if the entry is unselected (I dont fucking remember why
+/// its not just selected = false)
+void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool lines, bool selected,
+                    bool unselected) {
     uint16_t color_active = 0xFDD3;
 
     int yy = (lindex * esize) + y;
 
     if (selected) {
-        if (psramFound()) {
-            screen_buffer.fillRect(0, yy, 240, esize, color_active);
-        } else {
-            tft.fillRect(0, yy, 240, esize, color_active);
-        }
-    } else if (unselected) {
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.y = yy}, {.y = yy}, {.y = yy + esize}, RES_MAIN, psramFound());
+        if (psramFound()) { screen_buffer.fillRect(0, yy, 240, esize, color_active); }
+        else { tft.fillRect(0, yy, 240, esize, color_active); }
+    }
+    else if (unselected) {
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.y = yy}, {.y = yy}, {.y = yy + esize}, RES_MAIN,
+                      psramFound());
     }
 
     ImageData imgData = res.GetImageDataByID(choice.icon, choice.fileId);
-    res.DrawImage(choice.icon, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0}, choice.fileId, psramFound());
+    res.DrawImage(choice.icon, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0},
+                  choice.fileId, psramFound());
 
     if (lines) {
         if (psramFound()) {
             screen_buffer.drawLine(0, yy, 240, yy, 0);
             screen_buffer.drawLine(0, yy + esize, 240, yy + esize, 0);
-        } else {
+        }
+        else {
             tft.drawLine(0, yy, 240, yy, 0);
             tft.drawLine(0, yy + esize, 240, yy + esize, 0);
         }
@@ -76,7 +83,8 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
         screen_buffer.setTextColor(0);
         screen_buffer.setCursor(x + 3, yy + 17);
         screen_buffer.print(choice.label);
-    } else {
+    }
+    else {
         tft.setTextColor(0);
         tft.setCursor(x + 3, yy + 17);
         tft.print(choice.label);
@@ -91,7 +99,8 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param label Title of the menu
 /// @param forceIcons Boolean indicating if icons should be forced
 /// @param findex Force index of the selected option
-int listMenu(mOption *choices, int icount, bool lines, int type, String label, bool forceIcons, int findex) {
+int listMenu(mOption *choices, int icount, bool lines, int type, String label, bool forceIcons,
+             int findex) {
 
     const int bufOffset = 26;
     if (psramFound()) {
@@ -99,7 +108,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         screen_buffer.createSprite(240, 294);
         screen_buffer.setTextColor(0);
         screen_buffer.setTextSize(1);
-    } else {
+    }
+    else {
         tft.setTextWrap(false, false);
         tft.setTextColor(0);
         tft.setTextSize(1);
@@ -125,7 +135,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             screen_buffer.print("< Empty >");
             screen_buffer.pushSprite(0, 26);
             screen_buffer.deleteSprite();
-        } else {
+        }
+        else {
             tft.setTextColor(0);
             tft.setCursor(75, 45);
             tft.print("< Empty >");
@@ -135,7 +146,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             if (bh == SELECT) {
                 tft.resetViewport();
                 return LISTMENU_OPTIONS;
-            } else if (bh != -1) {
+            }
+            else if (bh != -1) {
                 tft.resetViewport();
                 return LISTMENU_EXIT;
             }
@@ -146,9 +158,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     int entry_size = psramFound() ? screen_buffer.fontHeight() : tft.fontHeight();
     if (choices[0].icon != R_NULL_IMAGE) {
         ImageData icon = res.GetImageDataByID(choices[0].icon, choices[0].fileId);
-        if (icon.height > entry_size) {
-            entry_size = icon.height;
-        }
+        if (icon.height > entry_size) { entry_size = icon.height; }
         x += icon.width;
     }
     int per_page = 269 / entry_size;
@@ -161,7 +171,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     for (int i = 0; i < (endIndex - startIndex); i++) {
         listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false, false);
     }
-    listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
+    listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines,
+                   true, false);
     screen_buffer.pushSprite(0, 26);
     bool exit                = false;
     int  total_items_on_page = 0;
@@ -190,7 +201,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 
                     page--;
                     selected = per_page - 1;
-                } else {
+                }
+                else {
 
                     page     = pages - 1;
                     selected = (icount % per_page == 0) ? per_page - 1 : (icount % per_page) - 1;
@@ -203,14 +215,18 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 int endIndex   = std::min(startIndex + per_page, icount);
 
                 for (int i = 0; i < (endIndex - startIndex); i++) {
-                    listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false, false);
+                    listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false,
+                                   false);
                 }
-            } else {
+            }
+            else {
 
-                listMenu_entry(old_selected, x, y + ly, choices[old_selected + (page * per_page)], entry_size, lines, false, true);
+                listMenu_entry(old_selected, x, y + ly, choices[old_selected + (page * per_page)],
+                               entry_size, lines, false, true);
             }
 
-            listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
+            listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size,
+                           lines, true, false);
             screen_buffer.pushSprite(0, 26);
 
             break;
@@ -227,7 +243,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 
                     page++;
                     selected = 0;
-                } else {
+                }
+                else {
                     page     = 0;
                     selected = 0;
                 }
@@ -238,14 +255,18 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 int endIndex   = std::min(startIndex + per_page, icount);
 
                 for (int i = 0; i < (endIndex - startIndex); i++) {
-                    listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false, false);
+                    listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false,
+                                   false);
                 }
-            } else {
+            }
+            else {
 
-                listMenu_entry(old_selected, x, y + ly, choices[old_selected + (page * per_page)], entry_size, lines, false, true);
+                listMenu_entry(old_selected, x, y + ly, choices[old_selected + (page * per_page)],
+                               entry_size, lines, false, true);
             }
 
-            listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
+            listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size,
+                           lines, true, false);
 
             screen_buffer.pushSprite(0, 26);
 
@@ -261,9 +282,11 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 int endIndex   = std::min(startIndex + per_page, icount);
 
                 for (int i = 0; i < (endIndex - startIndex); i++) {
-                    listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false, false);
+                    listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false,
+                                   false);
                 }
-                listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
+                listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)],
+                               entry_size, lines, true, false);
                 screen_buffer.pushSprite(0, 26);
             }
             break;
@@ -278,9 +301,11 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 int endIndex   = std::min(startIndex + per_page, icount);
 
                 for (int i = 0; i < (endIndex - startIndex); i++) {
-                    listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false, false);
+                    listMenu_entry(i, x, y + ly, choices[startIndex + i], entry_size, lines, false,
+                                   false);
                 }
-                listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines, true, false);
+                listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)],
+                               entry_size, lines, true, false);
                 screen_buffer.pushSprite(0, 26);
             }
             break;
@@ -299,7 +324,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 // @param label Title of the menu
 // @param forceIcons Boolean indicating if icons should be forced
 // @param findex Index of the selected option
-int listMenu(const String choices[], int icount, bool images, int type, String label, bool forceIcons, int findex) {
+int listMenu(const String choices[], int icount, bool images, int type, String label,
+             bool forceIcons, int findex) {
     mOption *optionArr = new mOption[icount];
     for (int i = 0; i < icount; i++) {
         optionArr[i].label      = choices[i];
@@ -320,13 +346,15 @@ int lmng_offset = 0;
 // @param index Index of the selected option
 // @param color_active Color for the active option
 // @param color_inactive Color for the inactive options
-void renderlmng(mOption *choices, int x, int y, int icount, String label, int index, uint16_t color_active, uint16_t color_inactive) {
+void renderlmng(mOption *choices, int x, int y, int icount, String label, int index,
+                uint16_t color_active, uint16_t color_inactive) {
     uint max_per_page = ((320 - y - tft.fontHeight()) / tft.fontHeight());
 
     if (index >= max_per_page + lmng_offset) {
         tft.fillRect(x, y, 240 - x, 320 - y, 0);
         tft.fillScreen(0);
-    } else if (index < lmng_offset) {
+    }
+    else if (index < lmng_offset) {
         lmng_offset = index;
         tft.fillRect(x, y, 240 - x, 320 - y, 0);
     }
@@ -335,12 +363,9 @@ void renderlmng(mOption *choices, int x, int y, int icount, String label, int in
     tft.println(label + "  ");
 
     for (int i = lmng_offset; i < max_per_page + lmng_offset; i++) {
-        if (i == index)
-            tft.setTextColor(color_active);
-        else
-            tft.setTextColor(color_inactive);
-        if (i < icount)
-            tft.println("  " + choices[i].label);
+        if (i == index) { tft.setTextColor(color_active); }
+        else { tft.setTextColor(color_inactive); }
+        if (i < icount) { tft.println("  " + choices[i].label); }
     }
 }
 
@@ -369,14 +394,12 @@ int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
         switch (c) {
         case UP:
             index--;
-            if (index < 0)
-                index = icount - 1;
+            if (index < 0) { index = icount - 1; }
             renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
             break;
         case DOWN:
             index++;
-            if (index >= icount)
-                index = 0;
+            if (index >= icount) { index = 0; }
             renderlmng(choices, x, y, icount, label, index, color_active, color_inactive);
             break;
         case SELECT:
@@ -410,7 +433,8 @@ int choiceMenu(const String choices[], int count, bool context) {
         // drawImage(16, 100, CONTEXT_MENU_IMAGE);
         x = 40;
         y = 120;
-    } else {
+    }
+    else {
         // drawImage(0, 68, WHITE_BOTTOM_IMAGE);
         res.DrawImage(R_MENU_L_HEADER);
         x = 30;
@@ -453,7 +477,8 @@ int choiceMenu(const String choices[], int count, bool context) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
                 }
-            } else {
+            }
+            else {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
@@ -463,15 +488,11 @@ int choiceMenu(const String choices[], int count, bool context) {
                     tft.print(choices[i]);
                 }
             }
-            if (choice < 1) {
-                choice = count - 1;
-            } else {
-                choice--;
-            }
+            if (choice < 1) { choice = count - 1; }
+            else { choice--; }
             tft.setTextColor(color_inactive);
             tft.setCursor(x, y + (mul * (choice + 1)));
-            if (choice < count - 1)
-                tft.print(choices[choice + 1]);
+            if (choice < count - 1) { tft.print(choices[choice + 1]); }
             if (choice == count - 1) {
                 tft.setCursor(x, y);
                 tft.print(choices[0]);
@@ -503,7 +524,8 @@ int choiceMenu(const String choices[], int count, bool context) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
                 }
-            } else {
+            }
+            else {
                 tft.setTextSize(1);
                 tft.setTextColor(color_inactive);
 
@@ -513,17 +535,13 @@ int choiceMenu(const String choices[], int count, bool context) {
                     tft.print(choices[i]);
                 }
             }
-            if (choice > count - 2) {
-                choice = 0;
-            } else {
-                choice++;
-            }
+            if (choice > count - 2) { choice = 0; }
+            else { choice++; }
 
             tft.setTextColor(color_inactive);
             tft.setCursor(x, y + (mul * (choice - 1)));
 
-            if (choice > 0)
-                tft.print(choices[choice - 1]);
+            if (choice > 0) { tft.print(choices[choice - 1]); }
 
             if (choice == 0) {
                 tft.setCursor(x, y + (mul * (count - 1)));

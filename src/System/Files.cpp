@@ -1,4 +1,17 @@
 #include "Files.h"
+
+/*
+Icons TODO:
+File
+Folder 
+SD
+SPIFFS
+IMAGE
+AUDIO
+NPH
+TXT
+*/
+
 // ## File browser
 //
 // This function allows the user to browse files on the SD card
@@ -33,37 +46,35 @@ String fileBrowser(File dir, String format, bool graphical) {
                     options[i].icon       = R_FILE_MANAGER_ICONS;
                     options[i].icon_index = 1;
                     options[i].label      = file.name() + String("/");
-                } else {
+                }
+                else {
                     String fileLow = String(file.name());
                     fileLow.toLowerCase();
                     if (format == "*" || fileLow.endsWith(format)) {
                         options[i].icon       = R_FILE_MANAGER_ICONS;
                         options[i].icon_index = 0; // I absolutely not sure about this...
                         options[i].label      = file.name();
-                    } else
-                        i--;
+                    }
+                    else { i--; }
                 }
                 i++;
                 file = dir.openNextFile();
             }
         }
-        if (graphical)
-            choice = listMenu(options, i, false, 2, "FILE MANAGER");
-        else
-            choice = listMenuNonGraphical(options, i, "FILE MANAGER");
+        if (graphical) { choice = listMenu(options, i, false, 2, "FILE MANAGER"); }
+        else { choice = listMenuNonGraphical(options, i, "FILE MANAGER"); }
 
         if (options[choice].label.endsWith("/")) {
             options[choice].label.remove(options[choice].label.lastIndexOf("/"));
             currentPath += "/" + options[choice].label;
-        } else {
+        }
+        else {
             currentPath += "/" + options[choice].label;
             return currentPath;
         }
         dir.close();
     } while (choice >= 0);
-    if(choice==-2){
-        return "--";
-    }
+    if (choice == -2) { return "--"; }
     return "/null";
     file.close();
     dir.close();

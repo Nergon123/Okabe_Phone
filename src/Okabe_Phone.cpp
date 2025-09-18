@@ -23,46 +23,43 @@ void setup() {
 
     SetUpTime();
     hardwareInit();
-    if (chrg.isChargerConnected() == 1) {
-        offlineCharging();
-    }
+
+    if (chrg.isChargerConnected()) { offlineCharging(); }
+
     tft.fillScreen(0x0000);
     tft.setTextFont(1);
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
     if (!psramFound()) {
-        changeFont(2);
         tft.setTextColor(TFT_RED);
         tft.setCursor(0, 50);
         tft.print("PSRAM NOT FOUND!!!\nEXPECT PROBLEMS!!!");
     }
     storageInit();
-
-    if (buttonsHelding(false) == '*') {
-        recovery("Manually triggered recovery."); // Chance to change resource file to custom one
-    }
+    // Chance to change resource file to custom one
+    if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
 
     res.CopyToRam();
     res.DrawImage(R_BOOT_LOGO);
     bootText("Initializing RTOS tasks...");
     initTasks();
+
     ESP_LOGI("DEVICE",
              "\nOkabePhone " FIRMVER "\n\n Phone firmware written by Nergon\n\n "
              "Resources located in sdcard (%s)\n",
              resPath.c_str());
-    ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getChipCores());
+
+    ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(),
+             ESP.getCpuFreqMHz(), ESP.getChipCores());
 
     progressBar(100, 100, 250);
 
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
-    
-    if (buttonsHelding(false) == '#')
-        AT_test();
+
+    if (buttonsHelding(false) == '#') { AT_test(); }
 
     millSleep = millis();
 }
 
 // Function to handle the main loop
-void loop() {
-    screens();
-}
+void loop() { screens(); }

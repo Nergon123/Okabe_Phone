@@ -15,26 +15,23 @@ int getChargeLevel() {
 ulong funcTime = 0;
 #ifdef DEVMODE
 void GetFuncTime(bool start, const char *who = "UNKNOWN") {
-    if (start) {
-        funcTime = micros();
-    } else {
-        Serial.printf("\n%s run for %.3f ms\n", who, (float)(micros() - funcTime) / 1000);
-    }
+    if (start) { funcTime = micros(); }
+    else { Serial.printf("\n%s run for %.3f ms\n", who, (float)(micros() - funcTime) / 1000); }
 }
 #endif
 
 // Set frequencies to fast or slow mode
 // @param status: true for fast mode, false for slow mode
 void fastMode(bool status) {
-    if ((status && getCpuFrequencyMhz() == FAST_CPU_FREQ_MHZ) || (!status && getCpuFrequencyMhz() == SLOW_CPU_FREQ_MHZ)) {
+    if ((status && getCpuFrequencyMhz() == FAST_CPU_FREQ_MHZ) ||
+        (!status && getCpuFrequencyMhz() == SLOW_CPU_FREQ_MHZ)) {
         // No need to change frequency
         return;
     }
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
     SimSerial.updateBaudRate(SIM_BAUD_RATE);
-    if (!isSPIFFS)
-        initSDCard(status);
+    if (!isSPIFFS) { initSDCard(status); }
 }
 
 int currentBrightness = brightness;
@@ -49,7 +46,8 @@ void setBrightness(int percentage) {
                 analogWrite(TFT_BL, (256 * i) / 100);
                 delay(5);
             }
-        } else {
+        }
+        else {
             for (int i = currentBrightness; i >= percentage; i--) {
                 analogWrite(TFT_BL, (256 * i) / 100);
                 delay(5);

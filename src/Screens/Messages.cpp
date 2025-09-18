@@ -27,8 +27,7 @@ void parseMessages(Message *&msgs, int &count) {
 
         for (int i = 0; i < messageCount; i++) {
             lastIndexOf = response.indexOf("+CMGL: ", lastIndexOf);
-            if (lastIndexOf == -1)
-                break;
+            if (lastIndexOf == -1) { break; }
 
             int firstComma  = response.indexOf(",", lastIndexOf);
             int secondComma = response.indexOf(",", firstComma + 1);
@@ -39,16 +38,18 @@ void parseMessages(Message *&msgs, int &count) {
             msgs[i].index = response.substring(lastIndexOf + 7, firstComma).toInt();
 
             // Extract status
-            String statusStr = response.substring(response.indexOf("\"", firstComma) + 1, response.indexOf("\"", secondComma));
-            if (statusStr.indexOf("UNREAD") != -1)
-                msgs[i].status = status::NEW;
-            else if (statusStr.indexOf("READ") != -1)
-                msgs[i].status = status::READED;
-            else
+            String statusStr = response.substring(response.indexOf("\"", firstComma) + 1,
+                                                  response.indexOf("\"", secondComma));
+            if (statusStr.indexOf("UNREAD") != -1) { msgs[i].status = status::NEW; }
+            else if (statusStr.indexOf("READ") != -1) { msgs[i].status = status::READED; }
+            else {
                 msgs[i].status = status::NEW; // Default fallback
+            }
 
             // Extract sender number
-            String number = response.substring(response.indexOf("\"", secondComma) + 1, response.indexOf("\"", response.indexOf("\"", secondComma) + 1));
+            String number = response.substring(
+                response.indexOf("\"", secondComma) + 1,
+                response.indexOf("\"", response.indexOf("\"", secondComma) + 1));
 
             // Extract date
             int dateStart = response.indexOf("/", lastIndexOf);
@@ -57,17 +58,14 @@ void parseMessages(Message *&msgs, int &count) {
             String checknumber;
             if (number.indexOf('+') != -1) {
                 checknumber = number.substring(number.indexOf('+') + 3);
-            } else {
-                checknumber = number;
             }
+            else { checknumber = number; }
             Contact curContact;
             curContact.phone = number;
-            if (number.indexOf('p') != -1)
-                curContact.name = "SERVICE NUMBER";
-            else
-                curContact.name = number;
+            if (number.indexOf('p') != -1) { curContact.name = "SERVICE NUMBER"; }
+            else { curContact.name = number; }
             curContact.index = -1;
-            for (int u = 0; u < contactCount; u++) {
+            for (int u = 0; u < contacts.size(); u++) {
                 if (contacts[u].phone.indexOf(checknumber) != -1) {
                     curContact = contacts[u];
                     break;
@@ -95,14 +93,9 @@ void messages() {
     String entries[] = {"Inbox", "Outbox"};
     int    ch        = choiceMenu(entries, ArraySize(entries), false);
     switch (ch) {
-    case 0:
-        inbox(false);
-        break;
-    case 1:
-        inbox(true);
-        break;
-    default:
-        break;
+    case 0: inbox(false); break;
+    case 1: inbox(true); break;
+    default: break;
     }
     currentScreen = SCREENS::MAINMENU;
 }
@@ -122,11 +115,8 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     const int TLVP = 238;
 
     int limit = 0;
-    if (sms) {
-        limit = 160;
-    } else {
-        limit = 400;
-    }
+    if (sms) { limit = 160; }
+    else { limit = 400; }
     String messagebuf;
     int    curx     = 0;
     int    cury     = 0;
@@ -156,20 +146,23 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     bool exit = false;
     while (!exit) {
         position = 0;
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0,0}, {0, 0}, {0, 0}, RES_MAIN, true);
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 0}, {0, 0}, RES_MAIN, true);
         // drawImage(0, 0, BACKGROUND_IMAGE_CUTTED, true);
         // tft.fillScreen(0xFFFF);
         // position += 24;
-        res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0}, RES_MAIN, true);
+        res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
+                      RES_MAIN, true);
         // drawImage(0, position + y_scr, in_mail[2], true);
         screen_buffer.setCursor(24, position + y_text + y_scr);
-        screen_buffer.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
-                                                                   : !contact.email.isEmpty()   ? contact.email
-                                                                                                : "UNKNOWN");
+        screen_buffer.println(!contact.name.isEmpty()    ? contact.name
+                              : !contact.phone.isEmpty() ? contact.phone
+                              : !contact.email.isEmpty() ? contact.email
+                                                         : "UNKNOWN");
         messagebuf = SplitString(messagebuf);
         if (!subject.isEmpty() || !sms) {
             position += 24;
-            res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0}, RES_MAIN, true);
+            res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
+                          RES_MAIN, true);
             screen_buffer.setCursor(24, position + y_text + y_scr);
             screen_buffer.println(subject);
         }
@@ -179,14 +172,13 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         int    input = -1;
         String a[]   = {"Return", "Send Message", "Delete", "Save To Drafts"};
         int    u;
-        screen_buffer.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20, TFT_BLACK);
+        screen_buffer.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx,
+                               y_scr + cury + position + 20, TFT_BLACK);
         Serial.println("CURX:" + String(curx) + " CURY:" + String(cury));
         screen_buffer.pushSprite(0, 51);
         while (input == -1) {
 
-            if (y_scr < min_y) {
-                min_y = y_scr;
-            }
+            if (y_scr < min_y) { min_y = y_scr; }
             input = buttonsHelding();
             switch (input) {
             case DOWN:
@@ -202,13 +194,11 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                 findSplitPosition(messagebuf, text_pos, curx, cury);
                 break;
             case RIGHT:
-                if (text_pos >= 0)
-                    findSplitPosition(messagebuf, ++text_pos, curx, cury);
+                if (text_pos >= 0) { findSplitPosition(messagebuf, ++text_pos, curx, cury); }
 
                 break;
             case LEFT:
-                if (text_pos > 0)
-                    findSplitPosition(messagebuf, --text_pos, curx, cury);
+                if (text_pos > 0) { findSplitPosition(messagebuf, --text_pos, curx, cury); }
 
                 break;
             case BACK:
@@ -229,16 +219,10 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                     screen_buffer.deleteSprite();
                     return;
                     break;
-                case 2:
-                    ESP_LOGI("INFO", "DELETE");
+                case 2: ESP_LOGI("INFO", "DELETE"); break;
+                case 3: ESP_LOGI("INFO", "Save to Drafts"); break;
 
-                    break;
-                case 3:
-                    ESP_LOGI("INFO", "Save to Drafts");
-                    break;
-
-                default:
-                    break;
+                default: break;
                 }
                 break;
             default:
@@ -250,23 +234,29 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                     if (l != 0) {
 
                         // ESP_LOGI("INFO","Y:" + String(screen_buffer.getCursorY()));
-                        //  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120, 20, 0, 240);
+                        //  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120,
+                        //  20, 0, 240);
 
-                        if (messagebuf.length() < limit)
+                        if (messagebuf.length() < limit) {
                             if (l != '\r') {
                                 if (l != '\b') {
 
-                                    messagebuf = messagebuf.substring(0, text_pos) + l + messagebuf.substring(text_pos, messagebuf.length());
+                                    messagebuf =
+                                        messagebuf.substring(0, text_pos) + l +
+                                        messagebuf.substring(text_pos, messagebuf.length());
                                     text_pos++;
-                                } else {
-                                    messagebuf = messagebuf.substring(0, text_pos - 1) + messagebuf.substring(text_pos, messagebuf.length());
-                                    input      = BACK;
+                                }
+                                else {
+                                    messagebuf =
+                                        messagebuf.substring(0, text_pos - 1) +
+                                        messagebuf.substring(text_pos, messagebuf.length());
+                                    input = BACK;
                                 }
                             }
+                        }
                         if (screen_buffer.getCursorY() > TLVP) {
                             y_scr -= y_jump;
-                            if (y_scr < min_y)
-                                min_y = y_scr;
+                            if (y_scr < min_y) { min_y = y_scr; }
                             input = BACK;
                         }
 
@@ -303,7 +293,8 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
  * @param sms Boolean indicating if the message is an SMS
  * @return Boolean indicating if the message was deleted
  */
-bool messageActivity(Contact contact, String date, String subject, String content, int index, bool outcoming, bool sms) {
+bool messageActivity(Contact contact, String date, String subject, String content, int index,
+                     bool outcoming, bool sms) {
     tft.setTextWrap(true);
     // returns if deleted
     if (sms) {
@@ -312,9 +303,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
             content = "======\nERROR LOADING FOLLOWING MESSAGE\n======";
         }
         int resIndex = 0;
-        for (int i = 0; i < 7; i++) {
-            resIndex = response.indexOf('\"', ++resIndex);
-        }
+        for (int i = 0; i < 7; i++) { resIndex = response.indexOf('\"', ++resIndex); }
         int endIndex = response.indexOf('\"', ++resIndex);
         Serial.println("resIndex:" + String(resIndex) + "\nendIndex:" + endIndex);
         date = response.substring(resIndex, endIndex);
@@ -352,12 +341,13 @@ bool messageActivity(Contact contact, String date, String subject, String conten
 
         res.DrawImage(R_IN_MSG_MAIL_ICONS, 1, {OP_UNDEF, y_scr + 24});
         tft.setCursor(24, 24 + y_text + y_scr);
-        tft.println(!contact.name.isEmpty() ? contact.name : !contact.phone.isEmpty() ? contact.phone
-                                                         : !contact.email.isEmpty()   ? contact.email
-                                                                                      : "UNKNOWN");
+        tft.println(!contact.name.isEmpty()    ? contact.name
+                    : !contact.phone.isEmpty() ? contact.phone
+                    : !contact.email.isEmpty() ? contact.email
+                                               : "UNKNOWN");
         content = SplitString(content);
         tft.drawLine(0, 48 + y_scr, 240, 48 + y_scr, 0);
-        int height = measureStringHeight(content)+50;
+        int height = measureStringHeight(content) + 50;
         tft.print(content);
         int ch = -2;
         int r  = -1;
@@ -365,45 +355,31 @@ bool messageActivity(Contact contact, String date, String subject, String conten
             r = buttonsHelding();
             switch (r) {
             case DOWN:
-                if (y_scr > -height) {
-                    y_scr -= y_jump;
-                } else {
-                    r = -1;
-                }
+                if (y_scr > -height) { y_scr -= y_jump; }
+                else { r = -1; }
                 break;
             case UP:
-                if (y_scr < 0) {
-                    y_scr += y_jump;
-                } else {
-                    r = -1;
-                }
+                if (y_scr < 0) { y_scr += y_jump; }
+                else { r = -1; }
                 break;
             case BACK:
                 ch = choiceMenu(choices, 4, true);
                 switch (ch) {
-                case -1:
-                    exit = true;
-                    break;
-                case 0:
-                    messageActivityOut(contact, "", "", true);
-                    break;
+                case -1: exit = true; break;
+                case 0: messageActivityOut(contact, "", "", true); break;
 
                 case 2:
-                tft.resetViewport();
+                    tft.resetViewport();
                     if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE?")) {
                         sendATCommand("AT+CMGD=" + String(index), 5000);
                         return true;
                     }
-                        tft.setViewport(0, 51, 240, 269, true);
+                    tft.setViewport(0, 51, 240, 269, true);
                     break;
-                case 3:
-                    content = HEXTOASCII(content);
-                    break;
+                case 3: content = HEXTOASCII(content); break;
                 }
                 break;
-            default:
-            r=-1;
-                break;
+            default: r = -1; break;
             }
         }
         tft.resetViewport();
@@ -422,7 +398,8 @@ bool messageActivity(Contact contact, String date, String subject, String conten
  * @return Boolean indicating if the message was deleted
  */
 bool messageActivity(Message message) {
-    return messageActivity(message.contact, message.date, message.subject, message.content, message.index, false, true);
+    return messageActivity(message.contact, message.date, message.subject, message.content,
+                           message.index, false, true);
 }
 
 /*
@@ -433,10 +410,8 @@ bool messageActivity(Message message) {
  */
 void inbox(bool outbox) {
     const char *title;
-    if (outbox)
-        title = "Outbox";
-    else
-        title = "Inbox";
+    if (outbox) { title = "Outbox"; }
+    else { title = "Inbox"; }
 
     int      count    = 0;
     bool     exit     = false;
@@ -447,9 +422,7 @@ void inbox(bool outbox) {
         parseMessages(messages, count);
         // Potential memory leak???
         mOption *messagesList = new mOption[count];
-        for (int i = 0; i < count; i++) {
-            messagesList[count - i - 1] = messages[i];
-        }
+        for (int i = 0; i < count; i++) { messagesList[count - i - 1] = messages[i]; }
 
         Serial.println("LISTMENU");
         int choice = -2;
@@ -457,8 +430,7 @@ void inbox(bool outbox) {
             choice = listMenu(messagesList, count, false, 0, title);
             if (choice >= 0) {
                 exit = !messageActivity(messages[count - choice - 1]);
-                if (!exit)
-                    choice = -1;
+                if (!exit) { choice = -1; }
             }
         }
     }

@@ -4,11 +4,7 @@ const uint16_t clr_normal     = TFT_BLACK;
 const uint16_t clr_disabled   = TFT_LIGHTGREY;
 const uint16_t clr_background = TFT_WHITE;
 
-enum UITypes {
-    UI_BUTTON,
-    UI_INPUT,
-    UI_SWITCHNUMBERS
-};
+enum UITypes { UI_BUTTON, UI_INPUT, UI_SWITCHNUMBERS };
 struct UIElement {
     int         type;
     int         x, y;
@@ -26,10 +22,8 @@ struct UIElement {
 };
 
 void UIElementsLoop(UIElement *elements, int count, bool *exit) {
-    //TODO
-    if (elements == nullptr) {
-        ESP_LOGE("UI", "elements nullptr");
-    }
+    // TODO
+    if (elements == nullptr) { ESP_LOGE("UI", "elements nullptr"); }
     if (exit == nullptr) {
         ESP_LOGE("UI", "exit nullptr");
         return;
@@ -42,38 +36,32 @@ void UIElementsLoop(UIElement *elements, int count, bool *exit) {
 
             switch (el.type) {
             case UI_BUTTON:
-                *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection, &direction, el.usable, el.callback);
+                *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection,
+                                    &direction, el.usable, el.callback);
                 break;
             case UI_INPUT:
-                if (el.input == nullptr) {
-                    el.input = new String();
-                }
-                *el.input = InputField(el.title, *el.input, el.y, false, i == cur_selection, i == cur_selection, &direction, el.onlynumbers, el.usable, el.callback);
+                if (el.input == nullptr) { el.input = new String(); }
+                *el.input = InputField(el.title, *el.input, el.y, false, i == cur_selection,
+                                       i == cur_selection, &direction, el.onlynumbers, el.usable,
+                                       el.callback);
                 break;
             case UI_SWITCHNUMBERS:
 
-                sNumberChange(el.x, el.y, el.w, el.h, *el.value, el.min, el.max, i == cur_selection, &direction, el.format, el.usable, el.callback);
+                sNumberChange(el.x, el.y, el.w, el.h, *el.value, el.min, el.max,
+                              i == cur_selection, &direction, el.format, el.usable, el.callback);
 
                 break;
             }
-            if (direction == LEFT) {
-                direction = UP;
-            }
-            if (direction == RIGHT) {
-                direction = DOWN;
-            }
+            if (direction == LEFT) { direction = UP; }
+            if (direction == RIGHT) { direction = DOWN; }
             switch (direction) {
             case UP:
                 cur_selection++;
-                if (cur_selection >= count) {
-                    cur_selection = 0;
-                }
+                if (cur_selection >= count) { cur_selection = 0; }
                 break;
             case DOWN:
                 cur_selection--;
-                if (cur_selection < 0) {
-                    cur_selection = count - 1;
-                }
+                if (cur_selection < 0) { cur_selection = count - 1; }
                 break;
             }
         }
@@ -90,7 +78,8 @@ void UIElementsLoop(UIElement *elements, int count, bool *exit) {
 //  @param selected: Boolean indicating if the button is selected
 //  @param direction: Pointer to the direction variable
 //  @return: Boolean indicating if the button was pressed
-bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction, bool usable, void (*callback)(void *)) {
+bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction,
+            bool usable, void (*callback)(void *)) {
 
     tft.fillRect(xpos, ypos, w, h, clr_background);
     tft.drawRect(xpos, ypos, w, h, clr_normal);
@@ -109,23 +98,19 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title);
-    if(!usable){
-        return false;
-    }
+    if (!usable) { return false; }
     bool exit = false;
 
-    if (selected)
+    if (selected) {
         while (!exit) {
             *direction = buttonsHelding();
             if (*direction == SELECT) {
-                if (callback != nullptr) {
-                    callback(nullptr);
-                }
+                if (callback != nullptr) { callback(nullptr); }
                 return true;
-            } else if (*direction != -1) {
-                exit = true;
             }
+            else if (*direction != -1) { exit = true; }
         }
+    }
 
     tft.setTextColor(clr_normal);
     tft.fillRect(xpos, ypos, w, h, clr_background);
@@ -147,23 +132,17 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
 // @param selected: Boolean indicating if the input field is selected
 // @param direction: Pointer to the direction variable
 // @param format: Format string for the value
-void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected, int *direction, const char *format, bool usable, void (*callback)(void *)) {
+void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected,
+                   int *direction, const char *format, bool usable, void (*callback)(void *)) {
 
     // calculation of triangle corners
     int fp  = w / 2;
     int st  = h / 5;
     int stf = w / 5;
 
-    int tx1 = x + fp - stf,
-        tx2 = x + fp,
-        tx3 = x + fp + stf;
-    int ty1 = y - st,
-        ty2 = y - st * 2,
-        ty3 = y - st;
-    int
-        ty11 = y + h + st,
-        ty21 = y + h + st * 2,
-        ty31 = y + h + st;
+    int tx1 = x + fp - stf, tx2 = x + fp, tx3 = x + fp + stf;
+    int ty1 = y - st, ty2 = y - st * 2, ty3 = y - st;
+    int ty11 = y + h + st, ty21 = y + h + st * 2, ty31 = y + h + st;
 
     tft.resetViewport();
 
@@ -175,11 +154,8 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
     tft.setTextColor(clr_normal);
     tft.setTextWrap(false);
     tft.setViewport(x, y, w, h);
-    if (selected) {
-        tft.setTextColor(clr_selected);
-    } else {
-        tft.setTextColor(clr_normal);
-    }
+    if (selected) { tft.setTextColor(clr_selected); }
+    else { tft.setTextColor(clr_normal); }
     char text[64];
     snprintf(text, sizeof(text), format, val);
     int height = tft.fontHeight();
@@ -202,22 +178,16 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
         switch (*direction) {
         case DOWN:
             val--;
-            if (val < min)
-                val = max;
+            if (val < min) { val = max; }
             DrawBox();
             break;
         case UP:
             val++;
-            if (val > max)
-                val = min;
+            if (val > max) { val = min; }
             DrawBox();
             break;
-        case LEFT:
-            exit = true;
-            break;
-        case RIGHT:
-            exit = true;
-            break;
+        case LEFT: exit = true; break;
+        case RIGHT: exit = true; break;
         }
     }
     tft.resetViewport();
@@ -235,11 +205,11 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 //  @param direction: Pointer to the direction variable
 //  @param onlynumbers: Boolean indicating if only numbers are allowed
 //  @return: String containing the input
-String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used, int *direction, bool onlynumbers, bool usable, void (*callback)(void *)) {
+String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used,
+                  int *direction, bool onlynumbers, bool usable, void (*callback)(void *)) {
 
     content.trim();
-    if (used)
-        selected = true;
+    if (used) { selected = true; }
     tft.resetViewport();
     tft.setTextColor(clr_normal);
     tft.setTextWrap(false);
@@ -247,10 +217,8 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
     changeFont(1);
     tft.setTextSize(1);
 
-    if (selected)
-        tft.setTextColor(clr_selected);
-    else
-        tft.setTextColor(clr_normal);
+    if (selected) { tft.setTextColor(clr_selected); }
+    else { tft.setTextColor(clr_normal); }
 
     tft.print(title);
     tft.setTextColor(clr_normal);
@@ -258,13 +226,11 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
 
     int cursorPos = content.length();
     int yoff      = tft.fontHeight();
-    // int charWidth = tft.textWidth("D") + 1;
-    int xpos   = 5;
-    int width  = 235 - xpos;
-    int height = 25;
-
-    int dypos    = 0;
-    int c_offset = 0;
+    int xpos      = 5;
+    int width     = 235 - xpos;
+    int height    = 25;
+    int dypos     = 0;
+    int c_offset  = 0;
 
     tft.setViewport(xpos, ypos, width, height);
     xpos = 0;
@@ -272,92 +238,99 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
 
     int length = tft.textWidth(content.substring(0, cursorPos)) + 15;
 
-    if (length > width)
-        c_offset = width - length;
+    if (length > width) { c_offset = width - length; }
 
-    if (selected)
-        tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
+    if (selected) { tft.setCursor(xpos + 5 + c_offset, dypos + yoff); }
 
     tft.fillRect(xpos, dypos, width, height, clr_background);
     tft.drawRect(xpos, dypos, width, height, clr_normal);
 
-    if (selected) {
-        tft.drawRect(xpos, dypos, width, height, clr_selected);
-    }
+    if (selected) { tft.drawRect(xpos, dypos, width, height, clr_selected); }
 
     tft.print(content);
 
     bool exit = false;
     int  c    = -1;
 
-    if (!onlydraw)
+    if (!onlydraw) {
         if (used) {
             length = tft.textWidth(content.substring(0, cursorPos)) + 15;
-            if (length > width)
-                c_offset = width - length;
 
-            tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_normal);
+            if (length > width) { c_offset = width - length; }
+
+            tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH,
+                         height - 6, clr_normal);
 
             tft.drawRect(xpos, ypos, width, height, clr_selected);
 
             while (!exit) {
 
-                while (c == -1)
-                    c = buttonsHelding();
+                while (c == -1) { c = buttonsHelding(); }
                 if (c != -1) {
                     if (c >= '0' && c <= '9') {
 
                         // Serial.println("C_OFFSET:" + String(c_offset));
 
                         char TI = textInput(c, onlynumbers, true);
-                        if (TI != '\0')
+                        if (TI != '\0') {
                             if (TI != '\n') {
                                 if (TI != '\b') {
-                                    content = content.substring(0, cursorPos) + TI + content.substring(cursorPos, content.length());
+                                    content = content.substring(0, cursorPos) + TI +
+                                              content.substring(cursorPos, content.length());
                                     cursorPos++;
-                                } else {
-                                    content = content.substring(0, cursorPos - 1) + content.substring(cursorPos, content.length());
+                                }
+                                else {
+                                    content = content.substring(0, cursorPos - 1) +
+                                              content.substring(cursorPos, content.length());
                                     cursorPos--;
                                 }
                             }
+                        }
                         length = tft.textWidth(content.substring(0, cursorPos)) + 15;
-                        if (length > width)
-                            c_offset = width - length;
+                        if (length > width) { c_offset = width - length; }
                         tft.fillRect(xpos, dypos, width, height, clr_background);
                         tft.drawRect(xpos, dypos, width, height, clr_selected);
                         tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
                         tft.println(content);
-                        tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_normal);
+                        tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5,
+                                     3, CWIDTH, height - 6, clr_normal);
                         c = buttonsHelding();
-                    } else {
+                    }
+                    else {
                         switch (c) {
                         case LEFT:
                             if (cursorPos > 0) {
 
                                 cursorPos--;
                                 length = tft.textWidth(content.substring(0, cursorPos)) + 15;
-                                if (length > width)
-                                    c_offset = width - length;
+                                if (length > width) { c_offset = width - length; }
                                 tft.fillRect(xpos, dypos, width, height, clr_background);
                                 tft.drawRect(xpos, dypos, width, height, clr_selected);
                                 tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
                                 tft.println(content);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_normal);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos + 1)) + c_offset + 5, 3, CWIDTH, height - 6, clr_background);
+                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) +
+                                                 c_offset + 5,
+                                             3, CWIDTH, height - 6, clr_normal);
+                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos + 1)) +
+                                                 c_offset + 5,
+                                             3, CWIDTH, height - 6, clr_background);
                             }
                             break;
                         case RIGHT:
                             if (cursorPos < content.length()) {
                                 cursorPos++;
                                 length = tft.textWidth(content.substring(0, cursorPos)) + 15;
-                                if (length > width)
-                                    c_offset = width - length;
+                                if (length > width) { c_offset = width - length; }
                                 tft.fillRect(xpos, dypos, width, height, clr_background);
                                 tft.drawRect(xpos, dypos, width, height, clr_selected);
                                 tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
                                 tft.println(content);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos - 1)) + c_offset + 5, 3, CWIDTH, height - 6, clr_normal);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_background);
+                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos - 1)) +
+                                                 c_offset + 5,
+                                             3, CWIDTH, height - 6, clr_normal);
+                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) +
+                                                 c_offset + 5,
+                                             3, CWIDTH, height - 6, clr_background);
                             }
                             break;
 
@@ -370,17 +343,17 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
                             *direction = DOWN;
                             exit       = true;
                             break;
-                        default:
-                            *direction = BACK;
-                            break;
+                        default: *direction = BACK; break;
                         }
                         c = buttonsHelding();
                     }
                 }
             }
         }
+    }
 
-    tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH, height - 6, clr_background);
+    tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH,
+                 height - 6, clr_background);
     tft.fillRect(xpos, dypos, width, height, clr_background);
     tft.drawRect(xpos, dypos, width, height, clr_normal);
     tft.setCursor(xpos + 5, dypos + yoff);
@@ -404,30 +377,23 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
 // @param spacing: Spacing between the circles
 void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     // Get image data and allocate buffer
-    ImageData img               = res.GetImageDataByID(R_CALL_ANIM_DOTS);
-    int  max_count     = (2 * size_x) + (2 * (size_y - 1));
-    int  printed_count = 0;
-    int  xt = 0, yt = 0;
-    bool draw = true;
+    ImageData img           = res.GetImageDataByID(R_CALL_ANIM_DOTS);
+    int       max_count     = (2 * size_x) + (2 * (size_y - 1));
+    int       printed_count = 0;
+    int       xt = 0, yt = 0;
+    bool      draw = true;
 
     while (printed_count < max_count) {
         for (int j = offset; j >= 0 && printed_count < max_count; j--) {
-            if (draw) {
-                res.DrawImage(R_CALL_ANIM_DOTS,j%img.count,{x+xt,y+yt});
-            }
+            if (draw) { res.DrawImage(R_CALL_ANIM_DOTS, j % img.count, {x + xt, y + yt}); }
 
             // Update position in spin path
-            if (printed_count < size_x) {
-                xt += spacing;
-            } else if (printed_count < size_x + size_y - 1) {
-                yt += spacing;
-            } else if (printed_count < (2 * size_x) + size_y - 1) {
-                xt -= spacing;
-            } else {
+            if (printed_count < size_x) { xt += spacing; }
+            else if (printed_count < size_x + size_y - 1) { yt += spacing; }
+            else if (printed_count < (2 * size_x) + size_y - 1) { xt -= spacing; }
+            else {
                 yt -= spacing;
-                if (yt <= -((size_y - 1) * spacing)) {
-                    draw = false;
-                }
+                if (yt <= -((size_y - 1) * spacing)) { draw = false; }
             }
 
             printed_count++;
@@ -435,7 +401,6 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
 
         offset = 7; // Reset offset after each full circle iteration
     }
-
 }
 
 int lastpercentage;
@@ -450,23 +415,21 @@ int lastpercentage;
 void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool fast) {
 
     int percentage = (val * 100) / max;
-    if (lastpercentage > percentage)
-        lastpercentage = percentage;
+    if (lastpercentage > percentage) { lastpercentage = percentage; }
     if (!log) {
         //"for loop" and delay for smooth transition
         tft.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.fillRect(69, y, i, h, color);
-            if (!fast)
-                delay(5);
+            if (!fast) { delay(5); }
         }
-    } else {
+    }
+    else {
 #ifndef LOG
         tft.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.fillRect(69, y, i, h, color);
-            if (!fast)
-                delay(5);
+            if (!fast) { delay(5); }
         }
 #endif
     }
@@ -474,15 +437,11 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
 }
 
 void bootText(String text, int x, int y, int w, int h) {
-    if (lastpercentage == 100) {
-        return;
-    }
+    if (lastpercentage == 100) { return; }
     tft.fillRect(x, y, w, h, TFT_BLACK);
     tft.setTextFont(0);
     tft.setTextSize(1);
-    if (x < 0) {
-        x = 120 - (tft.textWidth(text) / 2);
-    }
+    if (x < 0) { x = 120 - (tft.textWidth(text) / 2); }
     tft.setViewport(0, y, w, h);
     tft.setTextColor(TFT_WHITE);
     tft.setCursor(x, 0);
@@ -502,13 +461,13 @@ void sysError(String reason) {
     tft.println("==ERROR==");
     tft.setTextColor(0xFFFF);
     tft.setTextSize(1);
-    tft.println(String("\n\n\nThere a problem with your device\n\nTechnical details:\n\n\nReason:" + reason + "\n\n\n\n\n" REPOSITORY_LINK "\n\n"));
+    tft.println(String(
+        "\n\n\nThere a problem with your device\n\nTechnical details:\n\n\nReason:" + reason +
+        "\n\n\n\n\n" REPOSITORY_LINK "\n\n"));
 
     tft.println("Press any button to restart\nor reset button to reset the device");
     ESP_LOGE("ERROR", "%s", reason);
-    while (buttonsHelding(false) == -1)
-        ;
+    while (buttonsHelding(false) == -1);
     ESP.restart();
-    for (;;)
-        ;
+    for (;;);
 }
