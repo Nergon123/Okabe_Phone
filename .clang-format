@@ -1,6 +1,30 @@
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AlignConsecutiveMacros: true
-ColumnLimit: 0
+ColumnLimit: 99 # 0
 IndentWidth: 4
 
+AllowShortIfStatementsOnASingleLine: WithoutElse # oneline ifs and elses
+# AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true # oneline while (true) smth;
+
+AllowShortCaseLabelsOnASingleLine: true # switch case oneline
+
+DerivePointerAlignment: true # moves pointers
+PointerAlignment: Right # moves pointers to right
+
+InsertBraces: true # sets braces if oneline ## warning'овое
+AllowShortBlocksOnASingleLine: Always # oneline blocks in one line with braces
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterEnum: false
+  BeforeElse: true # else statement on the next line after closing if's brace
+  AfterClass: false
+  BeforeWhile: true
+  BeforeCatch: false
+  AfterStruct: false
+  AfterFunction: false
+  AfterExternBlock: false
+  SplitEmptyFunction: false
+  AfterControlStatement: Never # `Never wrap braces after a control statement.` 

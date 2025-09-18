@@ -3,40 +3,23 @@
 // Current screen selection based on currentScreen variable
 void screens() {
     switch (currentScreen) {
-    case SCREENS::MAINSCREEN:
-        MainScreen();
-        break;
-    case SCREENS::MAINMENU:
-        MainMenu();
-        break;
-    case SCREENS::MESSAGES:
-        messages();
-        break;
-    case SCREENS::CONTACTS:
-        contactss();
-        break;
-    case SCREENS::SETTINGS:
-        settings();
-        break;
-    case SCREENS::E:
-        e();
-        break;
+    case SCREENS::MAINSCREEN: MainScreen(); break;
+    case SCREENS::MAINMENU: MainMenu(); break;
+    case SCREENS::MESSAGES: messages(); break;
+    case SCREENS::CONTACTS: contactss(); break;
+    case SCREENS::SETTINGS: settings(); break;
+    case SCREENS::E: e(); break;
     }
 }
 
 // ## Render menu
 //  This function renders the menu icons on the screen.
 void rendermenu(int &choice, int old_choice) {
-    uint8_t menuEntries[4] = {
-        R_MENU_MAIL_ICON,
-        R_MENU_CONTACTS_ICON,
-        R_MENU_E_ICON,
-        R_MENU_SETTINGS_ICON};
+    uint8_t menuEntries[4] = {R_MENU_MAIL_ICON, R_MENU_CONTACTS_ICON, R_MENU_E_ICON,
+                              R_MENU_SETTINGS_ICON};
 
-    if (choice > 3)
-        choice = 0;
-    if (choice < 0)
-        choice = 3;
+    if (choice > 3) { choice = 0; }
+    if (choice < 0) { choice = 3; }
 
     if (old_choice != choice) {
         res.DrawImage(menuEntries[old_choice]);
@@ -49,36 +32,17 @@ void MainMenu() {
     res.DrawImage(R_MENU_BACKGROUND);
     res.DrawImage(R_MENU_MAIL_ICON, 1);
     int choice = 0;
-    for (int i = 0; i < 4; i++) {
-        rendermenu(choice, i);
-    }
+    for (int i = 0; i < 4; i++) { rendermenu(choice, i); }
     int old_choice = 0;
     while (true) {
         switch (buttonsHelding()) {
-        case BACK: {
-            currentScreen = SCREENS::MAINSCREEN;
-            return;
-            break;
-        }
+        case BACK: currentScreen = SCREENS::MAINSCREEN; return;
         case SELECT: {
             switch (choice) {
-            case 0:
-
-                currentScreen = SCREENS::MESSAGES;
-                return;
-                break;
-            case 1:
-                currentScreen = SCREENS::CONTACTS;
-                return;
-                break;
-            case 2:
-                currentScreen = SCREENS::E;
-                return;
-                break;
-            case 3:
-                currentScreen = SCREENS::SETTINGS;
-                return;
-                break;
+            case 0: currentScreen = SCREENS::MESSAGES; return;
+            case 1: currentScreen = SCREENS::CONTACTS; return;
+            case 2: currentScreen = SCREENS::E; return;
+            case 3: currentScreen = SCREENS::SETTINGS; return;
             }
             res.DrawImage(R_MENU_BACKGROUND);
             rendermenu(choice, choice);
@@ -112,9 +76,7 @@ void MainMenu() {
             break;
         }
         }
-        if (currentScreen == MAINSCREEN) {
-            return;
-        }
+        if (currentScreen == MAINSCREEN) { return; }
     }
 }
 
@@ -129,62 +91,37 @@ void MainScreen() {
     while (1) {
         currentButton = buttonsHelding();
 
-        if ((currentButton >= '0' || currentButton == '*' || currentButton == '#') && currentButton <= '9') {
+        if ((currentButton >= '0' || currentButton == '*' || currentButton == '#') &&
+            currentButton <= '9') {
             numberInput(currentButton);
             drawWallpaper();
-        } else if (currentButton == UP || currentButton == SELECT)
-            break;
+        }
+        else if (currentButton == UP || currentButton == SELECT) { break; }
     }
 
     currentScreen = SCREENS::MAINMENU;
 }
+// available levels: {0 1 2 3}; zero - empty
+void drawLevelCharge(uint8_t level) { // 0 1 2 3
+    if (level < 0 || level > 3) { return; }
 
+    if (level == 0) { tft.fillRect(40, 105, 150, 70, 0x0000); }
+    else { tft.fillRect(45 + 48 * (level - 1), 110, 43, 60, 0xffff); }
+}
 // Function to show battery when its conected to charger and "powered off"
 void offlineCharging() {
     tft.fillRect(35, 100, 160, 80, 0xffff);
     tft.fillRect(195, 120, 10, 40, 0xFFFF);
-    tft.setCursor(70, 310);
-    int chargeIndexOld = 0;
+    int maxLevel = 0;
     while (true) {
-
-        ulong mill = millis();
-        if (buttonsHelding(false) != -1)
-            return;
-        int chargeIndexNew = getChargeLevel();
-        if (chargeIndexNew > chargeIndexOld) {
-            chargeIndexOld = chargeIndexNew;
+        if (getChargeLevel() > maxLevel) { maxLevel = getChargeLevel(); }
+        for (int i = 0; i <= maxLevel; i++) {
+            ulong mill = millis();
+            drawLevelCharge(i);
+            while (millis() - mill < 500) {
+                if (buttonsHelding(false) != -1) { return; }
+            }
         }
-        tft.fillRect(40, 105, 150, 70, 0x0000);
-        if (chrg.isChargerConnected() && chargeIndexOld < 1)
-            while (millis() - mill < 500)
-                if (buttonsHelding(false) != -1) {
-                    return;
-                }
-
-        tft.fillRect(45, 110, 43, 60, 0xffff);
-        mill = millis();
-        if (chrg.isChargerConnected() && chargeIndexOld < 2)
-            while (millis() - mill < 500)
-                if (buttonsHelding(false) != -1) {
-                    return;
-                }
-        tft.fillRect(45 + 48, 110, 43, 60, 0xffff);
-        mill = millis();
-        if (chrg.isChargerConnected() && chargeIndexOld < 3)
-            while (millis() - mill < 500)
-                if (buttonsHelding(false) != -1) {
-                    return;
-                }
-        tft.fillRect(45 + 96, 110, 43, 60, 0xffff);
-        mill = millis();
-        while (millis() - mill < 500)
-            if (buttonsHelding(false) != -1) {
-                return;
-            }
-        while (chrg.getBatteryLevel() == 100)
-            if (buttonsHelding(false) != -1) {
-                return;
-            }
     }
     tft.fillScreen(0x0000);
 }
@@ -209,35 +146,8 @@ void recovery(String message) {
     switch (choice) {
     case 0:
         String TempResPath = fileBrowser(SD.open("/"), ".SG", false);
-
-        File   file = SD.open(TempResPath);
-        String buf;
-        file.seek(0);
-        for (int i = 0; i < 12; i++) {
-            buf += (char)file.read();
-        }
-        /*
-         * Fun fact, if you will open any IMAGES.SG in any
-         * text editor you'll see that there ELPSYKONGROO at the beginning.
-         * That's to prevent wrong(?) files.
-         */
-
-        if (buf.indexOf("ELPSYKONGROO") != -1) {
-            mOption optionss[2] = {{"Yes!"}, {"No..."}};
-            choice              = listMenuNonGraphical(optionss, 2, "Are you sure you want to change files?");
-            if (choice == 0) {
-                resPath = TempResPath;
-                preferences.begin("settings", false);
-                preferences.putString("resPath", resPath);
-                preferences.end();
-            }
-        } else {
-            tft.fillScreen(0);
-            tft.setCursor(0, 0);
-            tft.println("File is invalid!\nPress any key to continue...");
-            while (buttonsHelding(false) == -1)
-                ;
-        }
+        File   file        = SD.open(TempResPath);
+        res.Init(file);
         break;
     }
 }

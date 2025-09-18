@@ -25,16 +25,17 @@ int32_t pngSeek(PNGFILE *page, int32_t position) {
 }
 
 bool iswallpaper = false;
-int pngDraw(PNGDRAW *pDraw) {
+int  pngDraw(PNGDRAW *pDraw) {
     uint16_t lineBuffer[240];
     png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
-//TODO WALLPAPER
+    // TODO WALLPAPER
     if (iswallpaper) {
         if (pDraw->y < 294) {
-           // memcpy(wallpaper + (pDraw->y * 480), (uint8_t *)lineBuffer, 480);
+            // memcpy(wallpaper + (pDraw->y * 480), (uint8_t *)lineBuffer, 480);
         }
-    } else {
-       // tft.pushImage(0, pDraw->y + 26, pDraw->iWidth, 1, lineBuffer);
+    }
+    else {
+        // tft.pushImage(0, pDraw->y + 26, pDraw->iWidth, 1, lineBuffer);
     }
     return 0;
 }
@@ -44,7 +45,7 @@ int pngDraw(PNGDRAW *pDraw) {
 // @param filename: Path to the PNG file on the SD card
 // @param _wallpaper: Boolean indicating if the image is a wallpaper
 void drawPNG(const char *filename, bool _wallpaper) {
-   return; 
+    return;
 
     File file = SD.open(filename, FILE_READ);
     if (!file) {
@@ -52,17 +53,16 @@ void drawPNG(const char *filename, bool _wallpaper) {
         return;
     }
     int rc = -1;
-    rc = png.open(filename, pngOpen, pngClose, pngRead, pngSeek, pngDraw);
+    rc     = png.open(filename, pngOpen, pngClose, pngRead, pngSeek, pngDraw);
     if (rc == PNG_SUCCESS) {
-        //TODO
-        Serial.printf("Image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
+        // TODO
+        Serial.printf("Image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(),
+                      png.getHeight(), png.getBpp(), png.getPixelType());
 
         rc = png.decode(NULL, 0);
         png.close();
-    } else {
-        Serial.printf("PNG open failed: %d\n", rc);
     }
+    else { Serial.printf("PNG open failed: %d\n", rc); }
 
     file.close();
-    
 }

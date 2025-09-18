@@ -6,7 +6,7 @@
 
 void WifiPrompt(String ssid, uint8_t encryptionType) {
     return;
-    //TODO
+    // TODO
     String password;
     res.DrawImage(R_LIST_MENU_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
@@ -20,18 +20,15 @@ void WifiPrompt(String ssid, uint8_t encryptionType) {
         ssid = InputField("SSID", ssid, 40, 0, 0, choice == 0, &direction);
         if (!open) {
             password = InputField("Password", password, 40, 0, 0, choice == 1, &direction);
-        } else if (choice == 1) {
-            choice = 2;
         }
+        else if (choice == 1) { choice = 2; }
 
         connect = button("Connect", 10, 280, 100, 30, choice == 2, &direction);
         exit    = button("Cancel", 120, 280, 100, 30, choice == 3, &direction);
     }
 }
 
-void WifiConnect(String ssid, String password) {
-    WiFi.begin(ssid, password);
-}
+void WifiConnect(String ssid, String password) { WiFi.begin(ssid, password); }
 
 // List available WiFi networks
 void WiFiList() {
@@ -43,13 +40,11 @@ void WiFiList() {
         uint8_t  enc[count];
         uint8_t *l;
         int32_t  c, d;
-        for (int i = 0; i < count; i++) {
-            WiFi.getNetworkInfo(i, names[i], enc[i], c, l, d);
-        }
+        for (int i = 0; i < count; i++) { WiFi.getNetworkInfo(i, names[i], enc[i], c, l, d); }
+
         int ch = listMenu(names, count, false, 0, "WI-FI");
-        if (ch == -1) {
-            return;
-        } else {
+        if (ch == -1) { return; }
+        else {
             // TODO: Actually Connect to WiFi
             WifiPrompt(names[ch], enc[ch]);
             return;

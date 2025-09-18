@@ -22,10 +22,8 @@ void drawStatusBar(bool force) {
         bool viewport_datum = tft.getViewportDatum();
         tft.resetViewport();
 
-        if (_signal < 0)
-            _signal = 0;
-        if (_signal > 3)
-            _signal = 3;
+        if (_signal < 0) { _signal = 0; }
+        if (_signal > 3) { _signal = 3; }
         TFT_eSprite _sprite = TFT_eSprite(&tft);
 
         _sprite.createSprite(240, 26);
@@ -65,10 +63,8 @@ bool confirmation(String reason) {
     tft.setCursor(45, 110);
     tft.setTextColor(0);
     tft.println("CONFIRMATION");
-    if (tft.textWidth(reason) < 240)
-        tft.setCursor((230 - tft.textWidth(reason)) / 2, 130);
-    else
-        tft.setCursor(0, 130);
+    if (tft.textWidth(reason) < 240) { tft.setCursor((230 - tft.textWidth(reason)) / 2, 130); }
+    else { tft.setCursor(0, 130); }
     tft.println(SplitString(reason));
 
     int  pos = 0;
@@ -76,20 +72,12 @@ bool confirmation(String reason) {
     bool exit = false;
 
     while (!exit) {
-        if (button("YES", 120, 190, 80, 30, pos, &direction)) {
-            return true;
-        } else if (button("NO", 30, 190, 80, 30, !pos, &direction)) {
-            return false;
-        }
-        if (direction > 1)
-            pos = !pos;
+        if (button("YES", 120, 190, 80, 30, pos, &direction)) { return true; }
+        else if (button("NO", 30, 190, 80, 30, !pos, &direction)) { return false; }
+        if (direction > 1) { pos = !pos; }
     }
     return false;
 }
-
-
-
-
 
 // Function to show an error window
 // This function is called when an error occurs
@@ -105,11 +93,8 @@ void ErrorWindow(String reason) {
     tft.setTextColor(0xF800);
     tft.println("ERROR");
     tft.setTextColor(0);
-    if (tft.textWidth(reason) < 240) {
-        xpos = (240 - tft.textWidth(reason)) / 2;
-    }
+    if (tft.textWidth(reason) < 240) { xpos = (240 - tft.textWidth(reason)) / 2; }
     tft.setCursor(xpos, 150);
     tft.print(SplitString(reason));
-    while (buttonsHelding() == -1)
-        ;
+    while (buttonsHelding() == -1);
 }

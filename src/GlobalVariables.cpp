@@ -26,10 +26,6 @@ bool isSPIFFS = false;
 uint brightness = 100;
 
 int currentScreen = SCREENS::MAINSCREEN;
-// index of last Contact
-int lastContactIndex = 0;
-// count of all contacts
-uint contactCount = 0;
 // index of current wallpaper
 uint32_t wallpaperIndex = 0;
 // index of currentFont used for changeFont()
@@ -52,15 +48,14 @@ volatile int stateCall = 6;
 volatile int DBC_MS = 1000;
 
 // Contacts storage
-Contact contacts[MAX_CONTACTS]; // TODO : convert array to vector
+std::vector<Contact> contacts;
 // Handle for background SIM checks
 TaskHandle_t TaskHCommand;
 
 // forbid to change fastMode
 bool lockFastMode = false;
-// Number of person who calling us
-String currentNumber = "";
 
+String currentNumber           = "";
 String currentRingtonePath     = "";
 String currentMailRingtonePath = "";
 String currentNotificationPath = "";

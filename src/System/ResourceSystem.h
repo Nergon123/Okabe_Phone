@@ -1,8 +1,8 @@
 #pragma once
+#include "Defines.h"
 #include <SD.h>
 #include <TFT_eSPI.h>
 #include <vector>
-#include "Defines.h"
 extern TFT_eSprite screen_buffer;
 // Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32 bits
 #pragma pack(push, 1)
@@ -65,7 +65,6 @@ struct ImageBuffer {
 
 struct Coords {
     int x, y;
-    
 };
 
 extern Coords czero;
@@ -93,13 +92,13 @@ enum MainResID {
     R_FULL_NOTIFICATION      = 17,
     R_CTXT_MENU_BACKGROUND   = 18,
     R_LIST_MENU_BACKGROUND   = 19,
-    R_RESERVED2              = 20,
+    R_INCOMING_CALL_FONT     = 20,
     R_CALL_ANIM_DOTS         = 21,
     R_VOICE_ONLY_LABEL       = 22,
     R_PHONE_ICON             = 23,
     R_PHONE_ICON_LIGHTNING   = 24,
     R_FILE_MANAGER_ICONS     = 25,
-    R_RESERVED3              = 26,
+    R_OUTGOING_CALL_FONT     = 26,
     R_BOOT_LOGO              = 27,
     R_NULL_IMAGE             = 0xFFFF,
 

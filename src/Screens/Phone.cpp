@@ -22,7 +22,7 @@ bool isCalling = false;
 void incomingCall(Contact contact) {
     drawWallpaper();
     res.DrawImage(R_FULL_NOTIFICATION);
-    //drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
+    // drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     changeFont(1);
     tft.setTextColor(0);
     tft.setCursor(15, 170);
@@ -33,29 +33,26 @@ void incomingCall(Contact contact) {
     tft.setTextSize(1);
     tft.print("Ca l l ing");
     res.DrawImage(R_PHONE_ICON);
-    //drawImage(45, 105, PHONE_ICON);
+    // drawImage(45, 105, PHONE_ICON);
 
     writeCustomFont(55, 185, contact.phone, 1);
-    res.DrawImage(R_PHONE_ICON_LIGHTNING,0);
-    //drawImage(73, 90, LIGHTNING_ANIMATION[0]);
+    res.DrawImage(R_PHONE_ICON_LIGHTNING, 0);
+    // drawImage(73, 90, LIGHTNING_ANIMATION[0]);
     int button = buttonsHelding();
     while (isCalling) {
         button = buttonsHelding();
 
         switch (button) {
         case ANSWER:
-            if (sendATCommand("ATA").indexOf("NO CARRIER") == -1) {
-                callActivity(contact);
-            } else
-                currentScreen = SCREENS::MAINSCREEN;
+            if (sendATCommand("ATA").indexOf("NO CARRIER") == -1) { callActivity(contact); }
+            else { currentScreen = SCREENS::MAINSCREEN; }
             break;
         case DECLINE:
             currentScreen = SCREENS::MAINSCREEN;
             return;
             break;
 
-        default:
-            break;
+        default: break;
         }
     }
 }
@@ -65,9 +62,7 @@ void incomingCall(Contact contact) {
  * @param contact Contact object containing contact information
  */
 void makeCall(Contact contact) {
-    if (!checkSim()) {
-        return;
-    }
+    if (!checkSim()) { return; }
     isAnswered = true;
     sendATCommand("ATD" + contact.phone + ";");
     callActivity(contact);
@@ -110,7 +105,8 @@ void callActivity(Contact contact) {
                 hang = true;
                 // calling = false;
                 break;
-            } else if (buttonsHelding() == UP) {
+            }
+            else if (buttonsHelding() == UP) {
                 // calling = false;
                 break;
             }
@@ -139,47 +135,35 @@ void callActivity(Contact contact) {
     tft.setTextColor(TFT_WHITE);
     changeFont(2);
     const char* callEnded = "End of Call..";
-    tft.setCursor(120 - tft.textWidth(callEnded)/2,150);
+    tft.setCursor(120 - tft.textWidth(callEnded) / 2, 150);
     tft.print(callEnded);
     delay(1000);
     drawStatusBar(true);
-    ongoingCall = false;
-    isAnswered  = false;
-    millSleep = millis();
+    ongoingCall   = false;
+    isAnswered    = false;
+    millSleep     = millis();
     currentScreen = MAINSCREEN;
 }
 
-
 /*
-* Contact list screen
-*/
+ * Contact list screen
+ */
 void contactss() {
     // if (!checkSim()) {
     //     currentScreen = SCREENS::MAINMENU;
     //     return;
     // }
-    const String contactMenuItems[] = {
-        "Call",
-        "Outgoing",
-        "Edit",
-        "Create",
-        "Delete"};
-
-    String contactNames[contactCount];
-    for (int i = 0; i < contactCount; ++i) {
-        contactNames[i] = contacts[i].name;
-    }
+    const String contactMenuItems[] = {"Call", "Outgoing", "Edit", "Create", "Delete"};
 
     bool exit = false;
     while (!exit) {
 
-        String contactNames[contactCount];
-        for (int i = 0; i < contactCount; ++i) {
-            contactNames[i] = contacts[i].name;
-        }
-        int selectedContactIndex = listMenu(contactNames, contactCount, false, 1, "Address Book");
+        String contactNames[contacts.size()];
+        for (int i = 0; i < contacts.size(); ++i) { contactNames[i] = contacts[i].name; }
+        int selectedContactIndex =
+            listMenu(contactNames, contacts.size(), false, 1, "Address Book");
 
-        if (selectedContactIndex != -1) {
+        if (selectedContactIndex != LISTMENU_EXIT && contacts.size() > 0) {
             int contextMenuSelection = -1;
 
             contextMenuSelection = choiceMenu(contactMenuItems, 5, true);
@@ -201,8 +185,7 @@ void contactss() {
                 break;
             case 3:
                 // CREATE
-
-                editContact(Contact("", "", "", lastContactIndex + 1));
+                editContact(Contact("", "", "", contacts.size()));
                 break;
             case 4:
                 // DELETE
@@ -210,16 +193,14 @@ void contactss() {
                 populateContacts();
                 break;
             }
-
-        } else {
-
+        }
+        else if (LISTMENU_OPTIONS) {
             const String choice[1] = {"Create"};
             int          CMS       = choiceMenu({choice}, 1, true);
-            if (!CMS) {
-                editContact(Contact("", "", "", lastContactIndex + 1));
-            } else
-                exit = true;
+            if (!CMS) { editContact(Contact("", "", "", contacts.size())); }
+            else { exit = true; }
         }
+        else { exit = true; }
     }
     currentScreen = SCREENS::MAINMENU;
 }
@@ -233,10 +214,10 @@ void editContact(Contact contact) {
     int textboxes = 2;
     int buttons   = 2;
     int direction;
-    
+
     res.DrawImage(R_LIST_MENU_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_ICONS,1);
+    res.DrawImage(R_LIST_HEADER_ICONS, 1);
     drawStatusBar();
     tft.setCursor(30, 45);
     tft.setTextSize(1);
@@ -255,25 +236,22 @@ void editContact(Contact contact) {
     while (!exit) {
         switch (pos) {
         case 0:
-            boxString[pos] = InputField("Name", boxString[pos], 70, false, false, true, &direction);
+            boxString[pos] =
+                InputField("Name", boxString[pos], 70, false, false, true, &direction);
             break;
         case 1:
-            boxString[pos] = InputField("Phone Number", boxString[pos], 120, false, false, true, &direction, true);
+            boxString[pos] = InputField("Phone Number", boxString[pos], 120, false, false, true,
+                                        &direction, true);
             break;
         case 2:
             save = button("SAVE", 10, 285, 100, 28, true, &direction);
             if (save) {
-                if (boxString[1].isEmpty())
-                    break;
-                if (boxString[0].isEmpty()) {
-                    boxString[0] = boxString[1];
-                }
+                if (boxString[1].isEmpty()) { break; }
+                if (boxString[0].isEmpty()) { boxString[0] = boxString[1]; }
 
                 sendATCommand("AT+CPBS=\"SM\"");
-                String request = "AT+CPBW=" +
-                                 String(contact.index) + ",\"" +
-                                 boxString[1] + "\"," +
-                                 String(boxString[1].indexOf("+") == 0 ? 145 : 129) +
+                String request = "AT+CPBW=" + String(contact.index) + ",\"" + boxString[1] +
+                                 "\"," + String(boxString[1].indexOf("+") == 0 ? 145 : 129) +
                                  ",\"" + boxString[0] + "\"";
                 String result = sendATCommand(request);
                 populateContacts();
@@ -281,45 +259,34 @@ void editContact(Contact contact) {
                 return;
             }
 
-            // boxString[pos] = textbox("E-mail", boxString[pos], 170, false, false, true, &direction);
             break;
         case 3:
             cancel = button("CANCEL", 120, 285, 100, 28, true, &direction);
-            if (cancel)
-                return;
+            if (cancel) { return; }
             break;
-        default:
-            pos = 0;
-            break;
+        default: pos = 0; break;
         }
         Serial.println("DIRECTION:" + String(direction));
         Serial.println("POS:" + String(pos));
         switch (direction) {
         case DOWN:
-            if (pos < textboxes)
-                pos++;
+            if (pos < textboxes) { pos++; }
             else if (pos < textboxes + buttons)
                 ;
-            else
-                pos = 0;
+            else { pos = 0; }
             break;
         case UP:
-            if (pos > textboxes)
-                pos = textboxes - 1;
+            if (pos > textboxes) { pos = textboxes - 1; }
 
-            else if (pos > 0)
-                pos--;
+            else if (pos > 0) { pos--; }
 
             break;
-        default:
-            break;
+        default: break;
         case RIGHT:
-            if (pos < textboxes + buttons - 1)
-                pos++;
+            if (pos < textboxes + buttons - 1) { pos++; }
             break;
         case LEFT:
-            if (pos > textboxes)
-                pos--;
+            if (pos > textboxes) { pos--; }
             break;
         }
     }

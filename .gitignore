@@ -11,3 +11,4 @@ monitor.sh
 upload.sh
 PLAN.MD
 /data
+**/test_formats/

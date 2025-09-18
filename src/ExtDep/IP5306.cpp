@@ -1,12 +1,11 @@
-#include <Wire.h>
 #include "IP5306.h"
+#include <Wire.h>
 
 /*
 
 THIS LIBRARY WAS DOWNLOADED FROM https://github.com/rynskyi/IP5306
 
 */
-
 
 /*
     Notice:
@@ -19,7 +18,6 @@ THIS LIBRARY WAS DOWNLOADED FROM https://github.com/rynskyi/IP5306
     5: timeout
 */
 
-
 void IP5306::begin(uint8_t sdaPin, uint8_t sclPin) {
     Wire.setPins(sdaPin, sclPin);
     Wire.begin();
@@ -30,11 +28,8 @@ uint8_t IP5306::writeBytes(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t qua
     Wire.write(reg);
     Wire.write(data, quantity);
     uint8_t res = Wire.endTransmission();
-    if (res != 0) {
-        log_e("IP5306 i2c write error: %d", res);
-    }
+    if (res != 0) { log_e("IP5306 i2c write error: %d", res); }
     return res;
-
 }
 uint8_t IP5306::readBytes(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t quantity) {
     Wire.beginTransmission(addr);
@@ -42,7 +37,7 @@ uint8_t IP5306::readBytes(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t quan
     uint8_t res = Wire.endTransmission(false);
     if (res != 0) {
         log_e("IP5306 i2c write error: %d", res);
-        return 0; 
+        return 0;
     }
     // read quantity bytes from I2C
     Wire.requestFrom(addr, quantity);
@@ -52,13 +47,9 @@ uint8_t IP5306::readBytes(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t quan
         i++;
     }
     // clear buffer
-    while (Wire.available()) {
-        Wire.read(); 
-    }
+    while (Wire.available()) { Wire.read(); }
     // check if read as much as needed
-    if (i < quantity) {
-        log_e("IP5306 i2c read error");
-    }
+    if (i < quantity) { log_e("IP5306 i2c read error"); }
     return i;
 }
 
@@ -82,10 +73,10 @@ uint8_t IP5306::getBatteryLevel() {
     uint8_t data;
     this->readBytes(IP5306_ADDR, IP5306_REG_UNKNOW, &data, 1);
     switch (data & 0xF0) {
-        case 0xE0: return 25;
-        case 0xC0: return 50;
-        case 0x80: return 75;
-        case 0x00: return 100;
-        default: return 0;
-    }    
+    case 0xE0: return 25;
+    case 0xC0: return 50;
+    case 0x80: return 75;
+    case 0x00: return 100;
+    default: return 0;
+    }
 }

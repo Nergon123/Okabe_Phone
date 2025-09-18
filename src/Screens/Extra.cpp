@@ -8,12 +8,18 @@
  *
  */
 void execute_application() {
-    
+
     suspendCore(true);
     String file_path = fileBrowser(SD.open("/"), "bin");
     tft.fillScreen(0);
     mOption mOp[2] = {{"Yes"}, {"No"}};
-    int     choice = listMenuNonGraphical(mOp, 2, "DO YOU REALLY TRUST THIS APPLICATION?\n\nPATH:sdcard:" + file_path + "\n\nNOTICE: WITH APPLICATION ACTIVE\n\n YOU WOULDN'T RECIEVE ANY\n\n CALLS MESSAGES ETC.\n\n(Unless application designed to)\n\n BY LAUNCHING APPLICATION YOU\n\nGIVING ACCESS TO WHOLE DEVICE\n\n INCLUDING:\n\n SD CARD, SIM CARD,WIFI,\n\n BLUETOOTH,FIRMWARE etc.\n\n\n Continue?");
+    int     choice = listMenuNonGraphical(
+        mOp, 2,
+        "DO YOU REALLY TRUST THIS APPLICATION?\n\nPATH:sdcard:" + file_path +
+            "\n\nNOTICE: WITH APPLICATION ACTIVE\n\n YOU WOULDN'T RECIEVE ANY\n\n CALLS MESSAGES "
+                "ETC.\n\n(Unless application designed to)\n\n BY LAUNCHING APPLICATION YOU\n\nGIVING "
+                "ACCESS TO WHOLE DEVICE\n\n INCLUDING:\n\n SD CARD, SIM CARD,WIFI,\n\n "
+                "BLUETOOTH,FIRMWARE etc.\n\n\n Continue?");
     if (choice) {
         sBarChanged = true;
         drawStatusBar();
@@ -25,17 +31,16 @@ void execute_application() {
     tft.setTextColor(0xFFFF);
     tft.setCursor(30, 190);
     tft.println("BOOTING INTO APPLICATION...");
-    if (file_path == "/null")
-        return;
-    
+    if (file_path == "/null") { return; }
+
     File file = SD.open(file_path);
     if (!file) {
         Serial.println("Failed to open file!");
         return;
     }
 
-    const esp_partition_t *partition = esp_partition_find_first(
-        ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, "app1");
+    const esp_partition_t *partition =
+        esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, "app1");
     if (!partition) {
         Serial.println("Partition not found!");
         return;
@@ -43,8 +48,9 @@ void execute_application() {
 
     if (file.size() > partition->size) {
         tft.setCursor(0, 210);
-        tft.printf("File size bigger than partition size (%d bytes/%d bytes)\n\n", file.size(), partition->size);
-        
+        tft.printf("File size bigger than partition size (%d bytes/%d bytes)\n\n", file.size(),
+                   partition->size);
+
         return;
     }
     esp_partition_erase_range(partition, 0, partition->size);
@@ -69,13 +75,9 @@ void e() {
 
     int choice = -2;
     while (choice != -1) {
-        String debug[] = {
-            "Delete File",
-            "View Text File content",
-            "Execute Application",
-            "Set Date/Time",
-            "Connect To Wi-Fi"};
-        choice = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
+        String debug[] = {"Delete File", "View Text File content", "Execute Application",
+                          "Set Date/Time", "Connect To Wi-Fi"};
+        choice         = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
         String path;
         File   file;
         switch (choice) {
@@ -91,14 +93,12 @@ void e() {
             tft.setTextColor(TFT_WHITE);
             file = SD.open(path);
             file.seek(0);
-            if (file)
-                while (file.available()) {
-                    tft.print((char)file.read());
-                }
+            if (file) {
+                while (file.available()) { tft.print((char)file.read()); }
+            }
             file.close();
             delay(1000);
-            while (buttonsHelding() == -1)
-                ;
+            while (buttonsHelding() == -1);
             sBarChanged = true;
             drawStatusBar();
             break;
