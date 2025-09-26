@@ -43,7 +43,7 @@ String fileBrowser(File dir, String format, bool graphical) {
                 if (file.isDirectory()) {
                     Serial.print("/");
 
-                    options[i].icon       = R_FILE_MANAGER_ICONS;
+                    options[i].image       = Image(R_FILE_MANAGER_ICONS);
                     options[i].icon_index = 1;
                     options[i].label      = file.name() + String("/");
                 }
@@ -51,7 +51,7 @@ String fileBrowser(File dir, String format, bool graphical) {
                     String fileLow = String(file.name());
                     fileLow.toLowerCase();
                     if (format == "*" || fileLow.endsWith(format)) {
-                        options[i].icon       = R_FILE_MANAGER_ICONS;
+                        options[i].icon       = Image(R_FILE_MANAGER_ICONS);
                         options[i].icon_index = 0; // I absolutely not sure about this...
                         options[i].label      = file.name();
                     }

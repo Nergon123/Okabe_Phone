@@ -101,8 +101,8 @@ void MainScreen() {
 
     currentScreen = SCREENS::MAINMENU;
 }
-// available levels: {0 1 2 3}; zero - empty
-void drawLevelCharge(uint8_t level) { // 0 1 2 3
+// @param level available levels: `0 1 2 3`, where 0 is empty
+void drawLevelCharge(uint8_t level) {
     if (level < 0 || level > 3) { return; }
 
     if (level == 0) { tft.fillRect(40, 105, 150, 70, 0x0000); }
@@ -118,7 +118,7 @@ void offlineCharging() {
         for (int i = 0; i <= maxLevel; i++) {
             ulong mill = millis();
             drawLevelCharge(i);
-            while (millis() - mill < 500) {
+            while (millis() - mill < 500|| i == 3) {
                 if (buttonsHelding(false) != -1) { return; }
             }
         }

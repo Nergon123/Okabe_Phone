@@ -62,7 +62,11 @@ void parseMessages(Message *&msgs, int &count) {
             else { checknumber = number; }
             Contact curContact;
             curContact.phone = number;
-            if (number.indexOf('p') != -1) { curContact.name = "SERVICE NUMBER"; }
+
+            //For some reason when some number from some newsletter or service like carrier.
+            //Will be recieved as number with letter p in it. (something like 543p2341)
+            //it cannot be replied back to that number so it will be "SERVICE NUMBER".
+            if (number.indexOf('p') != -1) { curContact.name = "SERVICE NUMBER"; } 
             else { curContact.name = number; }
             curContact.index = -1;
             for (int u = 0; u < contacts.size(); u++) {

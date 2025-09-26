@@ -1,8 +1,5 @@
 #include "init.h"
 #include "System/ResourceSystem.h"
-// Function to set up the time
-// This function sets the system time to a specific date and time
-// and saves it in the preferences storage
 
 // Function to initialize the SD card
 // This function initializes the SD card and sets the frequency
@@ -86,7 +83,9 @@ void storageInit() {
 
     isSPIFFS = (!initSDCard(true) || !SD.exists(resPath)) && SPIFFS.exists(SPIFFSresPath);
 
-    if (isSPIFFS) { ESP_LOGI("RESOURCES", "Resource file or SD card is not available"); }
+    if (isSPIFFS) {
+        ESP_LOGI("RESOURCES", "Resource file or SD card is not available. Trying SPIFFS.");
+    }
     else { ESP_LOGI("RESOURCES", "Using resource file from SD card"); }
 
     if (!isSPIFFS && !SD.exists(resPath)) {
@@ -97,15 +96,11 @@ void storageInit() {
     ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
     bootText("Loading resource file...");
-
-    if (!isSPIFFS) {
-        File SDres = SD.open(resPath);
-        res.Init(SDres);
-    }
-    else {
-        File SPIFFSres = SPIFFS.open(SPIFFSresPath);
-        res.Init(SPIFFSres);
-    }
+    
+    File Resource;
+    if (!isSPIFFS) { Resource = SD.open(resPath); }
+    else { Resource = SPIFFS.open(SPIFFSresPath); }
+    if (Resource) { res.Init(Resource); }
 
     currentWallpaperPath = preferences.getString("wallpaper", "/null");
 

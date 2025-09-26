@@ -46,7 +46,6 @@ int  pngDraw(PNGDRAW *pDraw) {
 // @param _wallpaper: Boolean indicating if the image is a wallpaper
 void drawPNG(const char *filename, bool _wallpaper) {
     return;
-
     File file = SD.open(filename, FILE_READ);
     if (!file) {
         Serial.println("Failed to open file");

@@ -4,7 +4,8 @@
 #include <TFT_eSPI.h>
 #include <vector>
 extern TFT_eSprite screen_buffer;
-// Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32 bits
+// Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32
+// bits
 #pragma pack(push, 1)
 struct Header {
     const char MAGIC[6] = "NerPh";
@@ -13,12 +14,8 @@ struct Header {
     uint16_t   colors[8];
     uint16_t   params[16];
     Header() : MAGIC{'N', 'e', 'r', 'P', 'h', '\0'}, version(0), imageCount(0) {
-        for (int i = 0; i < 8; ++i) {
-            colors[i] = 0;
-        }
-        for (int i = 0; i < 16; ++i) {
-            params[i] = 0;
-        }
+        for (int i = 0; i < 8; ++i) { colors[i] = 0; }
+        for (int i = 0; i < 16; ++i) { params[i] = 0; }
     }
 };
 
@@ -43,15 +40,21 @@ struct ImageData {
     char     name[32];
 
     ImageData()
-        : id(0), count(1), x(0), y(0), width(16), height(16), offset(0), flags(0), transpColor(0), name("") {}
+        : id(0), count(1), x(0), y(0), width(16), height(16), offset(0), flags(0), transpColor(0),
+          name("") {}
     ImageData(uint16_t id)
-        : id(id), count(1), x(0), y(0), width(16), height(16), offset(0), flags(0), transpColor(0), name("") {}
+        : id(id), count(1), x(0), y(0), width(16), height(16), offset(0), flags(0), transpColor(0),
+          name("") {}
 
-    ImageData(uint16_t id, uint8_t count, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t offset, uint8_t flags, uint16_t transpColor)
-        : id(id), count(count), x(x), y(y), width(width), height(height), offset(offset), flags(flags), transpColor(transpColor), name("") {}
+    ImageData(uint16_t id, uint8_t count, uint16_t x, uint16_t y, uint16_t width, uint16_t height,
+              uint32_t offset, uint8_t flags, uint16_t transpColor)
+        : id(id), count(count), x(x), y(y), width(width), height(height), offset(offset),
+          flags(flags), transpColor(transpColor), name("") {}
 
-    ImageData(uint16_t id, uint8_t count, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t offset, uint8_t flags, uint16_t transpColor, const char *name)
-        : id(id), count(count), x(x), y(y), width(width), height(height), offset(offset), flags(flags), transpColor(transpColor) {
+    ImageData(uint16_t id, uint8_t count, uint16_t x, uint16_t y, uint16_t width, uint16_t height,
+              uint32_t offset, uint8_t flags, uint16_t transpColor, const char *name)
+        : id(id), count(count), x(x), y(y), width(width), height(height), offset(offset),
+          flags(flags), transpColor(transpColor) {
         strncpy(this->name, name, sizeof(this->name) - 1);
         this->name[sizeof(this->name) - 1] = '\0';
     }
@@ -109,6 +112,38 @@ enum ResourceType {
     RES_WALLPAPERS = 1,
 };
 
+enum ImageType { RES_RESFILE, RES_POINTER, RES_ADDRFILE, RES_NULLU8 = 0xFF };
+struct Image {
+    uint32_t  id;
+    File     *source;
+    uint16_t *buffer;
+    int       sw, sh;
+    int       w, h;
+    uint8_t   type;
+    uint8_t   resType;
+    bool      resize;
+
+    Image() : type(RES_NULLU8) {};
+
+    Image(uint16_t id, uint8_t type = RES_MAIN, File *source = nullptr, int w = 0, int h = 0,
+          bool resize = false)
+        : id((uint32_t)id), resType(type), w(w), h(h), resize(resize), type(RES_RESFILE),
+          source(source) {};
+
+    // be sure to free buffer after use...
+    // @param sw Source width
+    // @param sh Source Height
+    Image(uint16_t *rgb565Buffer, int sw, int sh, int w = 0, int h = 0, bool resize = false)
+        : buffer(rgb565Buffer), sw(sw), sh(sh), w(w), h(h), resize(resize), type(RES_POINTER) {};
+
+    // @param sw Source width
+    // @param sh Source Height
+    Image(uint32_t address, File *source, int sw, int sh, int w = 0, int h = 0,
+          bool resize = false)
+        : id(address), source(source), sw(sw), sh(sh), w(w), h(h), resize(resize),
+          type(RES_ADDRFILE) {};
+};
+
 class ResourceSystem {
   public:
     Header                 Headers[2];
@@ -117,19 +152,29 @@ class ResourceSystem {
     uint8_t               *cache[2];
 
     ImageData GetImageDataByID(uint16_t id, uint8_t type = RES_MAIN);
+    ImageData GetImageDataByImage(Image image);
 
     void        CopyToRam(uint8_t type = RES_MAIN);
     void        Init(File Main, File Wallpapers = File());
     Coords      GetCoordsByID(uint16_t id, uint8_t type = RES_MAIN);
-    bool        DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF}, Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN, bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
-    bool        DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer, TFT_eSprite &sbuffer = screen_buffer);
-    ImageBuffer GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0, uint8_t type = RES_MAIN);
+    bool        DrawImage(Image image, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF},
+                          Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN,
+                          bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
+    bool        DrawImage(Image image, uint8_t index, bool is_screen_buffer,
+                          TFT_eSprite &sbuffer = screen_buffer);
+    bool        DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF},
+                          Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN,
+                          bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
+    bool        DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer,
+                          TFT_eSprite &sbuffer = screen_buffer);
+    ImageBuffer GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0,
+                          uint8_t type = RES_MAIN);
 
   private:
-    const char *names[3] = {
-        "Main", "Wallpapers", "Fonts"};
-    void failure(const char *msg = "Unknown Error", bool important = false);
-    void parseResourceFile(File file, Header &header, uint8_t type = RES_MAIN, bool important = false);
+    const char *names[3] = {"Main", "Wallpapers", "Fonts"};
+    void        failure(const char *msg = "Unknown Error", bool important = false);
+    void        parseResourceFile(File file, Header &header, uint8_t type = RES_MAIN,
+                                  bool important = false);
 };
 void                  drawWallpaper();
 extern ResourceSystem res;
