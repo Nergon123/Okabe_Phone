@@ -9,9 +9,9 @@ void advancedSettings() {
         "Look and feel",
         "Experimental",
     };
-    int lookAndFeel;
-    int menuSelection = -2;
-    String laf_opts[] = {"Change Theme"};
+    int    lookAndFeel;
+    int    menuSelection = -2;
+    String laf_opts[]    = {"Change Theme"};
 
     while (menuSelection != -1) {
         res.DrawImage(R_MENU_BACKGROUND);
@@ -19,10 +19,8 @@ void advancedSettings() {
 
         menuSelection = choiceMenu(options, ArraySize(options), false);
         switch (menuSelection) {
-        case 2:
-            lookAndFeel = choiceMenu(laf_opts, ArraySize(laf_opts), false);
-            break;
-            
+        case 2: lookAndFeel = choiceMenu(laf_opts, ArraySize(laf_opts), false); break;
+
         default: return;
         }
     }
@@ -121,7 +119,7 @@ void settings() {
 // @return The index of the selected wallpaper
 int gallery() {
     if (!SD.exists(resPath)) { return lastImage; }
-    mOption wallpaperOptions[] = {{"Pick wallpaper...", R_NULL_IMAGE}};
+    mOption wallpaperOptions[] = {{.label = "Pick wallpaper...", .image = Image(R_NULL_IMAGE)}};
     return listMenu(wallpaperOptions, ArraySize(wallpaperOptions), true, 2, "Change wallpaper");
 }
 
@@ -242,7 +240,7 @@ void ringtoneSelector(bool isMail) {
     while (choice != -1) {
         choice = listMenu(opt, count, false, 2, "Set ringtone", true, choice);
         if (choice < 0) { return; }
-        if (iconIndex >= 0) { opt[iconIndex].icon = R_NULL_IMAGE; }
+        if (iconIndex >= 0) { opt[iconIndex].image = Image(); }
         // TODO DRAW NOTE ICON
         iconIndex        = choice;
         *compareRingtone = pathes[choice];

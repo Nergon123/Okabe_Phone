@@ -64,9 +64,9 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
                       psramFound());
     }
 
-    ImageData imgData = res.GetImageDataByID(choice.icon, choice.fileId);
-    res.DrawImage(choice.icon, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0},
-                  choice.fileId, psramFound());
+    ImageData imgData = res.GetImageDataByImage(choice.image);
+    res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0},
+                  -1, psramFound());
 
     if (lines) {
         if (psramFound()) {
@@ -156,8 +156,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         return -1;
     }
     int entry_size = psramFound() ? screen_buffer.fontHeight() : tft.fontHeight();
-    if (choices[0].icon != R_NULL_IMAGE) {
-        ImageData icon = res.GetImageDataByID(choices[0].icon, choices[0].fileId);
+    if (choices[0].image.type != RES_NULLU8) {
+        ImageData icon = res.GetImageDataByImage(choices[0].image);
         if (icon.height > entry_size) { entry_size = icon.height; }
         x += icon.width;
     }
@@ -240,7 +240,6 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 
             if (selected >= total_items_on_page) {
                 if (page < pages - 1) {
-
                     page++;
                     selected = 0;
                 }
@@ -329,8 +328,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
     mOption *optionArr = new mOption[icount];
     for (int i = 0; i < icount; i++) {
         optionArr[i].label      = choices[i];
-        optionArr[i].icon       = R_NULL_IMAGE;
-        optionArr[i].fileId     = 0;
+        optionArr[i].image       = Image();
         optionArr[i].icon_index = 0;
     }
     return listMenu(optionArr, icount, images, type, label, forceIcons, findex);

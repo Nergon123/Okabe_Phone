@@ -1,5 +1,8 @@
 #include "Time.h"
 
+// Function to set up the time
+// This function sets the system time to a specific date and time
+// and saves it in the preferences storage
 void SetUpTime() {
 
     struct tm tm_time = {};

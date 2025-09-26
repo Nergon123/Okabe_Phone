@@ -8,7 +8,7 @@
 #include "init.h"
 void restart_handler() {
     tft.fillScreen(TFT_BLACK);
-    tft.setTextSize(1);
+    tft.setTextSize(2);
     tft.setTextColor(TFT_RED);
     tft.setCursor(0, 0);
     tft.println("RESTARTING...");
@@ -30,12 +30,14 @@ void setup() {
     tft.setTextFont(1);
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
+
     if (!psramFound()) {
         tft.setTextColor(TFT_RED);
         tft.setCursor(0, 50);
         tft.print("PSRAM NOT FOUND!!!\nEXPECT PROBLEMS!!!");
     }
     storageInit();
+    
     // Chance to change resource file to custom one
     if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
 
