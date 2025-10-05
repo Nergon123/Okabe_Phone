@@ -30,7 +30,7 @@ void idle() {
 
 // check which MCP23017 button is pressed
 int checkButton() {
-
+    if (!mcpexists) { return 0; }
     mcp.portMode(MCP23017Port::A, 0xFF);
     mcp.portMode(MCP23017Port::B, 0);
     mcp.writePort(MCP23017Port::B, 0x00);

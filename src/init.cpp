@@ -1,6 +1,21 @@
 #include "init.h"
 #include "System/ResourceSystem.h"
 
+std::vector<byte> checkI2Cdevices(byte* devices, int size) {
+
+    std::vector<byte> result;
+    byte              error;
+    for (int i = 0; i < size; i++) {
+        Wire.beginTransmission(devices[i]);
+        error = Wire.endTransmission();
+        if (error == 0) {
+            result.push_back(devices[i]);
+            ESP_LOGI("I2C", "FOUND DEVICE AT 0x%2x", devices[i]);
+        }
+    }
+    return result;
+}
+
 // Function to initialize the SD card
 // This function initializes the SD card and sets the frequency
 // @param fast If true, set the frequency to the maximum value
@@ -41,6 +56,12 @@ void hardwareInit() {
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     // INIT charging IC as well as I2C
     chrg.begin(21, 22);
+    byte devices[2] = {MCP23017_ADDR, IP5306_ADDR};
+    i2cDevices      = checkI2Cdevices(devices, ArraySize(devices));
+    for (byte i2cDevice : i2cDevices) {
+        if (i2cDevice == MCP23017_ADDR) { mcpexists = true; }
+        if (i2cDevice == IP5306_ADDR) { ip5306exists = true; }
+    }
 
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
@@ -96,7 +117,7 @@ void storageInit() {
     ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
     bootText("Loading resource file...");
-    
+
     File Resource;
     if (!isSPIFFS) { Resource = SD.open(resPath); }
     else { Resource = SPIFFS.open(SPIFFSresPath); }
