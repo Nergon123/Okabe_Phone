@@ -23,9 +23,9 @@ struct UIElement {
 
 void UIElementsLoop(UIElement *elements, int count, bool *exit) {
     // TODO
-    if (elements == nullptr) { ESP_LOGE("UI", "elements nullptr"); }
+    if (elements == nullptr) { ESP_LOGE("UI", "elements is nullptr");  return;}
     if (exit == nullptr) {
-        ESP_LOGE("UI", "exit nullptr");
+        ESP_LOGE("UI", "exit is nullptr");
         return;
     }
     while (!exit) {
@@ -46,10 +46,8 @@ void UIElementsLoop(UIElement *elements, int count, bool *exit) {
                                        el.callback);
                 break;
             case UI_SWITCHNUMBERS:
-
                 sNumberChange(el.x, el.y, el.w, el.h, *el.value, el.min, el.max,
                               i == cur_selection, &direction, el.format, el.usable, el.callback);
-
                 break;
             }
             if (direction == LEFT) { direction = UP; }
@@ -466,7 +464,7 @@ void sysError(String reason) {
         "\n\n\n\n\n" REPOSITORY_LINK "\n\n"));
 
     tft.println("Press any button to restart\nor reset button to reset the device");
-    ESP_LOGE("ERROR", "%s", reason);
+    ESP_LOGE("ERROR", "%s", reason.c_str());
     while (buttonsHelding(false) == -1);
     ESP.restart();
     for (;;);

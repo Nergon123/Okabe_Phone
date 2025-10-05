@@ -1,6 +1,6 @@
 #include "Input.h"
-const char* ITAG = "INPUT";
-int millDelay = 0;
+const char *ITAG      = "INPUT";
+int         millDelay = 0;
 
 // Function to handle the idle state
 void idle() {
@@ -48,17 +48,13 @@ int checkButton() {
     uint8_t ar = 0xFF, br = 0xFF;
     for (int i = 0; i < 8; ++i) {
         if (a & (1 << i) && ar == 0xFF) { ar = i; }
-
         if (b & (1 << i) && br == 0xFF) { br = i; }
     }
     ar++;
     br++;
-    // if (br != 0)
-    //   br = 3 - br;
 
     if (ar != 0xFF && br != 0xFF) {
         uint8_t res = ar == 0 && br == 0 ? 0 : 21 - (ar * 3) + br;
-
         return res;
     }
     return 0;
@@ -90,24 +86,21 @@ void numberInput(char first) {
         switch (c) {
         case ANSWER:
             if (!number.isEmpty()) { makeCall(Contact("", number)); }
+
             return;
         case LEFT:
-
             number.remove(number.length() - 1);
-
             tft.fillRect(0, 300, 240, 20, 0);
             tft.setCursor(0, 300);
             tft.print(number);
+
             break;
-        case BACK:
-            return;
-        default:
-            break;
+        case BACK: return;
+        default: break;
         }
 
         if ((c >= '0' || c == '*' || c == '#') && c <= '9' && number.length() < max_char) {
             if (!simIsBusy) { sendATCommand("AT+CLDTMF=15,\"" + String(char(c)) + "\",10", 1); }
-
             number += c;
             tft.fillRect(0, 300, 240, 20, 0);
             tft.setCursor(0, 300);
@@ -115,7 +108,7 @@ void numberInput(char first) {
             c = 255;
         }
 
-        ESP_LOGI(ITAG,"%s",c, DEC);
+        ESP_LOGI(ITAG, "%d", c);
         c = 255;
     }
     DBC_MS = 1000;
@@ -141,13 +134,12 @@ void showText(const char *text, int pos) {
     int pfont     = currentFont;
     int textColor = tft.textcolor;
     int textSize  = tft.textsize;
+
     changeFont(0);
     tft.setTextSize(2);
-
     tft.setCursor(0, INPUT_LOCATION_Y);
 
     for (int i = 0; i < (int)(strchr(text, '\r') - text); i++) {
-
         if (i != pos) { tft.setTextColor(0xFFFF, 0, true); }
         else { tft.setTextColor(0xFFFF, 0x001F, true); }
         if (text[i] == '\n') { tft.print("NL"); }
@@ -188,7 +180,7 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
                         : input == '#'               ? 11
                                                      : -1;
     if (currentIndex == -1) {
-        ESP_LOGI(ITAG,"%s","UNKNOWN BUTTON:" + String(input));
+        ESP_LOGI(ITAG, "%s", String("UNKNOWN BUTTON:" + String(input)).c_str());
         return 0;
     }
 
@@ -197,8 +189,6 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         for (; b < 12; b++) {
             if (buttons[i][b] == '\r') { break; }
         }
-        // sizes[i] = b;
-        //  ESP_LOGI(ITAG,"%s",b, DEC);
         b = 0;
     }
     int mil  = millis();
@@ -284,21 +274,7 @@ int buttonsHelding(bool _idle) {
      *
      *
      */
-    // BACK_BUTTON_PIN = 0;
-    // UP_BUTTON_PIN = 38;
-    // SELECT_BUTTON_PIN = 37;
-    // DOWN_BUTTON_PIN = 39;
 
-    // #ifndef DEVMODE
-    //   if (checkButton(0))
-    //     return BACK;
-    //   if (checkButton(37))
-    //     return SELECT;
-    //   if (checkButton(38))
-    //     return UP;
-    //   if (checkButton(39))
-    //     return DOWN;
-    // #endif
     if (_idle) { idle(); }
 
     int result = checkButton();
@@ -307,9 +283,8 @@ int buttonsHelding(bool _idle) {
     if (result != 0) { while (result == checkButton() && millis() - millSleep < 1500); }
 
     lastresult = result;
-    // setBrightness(brightness);
 
-    // For some reason serial control support
+    // Serial control support
     // You can control device keypad from other device through Serial port
 
     if (Serial.available()) {
@@ -317,48 +292,48 @@ int buttonsHelding(bool _idle) {
         millSleep  = millis();
         switch (input) {
         case 'a':
-            ESP_LOGI(ITAG,"LEFT");
+            ESP_LOGI(ITAG, "LEFT");
             result = 4;
             break;
         case 'd':
-            ESP_LOGI(ITAG,"RIGHT");
+            ESP_LOGI(ITAG, "RIGHT");
             result = 6;
             break;
         case 'w':
-            ESP_LOGI(ITAG,"UP");
+            ESP_LOGI(ITAG, "UP");
             result = 2;
             break;
         case 's':
-            ESP_LOGI(ITAG,"DOWN");
+            ESP_LOGI(ITAG, "DOWN");
             result = 8;
             break;
         case ' ':
-            ESP_LOGI(ITAG,"SELECT");
+            ESP_LOGI(ITAG, "SELECT");
             result = 5;
             break;
         case 'e':
-            ESP_LOGI(ITAG,"ANSWER");
+            ESP_LOGI(ITAG, "ANSWER");
             result = 7;
             break;
         case 'q':
-            ESP_LOGI(ITAG,"BACK");
+            ESP_LOGI(ITAG, "BACK");
             result = 9;
             break;
         case '*':
-            ESP_LOGI(ITAG,"%s",input);
+            ESP_LOGI(ITAG, "%c", input);
             result = 19;
             break;
         case '#':
-            ESP_LOGI(ITAG,"%s",input);
+            ESP_LOGI(ITAG, "%c", input);
             result = 21;
             break;
         case 'l':
-            ESP_LOGI(ITAG,"Restart");
+            ESP_LOGI(ITAG, "Restart");
             ESP.restart();
             break;
         default:
             if (input >= '0' && input <= '9') {
-                ESP_LOGI(ITAG,"%s",input);
+                ESP_LOGI(ITAG, "%c", input);
                 result += 10;
                 result -= '1';
             }
@@ -366,29 +341,16 @@ int buttonsHelding(bool _idle) {
         }
     }
     switch (result) {
-    case 2:
-        return UP;
-    case 4:
-        return LEFT;
-    case 5:
-        return SELECT;
-    case 6:
-        return RIGHT;
-    case 7:
-        return ANSWER;
-    case 8:
-        return DOWN;
-    case 9:
-        return DECLINE;
-    case 19:
-        return '*';
-
-    case 20:
-        return '0';
-
-    case 21:
-        return '#';
-
+    case 2: return UP;
+    case 4: return LEFT;
+    case 5: return SELECT;
+    case 6: return RIGHT;
+    case 7: return ANSWER;
+    case 8: return DOWN;
+    case 9: return DECLINE;
+    case 19: return '*';
+    case 20: return '0';
+    case 21: return '#';
     default:
         if (result > 9 && result < 19) {
             result -= 10;
