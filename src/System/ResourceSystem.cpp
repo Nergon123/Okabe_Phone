@@ -61,7 +61,12 @@ ImageData ResourceSystem::GetImageDataByID(uint16_t id, uint8_t type) {
     }
     return ImageData(R_NULL_IMAGE);
 }
-
+ImageData ResourceSystem::GetImageDataByImage(Image image) {
+    for (ImageData img : Images[image.resType]) {
+        if (img.id == image.id) { return img; }
+    }
+    return ImageData(R_NULL_IMAGE);
+}
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords startpos,
                                Coords endpos, uint8_t type, bool is_screen_buffer,
                                TFT_eSprite &sbuffer) {
@@ -117,6 +122,14 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     spr.deleteSprite();
     return true;
 }
+
+bool ResourceSystem::DrawImage(Image image, uint8_t index, Coords pos, Coords startpos,
+                               Coords endpos, uint8_t type, bool is_screen_buffer,
+                               TFT_eSprite &sbuffer) {
+    return DrawImage(image.id, index, {OP_UNDEF, OP_UNDEF}, {0, 0}, {-1, -1}, image.resType, is_screen_buffer,
+                     sbuffer);
+}
+
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer,
                                TFT_eSprite &sbuffer) {
     return DrawImage(id, index, {OP_UNDEF, OP_UNDEF}, {0, 0}, {-1, -1}, RES_MAIN, is_screen_buffer,

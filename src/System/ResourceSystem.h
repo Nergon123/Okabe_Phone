@@ -114,13 +114,13 @@ enum ResourceType {
 
 enum ImageType { RES_RESFILE, RES_POINTER, RES_ADDRFILE, RES_NULLU8 = 0xFF };
 struct Image {
-    uint32_t  id;
     File     *source;
-    uint16_t *buffer;
-    int       sw, sh;
     int       w, h;
     uint8_t   type;
     uint8_t   resType;
+    uint32_t  id;
+    uint16_t *buffer;
+    int       sw, sh;
     bool      resize;
 
     Image() : type(RES_NULLU8) {};
