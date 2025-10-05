@@ -23,7 +23,6 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
     // Wait for response or timeout
     while (millis() - startTime < timeout) {
         while (SimSerial.available()) {
-
             char c = SimSerial.read(); // Read a single character
             response += c;             // Append it to the response
         }
@@ -42,9 +41,10 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
             int firIndex  = response.indexOf("\"", indexClip);
             currentNumber = response.substring(firIndex, response.indexOf("\"", firIndex + 1));
             currentNumber.replace("\"", "");
-            ESP_LOGI("SIM", "Calling number: %s", currentNumber);
+            ESP_LOGI("SIM", "Calling number: %s", currentNumber.c_str());
         }
-    } else {
+    }
+    else {
         if (response.indexOf("NO CARRIER") != -1) {
             ESP_LOGI("SIM", "Call Ended.");
             isCalling     = false;
@@ -52,7 +52,9 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
         }
     }
 
-    if (response.indexOf("ERROR") != -1) { ESP_LOGE("SIM", "ERR FOR %s : %s", command, response); }
+    if (response.indexOf("ERROR") != -1) {
+        ESP_LOGE("SIM", "ERR FOR %s : %s", command.c_str(), response.c_str());
+    }
 
     simIsBusy = false;
     return response;
@@ -79,7 +81,8 @@ String getATvalue(String command, bool background = false) {
         result = response.substring(startIdx + 1, endIdx);
         result.trim();
         Serial.println(result);
-    } else {
+    }
+    else {
         result = response;
         result.trim();
     }
@@ -97,9 +100,8 @@ bool _checkSim() {
         lastSIMerror.trim();
         lastSIMerror = lastSIMerror.substring(lastSIMerror.indexOf("+CME") + 11);
         return false;
-    } else {
-        return true;
     }
+    else { return true; }
 }
 
 // Check if someone calling (Function subject to change. I need to use interrupts for that)
@@ -139,7 +141,7 @@ bool checkSim() {
  */
 int GetState() {
     String result = sendATCommand("AT+CLCC");
-    ESP_LOGI("GET CALL STATE", "AT+CLCC Result:%s", result);
+    ESP_LOGI("GET CALL STATE", "AT+CLCC Result:%s", result.c_str());
     if (result.indexOf("+CLCC") == -1 && result.indexOf("OK") != -1) { return 6; }
     int indexState = getIndexOfCount(2, result, ",", result.indexOf("+CLCC"));
     result         = result.substring(indexState, result.indexOf(",", indexState + 1));
@@ -153,14 +155,18 @@ int GetState() {
 // Function to initialize the SIM card
 // This function sends AT commands to the SIM card to set it up
 void initSim() {
-    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CMEE=2")); // Enable verbose error reporting
-    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CLIP=1")); // Enable caller ID reporting
     ESP_LOGI("BOOT/SIM", "%s",
-             sendATCommand("AT+CLCC=1")); // Report a list of current calls of ME automatically
-                                          // when the current call status changes.
-    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CSCS=\"GSM\"")); // Set character set to GSM
-    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CMGF=1"));       // Set SMS mode to text
-    simIsUsable = _checkSim();                                    // Check if SIM card is usable
+             sendATCommand("AT+CMEE=2").c_str()); // Enable verbose error reporting
+    ESP_LOGI("BOOT/SIM", "%s",
+             sendATCommand("AT+CLIP=1").c_str()); // Enable caller ID reporting
+    // Report a list of current calls of ME automatically
+    // when the current call status changes.
+    ESP_LOGI("BOOT/SIM", "%s", sendATCommand("AT+CLCC=1").c_str());
+    ESP_LOGI("BOOT/SIM", "%s",
+             sendATCommand("AT+CSCS=\"GSM\"").c_str()); // Set character set to GSM
+    ESP_LOGI("BOOT/SIM", "%s",
+             sendATCommand("AT+CMGF=1").c_str()); // Set SMS mode to text
+    simIsUsable = _checkSim();                    // Check if SIM card is usable
 }
 
 // Enable AT commands console

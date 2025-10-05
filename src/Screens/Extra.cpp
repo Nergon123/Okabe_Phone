@@ -11,15 +11,12 @@ void execute_application() {
 
     suspendCore(true);
     String file_path = fileBrowser(SD.open("/"), "bin");
+    if (file_path == "/null") { return; }
     tft.fillScreen(0);
     mOption mOp[2] = {{"Yes"}, {"No"}};
     int     choice = listMenuNonGraphical(
         mOp, 2,
-        "DO YOU REALLY TRUST THIS APPLICATION?\n\nPATH:sdcard:" + file_path +
-            "\n\nNOTICE: WITH APPLICATION ACTIVE\n\n YOU WOULDN'T RECIEVE ANY\n\n CALLS MESSAGES "
-                "ETC.\n\n(Unless application designed to)\n\n BY LAUNCHING APPLICATION YOU\n\nGIVING "
-                "ACCESS TO WHOLE DEVICE\n\n INCLUDING:\n\n SD CARD, SIM CARD,WIFI,\n\n "
-                "BLUETOOTH,FIRMWARE etc.\n\n\n Continue?");
+        "You are going to launch \"" + file_path + "\"! Are you sure about that?");
     if (choice) {
         sBarChanged = true;
         drawStatusBar();
@@ -31,7 +28,6 @@ void execute_application() {
     tft.setTextColor(0xFFFF);
     tft.setCursor(30, 190);
     tft.println("BOOTING INTO APPLICATION...");
-    if (file_path == "/null") { return; }
 
     File file = SD.open(file_path);
     if (!file) {

@@ -51,7 +51,7 @@ String fileBrowser(File dir, String format, bool graphical) {
                     String fileLow = String(file.name());
                     fileLow.toLowerCase();
                     if (format == "*" || fileLow.endsWith(format)) {
-                        options[i].icon       = Image(R_FILE_MANAGER_ICONS);
+                        options[i].image       = Image(R_FILE_MANAGER_ICONS);
                         options[i].icon_index = 0; // I absolutely not sure about this...
                         options[i].label      = file.name();
                     }
@@ -61,6 +61,7 @@ String fileBrowser(File dir, String format, bool graphical) {
                 file = dir.openNextFile();
             }
         }
+        
         if (graphical) { choice = listMenu(options, i, false, 2, "FILE MANAGER"); }
         else { choice = listMenuNonGraphical(options, i, "FILE MANAGER"); }
 
@@ -75,7 +76,7 @@ String fileBrowser(File dir, String format, bool graphical) {
         dir.close();
     } while (choice >= 0);
     if (choice == -2) { return "--"; }
-    return "/null";
+    return "/null"; //Weird stuff that I was writing
     file.close();
     dir.close();
 }
