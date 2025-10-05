@@ -26,9 +26,9 @@ struct Contact {
 
 // Options for list Menu
 struct mOption {
-    String   label;
-    Image image;
-    uint8_t  icon_index;
+    String  label;
+    Image   image;
+    uint8_t icon_index;
 };
 
 // SMS status
@@ -106,6 +106,9 @@ extern volatile bool        simIsBusy;
 extern volatile bool        ongoingCall;
 extern volatile bool        simIsUsable;
 extern std::vector<Contact> contacts;
+extern std::vector<byte>    i2cDevices;
+extern bool                 mcpexists;
+extern bool                 ip5306exists;
 extern Contact              examplecontact;
 
 extern String lastSIMerror;

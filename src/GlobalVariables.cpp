@@ -46,6 +46,9 @@ int   delayBeforeLock  = 15000;
 volatile int stateCall = 6;
 // delay between SIM card checks
 volatile int DBC_MS = 1000;
+std::vector<byte> i2cDevices;
+bool mcpexists = false;
+bool ip5306exists = false;
 
 // Contacts storage
 std::vector<Contact> contacts;

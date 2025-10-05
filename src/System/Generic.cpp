@@ -4,7 +4,7 @@
  * @return `int`: 0-3 of 3
  */
 int getChargeLevel() {
-
+    if (!ip5306exists) { return 3; }
     int toIcon = (chrg.getBatteryLevel() / 25) - 1;
 
     toIcon = (toIcon < 0) ? 0 : (toIcon > 3 ? 3 : toIcon);
@@ -13,12 +13,12 @@ int getChargeLevel() {
 }
 
 ulong funcTime = 0;
+void  GetFuncTime(bool start, const char *who = "UNKNOWN") {
 #ifdef DEVMODE
-void GetFuncTime(bool start, const char *who = "UNKNOWN") {
     if (start) { funcTime = micros(); }
     else { Serial.printf("\n%s run for %.3f ms\n", who, (float)(micros() - funcTime) / 1000); }
-}
 #endif
+}
 
 // Set frequencies to fast or slow mode
 // @param status: true for fast mode, false for slow mode
