@@ -6,12 +6,12 @@
 #include "System/Tasks.h"
 #include "esp_task_wdt.h"
 #include "init.h"
-void restart_handler() {
+void shutdown_handler() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextSize(2);
     tft.setTextColor(TFT_RED);
     tft.setCursor(0, 0);
-    tft.println("RESTARTING...");
+    tft.println("Shutting down...");
     delay(100);
 }
 
@@ -19,7 +19,7 @@ void restart_handler() {
 void setup() {
     esp_task_wdt_deinit();
     esp_task_wdt_init(10000, false);
-    esp_register_shutdown_handler(restart_handler);
+    esp_register_shutdown_handler(shutdown_handler);
 
     SetUpTime();
     hardwareInit();
@@ -32,9 +32,9 @@ void setup() {
     progressBar(0, 100, 250);
 
     if (!psramFound()) {
-        tft.setTextColor(TFT_RED);
+        tft.setTextColor(TFT_WHITE);
         tft.setCursor(0, 50);
-        tft.print("PSRAM NOT FOUND!!!\nEXPECT PROBLEMS!!!");
+        tft.print("psram not found...");
     }
     storageInit();
     
@@ -47,7 +47,7 @@ void setup() {
     initTasks();
 
     ESP_LOGI("DEVICE",
-             "\nOkabePhone " FIRMVER "\n\n Phone firmware written by Nergon\n\n "
+             "\nOkabePhone " FIRMVER "\n\n Phone firmware written by Nergon123 and contributors\n\n "
              "Resources located in sdcard (%s)\n",
              resPath.c_str());
 

@@ -3,12 +3,12 @@
 // Current screen selection based on currentScreen variable
 void screens() {
     switch (currentScreen) {
-    case SCREENS::MAINSCREEN: MainScreen(); break;
-    case SCREENS::MAINMENU: MainMenu(); break;
-    case SCREENS::MESSAGES: messages(); break;
-    case SCREENS::CONTACTS: contactss(); break;
-    case SCREENS::SETTINGS: settings(); break;
-    case SCREENS::E: e(); break;
+    case MAINSCREEN: MainScreen(); break;
+    case MAINMENU: MainMenu(); break;
+    case MESSAGES: messages(); break;
+    case CONTACTS: contactss(); break;
+    case SETTINGS: settings(); break;
+    case E: e(); break;
     }
 }
 
@@ -83,24 +83,20 @@ void MainMenu() {
 // Function to show the main screen, root screen
 void MainScreen() {
     Serial.println("MAINSCREEN");
-    changeFont(0);
     drawWallpaper();
+    changeFont(0);
     drawStatusBar(true);
-    // bool exit = false;
-    int currentButton = -1;
     while (1) {
-        currentButton = buttonsHelding();
-
-        if ((currentButton >= '0' || currentButton == '*' || currentButton == '#') &&
-            currentButton <= '9') {
-            numberInput(currentButton);
+        int button = buttonsHelding();
+        if ((button >= '0' && button <= '9') || button == '*' || button == '#') {
+            numberInput(button);
             drawWallpaper();
         }
-        else if (currentButton == UP || currentButton == SELECT) { break; }
+        else if (button == UP || button == SELECT) { break; }
     }
-
     currentScreen = SCREENS::MAINMENU;
 }
+
 // @param level available levels: `0 1 2 3`, where 0 is empty
 void drawLevelCharge(uint8_t level) {
     if (level < 0 || level > 3) { return; }
@@ -118,7 +114,7 @@ void offlineCharging() {
         for (int i = 0; i <= maxLevel; i++) {
             ulong mill = millis();
             drawLevelCharge(i);
-            while (millis() - mill < 500|| i == 3) {
+            while (millis() - mill < 500 || i == 3) {
                 if (buttonsHelding(false) != -1) { return; }
             }
         }

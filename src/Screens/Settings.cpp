@@ -77,11 +77,11 @@ void settings() {
             case 1:
                 preferences.begin("settings", false);
                 preferences.putUInt("wallpaperIndex", pictureIndex);
-                preferences.putString("wallpaper", "/null");
+                preferences.putString("wallpaper", "");
                 preferences.end();
                 wallpaperIndex = pictureIndex;
                 // TODO WALLPAPER
-                currentWallpaperPath = "/null";
+                currentWallpaperPath = "";
                 currentScreen        = SCREENS::MAINSCREEN;
                 return;
                 break;
