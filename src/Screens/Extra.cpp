@@ -11,12 +11,11 @@ void execute_application() {
 
     suspendCore(true);
     String file_path = fileBrowser(SD.open("/"), "bin");
-    if (file_path == "/null") { return; }
+    if (strcmp(file_path.c_str(), "")) { return; }
     tft.fillScreen(0);
     mOption mOp[2] = {{"Yes"}, {"No"}};
     int     choice = listMenuNonGraphical(
-        mOp, 2,
-        "You are going to launch \"" + file_path + "\"! Are you sure about that?");
+        mOp, 2, "You are going to launch \"" + file_path + "\"! Are you sure about that?");
     if (choice) {
         sBarChanged = true;
         drawStatusBar();
@@ -98,15 +97,9 @@ void e() {
             sBarChanged = true;
             drawStatusBar();
             break;
-        case 2:
-            execute_application();
-            break;
-        case 3:
-            setTime(&systemTime);
-            break;
-        case 4:
-            WiFiList();
-            break;
+        case 2: execute_application(); break;
+        case 3: setTime(&systemTime); break;
+        case 4: WiFiList(); break;
         }
 
         break;

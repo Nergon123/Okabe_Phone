@@ -46,7 +46,6 @@ int   delayBeforeLock  = 15000;
 volatile int stateCall = 6;
 // delay between SIM card checks
 volatile int DBC_MS = 1000;
-std::vector<byte> i2cDevices;
 bool mcpexists = false;
 bool ip5306exists = false;
 
@@ -62,7 +61,7 @@ String currentNumber           = "";
 String currentRingtonePath     = "";
 String currentMailRingtonePath = "";
 String currentNotificationPath = "";
-String currentWallpaperPath    = "/null";
+String currentWallpaperPath    = "";
 String resPath                 = "/FIRMWARE/IMAGES.SG";
 String SPIFFSresPath           = "/MAIN.nph";
 String lastSIMerror            = "";

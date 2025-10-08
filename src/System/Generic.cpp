@@ -25,7 +25,6 @@ void  GetFuncTime(bool start, const char *who = "UNKNOWN") {
 void fastMode(bool status) {
     if ((status && getCpuFrequencyMhz() == FAST_CPU_FREQ_MHZ) ||
         (!status && getCpuFrequencyMhz() == SLOW_CPU_FREQ_MHZ)) {
-        // No need to change frequency
         return;
     }
     setCpuFrequencyMhz(status ? FAST_CPU_FREQ_MHZ : SLOW_CPU_FREQ_MHZ);

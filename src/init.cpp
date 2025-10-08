@@ -2,14 +2,9 @@
 #include "System/ResourceSystem.h"
 
 bool checkI2Cdevices(byte device) {
-
     Wire.beginTransmission(device);
     uint8_t error = Wire.endTransmission();
-    if (error == 0) {
-        ESP_LOGI("I2C", "FOUND DEVICE AT 0x%2x", device);
-        return true;
-    }
-    return false;
+    return !error;
 }
 
 // Function to initialize the SD card
@@ -60,7 +55,10 @@ void hardwareInit() {
     tft.init();
     tft.fillScreen(0x0000);
 
-    if (psramFound()) { tft.setAttribute(PSRAM_ENABLE, true); }
+    if (psramFound()) {
+        tft.setAttribute(PSRAM_ENABLE, true);
+        ESP_LOGI("PSRAM", "PSRAM SIZE: %d bytes", ESP.getPsramSize());
+    }
     else { ESP_LOGW("PSRAM", "PSRAM DISABLED"); }
 
     // INIT Serial
@@ -68,8 +66,6 @@ void hardwareInit() {
     ESP_LOGI("SERIAL", "Serial initalized at %d baud", SERIAL_BAUD_RATE);
     SimSerial.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
     ESP_LOGI("SIM_CARD_SERIAL", "Sim Card Serial initialized at %d", SIM_BAUD_RATE);
-
-    if (psramFound()) { ESP_LOGI("PSRAM", "PSRAM SIZE: %d bytes", ESP.getPsramSize()); }
 
     // RESET KEYBOARD
     mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
@@ -83,7 +79,7 @@ void hardwareInit() {
     analogWrite(TFT_BL, (255 * brightness) / 100);
 }
 
-// Function to initialize the SD card and check if it is available
+// Function to initialize the storage
 void storageInit() {
 
     if (isSPIFFS) { bootText(isSPIFFS ? "SPIFFS enabled" : "SPIFFS disabled"); }
@@ -113,9 +109,11 @@ void storageInit() {
     File Resource;
     if (!isSPIFFS) { Resource = SD.open(resPath); }
     else { Resource = SPIFFS.open(SPIFFSresPath); }
-    if (Resource) { res.Init(Resource); }
 
-    currentWallpaperPath = preferences.getString("wallpaper", "/null");
+    if (Resource) { res.Init(Resource); }
+    else { recovery("There was an error when loading resource file."); }
+
+    currentWallpaperPath = preferences.getString("wallpaper", "");
 
     if (!SD.exists(currentWallpaperPath)) {
         wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);

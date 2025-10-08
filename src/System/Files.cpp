@@ -19,7 +19,7 @@ TXT
 // @param dir: Directory to browse
 // @param format: File format to filter (e.g., ".txt")
 // @param graphical: If true, use graphical interface
-// @return The path of the selected file or "/null" if cancelled
+// @return The path of the selected file or empty string if cancelled
 String fileBrowser(File dir, String format, bool graphical) {
 
     String currentPath = dir.path();
@@ -76,7 +76,7 @@ String fileBrowser(File dir, String format, bool graphical) {
         dir.close();
     } while (choice >= 0);
     if (choice == -2) { return "--"; }
-    return "/null"; //Weird stuff that I was writing
+    return ""; 
     file.close();
     dir.close();
 }

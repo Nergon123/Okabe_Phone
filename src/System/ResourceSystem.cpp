@@ -61,12 +61,14 @@ ImageData ResourceSystem::GetImageDataByID(uint16_t id, uint8_t type) {
     }
     return ImageData(R_NULL_IMAGE);
 }
+
 ImageData ResourceSystem::GetImageDataByImage(Image image) {
     for (ImageData img : Images[image.resType]) {
         if (img.id == image.id) { return img; }
     }
     return ImageData(R_NULL_IMAGE);
 }
+
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords startpos,
                                Coords endpos, uint8_t type, bool is_screen_buffer,
                                TFT_eSprite &sbuffer) {
