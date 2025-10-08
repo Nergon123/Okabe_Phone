@@ -1,19 +1,15 @@
 #include "init.h"
 #include "System/ResourceSystem.h"
 
-std::vector<byte> checkI2Cdevices(byte* devices, int size) {
+bool checkI2Cdevices(byte device) {
 
-    std::vector<byte> result;
-    byte              error;
-    for (int i = 0; i < size; i++) {
-        Wire.beginTransmission(devices[i]);
-        error = Wire.endTransmission();
-        if (error == 0) {
-            result.push_back(devices[i]);
-            ESP_LOGI("I2C", "FOUND DEVICE AT 0x%2x", devices[i]);
-        }
+    Wire.beginTransmission(device);
+    uint8_t error = Wire.endTransmission();
+    if (error == 0) {
+        ESP_LOGI("I2C", "FOUND DEVICE AT 0x%2x", device);
+        return true;
     }
-    return result;
+    return false;
 }
 
 // Function to initialize the SD card
@@ -56,12 +52,8 @@ void hardwareInit() {
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     // INIT charging IC as well as I2C
     chrg.begin(21, 22);
-    byte devices[2] = {MCP23017_ADDR, IP5306_ADDR};
-    i2cDevices      = checkI2Cdevices(devices, ArraySize(devices));
-    for (byte i2cDevice : i2cDevices) {
-        if (i2cDevice == MCP23017_ADDR) { mcpexists = true; }
-        if (i2cDevice == IP5306_ADDR) { ip5306exists = true; }
-    }
+    mcpexists    = checkI2Cdevices(MCP23017_ADDR);
+    ip5306exists = checkI2Cdevices(IP5306_ADDR);
 
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
