@@ -96,11 +96,14 @@ void messages() {
     res.DrawImage(R_MENU_L_HEADER);
     String entries[] = {"Inbox", "Outbox"};
     int    ch        = choiceMenu(entries, ArraySize(entries), false);
-    switch (ch) {
-    case 0: inbox(false); break;
-    case 1: inbox(true); break;
-    default: break;
-    }
+    inbox(ch);
+    // Maybe in future there will be more entries...
+    //switch (ch) {
+    //case 0: inbox(false); break;
+    //case 1: inbox(true); break;
+    //default: break;
+    //}
+
     currentScreen = SCREENS::MAINMENU;
 }
 

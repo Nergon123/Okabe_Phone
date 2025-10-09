@@ -31,7 +31,7 @@ void incomingCall(Contact contact) {
     tft.setCursor(90, 140);
     changeFont(4);
     tft.setTextSize(1);
-    tft.print("Ca l l ing");
+    tft.print("Ca l l ing"); //Spacing to match original bad kerning >_<
     res.DrawImage(R_PHONE_ICON);
     // drawImage(45, 105, PHONE_ICON);
 
@@ -59,7 +59,7 @@ void incomingCall(Contact contact) {
 
 /*
  * Function to make a call
- * @param contact Contact object containing contact information
+ * @param contact Contact object containing contact information (duh)
  */
 void makeCall(Contact contact) {
     if (!checkSim()) { return; }

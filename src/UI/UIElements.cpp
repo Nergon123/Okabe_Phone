@@ -4,40 +4,30 @@ const uint16_t clr_normal     = TFT_BLACK;
 const uint16_t clr_disabled   = TFT_LIGHTGREY;
 const uint16_t clr_background = TFT_WHITE;
 
-enum UITypes { UI_BUTTON, UI_INPUT, UI_SWITCHNUMBERS };
-struct UIElement {
-    int         type;
-    int         x, y;
-    int         w, h;
-    String      title;
-    String     *input;
-    int        *value;
-    bool       *bvalue;
-    int        *selected;
-    bool        usable;
-    bool        onlynumbers;
-    const char *format;
-    int         min, max;
-    void (*callback)(void *);
-};
-
-void UIElementsLoop(UIElement *elements, int count, bool *exit) {
+void UIElementsLoop(UIElement *elements, size_t size, bool *exit) {
     // TODO
-    if (elements == nullptr) { ESP_LOGE("UI", "elements is nullptr");  return;}
-    if (exit == nullptr) {
+    if (!elements) {
+        ESP_LOGE("UI", "elements is nullptr");
+        return;
+    }
+    if (!exit) {
         ESP_LOGE("UI", "exit is nullptr");
         return;
     }
-    while (!exit) {
+    while (!*exit) {
         int direction     = -1;
         int cur_selection = 0;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < size; i++) {
             UIElement el = elements[i];
 
             switch (el.type) {
             case UI_BUTTON:
                 *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection,
                                     &direction, el.usable, el.callback);
+                if (el.isExitButton && *el.bvalue) {
+                    *exit = true;
+                    return;
+                }
                 break;
             case UI_INPUT:
                 if (el.input == nullptr) { el.input = new String(); }
@@ -55,11 +45,11 @@ void UIElementsLoop(UIElement *elements, int count, bool *exit) {
             switch (direction) {
             case UP:
                 cur_selection++;
-                if (cur_selection >= count) { cur_selection = 0; }
+                if (cur_selection >= size) { cur_selection = 0; }
                 break;
             case DOWN:
                 cur_selection--;
-                if (cur_selection < 0) { cur_selection = count - 1; }
+                if (cur_selection < 0) { cur_selection = size - 1; }
                 break;
             }
         }
