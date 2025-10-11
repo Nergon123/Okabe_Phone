@@ -10,7 +10,7 @@
 void execute_application() {
 
     suspendCore(true);
-    String file_path = fileBrowser(SD.open("/"), "bin");
+    String file_path = fileBrowser("/", "bin");
     if (strcmp(file_path.c_str(), "")) { return; }
     tft.fillScreen(0);
     mOption mOp[2] = {{"Yes"}, {"No"}};
@@ -27,8 +27,7 @@ void execute_application() {
     tft.setTextColor(0xFFFF);
     tft.setCursor(30, 190);
     tft.println("BOOTING INTO APPLICATION...");
-
-    File file = SD.open(file_path);
+    File file = NFile(file_path).file;
     if (!file) {
         Serial.println("Failed to open file!");
         return;
@@ -78,7 +77,7 @@ void e() {
         switch (choice) {
         case 0:
             path = fileBrowser();
-            SD.remove(path);
+            NFile(path).remove();
             break;
         case 1:
             path = fileBrowser();
@@ -86,7 +85,7 @@ void e() {
             tft.setCursor(0, 0);
             changeFont(0);
             tft.setTextColor(TFT_WHITE);
-            file = SD.open(path);
+            file = NFile(path).file;
             file.seek(0);
             if (file) {
                 while (file.available()) { tft.print((char)file.read()); }

@@ -128,7 +128,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
 bool ResourceSystem::DrawImage(Image image, uint8_t index, Coords pos, Coords startpos,
                                Coords endpos, uint8_t type, bool is_screen_buffer,
                                TFT_eSprite &sbuffer) {
-    return DrawImage(image.id, index, {OP_UNDEF, OP_UNDEF}, {0, 0}, {-1, -1}, image.resType, is_screen_buffer,
+    return DrawImage(image.id, index, pos, startpos, endpos, image.resType, is_screen_buffer,
                      sbuffer);
 }
 
@@ -139,7 +139,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer
 }
 
 ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {
-
+  
     ImageBuffer buffer;
     if (cache[type]) {
         buffer.pointer    = reinterpret_cast<uint16_t *>(cache[type] + img.offset + start);
@@ -153,13 +153,13 @@ ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start
 
     Files[type].seek(img.offset + start);
     Files[type].read(reinterpret_cast<uint8_t *>(buffer.pointer), size);
-
+   
     return buffer;
 }
 
 void ResourceSystem::CopyToRam(uint8_t type) {
     bootText("Copying file to RAM...");
-
+   
     if (psramFound() &&
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) > Files[type].size()) {
 

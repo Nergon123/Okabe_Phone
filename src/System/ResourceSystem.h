@@ -114,34 +114,34 @@ enum ResourceType {
 
 enum ImageType { RES_RESFILE, RES_POINTER, RES_ADDRFILE, RES_NULLU8 = 0xFF };
 struct Image {
-    File     *source;
-    int       w, h;
-    uint8_t   type;
-    uint8_t   resType;
-    uint32_t  id;
     uint16_t *buffer;
+    uint32_t  id;
+    int       w, h;
     int       sw, sh;
     bool      resize;
-
+    uint8_t   resType;
+    uint8_t   type;
+    File     *source;
+    
     Image() : type(RES_NULLU8) {};
 
     Image(uint16_t id, uint8_t type = RES_MAIN, File *source = nullptr, int w = 0, int h = 0,
           bool resize = false)
-        : id((uint32_t)id), resType(type), w(w), h(h), resize(resize), type(RES_RESFILE),
+        : id((uint32_t)id), w(w), h(h), resize(resize), resType(type), type(RES_RESFILE),
           source(source) {};
 
     // be sure to free buffer after use...
     // @param sw Source width
     // @param sh Source Height
     Image(uint16_t *rgb565Buffer, int sw, int sh, int w = 0, int h = 0, bool resize = false)
-        : buffer(rgb565Buffer), sw(sw), sh(sh), w(w), h(h), resize(resize), type(RES_POINTER) {};
+        : buffer(rgb565Buffer), w(w), h(h), sw(sw), sh(sh), resize(resize), type(RES_POINTER) {};
 
     // @param sw Source width
     // @param sh Source Height
     Image(uint32_t address, File *source, int sw, int sh, int w = 0, int h = 0,
           bool resize = false)
-        : id(address), source(source), sw(sw), sh(sh), w(w), h(h), resize(resize),
-          type(RES_ADDRFILE) {};
+        : id(address), w(w), h(h), sw(sw), sh(sh), resize(resize), type(RES_ADDRFILE),
+          source(source) {};
 };
 
 class ResourceSystem {

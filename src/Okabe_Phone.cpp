@@ -37,7 +37,7 @@ void setup() {
         tft.print("psram not found...");
     }
     storageInit();
-    
+
     // Chance to change resource file to custom one
     if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
 
@@ -47,7 +47,8 @@ void setup() {
     initTasks();
 
     ESP_LOGI("DEVICE",
-             "\nOkabePhone " FIRMVER "\n\n Phone firmware written by Nergon123 and contributors\n\n "
+             "\nOkabePhone " FIRMVER
+             "\n\n Phone firmware written by Nergon123 and contributors\n\n "
              "Resources located in sdcard (%s)\n",
              resPath.c_str());
 
@@ -60,7 +61,19 @@ void setup() {
 
     if (buttonsHelding(false) == '#') { AT_test(); }
 
+    mOption mOptions[] = {
+        mOption{.label = "0", .image = Image(R_FILE_MANAGER_ICONS), .icon_index = 0},
+        mOption{.label = "1", .image = Image(R_FILE_MANAGER_ICONS), .icon_index = 1},
+        mOption{.label = "2", .image = Image(R_FILE_MANAGER_ICONS), .icon_index = 2},
+        mOption{.label = "3", .image = Image(R_FILE_MANAGER_ICONS), .icon_index = 3},
+        mOption{.label = "4", .image = Image(R_FILE_MANAGER_ICONS), .icon_index = 4},
+        mOption{.label = "5", .image = Image(R_FILE_MANAGER_ICONS), .icon_index = 5},
+        mOption{.label = "6", .image = Image(R_FILE_MANAGER_ICONS), .icon_index = 6},
+        mOption{.label = "7", .image = Image(R_FILE_MANAGER_ICONS), .icon_index = 7},
+
+    };
     millSleep = millis();
+    listMenu(mOptions, 8, false, 0,"SAMPLE");
 }
 
 // Function to handle the main loop
