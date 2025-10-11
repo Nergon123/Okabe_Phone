@@ -12,34 +12,19 @@ bool checkI2Cdevices(byte device) {
 // @param fast If true, set the frequency to the maximum value
 // @return true if the SD card is initialized successfully, false otherwise
 bool initSDCard(bool fast) {
-    SD.end();
-    uint32_t freq;
+    SD.end(); // reset SD interface
+    uint32_t freq  = fast ? FAST_SD_FREQ : SAFE_SD_FREQ;
     int      tries = 0;
-    if (fast) {
-        freq = FAST_SD_FREQ;
+
+    while (tries < 5) {
         if (freq >= getCpuFrequencyMhz() * 1000000) { freq /= 4; }
+        ESP_LOGI("SD", "TRYING %lu Hz", freq);
         if (SD.begin(chipSelect, SPI, freq)) { return true; }
-        else {
-            SD.end();
-            freq = SAFE_SD_FREQ;
-            while (freq >= getCpuFrequencyMhz() * 1000000) {
-                freq /= 4;
-                tries++;
-                if (tries > 5) { break; }
-            }
-            return SD.begin(chipSelect, SPI, freq);
-        }
+        freq /= 2;
+        tries++;
     }
-    else {
-        freq = SAFE_SD_FREQ;
-        while (freq >= getCpuFrequencyMhz() * 1000000) {
-            freq /= 4;
-            if (tries > 5) { break; }
-        }
-        SD.end();
-        return SD.begin(chipSelect, SPI, freq);
-    }
-    return false;
+    SD.end();
+    return false; // failed to init
 }
 
 // Function to initialize the hardware components
@@ -110,7 +95,9 @@ void storageInit() {
     if (!isSPIFFS) { Resource = SD.open(resPath); }
     else { Resource = SPIFFS.open(SPIFFSresPath); }
 
-    if (Resource) { res.Init(Resource); }
+    if (Resource) {
+        res.Init(Resource);
+    }
     else { recovery("There was an error when loading resource file."); }
 
     currentWallpaperPath = preferences.getString("wallpaper", "");

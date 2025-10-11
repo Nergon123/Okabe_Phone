@@ -141,9 +141,9 @@ void recovery(String message) {
     int     choice     = listMenuNonGraphical(options, ArraySize(options), "Choose action.", 150);
     switch (choice) {
     case 0:
-        String TempResPath = fileBrowser(SD.open("/"), ".SG", false);
-        File   file        = SD.open(TempResPath);
-        res.Init(file);
+        String TempResPath = fileBrowser("/", ".SG", false);
+        NFile   nFile(TempResPath);
+        res.Init(nFile.file);
         break;
     }
 }

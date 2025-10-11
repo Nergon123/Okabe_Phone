@@ -19,10 +19,3 @@ git clone https://github.com/Nergon123/Okabe_Phone
 If you did everything right `Build` and `Upload` buttons should appear somewhere in workspace.
 Build should only compile project.
 Upload will build and upload firmware to device.
-
-## IMAGES.SG
-
-Basically IMAGES.SG is just one big RGB565 array.
-Adresses of every image there located in [ADRESSES.MD](./ADRESSES.MD)
-
-Editor located in [TOOLS](./Tools/README.MD)

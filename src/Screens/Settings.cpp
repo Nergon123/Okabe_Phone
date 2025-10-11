@@ -89,8 +89,8 @@ void settings() {
             }
         }
         else if (pictureIndex == lastImage) {
-            String path = fileBrowser(SD.open("/"), ".png");
-            if (SD.exists(path)) { confPictureIndex = choiceMenu(GalleryChoice, 2, true); }
+            String path = fileBrowser("/", ".png");
+            if (NFile(path).isValid()) { confPictureIndex = choiceMenu(GalleryChoice, 2, true); }
             else { break; }
             switch (confPictureIndex) {
             case 0: drawPNG(path.c_str()); break;

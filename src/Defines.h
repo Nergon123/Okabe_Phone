@@ -20,7 +20,7 @@
 // For SIM communication
 #define SIM_BAUD_RATE 115200
 
-#define lines_to_draw_wo_psram 4
+#define lines_to_draw_wo_psram 3
 
 #define OP_UNDEF 0xFFFF
 
@@ -81,8 +81,8 @@ enum buttons {
 // Lowest frequency for ESP32 is 20 MHZ
 #define SLOW_CPU_FREQ_MHZ 20
 
-#define FAST_SD_FREQ 5000000
-#define SAFE_SD_FREQ 5000000
+#define FAST_SD_FREQ 20 * 1000 * 1000
+#define SAFE_SD_FREQ 1 * 1000 * 1000
 
 // FONTS
 #define FONT0 1

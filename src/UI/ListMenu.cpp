@@ -65,9 +65,7 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
     }
 
     ImageData imgData = res.GetImageDataByImage(choice.image);
-    res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0},
-                  -1, psramFound());
-
+    res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0}, -1, psramFound());
     if (lines) {
         if (psramFound()) {
             screen_buffer.drawLine(0, yy, 240, yy, 0);
@@ -119,7 +117,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     int selected     = 0;
     int page         = 0;
     int pages        = 0;
-    int y            = 0;
+    int y            = 1;
     int ly           = 25;
     int x            = 10;
     int old_selected = 0;
@@ -208,8 +206,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                     selected = (icount % per_page == 0) ? per_page - 1 : (icount % per_page) - 1;
                 }
 
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, psramFound());
                 listMenu_header(type, label, page, pages, y);
+                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, psramFound());
 
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -328,7 +326,7 @@ int listMenu(const String choices[], int icount, bool images, int type, String l
     mOption *optionArr = new mOption[icount];
     for (int i = 0; i < icount; i++) {
         optionArr[i].label      = choices[i];
-        optionArr[i].image       = Image();
+        optionArr[i].image      = Image();
         optionArr[i].icon_index = 0;
     }
     return listMenu(optionArr, icount, images, type, label, forceIcons, findex);
