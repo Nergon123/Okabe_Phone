@@ -31,7 +31,7 @@ This project is a **fan-made, non-commercial tribute**. It is not affiliated wit
   - [ ] Notifications  
   - [ ] UI Sounds  
 - [ ] Vibration  
-- [ ] Themes (There are multiple color variants in the VN universe)  
+- [x] Themes (There are multiple color variants in the VN universe)  
 - [ ] “Maybe”  
   - [ ] Email support  
 - [ ] 3D-printed case  
