@@ -56,7 +56,7 @@ void drawStatusBar(bool force) {
 // This function is called when the user wants to confirm an action
 // @param reason The reason for the confirmation
 // @return true if the user confirms, false if the user cancels
-bool confirmation(String reason) {
+bool confirmation(String reason,String yes, String no) {
     drawWallpaper();
     res.DrawImage(R_FULL_NOTIFICATION);
     changeFont(1);
@@ -72,9 +72,10 @@ bool confirmation(String reason) {
     bool exit = false;
 
     while (!exit) {
-        if (button("YES", 120, 190, 80, 30, pos, &direction)) { return true; }
-        else if (button("NO", 30, 190, 80, 30, !pos, &direction)) { return false; }
+        if (button(yes, 120, 190, 80, 30, pos, &direction)) { return true; }
+        else if (button(no, 30, 190, 80, 30, !pos, &direction)) { return false; }
         if (direction > 1) { pos = !pos; }
+        if (direction == BACK) return false;
     }
     return false;
 }

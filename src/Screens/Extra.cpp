@@ -77,6 +77,7 @@ void e() {
         switch (choice) {
         case 0:
             path = fileBrowser();
+            ESP_LOGI("FILE","DELETE %s",path.c_str());
             NFile(path).remove();
             break;
         case 1:

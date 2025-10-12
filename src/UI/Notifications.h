@@ -8,5 +8,5 @@
 #include "../System/Time.h"
 #include "../UI/UIElements.h"
 void ErrorWindow(String reason);
-bool confirmation(String reason);
+bool confirmation(String reason,String yes = "Yes",String no = "No");
 void drawStatusBar(bool force = false);
