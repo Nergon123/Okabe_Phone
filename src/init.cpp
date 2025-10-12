@@ -90,15 +90,14 @@ void storageInit() {
     ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
     bootText("Loading resource file...");
-
-    File Resource;
-    if (!isSPIFFS) { Resource = SD.open(resPath); }
-    else { Resource = SPIFFS.open(SPIFFSresPath); }
-
-    if (Resource) {
+    if (!res.Files[RES_MAIN]) {
+        File Resource;
+        if (!isSPIFFS) { Resource = SD.open(resPath); }
+        else { Resource = SPIFFS.open(SPIFFSresPath); }
         res.Init(Resource);
     }
-    else { recovery("There was an error when loading resource file."); }
+    if (!res.Files[RES_MAIN]) { recovery("There was an error when loading resource file."); }
+
 
     currentWallpaperPath = preferences.getString("wallpaper", "");
 

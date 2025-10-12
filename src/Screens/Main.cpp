@@ -124,27 +124,34 @@ void offlineCharging() {
 
 /*
  *Function to show recovery screen
- * param @message message to be displayed
+ *@param message message to be displayed
  */
 void recovery(String message) {
     initSDCard(true);
-    tft.setCursor(0, 40);
-    tft.fillScreen(0);
-    tft.setTextFont(1);
-    tft.setTextSize(4);
-    tft.setTextColor(0x00FF);
-    tft.println("=RECOVERY=\n");
-    tft.setTextSize(1);
-    tft.setTextColor(0xFFFF);
-    tft.println(message);
-    mOption options[2] = {{"Choose resource file"}, {"Try again"}};
-    int     choice     = listMenuNonGraphical(options, ArraySize(options), "Choose action.", 150);
-    switch (choice) {
-    case 0:
-        String TempResPath = fileBrowser("/", ".SG", false);
-        NFile   nFile(TempResPath);
-        res.Init(nFile.file);
-        break;
+    NFile nFile;
+    res.Files[RES_MAIN] = File();
+    while (!res.Files[RES_MAIN]) {
+        tft.setCursor(0, 40);
+        tft.fillScreen(0);
+        tft.setTextFont(1);
+        tft.setTextSize(4);
+        tft.setTextColor(0x00FF);
+        tft.println("=RECOVERY=\n");
+        tft.setTextSize(1);
+        tft.setTextColor(0xFFFF);
+        tft.println(message);
+        mOption options[2] = {{"Choose resource file"}, {"Try again"}};
+        int     choice = listMenuNonGraphical(options, ArraySize(options), "Choose action.", 150);
+        switch (choice) {
+        case 0:
+            String TempResPath = fileBrowser("/", ".nph", false);
+            resPath      = TempResPath;
+            nFile.FileOpen(TempResPath);
+            res.Init(nFile.file);
+            res.CopyToRam(RES_MAIN);
+            if (res.Files[RES_MAIN]) { return; }
+            break;
+        }
     }
 }
 

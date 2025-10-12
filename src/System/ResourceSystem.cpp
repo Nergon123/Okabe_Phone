@@ -6,7 +6,8 @@ Coords cnone = {-1, -1};
 void ResourceSystem::Init(File Main, File Wallpapers) {
     Files[RES_MAIN]       = Main;
     Files[RES_WALLPAPERS] = Wallpapers;
-
+    Images[RES_MAIN].clear();
+    Images[RES_WALLPAPERS].clear();
     for (int i = 0; i < sizeof(Files) / sizeof(Files[0]); i++) {
         if (!Files[i].available()) {
             ESP_LOGW("RES", "%s resource file is not available. Using Built-in.", names[i]);
@@ -72,7 +73,6 @@ ImageData ResourceSystem::GetImageDataByImage(Image image) {
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords startpos,
                                Coords endpos, uint8_t type, bool is_screen_buffer,
                                TFT_eSprite &sbuffer) {
-
     ImageData img = GetImageDataByID(id, type);
     if (img.id == R_NULL_IMAGE && id != R_NULL_IMAGE) {
         ESP_LOGE("RES", "Requested Sprite %d:%d not found", id, index);
@@ -139,7 +139,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer
 }
 
 ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {
-  
+
     ImageBuffer buffer;
     if (cache[type]) {
         buffer.pointer    = reinterpret_cast<uint16_t *>(cache[type] + img.offset + start);
@@ -153,13 +153,14 @@ ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start
 
     Files[type].seek(img.offset + start);
     Files[type].read(reinterpret_cast<uint8_t *>(buffer.pointer), size);
-   
+
     return buffer;
 }
 
 void ResourceSystem::CopyToRam(uint8_t type) {
     bootText("Copying file to RAM...");
-   
+    if (cache[type]) { free(cache[type]); }
+
     if (psramFound() &&
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) > Files[type].size()) {
 
