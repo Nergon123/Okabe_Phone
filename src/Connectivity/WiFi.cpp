@@ -1,13 +1,12 @@
 #include "../System/Generic.h"
 #include "../UI/UIElements.h"
+#ifndef PC
 #include "_WiFi.h"
-// TODO: Implement WiFi functionality
-// Why do I even need wifi here?
 
-void WifiPrompt(String ssid, uint8_t encryptionType) {
+void WifiPrompt(NString ssid, uint8_t encryptionType) {
     return;
     // TODO
-    String password;
+    NString password;
     res.DrawImage(R_LIST_MENU_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_ICONS, 2);
@@ -17,9 +16,9 @@ void WifiPrompt(String ssid, uint8_t encryptionType) {
     bool connect   = false;
     bool open      = encryptionType == WIFI_AUTH_OPEN;
     while (choice != -1) {
-        ssid = InputField("SSID", ssid, 40, 0, 0, choice == 0, &direction);
+        ssid = InputField("SSID", ssid.c_str(), 40, 0, 0, choice == 0, &direction);
         if (!open) {
-            password = InputField("Password", password, 40, 0, 0, choice == 1, &direction);
+            password = InputField("Password", password.c_str(), 40, 0, 0, choice == 1, &direction);
         }
         else if (choice == 1) { choice = 2; }
 
@@ -28,26 +27,30 @@ void WifiPrompt(String ssid, uint8_t encryptionType) {
     }
 }
 
-void WifiConnect(String ssid, String password) { WiFi.begin(ssid, password); }
+void WifiConnect(NString ssid, NString password) { WiFi.begin(ssid.c_str(), password.c_str()); }
 
 // List available WiFi networks
 void WiFiList() {
-    WiFi.begin();
-    WiFi.mode(WIFI_STA);
-    while (true) {
-        int      count = WiFi.scanNetworks();
-        String   names[count];
-        uint8_t  enc[count];
-        uint8_t *l;
-        int32_t  c, d;
-        for (int i = 0; i < count; i++) { WiFi.getNetworkInfo(i, names[i], enc[i], c, l, d); }
+    // WiFi.begin();
+    // WiFi.mode(WIFI_STA);
+    // while (true) {
+    //     int      count = WiFi.scanNetworks();
+    //     NString  names[count];
+    //     uint8_t  enc[count];
+    //     uint8_t *l;
+    //     int32_t  c, d;
+    //     for (int i = 0; i < count; i++) { WiFi.getNetworkInfo(i, names[i].c_str(), enc[i], c, l, d); }
 
-        int ch = listMenu(names, count, false, 0, "WI-FI");
-        if (ch == -1) { return; }
-        else {
-            // TODO: Actually Connect to WiFi
-            WifiPrompt(names[ch], enc[ch]);
-            return;
-        }
-    }
+    //     int ch = listMenu(names, count, false, 0, "WI-FI");
+    //     if (ch == -1) { return; }
+    //     else {
+    //         // TODO: Actually Connect to WiFi
+    //         WifiPrompt(names[ch], enc[ch]);
+    //         return;
+    //     }
+    // }
 }
+#else
+void WifiConnect(NString ssid, NString password){};
+void WiFiList(){};
+#endif

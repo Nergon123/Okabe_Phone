@@ -1,5 +1,8 @@
 #include "Tasks.h"
 
+
+#ifndef PC
+TaskHandle_t TaskHCommand;
 // Function to suspend/resume the freeRTOS task on core 0
 // @param suspend: true to suspend the task, false to resume it
 void suspendCore(bool suspend) {
@@ -69,3 +72,7 @@ void TaskIdleHandler(void *parameter) {
 void initTasks() {
     xTaskCreatePinnedToCore(TaskIdleHandler, "Core0Checker", 10000, NULL, 1, &TaskHCommand, 0);
 }
+#else
+void initTasks(){};
+void suspendCore(bool suspend){} ;
+#endif

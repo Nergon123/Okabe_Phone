@@ -1,7 +1,8 @@
 #pragma once
 #include "../GlobalVariables.h"
 #include "../UI/ListMenu.h"
-#include <Arduino.h>
+#ifdef ARDUINO
 #include <WiFi.h>
-void WifiConnect(String ssid, String password);
+#endif
+void WifiConnect(NString ssid, NString password);
 void WiFiList();

@@ -1,4 +1,5 @@
 #include "Time.h"
+#include <sys/time.h>
 
 // Function to set up the time
 // This function sets the system time to a specific date and time

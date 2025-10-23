@@ -82,7 +82,6 @@ void MainMenu() {
 
 // Function to show the main screen, root screen
 void MainScreen() {
-    Serial.println("MAINSCREEN");
     drawWallpaper();
     changeFont(0);
     drawStatusBar(true);
@@ -126,10 +125,9 @@ void offlineCharging() {
  *Function to show recovery screen
  *@param message message to be displayed
  */
-void recovery(String message) {
+void recovery(NString message) {
     initSDCard(true);
-    NFile nFile;
-    res.Files[RES_MAIN] = File();
+    res.Files[RES_MAIN] = nullptr;
     while (!res.Files[RES_MAIN]) {
         tft.setCursor(0, 40);
         tft.fillScreen(0);
@@ -144,10 +142,10 @@ void recovery(String message) {
         int     choice = listMenuNonGraphical(options, ArraySize(options), "Choose action.", 150);
         switch (choice) {
         case 0:
-            String TempResPath = fileBrowser("/", ".nph", false);
-            resPath      = TempResPath;
-            nFile.FileOpen(TempResPath);
-            res.Init(nFile.file);
+            NString TempResPath = fileBrowser("/", ".nph", false);
+            resPath             = TempResPath;
+            NFile *nFile        = VFS.open(resPath);
+            res.Init(nFile); 
             res.CopyToRam(RES_MAIN);
             if (res.Files[RES_MAIN]) { return; }
             break;
@@ -157,7 +155,6 @@ void recovery(String message) {
 
 // Function to lock keypad
 void LockScreen() {
-    Serial.println("LockScreen");
     sBarChanged    = true;
     isScreenLocked = true;
     drawStatusBar();

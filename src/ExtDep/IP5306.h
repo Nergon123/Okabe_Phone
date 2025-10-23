@@ -4,7 +4,7 @@
 THIS LIBRARY WAS DOWNLOADED FROM https://github.com/rynskyi/IP5306
 
 */
-#include <Arduino.h>
+#include <stdint.h>
 #ifndef IP5306_H
 #define IP5306_H
 

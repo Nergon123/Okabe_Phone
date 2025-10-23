@@ -1,4 +1,6 @@
 #include "UIElements.h"
+#include <functional>
+#include "../Platform/ESPPlatform.h"
 const uint16_t clr_selected   = TFT_RED;
 const uint16_t clr_normal     = TFT_BLACK;
 const uint16_t clr_disabled   = TFT_LIGHTGREY;
@@ -30,7 +32,7 @@ void UIElementsLoop(UIElement *elements, size_t size, bool *exit) {
                 }
                 break;
             case UI_INPUT:
-                if (el.input == nullptr) { el.input = new String(); }
+                if (el.input == nullptr) { el.input = new NString(); }
                 *el.input = InputField(el.title, *el.input, el.y, false, i == cur_selection,
                                        i == cur_selection, &direction, el.onlynumbers, el.usable,
                                        el.callback);
@@ -66,7 +68,7 @@ void UIElementsLoop(UIElement *elements, size_t size, bool *exit) {
 //  @param selected: Boolean indicating if the button is selected
 //  @param direction: Pointer to the direction variable
 //  @return: Boolean indicating if the button was pressed
-bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *direction,
+bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int *direction,
             bool usable, void (*callback)(void *)) {
 
     tft.fillRect(xpos, ypos, w, h, clr_background);
@@ -81,11 +83,11 @@ bool button(String title, int xpos, int ypos, int w, int h, bool selected, int *
         tft.drawRect(xpos, ypos, w, h, clr_disabled);
     }
 
-    int x = (w - tft.textWidth(title)) / 2;
+    int x = (w - tft.textWidth(title.c_str())) / 2;
     int y = h - ((h - tft.fontHeight()));
 
     tft.setCursor(xpos + x, ypos + y);
-    tft.print(title);
+    tft.print(title.c_str());
     if (!usable) { return false; }
     bool exit = false;
 
@@ -193,7 +195,7 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 //  @param direction: Pointer to the direction variable
 //  @param onlynumbers: Boolean indicating if only numbers are allowed
 //  @return: String containing the input
-String InputField(String title, String content, int ypos, bool onlydraw, bool selected, bool used,
+NString InputField(NString title, NString content, int ypos, bool onlydraw, bool selected, bool used,
                   int *direction, bool onlynumbers, bool usable, void (*callback)(void *)) {
 
     content.trim();
@@ -257,7 +259,7 @@ String InputField(String title, String content, int ypos, bool onlydraw, bool se
                 if (c != -1) {
                     if (c >= '0' && c <= '9') {
 
-                        // Serial.println("C_OFFSET:" + String(c_offset));
+                        // Serial.println("C_OFFSET:" + NString(c_offset));
 
                         char TI = textInput(c, onlynumbers, true);
                         if (TI != '\0') {
@@ -424,23 +426,23 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
     lastpercentage = percentage;
 }
 
-void bootText(String text, int x, int y, int w, int h) {
+void bootText(NString text, int x, int y, int w, int h) {
     if (lastpercentage == 100) { return; }
     tft.fillRect(x, y, w, h, TFT_BLACK);
     tft.setTextFont(0);
     tft.setTextSize(1);
-    if (x < 0) { x = 120 - (tft.textWidth(text) / 2); }
+    if (x < 0) { x = 120 - (tft.textWidth(text.c_str()) / 2); }
     tft.setViewport(0, y, w, h);
     tft.setTextColor(TFT_WHITE);
     tft.setCursor(x, 0);
-    tft.print(text);
+    tft.print(text.c_str());
     tft.resetViewport();
 }
 
 // ## Critical system error
 //  This function is called when a critical error occurs in the system.
 // @param reason String containing the reason for the error
-void sysError(String reason) {
+void sysError(NString reason) {
     tft.fillScreen(0x0000);
     tft.setCursor(10, 40);
     tft.setTextFont(1);
@@ -449,13 +451,15 @@ void sysError(String reason) {
     tft.println("==ERROR==");
     tft.setTextColor(0xFFFF);
     tft.setTextSize(1);
-    tft.println(String(
+    tft.println(NString(
         "\n\n\nThere a problem with your device\n\nTechnical details:\n\n\nReason:" + reason +
-        "\n\n\n\n\n" REPOSITORY_LINK "\n\n"));
+        "\n\n\n\n\n" REPOSITORY_LINK "\n\n").c_str());
 
     tft.println("Press any button to restart\nor reset button to reset the device");
     ESP_LOGE("ERROR", "%s", reason.c_str());
     while (buttonsHelding(false) == -1);
+    #ifndef PC
     ESP.restart();
+    #endif
     for (;;);
 }

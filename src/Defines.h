@@ -1,4 +1,8 @@
 #pragma once
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#define PC
+#endif
+
 #define FIRMVER         "0.1.5 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 
@@ -10,6 +14,28 @@
 #define chipSelect    13
 #define MCP23017_ADDR 0x20
 #define MAX_CONTACTS  100
+
+#ifdef PC
+#ifndef ESP_LOGG
+#define ESP_LOGG(level, tag, format, ...) printf("[%s][%s] " format "\n", level, tag, ##__VA_ARGS__)
+#endif
+#ifndef ESP_LOGI
+#define ESP_LOGI(tag, format, ...) ESP_LOGG("INFO", tag, format, ##__VA_ARGS__)
+#endif
+#ifndef ESP_LOGW
+#define ESP_LOGW(tag, format, ...) ESP_LOGG("WARN", tag, format, ##__VA_ARGS__)
+#endif
+#ifndef ESP_LOGE
+#define ESP_LOGE(tag, format, ...) ESP_LOGG("ERROR", tag, format, ##__VA_ARGS__)
+#endif
+#ifndef ESP_LOGD
+#define ESP_LOGD(tag, format, ...) ESP_LOGG("DEBUG", tag, format, ##__VA_ARGS__)
+#endif
+#ifndef ESP_LOGV
+#define ESP_LOGV(tag, format, ...) ESP_LOGG("VERBOSE", tag, format, ##__VA_ARGS__)
+#endif
+
+#endif
 
 #define SimSerial Serial1
 

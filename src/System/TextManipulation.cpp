@@ -1,4 +1,5 @@
 #include "TextManipulation.h"
+#include "../Platform/Hardware.h"
 
 // Function to get the index of the nth occurrence of a substring in a string
 // @param count The occurrence number to find
@@ -6,7 +7,7 @@
 // @param str The substring to find
 // @param fromIndex The index to start searching from
 // @return The index of the nth occurrence of the substring
-unsigned int getIndexOfCount(int count, String input, String str, unsigned int fromIndex) {
+unsigned int getIndexOfCount(int count, NString input, NString str, unsigned int fromIndex) {
     for (int i = 0; i < count; i++) { fromIndex = input.indexOf(str, fromIndex + 1); }
     return fromIndex;
 }
@@ -17,13 +18,13 @@ unsigned int getIndexOfCount(int count, String input, String str, unsigned int f
 // @param posX The x-coordinate of the split position
 // @param posY The y-coordinate of the split position
 // @param direction The direction to search (UP or DOWN)
-void findSplitPosition(String text, int charIndex, int &posX, int &posY, int direction) {
+void findSplitPosition(NString text, int charIndex, int &posX, int &posY, int direction) {
     int lastNewLine  = 0;
     int curPosInText = 0;
     posX             = 0;
     posY             = 0;
     for (; curPosInText < charIndex; curPosInText++) {
-        posX = tft.textWidth(text.substring(lastNewLine, curPosInText + 1));
+        posX = tft.textWidth(text.substring(lastNewLine, curPosInText + 1).c_str());
         if (posX >= 240 || text[curPosInText] == '\n') {
             posX        = 0;
             lastNewLine = curPosInText + 1;
@@ -38,7 +39,7 @@ void findSplitPosition(String text, int charIndex, int &posX, int &posY, int dir
 // @param charIndex The character index to find the next x position for
 // @param direction The direction to search (UP or DOWN)
 // @return The new character index after moving in the specified direction
-int findCharPosX(String text, int &charIndex, int direction) {
+int findCharPosX(NString text, int &charIndex, int direction) {
     int prevNL       = 0;
     int lastNewLine  = 0;
     int nextNL       = text.length();
@@ -46,7 +47,7 @@ int findCharPosX(String text, int &charIndex, int direction) {
     int posX         = 0;
     int targetX      = 0;
     for (; curPosInText <= charIndex && curPosInText < text.length(); curPosInText++) {
-        posX = tft.textWidth(text.substring(lastNewLine, curPosInText));
+        posX = tft.textWidth(text.substring(lastNewLine, curPosInText).c_str());
         if (posX >= 240 || text[curPosInText] == '\n') {
             prevNL      = lastNewLine;
             lastNewLine = curPosInText + 1;
@@ -92,8 +93,8 @@ int findCharPosX(String text, int &charIndex, int direction) {
 // Function to split a string into lines that fit within the screen width
 // @param text The input string
 // @return The formatted string with line breaks
-String SplitString(String text) {
-    String result           = "";
+NString SplitString(NString text) {
+    NString result           = "";
     int    wordStart        = 0;
     int    wordEnd          = 0;
     int    textLen          = text.length();
@@ -109,7 +110,7 @@ String SplitString(String text) {
         }
         wordEnd = text.indexOf(' ', wordStart);
         if (wordEnd == -1) { wordEnd = textLen; }
-        String   word    = text.substring(wordStart, wordEnd);
+        NString   word    = text.substring(wordStart, wordEnd);
         uint16_t wordLen = tft.textWidth(word);
         if (currentLineWidth + wordLen > tft.width() && currentLineWidth > 0) {
             result += "\n";
@@ -133,12 +134,12 @@ String SplitString(String text) {
 // @param index reference to the index of the character
 // @param direction The direction to search
 // @param screenWidth The width of the screen
-void getCharacterPosition(String str, int &x, int &y, int &index, int direction = 0,
+void getCharacterPosition(NString str, int &x, int &y, int &index, int direction = 0,
                           int screenWidth = 240) {
     x                            = 0;
     y                            = 0;
     int              charCount   = 0;
-    String           currentLine = "";
+    NString           currentLine = "";
     std::vector<int> lineStarts;
     for (int i = 0; i < str.length(); i++) {
         char currentChar = str[i];
@@ -148,12 +149,12 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
             currentLine = "";
         }
         else {
-            String tempLine  = currentLine + currentChar;
+            NString tempLine  = currentLine + currentChar;
             int    lineWidth = tft.textWidth(tempLine);
             if (lineWidth > screenWidth) {
                 y += tft.fontHeight();
                 lineStarts.push_back(i);
-                currentLine = String(currentChar);
+                currentLine = NString(currentChar);
             }
             else { currentLine = tempLine; }
         }
@@ -171,7 +172,7 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
         }
         if (charCount == index) {
             int    b             = 0;
-            String lineSubstring = currentLine;
+            NString lineSubstring = currentLine;
             while (b < lineSubstring.length() &&
                    tft.textWidth(lineSubstring.substring(0, b)) <= screenWidth) {
                 b++;
@@ -187,9 +188,9 @@ void getCharacterPosition(String str, int &x, int &y, int &index, int direction 
 // Convert HEX to ASCII
 // @param hex The input hexadecimal string
 // @return The converted ASCII string
-String HEXTOASCII(String hex) {
+NString HEXTOASCII(NString hex) {
     hex.toUpperCase();
-    String output;
+    NString output;
 
     for (int i = 0; i < hex.length(); i += 2) {
         char h  = hex[i];
@@ -205,13 +206,13 @@ String HEXTOASCII(String hex) {
 //  measures text height in pixels
 //  @param text The input string
 //  @return The height of the text in pixels
-int measureStringHeight(const String &text) {
+int measureStringHeight(const NString &text) {
     int lines      = 1;
     int lineWidth  = 0;
     int spaceWidth = tft.textWidth(" ");
     int lineHeight = tft.fontHeight();
 
-    String word = "";
+    NString word = "";
 
     for (int i = 0; i < text.length(); i++) {
         char c = text[i];

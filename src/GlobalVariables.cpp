@@ -1,10 +1,7 @@
 #include "GlobalVariables.h"
 IP5306      chrg;
-TFT_eSPI    tft           = TFT_eSPI();
-TFT_eSprite screen_buffer = TFT_eSprite(&tft);
-MCP23017    mcp           = MCP23017(MCP23017_ADDR);
+TFT_STUB   tft           ;
 Preferences preferences;
-PNG         png;
 
 int8_t _signal = 0;
 int8_t charge  = 0;
@@ -23,7 +20,7 @@ bool haveNewMessages = false;
 // is spiffs used?
 bool isSPIFFS = false;
 // current brightness in percentage
-uint brightness = 100;
+uint8_t brightness = 100;
 
 int currentScreen = SCREENS::MAINSCREEN;
 // index of current wallpaper
@@ -52,16 +49,20 @@ bool ip5306exists = false;
 // Contacts storage
 std::vector<Contact> contacts;
 // Handle for background SIM checks
-TaskHandle_t TaskHCommand;
 
+
+VirtualFileSystem VFS;
 // forbid to change fastMode
 bool lockFastMode = false;
 
-String currentNumber           = "";
-String currentRingtonePath     = "";
-String currentMailRingtonePath = "";
-String currentNotificationPath = "";
-String currentWallpaperPath    = "";
-String resPath                 = "/FIRMWARE/IMAGES.SG";
-String SPIFFSresPath           = "/MAIN.nph";
-String lastSIMerror            = "";
+RenderTarget* currentRenderTarget = nullptr;
+RenderTarget* bufferedRenderTarget = nullptr;
+
+NString currentNumber           = "";
+NString currentRingtonePath     = "";
+NString currentMailRingtonePath = "";
+NString currentNotificationPath = "";
+NString currentWallpaperPath    = "";
+NString resPath                 = "/spiffs/MAIN.nph";
+NString SPIFFSresPath           = "/MAIN.nph";
+NString lastSIMerror            = "";

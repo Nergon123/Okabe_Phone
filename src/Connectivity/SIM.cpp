@@ -1,5 +1,6 @@
 #include "SIM.h"
 
+#ifndef PC
 /*
  * Send AT command to Sim Card module
  * @param command AT command to send
@@ -7,7 +8,7 @@
  * @param background If true, then command is not important
  * @return Response from the SIM card module
  */
-String sendATCommand(String command, uint32_t timeout, bool background) {
+NString sendATCommand(NString command, uint32_t timeout, bool background) {
     if (SimSerial.baudRate() != SIM_BAUD_RATE) { SimSerial.updateBaudRate(SIM_BAUD_RATE); }
     bool _simIsBusy = simIsBusy;
     while (_simIsBusy) {
@@ -15,9 +16,9 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
         _simIsBusy = simIsBusy;
     }
     simIsBusy = true;
-    SimSerial.println(command); // Send the AT command
+    SimSerial.println(command.c_str()); // Send the AT command
 
-    String   response  = "";
+    NString   response  = "";
     uint32_t startTime = millis();
 
     // Wait for response or timeout
@@ -31,7 +32,7 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
     if (response.indexOf("+CLIP:") != -1) {
         int indexClip = response.indexOf("+CLIP:");
         int comma     = getIndexOfCount(2, response, "\"", indexClip);
-        Serial.println("STATUS:" + response.substring(comma, response.indexOf(',', comma + 1)));
+       ESP_LOGI("INFO","STATUS: %s",response.substring(comma, response.indexOf(',', comma + 1)).c_str());
     }
 
     if (!isCalling) {
@@ -65,11 +66,10 @@ String sendATCommand(String command, uint32_t timeout, bool background) {
  * @param background If true, then command is not important
  * @return Response from the SIM card module
  */
-String getATvalue(String command, bool background = false) {
+NString getATvalue(NString command, bool background) {
 
-    String response = sendATCommand(command, 1000, background);
-    Serial.println(response);
-    String result = "";
+    NString response = sendATCommand(command, 1000, background);
+    NString result = "";
 
     if (response.indexOf("ERROR") != -1) { return "ERROR"; }
 
@@ -80,7 +80,7 @@ String getATvalue(String command, bool background = false) {
 
         result = response.substring(startIdx + 1, endIdx);
         result.trim();
-        Serial.println(result);
+
     }
     else {
         result = response;
@@ -140,14 +140,14 @@ bool checkSim() {
  * 6 DISCONNECT
  */
 int GetState() {
-    String result = sendATCommand("AT+CLCC");
+    NString result = sendATCommand("AT+CLCC");
     ESP_LOGI("GET CALL STATE", "AT+CLCC Result:%s", result.c_str());
     if (result.indexOf("+CLCC") == -1 && result.indexOf("OK") != -1) { return 6; }
     int indexState = getIndexOfCount(2, result, ",", result.indexOf("+CLCC"));
     result         = result.substring(indexState, result.indexOf(",", indexState + 1));
     result.replace(",", "");
     result.trim();
-    Serial.println(result);
+
     return atoi(result.c_str());
 }
 
@@ -186,7 +186,7 @@ void AT_test() {
             tft.println("\nAT COMMANDS CONSOLE\n (TO EXIT TYPE :q)\n");
             tft.setTextColor(0xFFFF);
             tft.setTextSize(1);
-            String req;
+            NString req;
 
             tft.println("REQUEST:");
 
@@ -203,10 +203,10 @@ void AT_test() {
             req.replace('\n', '\0');
 
             if (req.indexOf(":q") != -1) { break; }
-            String ans = sendATCommand(req);
+            NString ans = sendATCommand(req);
 
             tft.println("\nANSWER: " + ans);
-            Serial.println(ans);
+            Serial.println(ans.c_str());
         }
     }
 }
@@ -215,12 +215,12 @@ int getSignalLevel() {
 
     int signal = -1;
 
-    String a = getATvalue("AT+CREG?", true);
+    NString a = getATvalue("AT+CREG?", true);
 
     // Serial.println("GETSIGNALLEVEL_CREG:" + a);
 
     if (a.charAt(2) == '1' || a.charAt(2) == '5') {
-        String b = getATvalue("AT+CSQ");
+        NString b = getATvalue("AT+CSQ");
 
         if (b != "ERROR") {
 
@@ -236,9 +236,9 @@ int getSignalLevel() {
 
 // Populate contact list
 void populateContacts() {
-    String response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
+    NString response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
 
-    Serial.println(response);
+    Serial.println(response.c_str());
     // Process the response
     int startIndex = 0;
     int endIndex   = 0;
@@ -246,14 +246,14 @@ void populateContacts() {
     while ((startIndex = response.indexOf("+CPBR: ", endIndex)) != -1) {
         startIndex += 7; // Skip "+CPBR: "
         endIndex     = response.indexOf('\n', startIndex);
-        String entry = response.substring(startIndex, endIndex);
+        NString entry = response.substring(startIndex, endIndex);
 
         // Split the entry into components
         int commaIndex = entry.indexOf(',');
         if (commaIndex == -1) { break; }
 
         // Extract index
-        String indexStr     = entry.substring(0, commaIndex);
+        NString indexStr     = entry.substring(0, commaIndex);
         int    contactIndex = indexStr.toInt();
         entry               = entry.substring(commaIndex + 1);
 
@@ -261,12 +261,12 @@ void populateContacts() {
         if (commaIndex == -1) { break; }
 
         // Extract phone number
-        String number = entry.substring(0, commaIndex);
+        NString number = entry.substring(0, commaIndex);
         number.replace("\"", "");
         entry = entry.substring(commaIndex + 1);
 
         // Extract name
-        String name = entry;
+        NString name = entry;
         name.replace("\"", "");
         name.replace("145,", "");
         name.replace("129,", "");
@@ -279,3 +279,16 @@ void populateContacts() {
         contacts.push_back(tempContact);
     }
 }
+#else
+
+void   AT_test(){};
+NString sendATCommand(NString command, uint32_t timeout , bool background ){return "PC";};
+NString getATvalue(NString command, bool background ){return "PC";};
+bool   checkSim(){return true;};
+bool   _checkSim(){return true;};
+void   initSim(){};
+int    getSignalLevel(){return 0;};
+void   populateContacts(){};
+void   checkVoiceCall(){};
+int GetState(){return 0;};
+#endif

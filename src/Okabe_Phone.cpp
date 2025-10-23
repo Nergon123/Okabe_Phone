@@ -1,10 +1,26 @@
 #include "GlobalVariables.h"
+#include "Platform/ESPPlatform.h"
+#include "Platform/ard_esp.h"
 #include "Screens/Main.h"
 #include "System/ResourceSystem.h"
 #include "System/Time.h"
 
 #include "System/Tasks.h"
+
+#ifndef PC
+
 #include "esp_task_wdt.h"
+#else
+void setup();
+void loop();
+int main(int argc, char** argv) {
+    setup();
+    while (true) {
+        loop();
+    }
+    return 0;
+}
+#endif
 #include "init.h"
 void shutdown_handler() {
     tft.fillScreen(TFT_BLACK);
@@ -17,9 +33,11 @@ void shutdown_handler() {
 
 // initialize the system
 void setup() {
+#ifndef PC
     esp_task_wdt_deinit();
     esp_task_wdt_init(10000, false);
     esp_register_shutdown_handler(shutdown_handler);
+#endif
 
     SetUpTime();
     hardwareInit();
@@ -31,15 +49,10 @@ void setup() {
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
 
-    if (!psramFound()) {
-        tft.setTextColor(TFT_WHITE);
-        tft.setCursor(0, 50);
-        tft.print("psram not found...");
-    }
+
     // Chance to change resource file to custom one
     if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
     storageInit();
-
 
     res.CopyToRam();
     res.DrawImage(R_BOOT_LOGO);
@@ -52,17 +65,15 @@ void setup() {
              "Resources located in sdcard (%s)\n",
              resPath.c_str());
 
-    ESP_LOGI("DEVICE", "%s REV.%u %u MHz %d cores", ESP.getChipModel(), ESP.getChipRevision(),
-             ESP.getCpuFreqMHz(), ESP.getChipCores());
+    ESP_LOGI("DEVICE", "PC Build");
 
     progressBar(100, 100, 250);
-
+    
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
 
     if (buttonsHelding(false) == '#') { AT_test(); }
 
     millSleep = millis();
-
 }
 
 // Function to handle the main loop
