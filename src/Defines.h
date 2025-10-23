@@ -1,7 +1,4 @@
 #pragma once
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-#define PC
-#endif
 
 #define FIRMVER         "0.1.5 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"

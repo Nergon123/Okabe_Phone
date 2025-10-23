@@ -148,9 +148,11 @@ void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint1
         x += _vp_x;
         y += _vp_y;
     }
-    setAddrWindow(x, y, w, h);
-    pushColors(data, w * h);
-    activeRenderTarget->present();
+        if (activeRenderTarget) {
+        activeRenderTarget->pushBuffer(x, y, w, h, data, false, 0);
+        activeRenderTarget->present();
+    }
+
 }
 
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
@@ -160,9 +162,10 @@ void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint1
         x += _vp_x;
         y += _vp_y;
     }
-    setAddrWindow(x, y, w, h);
-    pushColors(data, w * h);
-    activeRenderTarget->present();
+        if (activeRenderTarget) {
+        activeRenderTarget->pushBuffer(x, y, w, h, data, true, transpColor);
+        activeRenderTarget->present();
+    }
 }
 
 void TFT_STUB::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {

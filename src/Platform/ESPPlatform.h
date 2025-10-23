@@ -6,7 +6,7 @@
 class ESPClass {
 public:
     void restart() {
-        std::exit(0);
+       
     }
     const char* getChipModel() { return "PC"; }
     unsigned getChipRevision() { return 1; }
