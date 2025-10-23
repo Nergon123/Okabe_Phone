@@ -1,4 +1,5 @@
 #include "ListMenu.h"
+#include "../Platform/ESP32Memory.h"
 
 #include "../System/FontManagement.h"
 
@@ -8,7 +9,7 @@
 // @param page Current page number
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
-void listMenu_header(int type, String title, int page, int pages, int y) {
+void listMenu_header(int type, NString title, int page, int pages, int y) {
     res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN,
                   psramFound());
     res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN,
@@ -17,9 +18,9 @@ void listMenu_header(int type, String title, int page, int pages, int y) {
     changeFont(1, psramFound());
 
     if (psramFound()) {
-        screen_buffer.setTextColor(0xFFFF);
-        screen_buffer.setCursor(28, y + 19);
-        screen_buffer.print(title);
+        tft.setTextColor(0xFFFF);
+        tft.setCursor(28, y + 19);
+        tft.print(title);
     }
     else {
         tft.setTextColor(0xFFFF);
@@ -29,8 +30,8 @@ void listMenu_header(int type, String title, int page, int pages, int y) {
     if (pages > 1) {
         changeFont(0, psramFound());
         if (psramFound()) {
-            screen_buffer.setCursor(210, y + 15);
-            screen_buffer.printf("%d/%d", page + 1, pages);
+            tft.setCursor(210, y + 15);
+            tft.printf("%d/%d", page + 1, pages);
         }
         else {
             tft.setCursor(210, y + 15);
@@ -56,7 +57,7 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
     int yy = (lindex * esize) + y;
 
     if (selected) {
-        if (psramFound()) { screen_buffer.fillRect(0, yy, 240, esize, color_active); }
+        if (psramFound()) { tft.fillRect(0, yy, 240, esize, color_active); }
         else { tft.fillRect(0, yy, 240, esize, color_active); }
     }
     else if (unselected) {
@@ -68,8 +69,8 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
     res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0}, -1, psramFound());
     if (lines) {
         if (psramFound()) {
-            screen_buffer.drawLine(0, yy, 240, yy, 0);
-            screen_buffer.drawLine(0, yy + esize, 240, yy + esize, 0);
+            tft.drawLine(0, yy, 240, yy, 0);
+            tft.drawLine(0, yy + esize, 240, yy + esize, 0);
         }
         else {
             tft.drawLine(0, yy, 240, yy, 0);
@@ -78,9 +79,9 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
     }
     changeFont(1, psramFound());
     if (psramFound()) {
-        screen_buffer.setTextColor(0);
-        screen_buffer.setCursor(x + 3, yy + 17);
-        screen_buffer.print(choice.label);
+        tft.setTextColor(0);
+        tft.setCursor(x + 3, yy + 17);
+        tft.print(choice.label);
     }
     else {
         tft.setTextColor(0);
@@ -97,15 +98,15 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param label Title of the menu
 /// @param forceIcons Boolean indicating if icons should be forced
 /// @param findex Force index of the selected option
-int listMenu(mOption *choices, int icount, bool lines, int type, String label, bool forceIcons,
+int listMenu(mOption *choices, int icount, bool lines, int type, NString label, bool forceIcons,
              int findex) {
 
     const int bufOffset = 26;
     if (psramFound()) {
-        screen_buffer.setTextWrap(false, false);
-        screen_buffer.createSprite(240, 294);
-        screen_buffer.setTextColor(0);
-        screen_buffer.setTextSize(1);
+       // tft.setTextWrap(false, false);
+       //tft.createSprite(240, 294);
+       // tft.setTextColor(0);
+       // tft.setTextSize(1);
     }
     else {
         tft.setTextWrap(false, false);
@@ -128,11 +129,11 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         listMenu_header(type, label, 0, 0, y);
         changeFont(1, psramFound());
         if (psramFound()) {
-            screen_buffer.setTextColor(0);
-            screen_buffer.setCursor(75, 45);
-            screen_buffer.print("< Empty >");
-            screen_buffer.pushSprite(0, 26);
-            screen_buffer.deleteSprite();
+            tft.setTextColor(0);
+            tft.setCursor(75, 45);
+            tft.print("< Empty >");
+            /////////tft.pushSprite(0, 26);
+            /////////tft.deleteSprite()();
         }
         else {
             tft.setTextColor(0);
@@ -153,7 +154,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
         tft.resetViewport();
         return -1;
     }
-    int entry_size = psramFound() ? screen_buffer.fontHeight() : tft.fontHeight();
+    int entry_size = psramFound() ? tft.fontHeight() : tft.fontHeight();
     if (choices[0].image.type != RES_NULLU8) {
         ImageData icon = res.GetImageDataByImage(choices[0].image);
         if (icon.height > entry_size) { entry_size = icon.height; }
@@ -171,7 +172,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
     }
     listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines,
                    true, false);
-    screen_buffer.pushSprite(0, 26);
+    /////////tft.pushSprite(0, 26);
     bool exit                = false;
     int  total_items_on_page = 0;
     while (!exit) {
@@ -179,13 +180,13 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 
         switch (c) {
         case SELECT:
-            screen_buffer.deleteSprite();
+            /////////tft.deleteSprite()();
 
             tft.resetViewport();
             return selected + (page * per_page);
             break;
         case BACK:
-            screen_buffer.deleteSprite();
+            /////////tft.deleteSprite()();
             tft.resetViewport();
             return LISTMENU_EXIT;
             break;
@@ -225,7 +226,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size,
                            lines, true, false);
-            screen_buffer.pushSprite(0, 26);
+            /////////tft.pushSprite(0, 26);
 
             break;
 
@@ -265,7 +266,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size,
                            lines, true, false);
 
-            screen_buffer.pushSprite(0, 26);
+            /////////tft.pushSprite(0, 26);
 
             break;
         case RIGHT:
@@ -284,7 +285,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 }
                 listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)],
                                entry_size, lines, true, false);
-                screen_buffer.pushSprite(0, 26);
+                /////////tft.pushSprite(0, 26);
             }
             break;
         case LEFT:
@@ -303,12 +304,12 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
                 }
                 listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)],
                                entry_size, lines, true, false);
-                screen_buffer.pushSprite(0, 26);
+                /////////tft.pushSprite(0, 26);
             }
             break;
         }
     }
-    screen_buffer.deleteSprite();
+    /////////tft.deleteSprite()();
     tft.resetViewport();
     return LISTMENU_EXIT;
 }
@@ -321,7 +322,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, String label, b
 // @param label Title of the menu
 // @param forceIcons Boolean indicating if icons should be forced
 // @param findex Index of the selected option
-int listMenu(const String choices[], int icount, bool images, int type, String label,
+int listMenu(const NString choices[], int icount, bool images, int type, NString label,
              bool forceIcons, int findex) {
     mOption *optionArr = new mOption[icount];
     for (int i = 0; i < icount; i++) {
@@ -342,7 +343,7 @@ int lmng_offset = 0;
 // @param index Index of the selected option
 // @param color_active Color for the active option
 // @param color_inactive Color for the inactive options
-void renderlmng(mOption *choices, int x, int y, int icount, String label, int index,
+void renderlmng(mOption *choices, int x, int y, int icount, NString label, int index,
                 uint16_t color_active, uint16_t color_inactive) {
     uint max_per_page = ((320 - y - tft.fontHeight()) / tft.fontHeight());
 
@@ -372,7 +373,7 @@ void renderlmng(mOption *choices, int x, int y, int icount, String label, int in
 // @param y Y-coordinate for the menu
 // @return Index of the selected option
 // @note This function is used for non-graphical list menus
-int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
+int listMenuNonGraphical(mOption *choices, int icount, NString label, int y) {
     suspendCore(true);
     int x     = 0;
     int index = 0;
@@ -417,7 +418,7 @@ int listMenuNonGraphical(mOption *choices, int icount, String label, int y) {
 // @param choices Array of strings representing the menu options
 // @param count Number of options in the menu
 // @param context Boolean indicating if the menu is in context
-int choiceMenu(const String choices[], int count, bool context) {
+int choiceMenu(const NString choices[], int count, bool context) {
     int      x              = 30;
     int      y              = 95;
     int      mul            = 20;

@@ -153,12 +153,12 @@ void contactss() {
     //     currentScreen = SCREENS::MAINMENU;
     //     return;
     // }
-    const String contactMenuItems[] = {"Call", "Outgoing", "Edit", "Create", "Delete"};
+    const NString contactMenuItems[] = {"Call", "Outgoing", "Edit", "Create", "Delete"};
 
     bool exit = false;
     while (!exit) {
 
-        String contactNames[contacts.size()];
+        NString contactNames[contacts.size()];
         for (int i = 0; i < contacts.size(); ++i) { contactNames[i] = contacts[i].name; }
         int selectedContactIndex =
             listMenu(contactNames, contacts.size(), false, 1, "Address Book");
@@ -189,13 +189,13 @@ void contactss() {
                 break;
             case 4:
                 // DELETE
-                sendATCommand("AT+CPBW=" + String(contacts[selectedContactIndex].index));
+                sendATCommand("AT+CPBW=" + NString(contacts[selectedContactIndex].index));
                 populateContacts();
                 break;
             }
         }
         else if (LISTMENU_OPTIONS) {
-            const String choice[1] = {"Create"};
+            const NString choice[1] = {"Create"};
             int          CMS       = choiceMenu({choice}, 1, true);
             if (!CMS) { editContact(Contact("", "", "", contacts.size())); }
             else { exit = true; }
@@ -223,7 +223,7 @@ void editContact(Contact contact) {
     tft.setTextSize(1);
     changeFont(1);
     tft.setTextColor(0xffff);
-    String boxString[textboxes] = {contact.name, contact.phone};
+    NString boxString[textboxes] = {contact.name, contact.phone};
     tft.print("Edit Contact");
     InputField("Name", contact.name, 70, true, false, false);
     InputField("Phone Number", contact.phone, 120, true, false, false);
@@ -250,12 +250,11 @@ void editContact(Contact contact) {
                 if (boxString[0].isEmpty()) { boxString[0] = boxString[1]; }
 
                 sendATCommand("AT+CPBS=\"SM\"");
-                String request = "AT+CPBW=" + String(contact.index) + ",\"" + boxString[1] +
-                                 "\"," + String(boxString[1].indexOf("+") == 0 ? 145 : 129) +
+                NString request = "AT+CPBW=" + NString(contact.index) + ",\"" + boxString[1] +
+                                 "\"," + NString(boxString[1].indexOf("+") == 0 ? 145 : 129) +
                                  ",\"" + boxString[0] + "\"";
-                String result = sendATCommand(request);
+                NString result = sendATCommand(request);
                 populateContacts();
-                Serial.println(result);
                 return;
             }
 
@@ -266,8 +265,6 @@ void editContact(Contact contact) {
             break;
         default: pos = 0; break;
         }
-        Serial.println("DIRECTION:" + String(direction));
-        Serial.println("POS:" + String(pos));
         switch (direction) {
         case DOWN:
             if (pos < textboxes) { pos++; }

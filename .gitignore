@@ -12,3 +12,4 @@ upload.sh
 PLAN.MD
 *.nph
 **/test_formats/
+*.cfg

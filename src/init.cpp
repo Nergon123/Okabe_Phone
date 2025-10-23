@@ -1,10 +1,16 @@
 #include "init.h"
 #include "System/ResourceSystem.h"
+#ifdef PC
+#include "Platform/Graphics/SDL2RenderTarget.h"
+#endif
 
 bool checkI2Cdevices(byte device) {
+    #ifndef PC 
     Wire.beginTransmission(device);
     uint8_t error = Wire.endTransmission();
     return !error;
+    #endif
+    return false;
 }
 
 // Function to initialize the SD card
@@ -12,23 +18,37 @@ bool checkI2Cdevices(byte device) {
 // @param fast If true, set the frequency to the maximum value
 // @return true if the SD card is initialized successfully, false otherwise
 bool initSDCard(bool fast) {
-    SD.end(); // reset SD interface
+#ifndef PC
     uint32_t freq  = fast ? FAST_SD_FREQ : SAFE_SD_FREQ;
     int      tries = 0;
 
     while (tries < 5) {
         if (freq >= getCpuFrequencyMhz() * 1000000) { freq /= 4; }
         ESP_LOGI("SD", "TRYING %lu Hz", freq);
-        if (SD.begin(chipSelect, SPI, freq)) { return true; }
+
+        if (SD.begin(chipSelect, SPI, freq)) {
+            IFileSystem* sd = new Esp32FileSystem(&SD);
+            VFS.mount("/sd", sd);
+            return true;
+        }
         freq /= 2;
         tries++;
     }
-    SD.end();
     return false; // failed to init
+#else
+    IFileSystem* sdcard = new StdFileSystem("sd/");
+    if (sdcard->begin()) {
+        VFS.mount("/sd", sdcard);
+        return true;
+    }
+#endif
+return false;
 }
 
 // Function to initialize the hardware components
 void hardwareInit() {
+
+#ifndef PC
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     // INIT charging IC as well as I2C
     chrg.begin(21, 22);
@@ -37,15 +57,14 @@ void hardwareInit() {
 
     pinMode(TFT_BL, OUTPUT);
     analogWrite(TFT_BL, 0); // boot blinking prevention
-    tft.init();
+#endif
+#ifdef PC
+currentRenderTarget = setupSDL2RenderTarget(240, 320, "Okabe Phone Emulator");
+tft.setRenderTarget(currentRenderTarget);
+#endif
+tft.init();
+#ifndef PC
     tft.fillScreen(0x0000);
-
-    if (psramFound()) {
-        tft.setAttribute(PSRAM_ENABLE, true);
-        ESP_LOGI("PSRAM", "PSRAM SIZE: %d bytes", ESP.getPsramSize());
-    }
-    else { ESP_LOGW("PSRAM", "PSRAM DISABLED"); }
-
     // INIT Serial
     Serial.begin(SERIAL_BAUD_RATE);
     ESP_LOGI("SERIAL", "Serial initalized at %d baud", SERIAL_BAUD_RATE);
@@ -53,36 +72,37 @@ void hardwareInit() {
     ESP_LOGI("SIM_CARD_SERIAL", "Sim Card Serial initialized at %d", SIM_BAUD_RATE);
 
     // RESET KEYBOARD
-    mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
-    mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
-    ESP_LOGI("KEYPAD", "KEYPAD Initalized");
 
     SPI.begin(14, 2, 15, chipSelect);
     ESP_LOGI("SD", "SPI started");
 
     // set brightness
     analogWrite(TFT_BL, (255 * brightness) / 100);
+#endif
 }
 
 // Function to initialize the storage
 void storageInit() {
 
-    if (isSPIFFS) { bootText(isSPIFFS ? "SPIFFS enabled" : "SPIFFS disabled"); }
+#ifndef PC
+    IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS);
+    IFileSystem* sdcard = new Esp32FileSystem(&SD);
+#else
+    IFileSystem* spiffs = new StdFileSystem("spiffs/");
+    IFileSystem* sdcard = new StdFileSystem("sd/");
+#endif
 
-    SPIFFS.begin();
+    sdcard->begin();
+    VFS.mount("/sd", sdcard);
+    spiffs->begin();
+    VFS.mount("/spiffs", spiffs);
+
     ESP_LOGI("SPIFFS", "SPIFFS started");
 
     preferences.begin("settings", false);
-    resPath = preferences.getString("resPath", resPath);
+    resPath = preferences.getString("resPath", resPath.c_str());
 
-    isSPIFFS = (!initSDCard(true) || !SD.exists(resPath)) && SPIFFS.exists(SPIFFSresPath);
-
-    if (isSPIFFS) {
-        ESP_LOGI("RESOURCES", "Resource file or SD card is not available. Trying SPIFFS.");
-    }
-    else { ESP_LOGI("RESOURCES", "Using resource file from SD card"); }
-
-    if (!isSPIFFS && !SD.exists(resPath)) {
+    if (!VFS.exists(resPath)) {
         recovery(SplitString("Seems that you flashed your device wrongly.Refer to the "
                              "instructions for more information."));
     }
@@ -91,18 +111,16 @@ void storageInit() {
     progressBar(10, 100, 250);
     bootText("Loading resource file...");
     if (!res.Files[RES_MAIN]) {
-        File Resource;
-        if (!isSPIFFS) { Resource = SD.open(resPath); }
-        else { Resource = SPIFFS.open(SPIFFSresPath); }
+        NFile* Resource = VFS.open(resPath);
         res.Init(Resource);
     }
+    ESP_LOGI("CRASH", "CHECKING RESOURCE FILE");
     if (!res.Files[RES_MAIN]) { recovery("There was an error when loading resource file."); }
-
 
     currentWallpaperPath = preferences.getString("wallpaper", "");
 
-    if (!SD.exists(currentWallpaperPath)) {
-        wallpaperIndex = preferences.getUInt("wallpaperIndex", 0);
+    if (!VFS.exists(currentWallpaperPath)) {
+        wallpaperIndex = preferences.getInt("wallpaperIndex", 0);
     }
 
     preferences.end();

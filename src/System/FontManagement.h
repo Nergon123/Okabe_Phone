@@ -1,5 +1,5 @@
 #pragma once
 #include "../GlobalVariables.h"
 
-void changeFont(int ch, bool is_screen_buffer = false,TFT_eSprite &sbuffer = screen_buffer);
-void   writeCustomFont(int x, int y, String input, int type = 0);
+void changeFont(int ch,bool buffer = false);
+void   writeCustomFont(int x, int y, NString input, int type = 0);

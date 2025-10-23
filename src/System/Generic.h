@@ -3,5 +3,5 @@
 #include "../init.h"
 int getChargeLevel();
 void fastMode(bool status);
-void setBrightness(int percentage);
-extern int currentBrightness;
+void setBrightness(uint8_t percentage);
+extern uint8_t currentBrightness;

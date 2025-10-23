@@ -11,9 +11,9 @@
 // @param count Number of messages parsed
 void parseMessages(Message *&msgs, int &count) {
 
-    String response     = sendATCommand("AT+CMGL=\"ALL\",1");
-    int    lastIndexOf  = 0;
-    int    messageCount = 0;
+    NString response     = sendATCommand("AT+CMGL=\"ALL\",1");
+    int     lastIndexOf  = 0;
+    int     messageCount = 0;
 
     // Count the number of messages
     while ((lastIndexOf = response.indexOf("+CMGL:", lastIndexOf)) != -1) {
@@ -38,8 +38,8 @@ void parseMessages(Message *&msgs, int &count) {
             msgs[i].index = response.substring(lastIndexOf + 7, firstComma).toInt();
 
             // Extract status
-            String statusStr = response.substring(response.indexOf("\"", firstComma) + 1,
-                                                  response.indexOf("\"", secondComma));
+            NString statusStr = response.substring(response.indexOf("\"", firstComma) + 1,
+                                                   response.indexOf("\"", secondComma));
             if (statusStr.indexOf("UNREAD") != -1) { msgs[i].status = status::NEW; }
             else if (statusStr.indexOf("READ") != -1) { msgs[i].status = status::READED; }
             else {
@@ -47,7 +47,7 @@ void parseMessages(Message *&msgs, int &count) {
             }
 
             // Extract sender number
-            String number = response.substring(
+            NString number = response.substring(
                 response.indexOf("\"", secondComma) + 1,
                 response.indexOf("\"", response.indexOf("\"", secondComma) + 1));
 
@@ -55,7 +55,7 @@ void parseMessages(Message *&msgs, int &count) {
             int dateStart = response.indexOf("/", lastIndexOf);
             msgs[i].date  = response.substring(dateStart + 1, response.indexOf(",", dateStart));
 
-            String checknumber;
+            NString checknumber;
             if (number.indexOf('+') != -1) {
                 checknumber = number.substring(number.indexOf('+') + 3);
             }
@@ -63,10 +63,10 @@ void parseMessages(Message *&msgs, int &count) {
             Contact curContact;
             curContact.phone = number;
 
-            //For some reason when some number from some newsletter or service like carrier.
-            //Will be recieved as number with letter p in it. (something like 543p2341)
-            //it cannot be replied back to that number so it will be "SERVICE NUMBER".
-            if (number.indexOf('p') != -1) { curContact.name = "SERVICE NUMBER"; } 
+            // For some reason when some number from some newsletter or service like carrier.
+            // Will be recieved as number with letter p in it. (something like 543p2341)
+            // it cannot be replied back to that number so it will be "SERVICE NUMBER".
+            if (number.indexOf('p') != -1) { curContact.name = "SERVICE NUMBER"; }
             else { curContact.name = number; }
             curContact.index = -1;
             for (int u = 0; u < contacts.size(); u++) {
@@ -75,13 +75,13 @@ void parseMessages(Message *&msgs, int &count) {
                     break;
                 }
             }
-            Serial.println(checknumber);
             msgs[i].contact = curContact;
-            Serial.println("INDEX: " + String(msgs[i].index));
-            Serial.println("STATUS: " + String((int)msgs[i].status)); // Cast enum to int
-            Serial.println("DATE: " + msgs[i].date);
-            Serial.println("NUMBER: " + number);
-            Serial.println("CONTACT:" + msgs[i].contact.name);
+            ESP_LOGD("MSG", "INDEX:   %d", msgs[i].index);
+            ESP_LOGD("MSG", "STATUS:  %d", (int)msgs[i].status); // Cast enum to int
+            ESP_LOGD("MSG", "DATE:    %s", msgs[i].date.c_str());
+            ESP_LOGD("MSG", "NUMBER:  %s", number.c_str());
+            ESP_LOGD("MSG", "CHKNMB:  %s", checknumber.c_str());
+            ESP_LOGD("MSG", "CONTACT: %s", msgs[i].contact.name.c_str());
             lastIndexOf += 7; // Move past "+CMGL:"
         }
     }
@@ -94,14 +94,14 @@ void messages() {
     res.DrawImage(R_MENU_BACKGROUND);
     res.DrawImage(R_MAIL_MENU_L_HEADER);
     res.DrawImage(R_MENU_L_HEADER);
-    String entries[] = {"Inbox", "Outbox"};
-    int    ch        = choiceMenu(entries, ArraySize(entries), false);
+    NString entries[] = {"Inbox", "Outbox"};
+    int     ch        = choiceMenu(entries, ArraySize(entries), false);
     inbox(ch);
     // Maybe in future there will be more entries...
-    //switch (ch) {
-    //case 0: inbox(false); break;
-    //case 1: inbox(true); break;
-    //default: break;
+    // switch (ch) {
+    // case 0: inbox(false); break;
+    // case 1: inbox(true); break;
+    // default: break;
     //}
 
     currentScreen = SCREENS::MAINMENU;
@@ -117,21 +117,19 @@ void messages() {
  * @param content Content of the message
  * @param sms Boolean indicating if the message is an SMS
  */
-void messageActivityOut(Contact contact, String subject, String content, bool sms) {
+void messageActivityOut(Contact contact, NString subject, NString content, bool sms) {
     // size of accessible height of current viewport
     const int TLVP = 238;
 
     int limit = 0;
     if (sms) { limit = 160; }
     else { limit = 400; }
-    String messagebuf;
-    int    curx     = 0;
-    int    cury     = 0;
-    int    text_pos = 0;
-    int    position = 0;
+    NString messagebuf;
+    int     curx     = 0;
+    int     cury     = 0;
+    int     text_pos = 0;
+    int     position = 0;
     drawStatusBar();
-
-    screen_buffer.createSprite(240, 269);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_ICONS, 0);
     // jump in pixels per one button press
@@ -143,11 +141,11 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
     tft.setCursor(30, 45);
     tft.setTextSize(1);
     changeFont(1);
-    changeFont(1, 1);
+    changeFont(1);
     tft.setTextColor(0xffff);
 
     tft.print("Outgoing Mail");
-    screen_buffer.setTextColor(0);
+    tft.setTextColor(0);
 
     // tft.setViewport(0, 51, 240, 269, true);
     bool exit = false;
@@ -160,29 +158,29 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
         res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
                       RES_MAIN, true);
         // drawImage(0, position + y_scr, in_mail[2], true);
-        screen_buffer.setCursor(24, position + y_text + y_scr);
-        screen_buffer.println(!contact.name.isEmpty()    ? contact.name
-                              : !contact.phone.isEmpty() ? contact.phone
-                              : !contact.email.isEmpty() ? contact.email
-                                                         : "UNKNOWN");
+        tft.setCursor(24, position + y_text + y_scr);
+        tft.println(!contact.name.isEmpty()    ? contact.name
+                    : !contact.phone.isEmpty() ? contact.phone
+                    : !contact.email.isEmpty() ? contact.email
+                                               : "UNKNOWN");
         messagebuf = SplitString(messagebuf);
         if (!subject.isEmpty() || !sms) {
             position += 24;
             res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
                           RES_MAIN, true);
-            screen_buffer.setCursor(24, position + y_text + y_scr);
-            screen_buffer.println(subject);
+            tft.setCursor(24, position + y_text + y_scr);
+            tft.println(subject);
         }
         position += 24;
-        screen_buffer.drawLine(0, position + y_scr, 240, position + y_scr, 0);
-        screen_buffer.print(messagebuf);
-        int    input = -1;
-        String a[]   = {"Return", "Send Message", "Delete", "Save To Drafts"};
-        int    u;
-        screen_buffer.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx,
-                               y_scr + cury + position + 20, TFT_BLACK);
-        Serial.println("CURX:" + String(curx) + " CURY:" + String(cury));
-        screen_buffer.pushSprite(0, 51);
+        tft.drawLine(0, position + y_scr, 240, position + y_scr, 0);
+        tft.print(messagebuf);
+        int     input = -1;
+        NString a[]   = {"Return", "Send Message", "Delete", "Save To Drafts"};
+        int     u;
+        tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20,
+                     TFT_BLACK);
+       // Serial.println("CURX:" + NString(curx) + " CURY:" + NString(cury));
+        /////////tft.pushSprite(0, 51);
         while (input == -1) {
 
             if (y_scr < min_y) { min_y = y_scr; }
@@ -211,7 +209,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
             case BACK:
 
                 u = choiceMenu(a, 4, true);
-                screen_buffer.setTextColor(0);
+                tft.setTextColor(0);
                 switch (u) {
                 case -1:
                     input = -2;
@@ -223,7 +221,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                         sendATCommand("AT+CMGS=\"" + contact.phone + "\"");
                         sendATCommand(messagebuf + char(26));
                     }
-                    screen_buffer.deleteSprite();
+                    /////////tft.deleteSprite()();
                     return;
                     break;
                 case 2: ESP_LOGI("INFO", "DELETE"); break;
@@ -240,7 +238,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                     input = buttonsHelding();
                     if (l != 0) {
 
-                        // ESP_LOGI("INFO","Y:" + String(screen_buffer.getCursorY()));
+                        // ESP_LOGI("INFO","Y:" + NString(tft.getCursorY()));
                         //  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120,
                         //  20, 0, 240);
 
@@ -261,7 +259,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                                 }
                             }
                         }
-                        if (screen_buffer.getCursorY() > TLVP) {
+                        if (tft.getCursorY() > TLVP) {
                             y_scr -= y_jump;
                             if (y_scr < min_y) { min_y = y_scr; }
                             input = BACK;
@@ -271,7 +269,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
                             y_scr = min_y;
                             input = BACK;
                         }
-                        // ESP_LOGI("INFO","MINIMUM:" + String(y_scr));
+                        // ESP_LOGI("INFO","MINIMUM:" + NString(y_scr));
                         findSplitPosition(messagebuf, text_pos, curx, cury);
                         input = BACK;
                     }
@@ -283,7 +281,7 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
 
         // tft.setViewport(0, 51, 240, 269, true);
     }
-    screen_buffer.deleteSprite();
+    /////////tft.deleteSprite()();
     // tft.resetViewport();
 }
 
@@ -300,27 +298,27 @@ void messageActivityOut(Contact contact, String subject, String content, bool sm
  * @param sms Boolean indicating if the message is an SMS
  * @return Boolean indicating if the message was deleted
  */
-bool messageActivity(Contact contact, String date, String subject, String content, int index,
+bool messageActivity(Contact contact, NString date, NString subject, NString content, int index,
                      bool outcoming, bool sms) {
     tft.setTextWrap(true);
     // returns if deleted
     if (sms) {
-        String response = sendATCommand("AT+CMGR=" + String(index));
+        NString response = sendATCommand("AT+CMGR=" + NString(index));
         if (response.indexOf("OK") == -1) {
             content = "======\nERROR LOADING FOLLOWING MESSAGE\n======";
         }
         int resIndex = 0;
         for (int i = 0; i < 7; i++) { resIndex = response.indexOf('\"', ++resIndex); }
         int endIndex = response.indexOf('\"', ++resIndex);
-        Serial.println("resIndex:" + String(resIndex) + "\nendIndex:" + endIndex);
+        ESP_LOGD("SMS", "resIndex:%d\nendIndex:%d", resIndex, endIndex);
         date = response.substring(resIndex, endIndex);
         date.replace(',', ' ');
         date = date.substring(0, date.lastIndexOf(':'));
-        Serial.println(date);
+        ESP_LOGD("SMS", "%s", date.c_str());
         content = response.substring(endIndex + 3, response.lastIndexOf("OK") - 2);
     }
     content.trim();
-    const String choices[4] = {"Reply", "Return", "Delete", "HEX to ASCII"};
+    const NString choices[4] = {"Reply", "Return", "Delete", "HEX to ASCII"};
     drawStatusBar();
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_ICONS, 0);
@@ -335,7 +333,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
     bool deleted = false;
     tft.print("Recieve Mail");
     tft.setTextColor(0);
-    tft.setViewport(0, 51, 240, 269, true);
+    tft.setViewport(0, 51, 240, 269);
     bool exit = false;
     while (!exit) {
         deleted = false;
@@ -378,10 +376,10 @@ bool messageActivity(Contact contact, String date, String subject, String conten
                 case 2:
                     tft.resetViewport();
                     if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE?")) {
-                        sendATCommand("AT+CMGD=" + String(index), 5000);
+                        sendATCommand("AT+CMGD=" + NString(index), 5000);
                         return true;
                     }
-                    tft.setViewport(0, 51, 240, 269, true);
+                    tft.setViewport(0, 51, 240, 269);
                     break;
                 case 3: content = HEXTOASCII(content); break;
                 }
@@ -391,7 +389,7 @@ bool messageActivity(Contact contact, String date, String subject, String conten
         }
         tft.resetViewport();
 
-        tft.setViewport(0, 51, 240, 269, true);
+        tft.setViewport(0, 51, 240, 269);
     }
     tft.resetViewport();
     return deleted;
@@ -431,7 +429,6 @@ void inbox(bool outbox) {
         mOption *messagesList = new mOption[count];
         for (int i = 0; i < count; i++) { messagesList[count - i - 1] = messages[i]; }
 
-        Serial.println("LISTMENU");
         int choice = -2;
         while (choice != -1) {
             choice = listMenu(messagesList, count, false, 0, title);

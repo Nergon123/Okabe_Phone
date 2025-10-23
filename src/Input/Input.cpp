@@ -1,4 +1,9 @@
 #include "Input.h"
+#include "../Platform/ESPPlatform.h"
+#include "../Platform/ard_esp.h"
+#ifdef PC
+#include <SDL2/SDL.h>
+#endif
 const char *ITAG      = "INPUT";
 int         millDelay = 0;
 
@@ -29,6 +34,14 @@ void idle() {
 }
 
 // check which MCP23017 button is pressed
+#ifndef PC
+#include <MCP23017.h>
+MCP23017 mcp = MCP23017(MCP23017_ADDR);
+void     initMCP() {
+    mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
+    mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
+    ESP_LOGI("KEYPAD", "KEYPAD Initalized");
+}
 int checkButton() {
     if (!mcpexists) { return 0; }
     mcp.portMode(MCP23017Port::A, 0xFF);
@@ -59,7 +72,10 @@ int checkButton() {
     }
     return 0;
 }
-
+#else
+void initMCP() {}
+int  checkButton() { return 0; }
+#endif
 /*
  * Number input field (used on Main screen)
  * @param first first number to be displayed (since it being called by button press)
@@ -70,7 +86,7 @@ void numberInput(char first) {
     sBarChanged = true;
     drawStatusBar();
     const uint8_t max_char = 13;
-    String        number;
+    NString       number;
     number += first;
     char c = 255;
     tft.setTextColor(TFT_WHITE);
@@ -100,7 +116,7 @@ void numberInput(char first) {
         }
 
         if ((c >= '0' || c == '*' || c == '#') && c <= '9' && number.length() < max_char) {
-            if (!simIsBusy) { sendATCommand("AT+CLDTMF=15,\"" + String(char(c)) + "\",10", 1); }
+            if (!simIsBusy) { sendATCommand("AT+CLDTMF=15,\"" + NString(char(c)) + "\",10", 1); }
             number += c;
             tft.fillRect(0, 300, 240, 20, 0);
             tft.setCursor(0, 300);
@@ -180,7 +196,7 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
                         : input == '#'               ? 11
                                                      : -1;
     if (currentIndex == -1) {
-        ESP_LOGI(ITAG, "%s", String("UNKNOWN BUTTON:" + String(input)).c_str());
+        ESP_LOGI(ITAG, "%s", NString("UNKNOWN BUTTON:" + NString(input)).c_str());
         return 0;
     }
 
@@ -198,7 +214,7 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     while (millis() - mil < DIB_MS) {
         curx = tft.getCursorX();
         cury = tft.getCursorY();
-        // ESP_LOGI(ITAG,"POSITION:" + String(pos));
+        // ESP_LOGI(ITAG,"POSITION:" + NString(pos));
         int c = buttonsHelding();
 
         if (c == input || first) {
@@ -247,6 +263,29 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     return result;
 }
 
+char getPCInput(){
+    char input = 0;
+    #ifdef PC
+
+    SDL_Delay(1);
+    SDL_Event ev;
+    while (SDL_PollEvent(&ev)) {
+        if (ev.type == SDL_QUIT) {
+            SDL_Quit();
+            std::exit(0);
+        }
+        else if (ev.type == SDL_KEYDOWN) {
+            input = ev.key.keysym.sym;
+            printf("Key pressed: %c\n", input);
+            return input;
+            
+        }
+
+    }
+#endif
+return 0;
+}
+
 int lastresult = -1;
 /*
  * Returns pressed button
@@ -276,6 +315,8 @@ int buttonsHelding(bool _idle) {
      */
 
     if (_idle) { idle(); }
+    char input = 0;
+    input = getPCInput();
 
     int result = checkButton();
     if (lastresult != result) { millSleep = millis(); }
@@ -287,9 +328,11 @@ int buttonsHelding(bool _idle) {
     // Serial control support
     // You can control device keypad from other device through Serial port
 
-    if (Serial.available()) {
-        char input = Serial.read();
-        millSleep  = millis();
+    if (Serial.available()||input!=0) {
+#ifndef PC
+        input = Serial.read();
+#endif
+        millSleep = millis();
         switch (input) {
         case 'a':
             ESP_LOGI(ITAG, "LEFT");
@@ -327,9 +370,10 @@ int buttonsHelding(bool _idle) {
             ESP_LOGI(ITAG, "%c", input);
             result = 21;
             break;
-        case 'l':
-            ESP_LOGI(ITAG, "Restart");
+        case 'l': ESP_LOGI(ITAG, "Restart");
+#ifndef PC
             ESP.restart();
+#endif
             break;
         default:
             if (input >= '0' && input <= '9') {

@@ -1,32 +1,35 @@
 #pragma once
 #include "Defines.h"
 #include "ExtDep/IP5306.h"
-#include "esp_heap_caps.h"
 
+#ifndef PC
 #include <Arduino.h>
 #include <MCP23017.h>
 #include <PNGdec.h>
-#include <Preferences.h>
-#include <SD.h>
 #include <TFT_eSPI.h>
+#endif
+#include "Platform/NString.h"
+#include "Platform/ard_esp.h"
+#include "Platform/FileSystem/VFS.h"
+#include "Platform/Preferences.h"
+
 #include <vector>
 // hmm....
-extern TFT_eSprite screen_buffer;
 #include "System/ResourceSystem.h"
 
 struct Contact {
-    int    index;
-    String phone;
-    String name;
-    String email;
+    int     index;
+    NString phone;
+    NString name;
+    NString email;
     Contact() : index(-1), phone(""), name(""), email("") {}
-    Contact(String _name, String _phone, String _email = "", int _index = -1)
+    Contact(NString _name, NString _phone, NString _email = "", int _index = -1)
         : index(_index), phone(_phone), name(_name), email(_email) {}
 };
 
 // Options for list Menu
 struct mOption {
-    String  label;
+    NString label;
     Image   image;
     uint8_t icon_index;
 };
@@ -44,17 +47,17 @@ struct Message {
     int     status;
     bool    isOutgoing;
     Contact contact;
-    String  subject;
-    String  content;
-    String  date;
-    String  longdate;
+    NString subject;
+    NString content;
+    NString date;
+    NString longdate;
 
     operator mOption() const {
         return mOption{date + " " + contact.name, .image = Image(R_LIST_MAIL_ICONS),
                        .icon_index = (status == status::NEW ? (uint8_t)0 : (uint8_t)1)};
     }
 
-    Message(Contact _contact, String _subject, String _content, String _date, String _longdate,
+    Message(Contact _contact, NString _subject, NString _content, NString _date, NString _longdate,
             bool _isOutgoing = false, unsigned char _status = status::NEW, int _index = -1)
         : index(_index), status(_status), isOutgoing(_isOutgoing), contact(_contact),
           subject(_subject), content(_content), date(_date), longdate(_longdate) {}
@@ -64,8 +67,8 @@ struct Message {
           content(""), date("00/00"), longdate("00/00/00 00:00") {}
 };
 struct STR_DIR {
-    String text;
-    int    direction;
+    NString text;
+    int     direction;
 };
 
 enum SCREENS {
@@ -77,12 +80,10 @@ enum SCREENS {
     E,
 };
 
-extern MCP23017 mcp;
 extern IP5306   chrg;
-extern TFT_eSPI tft;
+extern TFT_STUB tft;
 
-extern Preferences preferences;
-extern PNG         png;
+// extern Preferences preferences;
 
 extern int                  currentScreen;
 extern int                  currentFont;
@@ -90,7 +91,7 @@ extern int                  delayBeforeSleep;
 extern int                  delayBeforeLock;
 extern int8_t               _signal;
 extern int8_t               charge;
-extern uint                 brightness;
+extern uint8_t              brightness;
 extern uint32_t             wallpaperIndex;
 extern ulong                millSleep;
 extern volatile int         DBC_MS;
@@ -110,20 +111,18 @@ extern bool                 mcpexists;
 extern bool                 ip5306exists;
 extern Contact              examplecontact;
 
-extern String lastSIMerror;
-extern String currentNumber;
-extern String currentRingtonePath;
-extern String currentNotificationPath;
-extern String currentMailRingtonePath;
-extern String currentWallpaperPath;
-extern String resPath;
-extern String SPIFFSresPath;
+extern NString lastSIMerror;
+extern NString currentNumber;
+extern NString currentRingtonePath;
+extern NString currentNotificationPath;
+extern NString currentMailRingtonePath;
+extern NString currentWallpaperPath;
+extern NString resPath;
+
+extern RenderTarget* currentRenderTarget;
+extern RenderTarget* bufferedRenderTarget;
 
 extern uint8_t *resources;
-
-extern bool isSPIFFS;
-
-extern TaskHandle_t TaskHCommand;
 
 // Function to get the size of an array ... bruh
 template <typename T, size_t N> size_t ArraySize(T (&)[N]) { return N; }

@@ -19,44 +19,43 @@ void drawStatusBar(bool force) {
         int  viewport_y     = tft.getViewportY();
         int  viewport_w     = tft.getViewportWidth();
         int  viewport_h     = tft.getViewportHeight();
-        bool viewport_datum = tft.getViewportDatum();
         tft.resetViewport();
 
         if (_signal < 0) { _signal = 0; }
         if (_signal > 3) { _signal = 3; }
-        TFT_eSprite _sprite = TFT_eSprite(&tft);
+        // TFT_eSprite _sprite = TFT_eSprite(&tft);
 
-        _sprite.createSprite(240, 26);
+        // _sprite.createSprite(240, 26);
 
         sBarChanged = false;
         charge      = getChargeLevel();
 
-        res.DrawImage(R_STATUSBAR_BACKGROUND, 0, true, _sprite);
-        res.DrawImage(R_SIGNAL_STRENGTH, _signal, true, _sprite);
-        res.DrawImage(R_BATTERY_CHARGE, charge, true, _sprite);
-        //  tft.print(String(charge) + String("%"));
-        changeFont(1, true, _sprite);
-        _sprite.setTextSize(1);
-        _sprite.setTextColor(TFT_LIGHTGREY);
-        _sprite.setCursor(102, 19);
-        _sprite.printf("%02d:%02d", sbtime.tm_hour, sbtime.tm_min);
+        // res.DrawImage(R_STATUSBAR_BACKGROUND, 0, true, _sprite);
+        // res.DrawImage(R_SIGNAL_STRENGTH, _signal, true, _sprite);
+        // res.DrawImage(R_BATTERY_CHARGE, charge, true, _sprite);
+        //  tft.print(String(charge) + NString("%"));
+        // changeFont(1, true, _sprite);
+        // _sprite.setTextSize(1);
+        // _sprite.setTextColor(TFT_LIGHTGREY);
+        // _sprite.setCursor(102, 19);
+        // _sprite.printf("%02d:%02d", sbtime.tm_hour, sbtime.tm_min);
         if (isScreenLocked) {
-            changeFont(0, true, _sprite);
-            _sprite.setCursor(0, 0);
-            _sprite.setTextSize(1);
-            _sprite.setTextColor(TFT_WHITE);
-            _sprite.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
+            // changeFont(0, true, _sprite);
+            // _sprite.setCursor(0, 0);
+            // _sprite.setTextSize(1);
+            // _sprite.setTextColor(TFT_WHITE);
+            // _sprite.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
         }
-        _sprite.pushSprite(0, 0);
-        _sprite.deleteSprite();
-        tft.setViewport(viewport_x, viewport_y, viewport_w, viewport_h, viewport_datum);
+        // _sprite.pushSprite(0, 0);
+        // _sprite.deleteSprite();
+        tft.setViewport(viewport_x, viewport_y, viewport_w, viewport_h);
     }
 }
 // Function to show a confirmation window
 // This function is called when the user wants to confirm an action
 // @param reason The reason for the confirmation
 // @return true if the user confirms, false if the user cancels
-bool confirmation(String reason,String yes, String no) {
+bool confirmation(NString reason,NString yes, NString no) {
     drawWallpaper();
     res.DrawImage(R_FULL_NOTIFICATION);
     changeFont(1);
@@ -83,7 +82,7 @@ bool confirmation(String reason,String yes, String no) {
 // Function to show an error window
 // This function is called when an error occurs
 // @param reason The reason for the error
-void ErrorWindow(String reason) {
+void ErrorWindow(NString reason) {
 
     int xpos = 0;
     drawWallpaper();

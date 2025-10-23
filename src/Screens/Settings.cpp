@@ -3,7 +3,7 @@
 const int lastImage = 42;
 
 void advancedSettings() {
-    String options[] = {
+    NString options[] = {
         "System",
         "Connectivity",
         "Look and feel",
@@ -11,7 +11,7 @@ void advancedSettings() {
     };
     int    lookAndFeel;
     int    menuSelection = -2;
-    String laf_opts[]    = {"Change Theme"};
+    NString laf_opts[]    = {"Change Theme"};
 
     while (menuSelection != -1) {
         res.DrawImage(R_MENU_BACKGROUND);
@@ -30,7 +30,7 @@ void advancedSettings() {
 // This function is called when the user wants to change settings
 // It allows the user to change the wallpaper, ringtones, etc.
 void settings() {
-    String settingsOptions[] = {"Change Wallpaper", "Set call ringtone", "Set mail ringtone",
+    NString settingsOptions[] = {"Change Wallpaper", "Set call ringtone", "Set mail ringtone",
                                 "Advanced Settings"};
     int    menuSelection     = -2;
     while (menuSelection != -1) {
@@ -59,8 +59,7 @@ void settings() {
             return;
             break;
         }
-        Serial.println(pictureIndex);
-        String GalleryChoice[] = {"Preview", "Confirm"};
+        NString GalleryChoice[] = {"Preview", "Confirm"};
         if (pictureIndex != -1 && pictureIndex != lastImage) {
 
             confPictureIndex = choiceMenu(GalleryChoice, 2, true);
@@ -76,7 +75,7 @@ void settings() {
                 break;
             case 1:
                 preferences.begin("settings", false);
-                preferences.putUInt("wallpaperIndex", pictureIndex);
+                preferences.putInt("wallpaperIndex", pictureIndex);
                 preferences.putString("wallpaper", "");
                 preferences.end();
                 wallpaperIndex = pictureIndex;
@@ -89,15 +88,15 @@ void settings() {
             }
         }
         else if (pictureIndex == lastImage) {
-            String path = fileBrowser("/", ".png");
-            if (NFile(path).isValid()) { confPictureIndex = choiceMenu(GalleryChoice, 2, true); }
+            NString path = fileBrowser("/", ".png");
+            if (VFS.exists(path)) { confPictureIndex = choiceMenu(GalleryChoice, 2, true); }
             else { break; }
             switch (confPictureIndex) {
-            case 0: drawPNG(path.c_str()); break;
+            case 0: break;
             case 1:
                 preferences.begin("settings", false);
-                preferences.putUInt("wallpaperIndex", -1);
-                preferences.putString("wallpaper", path);
+                preferences.putInt("wallpaperIndex", -1);
+                preferences.putString("wallpaper", path.c_str());
                 preferences.end();
                 // TODO WALLPAPER
                 currentWallpaperPath = path;
@@ -118,7 +117,7 @@ void settings() {
 // If "Pick wallpaper..." is selected, it allows the user to select a custom wallpaper
 // @return The index of the selected wallpaper
 int gallery() {
-    if (!SD.exists(resPath)) { return lastImage; }
+    if (!VFS.exists("/sd" + resPath)) { return lastImage; }
     mOption wallpaperOptions[] = {{.label = "Pick wallpaper...", .image = Image(R_NULL_IMAGE)}};
     return listMenu(wallpaperOptions, ArraySize(wallpaperOptions), true, 2, "Change wallpaper");
 }
@@ -156,8 +155,6 @@ void setTime(time_t *time) {
     int  direction = LEFT;
     while (!exit) {
 
-        Serial.println(choice);
-
         sNumberChange(57, 90, 25, 25, tm_time.tm_mday, 1, 31, choice == 0 && !renderall,
                       &direction);
         sNumberChange(93, 90, 25, 25, tm_time.tm_mon, 1, 12, choice == 1 && !renderall,
@@ -170,8 +167,6 @@ void setTime(time_t *time) {
                       &direction);
         bool confirm = button("CONFIRM", 10, 280, 100, 30, choice == 5 && !renderall, &direction);
         bool cancel  = button("CANCEL", 130, 280, 100, 30, choice == 6 && !renderall, &direction);
-
-        Serial.println(direction);
 
         if (!renderall) {
             if (direction == RIGHT) { choice++; }
@@ -197,52 +192,44 @@ void setTime(time_t *time) {
  * @param isMail true if the ringtone is for mail, false if it is for call
  */
 void ringtoneSelector(bool isMail) {
-    File dir = SD.open("/AUDIO");
-    if (!dir) {
-        ErrorWindow("NO /AUDIO");
-        return;
-    }
+    // NFile* dir = VFS.open("/sd/AUDIO");
+    // if (!dir) {
+    //     ErrorWindow("NO /AUDIO");
+    //     return;
+    // }
 
-    dir.rewindDirectory();
-    int  count = 0;
-    File entry;
 
-    while (entry = dir.openNextFile()) {
-        if (!entry.isDirectory()) { count++; }
-    }
 
-    if (count == 0) {
-        sysError("No ringtones found in /AUDIO");
-        return;
-    }
+    // File entry;
 
-    String  pathes[count];
-    mOption opt[count];
-    int     iconIndex = -1;
 
-    dir.rewindDirectory();
-    String *compareRingtone = isMail ? &currentMailRingtonePath : &currentRingtonePath;
 
-    count = 0;
-    while (entry = dir.openNextFile()) {
-        if (!entry.isDirectory() && String(entry.name()).endsWith(".SGAUDIO")) {
-            pathes[count]    = entry.path();
-            opt[count].label = entry.name();
-            opt[count].label.replace(".SGAUDIO", "");
+    // mOption opt[count];
+    // int     iconIndex = -1;
 
-            // TODO DRAW NOTE ICON
-            if (pathes[count].equals(*compareRingtone)) { iconIndex = count; }
-            count++;
-        }
-    }
+  
+    // NString *compareRingtone = isMail ? &currentMailRingtonePath : &currentRingtonePath;
 
-    int choice = 0;
-    while (choice != -1) {
-        choice = listMenu(opt, count, false, 2, "Set ringtone", true, choice);
-        if (choice < 0) { return; }
-        if (iconIndex >= 0) { opt[iconIndex].image = Image(); }
-        // TODO DRAW NOTE ICON
-        iconIndex        = choice;
-        *compareRingtone = pathes[choice];
-    }
+    // count = 0;
+    // while (entry = dir.openNextFile()) {
+    //     if (!entry.isDirectory() && NString(entry.name()).endsWith(".SGAUDIO")) {
+    //         pathes[count]    = entry.path();
+    //         opt[count].label = entry.name();
+    //         opt[count].label.replace(".SGAUDIO", "");
+
+    //         // TODO DRAW NOTE ICON
+    //         if (pathes[count].equals(*compareRingtone)) { iconIndex = count; }
+    //         count++;
+    //     }
+    // }
+
+    // int choice = 0;
+    // while (choice != -1) {
+    //     choice = listMenu(opt, count, false, 2, "Set ringtone", true, choice);
+    //     if (choice < 0) { return; }
+    //     if (iconIndex >= 0) { opt[iconIndex].image = Image(); }
+    //     // TODO DRAW NOTE ICON
+    //     iconIndex        = choice;
+    //     *compareRingtone = pathes[choice];
+    // }
 }

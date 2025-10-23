@@ -1,9 +1,9 @@
 #pragma once
 #include "Defines.h"
-#include <SD.h>
-#include <TFT_eSPI.h>
+#include "Platform/FileSystem/VFS.h"
+#include "Platform/Graphics/Display.h"
 #include <vector>
-extern TFT_eSprite screen_buffer;
+
 // Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32
 // bits
 #pragma pack(push, 1)
@@ -121,11 +121,11 @@ struct Image {
     bool      resize;
     uint8_t   resType;
     uint8_t   type;
-    File     *source;
-    
+    NFile     *source;
+
     Image() : type(RES_NULLU8) {};
 
-    Image(uint16_t id, uint8_t type = RES_MAIN, File *source = nullptr, int w = 0, int h = 0,
+    Image(uint16_t id, uint8_t type = RES_MAIN, NFile *source = nullptr, int w = 0, int h = 0,
           bool resize = false)
         : id((uint32_t)id), w(w), h(h), resize(resize), resType(type), type(RES_RESFILE),
           source(source) {};
@@ -138,42 +138,41 @@ struct Image {
 
     // @param sw Source width
     // @param sh Source Height
-    Image(uint32_t address, File *source, int sw, int sh, int w = 0, int h = 0,
+    Image(uint32_t address, NFile *source, int sw, int sh, int w = 0, int h = 0,
           bool resize = false)
         : id(address), w(w), h(h), sw(sw), sh(sh), resize(resize), type(RES_ADDRFILE),
           source(source) {};
 };
-
+extern RenderTarget*  currentRenderTarget;
 class ResourceSystem {
   public:
     Header                 Headers[2];
     std::vector<ImageData> Images[2];
-    File                   Files[2];
+    NFile                 *Files[2];
     uint8_t               *cache[2];
-
+    
     ImageData GetImageDataByID(uint16_t id, uint8_t type = RES_MAIN);
     ImageData GetImageDataByImage(Image image);
-
     void        CopyToRam(uint8_t type = RES_MAIN);
-    void        Init(File Main, File Wallpapers = File());
+    void        Init(NFile* Main, NFile* Wallpapers = nullptr);
     Coords      GetCoordsByID(uint16_t id, uint8_t type = RES_MAIN);
     bool        DrawImage(Image image, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF},
                           Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN,
-                          bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
-    bool        DrawImage(Image image, uint8_t index, bool is_screen_buffer,
-                          TFT_eSprite &sbuffer = screen_buffer);
+                          bool is_tft = false, RenderTarget* target =currentRenderTarget);
+    bool        DrawImage(Image image, uint8_t index, bool is_tft,
+                          RenderTarget* target = currentRenderTarget);
     bool        DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF},
                           Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN,
-                          bool is_screen_buffer = false, TFT_eSprite &sbuffer = screen_buffer);
-    bool        DrawImage(uint16_t id, uint8_t index, bool is_screen_buffer,
-                          TFT_eSprite &sbuffer = screen_buffer);
+                          bool is_tft = false, RenderTarget* target = currentRenderTarget);
+    bool        DrawImage(uint16_t id, uint8_t index, bool is_tft,
+                          RenderTarget* target = currentRenderTarget);
     ImageBuffer GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0,
                           uint8_t type = RES_MAIN);
 
   private:
     const char *names[3] = {"Main", "Wallpapers", "Fonts"};
     void        failure(const char *msg = "Unknown Error", bool important = false);
-    void        parseResourceFile(File file, Header &header, uint8_t type = RES_MAIN,
+    void        parseResourceFile(NFile *file, Header &header, uint8_t type = RES_MAIN,
                                   bool important = false);
 };
 void                  drawWallpaper();
