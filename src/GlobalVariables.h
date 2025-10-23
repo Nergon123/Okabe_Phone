@@ -12,7 +12,6 @@
 #include "Platform/ard_esp.h"
 #include "Platform/FileSystem/VFS.h"
 #include "Platform/Preferences.h"
-
 #include <vector>
 // hmm....
 #include "System/ResourceSystem.h"

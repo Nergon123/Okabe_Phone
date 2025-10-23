@@ -38,5 +38,7 @@ public:
 
 #ifdef PC
 RenderTarget* setupSDL2RenderTarget(int16_t width, int16_t height, const char* title);
+#else
+ RenderTarget *setupTFTESPIRenderTarget();
 #endif
 

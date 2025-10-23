@@ -2,14 +2,17 @@
 #include "System/ResourceSystem.h"
 #ifdef PC
 #include "Platform/Graphics/SDL2RenderTarget.h"
+#else
+#include "Platform/Graphics/TFTESPIRenderTarget.h"
 #endif
 
+
 bool checkI2Cdevices(byte device) {
-    #ifndef PC 
+#ifndef PC
     Wire.beginTransmission(device);
     uint8_t error = Wire.endTransmission();
     return !error;
-    #endif
+#endif
     return false;
 }
 
@@ -42,7 +45,7 @@ bool initSDCard(bool fast) {
         return true;
     }
 #endif
-return false;
+    return false;
 }
 
 // Function to initialize the hardware components
@@ -59,10 +62,12 @@ void hardwareInit() {
     analogWrite(TFT_BL, 0); // boot blinking prevention
 #endif
 #ifdef PC
-currentRenderTarget = setupSDL2RenderTarget(240, 320, "Okabe Phone Emulator");
-tft.setRenderTarget(currentRenderTarget);
+    currentRenderTarget = setupSDL2RenderTarget(240, 320, "Okabe Phone Emulator");
+#else
+currentRenderTarget = setupTFTESPIRenderTarget();
 #endif
-tft.init();
+tft.setRenderTarget(currentRenderTarget);
+    tft.init();
 #ifndef PC
     tft.fillScreen(0x0000);
     // INIT Serial

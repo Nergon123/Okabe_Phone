@@ -11,6 +11,9 @@
 
 #include "esp_task_wdt.h"
 #else
+#ifdef ARDUINO 
+#error "This file should not be compiled for Arduino"
+#endif
 void setup();
 void loop();
 int main(int argc, char** argv) {

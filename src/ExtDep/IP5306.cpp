@@ -98,7 +98,7 @@ return 0;
 }
 
 uint8_t IP5306::isChargerConnected() {
-return 0;
+return 1;
 }
 
 uint8_t IP5306::isChargeFull() {
