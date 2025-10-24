@@ -2,19 +2,20 @@
 #define OKABE_TFT_ESPI_STUB_H
 #include "../NString.h"
 #include "Defines.h"
-#include "Fonts/Arial.h"
+#include "Fonts/font5x7.h"
+#include "Fonts/gfxfont.h"
 #include "RenderTargets.h"
 #include <stdarg.h>
-typedef struct {
-    const uint8_t *data;
-    uint8_t        width;
-} gchar_t;
-typedef struct {
-    gchar_t *data;
-    uint8_t  width;
-    uint8_t  height;
-} font_t;
+#ifndef PC
+  #define READ_BYTE(addr) pgm_read_byte(addr)
+#else
+  #define READ_BYTE(addr) (*(const uint8_t*)(addr))
+#endif
 
+struct font_t {
+    bool     isGFX;
+    const GFXfont *font;
+};
 // color definitions
 #define TFT_BLACK       0x0000                     /*   0,   0,   0 */
 #define TFT_NAVY        0x000F                     /*   0,   0, 128 */
@@ -41,11 +42,11 @@ typedef struct {
 #define TFT_SKYBLUE     0x867D                     /* 135, 206, 235 */
 #define TFT_VIOLET      0x915C                     /* 180,  46, 226 */
 
-// Minimal, platform-agnostic stub of TFT_eSPI used for porting/testing.
-// Implement or extend methods as needed by your project.
 class TFT_STUB {
   public:
     TFT_STUB(int16_t w = 240, int16_t h = 320);
+
+    font_t currentFont;
 
     RenderTarget *activeRenderTarget = nullptr;
     void          setRenderTarget(RenderTarget *target);
@@ -64,11 +65,11 @@ class TFT_STUB {
     virtual void pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data);
     // window / pixel push (no-op default)
     virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h);
-    virtual void pushColors(const uint16_t *data, int16_t len, bool swap = false);
+    virtual void pushColors( uint16_t *data, int16_t len, bool swap = false);
     // rotation/origin
     void    setRotation(uint8_t r);
     uint8_t getRotation() const;
-
+    void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
     // viewport support: define a drawing sub-region (x, y, w, h).
     // When a viewport is active, drawing coordinates passed to drawPixel,
     // setAddrWindow and similar functions are interpreted as coordinates
@@ -140,9 +141,9 @@ class TFT_STUB {
     void setAttribute(int attr, bool value);
 
   protected:
-    int16_t _init_w, _init_h;
-    int16_t _w, _h;
-    uint8_t _rotation;
+    int16_t  _init_w, _init_h;
+    int16_t  _w, _h;
+    uint8_t  _rotation;
     int16_t  _addrX1, _addrY1, _addrX2, _addrY2;
     int16_t  _cursor_x, _cursor_y;
     uint16_t _textcolor;

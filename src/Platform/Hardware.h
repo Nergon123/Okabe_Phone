@@ -14,6 +14,7 @@ inline unsigned long micros() {
 
 inline void analogWrite(int pin, int value) {
     // No-op on PC
+    (void)pin; (void)value;
 }
 
 inline int constrain(int value, int min, int max) {
@@ -24,6 +25,7 @@ inline int constrain(int value, int min, int max) {
 
 
 inline int settimeofday(const struct timeval* tv, const void* tz) {
+    (void)tv; (void)tz;
     return 0; // Stub for PC
 }
 
@@ -32,6 +34,7 @@ inline unsigned int getCpuFrequencyMhz() {
 }
 
 inline void setCpuFrequencyMhz(unsigned int freq) {
+    (void)freq;
     // No-op on PC
 }
 

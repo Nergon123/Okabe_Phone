@@ -8,7 +8,7 @@ TFT_STUB::TFT_STUB(int16_t w, int16_t h)
     : _init_w(w), _init_h(h), _w(w), _h(h), _rotation(0), _cursor_x(0), _cursor_y(0),
       _textcolor(0xFFFF), _vp_x(0), _vp_y(0), _vp_w(w), _vp_h(h), _vp_active(false) {}
 
-void TFT_STUB::init(uint8_t) {}
+void TFT_STUB::init(uint8_t) { activeRenderTarget->init(); }
 
 void TFT_STUB::drawPixel(int16_t x, int16_t y, uint16_t color) {
     // If viewport active, input coordinates are relative to the viewport origin.
@@ -28,21 +28,19 @@ void TFT_STUB::drawPixel(int16_t x, int16_t y, uint16_t color) {
     }
     if (activeRenderTarget) { activeRenderTarget->drawPixel(x, y, color); }
 }
-void TFT_STUB::pushColors(const uint16_t *data, int16_t len, bool swap) {
-    if (activeRenderTarget) {
-        activeRenderTarget->pushBuffer(_addrX1, _addrY1, _addrX2, _addrY2, data, false, 0);
-        activeRenderTarget->present();
-    }
+
+void TFT_STUB::pushColors(uint16_t *data, int16_t len, bool swap) {
+    if (!activeRenderTarget) { return; }
+    activeRenderTarget->pushColors(data, len, swap);
 }
 void TFT_STUB::fillScreen(uint16_t color) {
+    if (!activeRenderTarget) { return; }
     if (!_vp_active) {
         // fill entire screen (no-op implementation)
-        (void)color;
+        activeRenderTarget->fillScreen(color);
         return;
     }
-    // fill viewport region (no-op): the hardware implementation should
-    // write only the rectangle [_vp_x,_vp_y]..[_vp_x+_vp_w-1,_vp_y+_vp_h-1]
-    (void)color;
+    fillRect(_vp_x, _vp_y, _vp_w, _vp_h, color);
 }
 
 void TFT_STUB::setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {
@@ -69,14 +67,7 @@ void TFT_STUB::setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {
         setViewport((int16_t)ix1, (int16_t)iy1, (int16_t)(ix2 - ix1), (int16_t)(iy2 - iy1));
         return;
     }
-    _addrX1 = xs;
-    _addrY1 = ys;
-    _addrX2 = w;
-    _addrY2 = h;
-    (void)xs;
-    (void)ys;
-    (void)w;
-    (void)h;
+    activeRenderTarget->setAddrWindow(xs, ys, w, h);
 }
 
 void TFT_STUB::setViewport(int16_t x, int16_t y, int16_t w, int16_t h) {
@@ -137,9 +128,10 @@ void TFT_STUB::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t col
         x += _vp_x;
         y += _vp_y;
     }
-    for (int16_t i = x; i < x + w; i++) {
-        for (int16_t j = y; j < y + h; j++) { drawPixel(i, j, color); }
-    }
+
+    setAddrWindow(x, y, w, h);
+    activeRenderTarget->writeColor(color, w * h);
+    activeRenderTarget->present();
 }
 
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data) {
@@ -148,11 +140,10 @@ void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint1
         x += _vp_x;
         y += _vp_y;
     }
-        if (activeRenderTarget) {
+    if (activeRenderTarget) {
         activeRenderTarget->pushBuffer(x, y, w, h, data, false, 0);
         activeRenderTarget->present();
     }
-
 }
 
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
@@ -162,7 +153,7 @@ void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint1
         x += _vp_x;
         y += _vp_y;
     }
-        if (activeRenderTarget) {
+    if (activeRenderTarget) {
         activeRenderTarget->pushBuffer(x, y, w, h, data, true, transpColor);
         activeRenderTarget->present();
     }
@@ -173,15 +164,44 @@ void TFT_STUB::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t col
         x += _vp_x;
         y += _vp_y;
     }
-    for (int16_t i = x; i < x + w; i++) {
-        drawPixel(i, y, color);
-        drawPixel(i, y + h - 1, color);
-    }
-    for (int16_t j = y; j < y + h; j++) {
-        drawPixel(x, j, color);
-        drawPixel(x + w - 1, j, color);
-    }
+    // Top edge
+    setAddrWindow(x, y, w, 1);
+    activeRenderTarget->writeColor(color, w);
+    // Bottom edge
+    setAddrWindow(x, y + h - 1, w, 1);
+    activeRenderTarget->writeColor(color, w);
+    // Left edge
+    setAddrWindow(x, y + 1, 1, h - 2);
+    activeRenderTarget->writeColor(color, h - 2);
+    // Right edge
+    setAddrWindow(x + w - 1, y + 1, 1, h - 2);
+    activeRenderTarget->writeColor(color, h - 2);
+
     activeRenderTarget->present();
+}
+void TFT_STUB::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
+    if (!activeRenderTarget) { return; }
+    if (y < 0 || y >= activeRenderTarget->getHeight()) { return; }
+
+    int16_t startX = x;
+    int16_t len    = w;
+
+    // Clip left
+    if (startX < 0) {
+        len += startX; // reduce length
+        startX = 0;
+    }
+
+    // Clip right
+    if (startX + len > activeRenderTarget->getWidth()) {
+        len = activeRenderTarget->getWidth() - startX;
+    }
+
+    if (len <= 0) { return; }
+
+    // Use render target's fast write
+    activeRenderTarget->setAddrWindow(startX, y, len, 1);
+    activeRenderTarget->writeColor(color, len);
 }
 
 void TFT_STUB::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {
@@ -191,11 +211,26 @@ void TFT_STUB::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t
         x1 += _vp_x;
         y1 += _vp_y;
     }
-    (void)x0;
-    (void)y0;
-    (void)x1;
-    (void)y1;
-    (void)color;
+
+    int16_t dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int16_t dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int16_t err = dx + dy, e2;
+
+    while (true) {
+        drawPixel(x0, y0, color);
+        if (x0 == x1 && y0 == y1) { break; }
+        e2 = 2 * err;
+        if (e2 >= dy) {
+            err += dy;
+            x0 += sx;
+        }
+        if (e2 <= dx) {
+            err += dx;
+            y0 += sy;
+        }
+    }
+
+    activeRenderTarget->present();
 }
 
 void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2,
@@ -208,58 +243,154 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
         x2 += _vp_x;
         y2 += _vp_y;
     }
-    (void)x0;
-    (void)y0;
-    (void)x1;
-    (void)y1;
-    (void)x2;
-    (void)y2;
-    (void)color;
+
+    // Sort vertices by y-coordinate ascending (y0 <= y1 <= y2)
+    if (y0 > y1) {
+        std::swap(y0, y1);
+        std::swap(x0, x1);
+    }
+    if (y1 > y2) {
+        std::swap(y1, y2);
+        std::swap(x1, x2);
+    }
+    if (y0 > y1) {
+        std::swap(y0, y1);
+        std::swap(x0, x1);
+    }
+
+    int16_t totalHeight = y2 - y0;
+    for (int16_t i = 0; i < totalHeight; i++) {
+        bool    secondHalf    = i > (y1 - y0) || y1 == y0;
+        int16_t segmentHeight = secondHalf ? y2 - y1 : y1 - y0;
+
+        float alpha = (float)i / totalHeight;
+        float beta =
+            (float)(i - (secondHalf ? y1 - y0 : 0)) / segmentHeight; // relative to segment
+
+        int16_t ax = x0 + (x2 - x0) * alpha;
+        int16_t bx = secondHalf ? x1 + (x2 - x1) * beta : x0 + (x1 - x0) * beta;
+
+        if (ax > bx) { std::swap(ax, bx); }
+        for (int16_t j = ax; j <= bx; j++) { drawPixel(j, y0 + i, color); }
+    }
+
+    activeRenderTarget->present();
 }
 
 void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
-
-    // If viewport active, input coordinates are relative to the viewport origin.
+    // Translate coords if viewport active
     if (_vp_active) {
-        // translate to absolute display coords
         int32_t ax = (int32_t)x + _vp_x;
         int32_t ay = (int32_t)y + _vp_y;
-        // clip to viewport
         if (ax < _vp_x || ay < _vp_y) { return; }
         if (ax >= _vp_x + _vp_w || ay >= _vp_y + _vp_h) { return; }
         x = (int16_t)ax;
         y = (int16_t)ay;
     }
     else {
-        // clip to display bounds
         if (x < 0 || y < 0 || x >= _w || y >= _h) { return; }
     }
-    // Each character is 5x7, stored in 5 bytes, each byte represents a vertical column
-    for (int col = 0; col < 5; col++) {
-        uint8_t line = font[c * 5 + col];
-        // Read bits from bottom to top (bit 0 is top pixel)
-        for (int row = 0; row < 8; row++) {
-            if (line & (1 << row)) { // Start from top bit (bit 6)
-                // Draw a textsize x textsize pixel block
-                for (int sx = 0; sx < textsize; sx++) {
-                    for (int sy = 0; sy < textsize; sy++) {
-                        drawPixel(x + col * textsize + sx, y + row * textsize + sy, textcolor);
-                    }
+
+    if (!currentFont.isGFX) {
+unsigned char uc = static_cast<unsigned char>(c);
+if (uc > 127) return; // or the max index of your font array
+
+for (int col = 0; col < 5; col++) {
+    uint8_t line = font[uc * 5 + col];
+    for (int row = 0; row < 8; row++) {
+        if (line & (1 << row)) {
+            for (int sx = 0; sx < textsize; sx++) {
+                for (int sy = 0; sy < textsize; sy++) {
+                    drawPixel(x + col * textsize + sx, y + row * textsize + sy, textcolor);
                 }
             }
         }
     }
-    // Advance cursor after rendering
-    _cursor_x += 6 * textsize; // Character width (5) + 1 pixel space between chars
-    activeRenderTarget->present();
+}
+_cursor_x += 6 * textsize;
+
+    }
+    else if (currentFont.font) {
+c -= currentFont.font->first;          // character index
+GFXglyph *glyph = &currentFont.font->glyph[c]; // correct glyph for this char
+uint8_t *bitmap = currentFont.font->bitmap;
+uint32_t bo = glyph->bitmapOffset;
+uint8_t w = glyph->width, h = glyph->height;
+int8_t xo = glyph->xOffset, yo = glyph->yOffset;
+        uint8_t xx, yy, bits = 0, bit = 0;
+        int16_t xo16 = 0, yo16 = 0;
+
+        if (textsize > 1) {
+            xo16 = xo;
+            yo16 = yo;
+        }
+
+        // GFXFF rendering speed up
+        uint16_t hpc = 0; // Horizontal foreground pixel count
+        for (yy = 0; yy < h; yy++) {
+            for (xx = 0; xx < w; xx++) {
+                if (bit == 0) {
+                    bits = bitmap[bo++];
+                    bit  = 0x80;
+                }
+                if (bits & bit) { hpc++; }
+                else {
+                    if (hpc) {
+                        if (textsize == 1) {
+                            drawFastHLine(x + xo + xx - hpc, y + yo + yy, hpc, textcolor);
+                        }
+                        else {
+                            fillRect(x + (xo16 + xx - hpc) * textsize, y + (yo16 + yy) * textsize,
+                                    textsize * hpc, textsize, textcolor);
+                        }
+                        hpc = 0;
+                    }
+                }
+                bit >>= 1;
+            }
+            // Draw pixels for this line as we are about to increment yy
+            if (hpc) {
+                if (textsize == 1) { drawFastHLine(x + xo + xx - hpc, y + yo + yy, hpc, textcolor); }
+                else {
+                    fillRect(x + (xo16 + xx - hpc) * textsize, y + (yo16 + yy) * textsize, textsize * hpc,
+                             textsize, textcolor);
+                }
+                hpc = 0;
+            }
+        }
+        _cursor_x += glyph->xAdvance * textsize;
+    }
 }
 
 int TFT_STUB::textWidth(const std::string &s) const {
-    return s.length() * 6 * textsize; // 5 pixels width + 1 pixel spacing
+    if (!currentFont.isGFX || !currentFont.font) {
+        // Classic 5x7 font
+        return static_cast<int>(s.length() * 6 * textsize); // 5 pixels + 1 spacing
+    }
+    else {
+        // GFX font
+        int            w   = 0;
+        const GFXfont *gfx = currentFont.font;
+        for (char c : s) {
+            if (c < gfx->first || c > gfx->last) {
+                continue; // skip missing chars
+            }
+            GFXglyph *glyph = &gfx->glyph[c - gfx->first];
+            w += glyph->xAdvance * textsize;
+        }
+        return w;
+    }
 }
 
 int TFT_STUB::fontHeight() const {
-    return 8 * textsize; // Character height
+    if (!currentFont.isGFX || !currentFont.font) {
+        // Classic 5x7 font
+        return 8 * textsize;
+    }
+    else {
+        // GFX font
+        return currentFont.font->yAdvance * textsize;
+    }
 }
 
 void TFT_STUB::setAttribute(int /*attr*/, bool /*value*/) { /* no-op */ }
@@ -305,6 +436,7 @@ void TFT_STUB::print(const char *str) {
         }
         str++;
     }
+    activeRenderTarget->present();
 }
 
 void TFT_STUB::println(const char *str) {
@@ -339,12 +471,4 @@ void TFT_STUB::println(const NString &s) {
     print("\n");
 }
 
-void TFT_STUB::setRenderTarget(RenderTarget *target) {
-    // If there is an existing render target, call its deinit hook
-    if (activeRenderTarget && activeRenderTarget != target) { activeRenderTarget->deinit(); }
-
-    activeRenderTarget = target;
-
-    // Initialize the new render target if present
-    if (activeRenderTarget) { activeRenderTarget->init(); }
-}
+void TFT_STUB::setRenderTarget(RenderTarget *target) { activeRenderTarget = target; }

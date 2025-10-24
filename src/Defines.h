@@ -12,7 +12,12 @@
 #define MCP23017_ADDR 0x20
 #define MAX_CONTACTS  100
 
+
+
 #ifdef PC
+
+#define PROGMEM 
+
 #ifndef ESP_LOGG
 #define ESP_LOGG(level, tag, format, ...) printf("[%s][%s] " format "\n", level, tag, ##__VA_ARGS__)
 #endif

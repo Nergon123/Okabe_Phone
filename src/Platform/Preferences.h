@@ -7,13 +7,14 @@ class Preferences {
 private:
     std::map<std::string, std::string> values;
     std::string filePath;
+    std::string sectionName;
     bool initialized = false;
 
     bool saveToFile() {
         auto file = VFS.open(filePath, "w");
         if (!file) return false;
         
-        file->println("[storage]");
+        file->printf("[%s]\n", sectionName.c_str());
         for (const auto& pair : values) {
             file->printf("%s=\"%s\"\n", pair.first.c_str(), pair.second.c_str());
         }
@@ -26,15 +27,19 @@ private:
         if (!file) return false;
 
         char buffer[256];
-        bool inStorage = false;
+        bool inCorrectSection = false;
         
         while (file->readLine(buffer, sizeof(buffer))) {
             std::string line(buffer);
-            if (line == "[storage]") {
-                inStorage = true;
+            
+            // Check if this is a section header
+            if (line.length() >= 3 && line.front() == '[' && line.back() == ']') {
+                std::string foundSection = line.substr(1, line.length() - 2);
+                inCorrectSection = (foundSection == sectionName);
                 continue;
             }
-            if (!inStorage) continue;
+            
+            if (!inCorrectSection) continue;
             
             size_t eqPos = line.find('=');
             if (eqPos == std::string::npos) continue;
@@ -58,6 +63,8 @@ public:
     bool begin(const char* name, bool readOnly = false) {
         if (name == nullptr) return false;
         
+        sectionName = name;
+        
         // Try SD first, then SPIFFS
         filePath = std::string("/sd/") + name + ".cfg";
         if (!VFS.exists(filePath)) {
@@ -65,11 +72,13 @@ public:
         }
         
         initialized = loadFromFile();
+        (void)readOnly;
         return initialized;
     }
 
     void end() {
         values.clear();
+        sectionName.clear();
         initialized = false;
     }
 

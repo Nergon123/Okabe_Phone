@@ -56,7 +56,7 @@ class Esp32FileSystem : public IFileSystem {
   public:
     Esp32FileSystem(fs::FS* fsImpl) : fs(fsImpl) {}
 
-    bool begin() override { return true; }
+    bool begin() override {return false; } 
     bool exists(const std::string& path) override { return fs->exists(path.c_str()); }
     bool remove(const std::string& path) override { return fs->remove(path.c_str()); }
     bool mkdir(const std::string& path) override { return fs->mkdir(path.c_str()); }

@@ -9,10 +9,12 @@ class SerialClass {
 public:
     void begin(unsigned long baud) {
         // PC implementation doesn't need actual baud rate
+        (void)baud;
     }
     
     void updateBaudRate(unsigned long baud) {
         // PC implementation doesn't need actual baud rate
+        (void)baud;
     }
 
     void println(const char* str) {
