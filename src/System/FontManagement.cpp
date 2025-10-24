@@ -1,12 +1,22 @@
 #include "FontManagement.h"
 
-void chfont(uint8_t f) {
-
-}
 void changeFont(int ch,bool buffer) {
-    currentFont = ch;
-
-    chfont(ch);
+    // 5x7 font is index 0
+    if (ch == 0) {
+        tft.currentFont.isGFX = false;
+        tft.currentFont.font  = nullptr;
+    } else {
+        static const GFXfont* fonts[] = { &FONT1, &FONT2, &FONT3, &FONT4 };
+        ch -= 1; // adjust to 0-based index
+        if (ch >= 0 && ch < ArraySize(fonts)) {
+            tft.currentFont.isGFX = true;
+            tft.currentFont.font  = fonts[ch];
+        } else {
+            // fallback if invalid index
+            tft.currentFont.isGFX = false;
+            tft.currentFont.font  = nullptr;
+        }
+    }
 }
 
 // ## Write custom font

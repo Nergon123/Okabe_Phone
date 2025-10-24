@@ -19,15 +19,21 @@ public:
         if (strchr(mode, 'a')) m |= std::ios::out | std::ios::app;
         file.open(path, m);
     }
-    size_t read(void* buf, size_t len) override { file.read((char*)buf, len); return file.gcount(); }
-    size_t write(const void* buf, size_t len) override { file.write((const char*)buf, len); return len; }
-    bool seek(size_t pos, int mode) override {
-        std::ios::seekdir dir = (mode == SEEK_CUR) ? std::ios::cur :
-                                (mode == SEEK_END) ? std::ios::end : std::ios::beg;
-        file.seekg(pos, dir);
-        file.seekp(pos, dir);
-        return true;
+   size_t read(void* buf, size_t len) override {
+    if (!file.read(reinterpret_cast<char*>(buf), len)) {
+        return static_cast<size_t>(file.gcount());
     }
+    return len;
+}
+
+    size_t write(const void* buf, size_t len) override { file.write((const char*)buf, len); return len; }
+bool seek(size_t pos, int mode) override {
+ 
+    file.seekg(pos, std::ios::beg);
+    return file.good();
+}
+
+
     void close() override { file.close(); }
     size_t size() override {
         auto currentPos = file.tellg();

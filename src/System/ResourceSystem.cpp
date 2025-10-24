@@ -95,9 +95,12 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     uint32_t start = (startpos.y * img.width * 2 + (img.width * img.height * 2 * index));
     uint32_t size  = height * img.width * 2;
     if (size == 0) { return false; }
-
+#ifndef PC
     bool isLines = psramFound() && !is_buffer;
-    int  lines   = isLines ? img.height : lines_to_draw_wo_psram;
+#else
+bool isLines =false;
+#endif
+    int  lines   = isLines ? lines_to_draw_wo_psram : img.height;
     ESP_LOGI("RES", "Drawing Image ID:%d Index:%d at %d,%d Size:%dx%d (from %d) on %s", id, index,
              pos.x, pos.y, width, height, start, is_buffer ? "TFT" : "RenderTarget");
     tft.setRenderTarget(target);
@@ -107,8 +110,8 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
 
         ImageBuffer imageBuffer =
             GetRGB565(img, lines * img.width * 2, start + i * img.width * 2, type);
-
         if (img.flags & 1 /*if transparent*/) {
+            
             tft.pushImage(pos.x, pos.y + i, width, lines, imageBuffer.pointer, img.transpColor);
         }
         else { tft.pushImage(pos.x, pos.y + i, width, lines, imageBuffer.pointer); }

@@ -8,38 +8,51 @@ TFT_eSPI _tft;
 #endif
 
 class TFTESPIRenderTarget : public RenderTarget {
-  public:
-    // callbacks: draw(x,y,color), push(x,y,w,h,data,transparent,transpColor)
-    TFTESPIRenderTarget(int16_t w = 0, int16_t h = 0)
-        : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr) {}
+public:
+    TFTESPIRenderTarget(int w,int h)
+        : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w,h, nullptr) {
+            init();
+        }
 
-    virtual ~TFTESPIRenderTarget() = default;
+    void init() override {
+        _tft.init();
+        _tft.fillScreen(TFT_BLACK);
+    }
 
     void drawPixel(int16_t x, int16_t y, uint16_t color) override {
         _tft.drawPixel(x, y, color);
     }
 
-    void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
+    void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t* data,
                     bool transparent, uint16_t transpColor) override {
-        if (transparent) { _tft.pushImage(x, y, w, h, data, transpColor); }
-        else { _tft.pushImage(x, y, w, h, data); }
+        if (transparent) _tft.pushImage(x, y, w, h, data, transpColor);
+        else _tft.pushImage(x, y, w, h, data);
     }
-    void idle() override {
-        // no-op
+
+    void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) override {
+        _tft.setAddrWindow(xs, ys, w, h);
     }
-    void init() override {
-        _tft.init();
+
+    void pushColors(uint16_t* data, uint32_t len, bool swap = false) override {
+        _tft.pushColors(data, len, swap);       
+
     }
-    void deinit() override {
-        // no-op
+
+    void writeColor(uint16_t color, uint32_t len) override {
+        _tft.writeColor(color, len);
     }
+
+    void fillScreen(uint16_t color) override {
+        _tft.fillScreen(color);
+    }
+
+    void present() override {} // no buffering on TFT
+    void deinit() override {}  // no cleanup needed
 
 };
 
 
 #ifndef PC
 
-inline RenderTarget *setupTFTESPIRenderTarget() {
-    return new TFTESPIRenderTarget(240, 320);
-}
+inline RenderTarget *setupTFTESPIRenderTarget() { return new TFTESPIRenderTarget(240, 320); }
 #endif

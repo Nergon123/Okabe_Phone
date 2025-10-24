@@ -67,7 +67,7 @@ void hardwareInit() {
 currentRenderTarget = setupTFTESPIRenderTarget();
 #endif
 tft.setRenderTarget(currentRenderTarget);
-    tft.init();
+tft.init();
 #ifndef PC
     tft.fillScreen(0x0000);
     // INIT Serial
@@ -90,6 +90,7 @@ tft.setRenderTarget(currentRenderTarget);
 void storageInit() {
 
 #ifndef PC
+SPIFFS.begin();
     IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS);
     IFileSystem* sdcard = new Esp32FileSystem(&SD);
 #else
@@ -101,7 +102,6 @@ void storageInit() {
     VFS.mount("/sd", sdcard);
     spiffs->begin();
     VFS.mount("/spiffs", spiffs);
-
     ESP_LOGI("SPIFFS", "SPIFFS started");
 
     preferences.begin("settings", false);
@@ -119,7 +119,6 @@ void storageInit() {
         NFile* Resource = VFS.open(resPath);
         res.Init(Resource);
     }
-    ESP_LOGI("CRASH", "CHECKING RESOURCE FILE");
     if (!res.Files[RES_MAIN]) { recovery("There was an error when loading resource file."); }
 
     currentWallpaperPath = preferences.getString("wallpaper", "");

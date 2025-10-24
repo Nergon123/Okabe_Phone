@@ -1,5 +1,7 @@
 #include "Notifications.h"
 #include "../System/ResourceSystem.h"
+#include "Platform/Graphics/RenderTargets.h"
+#include "Platform/Graphics/RGB565BufferRenderTarget.h"
 // ## Draw status bar
 // This function draws the status bar on the screen
 // @param force: If true, force redraw of the status bar if false only redraw if time has changed
@@ -23,31 +25,27 @@ void drawStatusBar(bool force) {
 
         if (_signal < 0) { _signal = 0; }
         if (_signal > 3) { _signal = 3; }
-        // TFT_eSprite _sprite = TFT_eSprite(&tft);
-
-        // _sprite.createSprite(240, 26);
-
+        
+        RenderTarget* buf = new RGB565BufferRenderTarget(240,26);
         sBarChanged = false;
         charge      = getChargeLevel();
-
-        // res.DrawImage(R_STATUSBAR_BACKGROUND, 0, true, _sprite);
-        // res.DrawImage(R_SIGNAL_STRENGTH, _signal, true, _sprite);
-        // res.DrawImage(R_BATTERY_CHARGE, charge, true, _sprite);
-        //  tft.print(String(charge) + NString("%"));
-        // changeFont(1, true, _sprite);
-        // _sprite.setTextSize(1);
-        // _sprite.setTextColor(TFT_LIGHTGREY);
-        // _sprite.setCursor(102, 19);
-        // _sprite.printf("%02d:%02d", sbtime.tm_hour, sbtime.tm_min);
+        tft.setRenderTarget(buf);
+         res.DrawImage(R_STATUSBAR_BACKGROUND);
+         res.DrawImage(R_SIGNAL_STRENGTH, _signal);
+         res.DrawImage(R_BATTERY_CHARGE, charge);
+        //  tft.print(NString(charge) + NString("%"));
+         changeFont(1);
+         tft.setTextSize(1);
+         tft.setTextColor(TFT_LIGHTGREY);
+         tft.setCursor(102, 19);
+         tft.printf("%02d:%02d", sbtime.tm_hour, sbtime.tm_min);
         if (isScreenLocked) {
-            // changeFont(0, true, _sprite);
-            // _sprite.setCursor(0, 0);
-            // _sprite.setTextSize(1);
-            // _sprite.setTextColor(TFT_WHITE);
-            // _sprite.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
+             changeFont(0);
+             tft.setCursor(0, 0);
+             tft.setTextSize(1);
+             tft.setTextColor(TFT_WHITE);
+             tft.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
         }
-        // _sprite.pushSprite(0, 0);
-        // _sprite.deleteSprite();
         tft.setViewport(viewport_x, viewport_y, viewport_w, viewport_h);
     }
 }
