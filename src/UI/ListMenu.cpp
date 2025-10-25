@@ -1,7 +1,23 @@
 #include "ListMenu.h"
 #include "../Platform/ESP32Memory.h"
 
+#include "../Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "../System/FontManagement.h"
+
+bool          lm_buffer = LISTMENU_BUFFER;
+RenderTarget *lm_buffer_obj =
+    lm_buffer ? new RGB565BufferRenderTarget(240, 294) : currentRenderTarget;
+
+void pushBufferToScreen(int x, int y) {
+    currentRenderTarget->pushBuffer(x, y, lm_buffer_obj->getWidth(), lm_buffer_obj->getHeight(),
+                                    lm_buffer_obj->getBuffer(), 0, 0);
+}
+void deleteBuffer() {
+    if (lm_buffer_obj->getType() == RENDER_TARGET_TYPE_BUFFER) {
+        lm_buffer_obj->~RenderTarget();
+        delete lm_buffer_obj;
+    }
+}
 
 // Header for the list menu
 // @param type Type of menu (0: messages, 1: contacts, 2: settings)
@@ -10,33 +26,19 @@
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
 void listMenu_header(int type, NString title, int page, int pages, int y) {
-    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN,
-                  psramFound());
-    res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN,
-                  psramFound());
+    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN);
+    res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN);
 
-    changeFont(1, psramFound());
+    changeFont(1);
 
-    if (psramFound()) {
-        tft.setTextColor(0xFFFF);
-        tft.setCursor(28, y + 19);
-        tft.print(title);
-    }
-    else {
-        tft.setTextColor(0xFFFF);
-        tft.setCursor(28, y + 19);
-        tft.print(title);
-    }
+    tft.setTextColor(0xFFFF);
+    tft.setCursor(28, y + 19);
+    tft.print(title);
+
     if (pages > 1) {
-        changeFont(0, psramFound());
-        if (psramFound()) {
-            tft.setCursor(210, y + 15);
-            tft.printf("%d/%d", page + 1, pages);
-        }
-        else {
-            tft.setCursor(210, y + 15);
-            tft.printf("%d/%d", page + 1, pages);
-        }
+        changeFont(0);
+        tft.setCursor(210, y + 15);
+        tft.printf("%d/%d", page + 1, pages);
     }
 }
 
@@ -56,38 +58,23 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 
     int yy = (lindex * esize) + y;
 
-    if (selected) {
-        if (psramFound()) { tft.fillRect(0, yy, 240, esize, color_active); }
-        else { tft.fillRect(0, yy, 240, esize, color_active); }
-    }
+    if (selected) { tft.fillRect(0, yy, 240, esize, color_active); }
     else if (unselected) {
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.y = yy}, {.y = yy}, {.y = yy + esize}, RES_MAIN,
-                      psramFound());
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.x = 0, .y = yy}, {.x = 0, .y = yy},
+                      {.x = 0, .y = yy + esize}, RES_MAIN);
     }
 
     ImageData imgData = res.GetImageDataByImage(choice.image);
-    res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0}, -1, psramFound());
+    res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0},
+                  choice.image.type);
     if (lines) {
-        if (psramFound()) {
-            tft.drawLine(0, yy, 240, yy, 0);
-            tft.drawLine(0, yy + esize, 240, yy + esize, 0);
-        }
-        else {
-            tft.drawLine(0, yy, 240, yy, 0);
-            tft.drawLine(0, yy + esize, 240, yy + esize, 0);
-        }
+        tft.drawLine(0, yy, 240, yy, 0);
+        tft.drawLine(0, yy + esize, 240, yy + esize, 0);
     }
-    changeFont(1, psramFound());
-    if (psramFound()) {
-        tft.setTextColor(0);
-        tft.setCursor(x + 3, yy + 17);
-        tft.print(choice.label);
-    }
-    else {
-        tft.setTextColor(0);
-        tft.setCursor(x + 3, yy + 17);
-        tft.print(choice.label);
-    }
+    changeFont(1);
+    tft.setTextColor(0);
+    tft.setCursor(x + 3, yy + 17);
+    tft.print(choice.label);
 }
 
 /// Function to display a list menu
@@ -102,19 +89,12 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
              int findex) {
 
     const int bufOffset = 26;
-    if (psramFound()) {
-       // tft.setTextWrap(false, false);
-       //tft.createSprite(240, 294);
-       // tft.setTextColor(0);
-       // tft.setTextSize(1);
-    }
-    else {
-        tft.setTextWrap(false, false);
-        tft.setTextColor(0);
-        tft.setTextSize(1);
-        tft.setViewport(0, bufOffset, 240, 294);
-    }
-    changeFont(2, psramFound());
+    if (!lm_buffer) { tft.setViewport(0, bufOffset, 240, 294); }
+    tft.setTextWrap(false, false);
+    tft.setTextColor(0);
+    tft.setTextSize(1);
+    changeFont(2);
+
     int selected     = 0;
     int page         = 0;
     int pages        = 0;
@@ -122,24 +102,16 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
     int ly           = 25;
     int x            = 10;
     int old_selected = 0;
-    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, psramFound());
-    // drawImage(0, y + 25, SDImage(BACKGROUND_IMAGE.address + 0x2EE0, 240, 269), true);
-
+    res.DrawImage(R_LIST_MENU_BACKGROUND, 0);
     if (icount == 0) {
         listMenu_header(type, label, 0, 0, y);
-        changeFont(1, psramFound());
-        if (psramFound()) {
-            tft.setTextColor(0);
-            tft.setCursor(75, 45);
-            tft.print("< Empty >");
-            /////////tft.pushSprite(0, 26);
-            /////////tft.deleteSprite()();
-        }
-        else {
-            tft.setTextColor(0);
-            tft.setCursor(75, 45);
-            tft.print("< Empty >");
-        }
+        changeFont(1);
+        tft.setTextColor(0);
+        tft.setCursor(75, 45);
+        tft.print("< Empty >");
+
+        if (lm_buffer) { pushBufferToScreen(0, 26); }
+
         while (true) {
             int bh = buttonsHelding();
             if (bh == SELECT) {
@@ -154,7 +126,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
         tft.resetViewport();
         return -1;
     }
-    int entry_size = psramFound() ? tft.fontHeight() : tft.fontHeight();
+    int entry_size = tft.fontHeight();
     if (choices[0].image.type != RES_NULLU8) {
         ImageData icon = res.GetImageDataByImage(choices[0].image);
         if (icon.height > entry_size) { entry_size = icon.height; }
@@ -172,7 +144,8 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
     }
     listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines,
                    true, false);
-    /////////tft.pushSprite(0, 26);
+    pushBufferToScreen(0, bufOffset);
+
     bool exit                = false;
     int  total_items_on_page = 0;
     while (!exit) {
@@ -180,13 +153,14 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
 
         switch (c) {
         case SELECT:
-            /////////tft.deleteSprite()();
-
+            pushBufferToScreen(0, bufOffset);
+            deleteBuffer();
             tft.resetViewport();
             return selected + (page * per_page);
             break;
         case BACK:
-            /////////tft.deleteSprite()();
+            pushBufferToScreen(0, bufOffset);
+            deleteBuffer();
             tft.resetViewport();
             return LISTMENU_EXIT;
             break;
@@ -208,7 +182,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
                 }
 
                 listMenu_header(type, label, page, pages, y);
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, psramFound());
+                res.DrawImage(R_LIST_MENU_BACKGROUND);
 
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -226,7 +200,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
 
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size,
                            lines, true, false);
-            /////////tft.pushSprite(0, 26);
+            pushBufferToScreen(0, bufOffset);
 
             break;
 
@@ -247,7 +221,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
                     selected = 0;
                 }
 
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, psramFound());
+                res.DrawImage(R_LIST_MENU_BACKGROUND);
                 listMenu_header(type, label, page, pages, y);
                 int startIndex = page * per_page;
                 int endIndex   = std::min(startIndex + per_page, icount);
@@ -266,14 +240,14 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size,
                            lines, true, false);
 
-            /////////tft.pushSprite(0, 26);
+            pushBufferToScreen(0, bufOffset);
 
             break;
         case RIGHT:
             if (pages > 1) {
                 page     = (page + 1) % pages;
                 selected = 0;
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, psramFound());
+                res.DrawImage(R_LIST_MENU_BACKGROUND);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -285,14 +259,14 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
                 }
                 listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)],
                                entry_size, lines, true, false);
-                /////////tft.pushSprite(0, 26);
+                pushBufferToScreen(0, bufOffset);
             }
             break;
         case LEFT:
             if (pages > 1) {
                 page     = (page - 1 + pages) % pages;
                 selected = 0;
-                res.DrawImage(R_LIST_MENU_BACKGROUND, 0, psramFound());
+                res.DrawImage(R_LIST_MENU_BACKGROUND);
                 listMenu_header(type, label, page, pages, y);
 
                 int startIndex = page * per_page;
@@ -304,12 +278,13 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
                 }
                 listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)],
                                entry_size, lines, true, false);
-                /////////tft.pushSprite(0, 26);
+                pushBufferToScreen(0, bufOffset);
             }
             break;
         }
     }
-    /////////tft.deleteSprite()();
+    deleteBuffer();
+
     tft.resetViewport();
     return LISTMENU_EXIT;
 }

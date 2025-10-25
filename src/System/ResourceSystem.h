@@ -121,7 +121,7 @@ struct Image {
     bool      resize;
     uint8_t   resType;
     uint8_t   type;
-    NFile     *source;
+    NFile    *source;
 
     Image() : type(RES_NULLU8) {};
 
@@ -143,29 +143,24 @@ struct Image {
         : id(address), w(w), h(h), sw(sw), sh(sh), resize(resize), type(RES_ADDRFILE),
           source(source) {};
 };
-extern RenderTarget*  currentRenderTarget;
+extern RenderTarget *currentRenderTarget;
 class ResourceSystem {
   public:
     Header                 Headers[2];
     std::vector<ImageData> Images[2];
     NFile                 *Files[2];
     uint8_t               *cache[2];
-    
-    ImageData GetImageDataByID(uint16_t id, uint8_t type = RES_MAIN);
-    ImageData GetImageDataByImage(Image image);
+
+    ImageData   GetImageDataByID(uint16_t id, uint8_t type = RES_MAIN);
+    ImageData   GetImageDataByImage(Image image);
     void        CopyToRam(uint8_t type = RES_MAIN);
-    void        Init(NFile* Main, NFile* Wallpapers = nullptr);
+    void        Init(NFile *Main, NFile *Wallpapers = nullptr);
     Coords      GetCoordsByID(uint16_t id, uint8_t type = RES_MAIN);
     bool        DrawImage(Image image, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF},
-                          Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN,
-                          bool is_tft = false, RenderTarget* target =currentRenderTarget);
-    bool        DrawImage(Image image, uint8_t index, bool is_tft,
-                          RenderTarget* target = currentRenderTarget);
+                          Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN);
+    bool        DrawImage(Image image, uint8_t index);
     bool        DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF},
-                          Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN,
-                          bool is_tft = false, RenderTarget* target = currentRenderTarget);
-    bool        DrawImage(uint16_t id, uint8_t index, bool is_tft,
-                          RenderTarget* target = currentRenderTarget);
+                          Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN);
     ImageBuffer GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0,
                           uint8_t type = RES_MAIN);
 

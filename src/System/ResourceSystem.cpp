@@ -73,14 +73,14 @@ ImageData ResourceSystem::GetImageDataByImage(Image image) {
 }
 
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords startpos,
-                               Coords endpos, uint8_t type, bool is_buffer, RenderTarget *target) {
+                               Coords endpos, uint8_t type) {
     ImageData img = GetImageDataByID(id, type);
     if (img.id == R_NULL_IMAGE && id != R_NULL_IMAGE) {
         ESP_LOGE("RES", "Requested Sprite %d:%d not found", id, index);
         return false;
     }
     else if (id == R_NULL_IMAGE) { return false; }
-
+    bool is_buffer = tft.activeRenderTarget->getType() == RENDER_TARGET_TYPE_BUFFER;
     if (pos.x == OP_UNDEF) { pos.x = img.x; }
     if (pos.y == OP_UNDEF) { pos.y = img.y; }
     if (endpos.x <= 0) { endpos.x = img.width; }
@@ -98,12 +98,11 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
 #ifndef PC
     bool isLines = psramFound() && !is_buffer;
 #else
-bool isLines =false;
+    bool isLines = false;
 #endif
-    int  lines   = isLines ? lines_to_draw_wo_psram : img.height;
+    int lines = isLines ? lines_to_draw_wo_psram : img.height;
     ESP_LOGI("RES", "Drawing Image ID:%d Index:%d at %d,%d Size:%dx%d (from %d) on %s", id, index,
              pos.x, pos.y, width, height, start, is_buffer ? "TFT" : "RenderTarget");
-    tft.setRenderTarget(target);
     for (int i = 0; i < height; i += lines) {
 
         if (height - i < lines) { lines = height % lines; }
@@ -111,7 +110,7 @@ bool isLines =false;
         ImageBuffer imageBuffer =
             GetRGB565(img, lines * img.width * 2, start + i * img.width * 2, type);
         if (img.flags & 1 /*if transparent*/) {
-            
+
             tft.pushImage(pos.x, pos.y + i, width, lines, imageBuffer.pointer, img.transpColor);
         }
         else { tft.pushImage(pos.x, pos.y + i, width, lines, imageBuffer.pointer); }
@@ -119,13 +118,10 @@ bool isLines =false;
     return true;
 }
 bool ResourceSystem::DrawImage(Image image, uint8_t index, Coords pos, Coords startpos,
-                               Coords endpos, uint8_t type, bool is_tft, RenderTarget *target) {
-    return DrawImage(image.id, index, pos, startpos, endpos, image.resType, is_tft, target);
+                               Coords endpos, uint8_t type) {
+    return DrawImage(image.id, index, pos, startpos, endpos);
 }
 
-bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, bool is_tft, RenderTarget *target) {
-    return DrawImage(id, index, {OP_UNDEF, OP_UNDEF}, {0, 0}, {-1, -1}, RES_MAIN, is_tft, target);
-}
 
 ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {
 
@@ -167,8 +163,8 @@ void ResourceSystem::CopyToRam(uint8_t type) {
                 ESP_LOGE("CopyToRam", "Size mismatch %d != %d", Files[type]->size(), readB);
                 bootText("copying to ram not successfull.");
 
-               // free(cache[type]);
-               // cache[type] = nullptr;
+                // free(cache[type]);
+                // cache[type] = nullptr;
             }
         }
     }
