@@ -1,20 +1,21 @@
 #pragma once
-
 #ifdef PC
 #include "RenderTargets.h"
 #include <SDL2/SDL.h>
 #include <memory>
 
+
 class SDL2RenderTarget : public RenderTarget {
-  public:
+    public:
     SDL2RenderTarget(int16_t w, int16_t h, const char* title = "SDL Window")
         : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr), window(nullptr),
           renderer(nullptr), texture(nullptr), windowX(0), windowY(0), windowW(w), windowH(h) {
         SDL_Init(SDL_INIT_VIDEO);
-        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h,
+        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w*SDLScale, h*SDLScale,
                                   SDL_WINDOW_SHOWN);
         if (window) {
             renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+            SDL_RenderSetScale(renderer,SDLScale,SDLScale);
             if (renderer) {
                 texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565,
                                             SDL_TEXTUREACCESS_STREAMING, w, h);

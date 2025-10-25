@@ -25,7 +25,7 @@ void drawStatusBar(bool force) {
 
         if (_signal < 0) { _signal = 0; }
         if (_signal > 3) { _signal = 3; }
-        
+        RenderTarget* before = currentRenderTarget;
         RenderTarget* buf = new RGB565BufferRenderTarget(240,26);
         sBarChanged = false;
         charge      = getChargeLevel();
@@ -46,6 +46,9 @@ void drawStatusBar(bool force) {
              tft.setTextColor(TFT_WHITE);
              tft.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
         }
+        tft.setRenderTarget(before);
+        before->pushBuffer(0,0,buf->getWidth(),buf->getHeight(),buf->getBuffer(),0,0);
+        before->present();
         tft.setViewport(viewport_x, viewport_y, viewport_w, viewport_h);
     }
 }

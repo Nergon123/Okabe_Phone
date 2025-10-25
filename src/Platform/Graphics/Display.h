@@ -6,11 +6,7 @@
 #include "Fonts/gfxfont.h"
 #include "RenderTargets.h"
 #include <stdarg.h>
-#ifndef PC
-  #define READ_BYTE(addr) pgm_read_byte(addr)
-#else
-  #define READ_BYTE(addr) (*(const uint8_t*)(addr))
-#endif
+
 
 struct font_t {
     bool     isGFX;

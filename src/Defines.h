@@ -1,10 +1,11 @@
 #pragma once
 
-#define FIRMVER         "0.1.5 ALPHA"
+#define FIRMVER         "0.1.6 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 
 #define LISTMENU_OPTIONS -2
 #define LISTMENU_EXIT    -1
+#define LISTMENU_BUFFER  true
 
 #define SIM_RX_PIN    35
 #define SIM_TX_PIN    26

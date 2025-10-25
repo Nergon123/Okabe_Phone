@@ -151,12 +151,12 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     bool exit = false;
     while (!exit) {
         position = 0;
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 0}, {0, 0}, RES_MAIN, true);
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 0}, {0, 0}, RES_MAIN);
         // drawImage(0, 0, BACKGROUND_IMAGE_CUTTED, true);
         // tft.fillScreen(0xFFFF);
         // position += 24;
         res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
-                      RES_MAIN, true);
+                      RES_MAIN);
         // drawImage(0, position + y_scr, in_mail[2], true);
         tft.setCursor(24, position + y_text + y_scr);
         tft.println(!contact.name.isEmpty()    ? contact.name
@@ -167,7 +167,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
         if (!subject.isEmpty() || !sms) {
             position += 24;
             res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
-                          RES_MAIN, true);
+                          RES_MAIN);
             tft.setCursor(24, position + y_text + y_scr);
             tft.println(subject);
         }

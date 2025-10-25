@@ -54,7 +54,6 @@ std::vector<Contact> contacts;
 VirtualFileSystem VFS;
 // forbid to change fastMode
 bool lockFastMode = false;
-
 RenderTarget* currentRenderTarget = nullptr;
 RenderTarget* bufferedRenderTarget = nullptr;
 
@@ -66,3 +65,7 @@ NString currentWallpaperPath    = "";
 NString resPath                 = "/spiffs/MAIN.nph";
 NString SPIFFSresPath           = "/MAIN.nph";
 NString lastSIMerror            = "";
+
+#ifdef PC
+int SDLScale = 1;
+#endif

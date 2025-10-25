@@ -6,25 +6,45 @@
 #include "System/Time.h"
 
 #include "System/Tasks.h"
+#include "init.h"
 
 #ifndef PC
-
 #include "esp_task_wdt.h"
 #else
-#ifdef ARDUINO 
-#error "This file should not be compiled for Arduino"
-#endif
+
 void setup();
 void loop();
+
 int main(int argc, char** argv) {
-    setup();
-    while (true) {
-        loop();
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--scale") == 0) {
+            if (argv[i + 1]) {
+                if (strlen(argv[i + 1]) > 1 || argv[i + 1][0] <= '0' || argv[i + 1][0] > '9') {
+                    printf("\n--scale value should be in range from 1 to 9\n");
+                    return -1;
+                }
+                SDLScale = argv[i + 1][0] - '0'; // itoa
+                SDLScale = SDLScale > 0 ? SDLScale : 1;
+                i++;
+            }
+            else {
+                printf("--scale needs value from 1 to 9");
+                return -1;
+            }
+        }
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            printf("Okabe Phone " FIRMVER "\n" REPOSITORY_LINK "\n"
+                   "\n\t--help, -h         Show this screen"
+                   "\n\t--scale n, -s n    Multiply window size by n times"
+                   "\n\n");
+            return 0;
+        }
     }
+    setup();
+    while (true) { loop(); }
     return 0;
 }
 #endif
-#include "init.h"
 void shutdown_handler() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextSize(2);
@@ -52,7 +72,6 @@ void setup() {
     tft.setCursor(0, 0);
     progressBar(0, 100, 250);
 
-
     // Chance to change resource file to custom one
     if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
     storageInit();
@@ -71,7 +90,7 @@ void setup() {
     ESP_LOGI("DEVICE", "PC Build");
 
     progressBar(100, 100, 250);
-    
+
     Serial.updateBaudRate(SERIAL_BAUD_RATE);
 
     if (buttonsHelding(false) == '#') { AT_test(); }

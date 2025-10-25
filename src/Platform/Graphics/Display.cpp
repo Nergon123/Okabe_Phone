@@ -292,33 +292,34 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
     }
 
     if (!currentFont.isGFX) {
-unsigned char uc = static_cast<unsigned char>(c);
-if (uc > 127) return; // or the max index of your font array
+        unsigned char uc = static_cast<unsigned char>(c);
+        if (uc > 127) {
+            return; // or the max index of your font array
+        }
 
-for (int col = 0; col < 5; col++) {
-    uint8_t line = font[uc * 5 + col];
-    for (int row = 0; row < 8; row++) {
-        if (line & (1 << row)) {
-            for (int sx = 0; sx < textsize; sx++) {
-                for (int sy = 0; sy < textsize; sy++) {
-                    drawPixel(x + col * textsize + sx, y + row * textsize + sy, textcolor);
+        for (int col = 0; col < 5; col++) {
+            uint8_t line = font[uc * 5 + col];
+            for (int row = 0; row < 8; row++) {
+                if (line & (1 << row)) {
+                    for (int sx = 0; sx < textsize; sx++) {
+                        for (int sy = 0; sy < textsize; sy++) {
+                            drawPixel(x + col * textsize + sx, y + row * textsize + sy, textcolor);
+                        }
+                    }
                 }
             }
         }
-    }
-}
-_cursor_x += 6 * textsize;
-
+        _cursor_x += 6 * textsize;
     }
     else if (currentFont.font) {
-c -= currentFont.font->first;          // character index
-GFXglyph *glyph = &currentFont.font->glyph[c]; // correct glyph for this char
-uint8_t *bitmap = currentFont.font->bitmap;
-uint32_t bo = glyph->bitmapOffset;
-uint8_t w = glyph->width, h = glyph->height;
-int8_t xo = glyph->xOffset, yo = glyph->yOffset;
-        uint8_t xx, yy, bits = 0, bit = 0;
-        int16_t xo16 = 0, yo16 = 0;
+        c -= currentFont.font->first;                   // character index
+        GFXglyph *glyph  = &currentFont.font->glyph[c]; // correct glyph for this char
+        uint8_t  *bitmap = currentFont.font->bitmap;
+        uint32_t  bo     = glyph->bitmapOffset;
+        uint8_t   w = glyph->width, h = glyph->height;
+        int8_t    xo = glyph->xOffset, yo = glyph->yOffset;
+        uint8_t   xx, yy, bits = 0, bit = 0;
+        int16_t   xo16 = 0, yo16 = 0;
 
         if (textsize > 1) {
             xo16 = xo;
@@ -341,7 +342,7 @@ int8_t xo = glyph->xOffset, yo = glyph->yOffset;
                         }
                         else {
                             fillRect(x + (xo16 + xx - hpc) * textsize, y + (yo16 + yy) * textsize,
-                                    textsize * hpc, textsize, textcolor);
+                                     textsize * hpc, textsize, textcolor);
                         }
                         hpc = 0;
                     }
@@ -350,10 +351,12 @@ int8_t xo = glyph->xOffset, yo = glyph->yOffset;
             }
             // Draw pixels for this line as we are about to increment yy
             if (hpc) {
-                if (textsize == 1) { drawFastHLine(x + xo + xx - hpc, y + yo + yy, hpc, textcolor); }
+                if (textsize == 1) {
+                    drawFastHLine(x + xo + xx - hpc, y + yo + yy, hpc, textcolor);
+                }
                 else {
-                    fillRect(x + (xo16 + xx - hpc) * textsize, y + (yo16 + yy) * textsize, textsize * hpc,
-                             textsize, textcolor);
+                    fillRect(x + (xo16 + xx - hpc) * textsize, y + (yo16 + yy) * textsize,
+                             textsize * hpc, textsize, textcolor);
                 }
                 hpc = 0;
             }
