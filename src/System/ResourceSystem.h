@@ -123,7 +123,7 @@ struct Image {
     uint8_t   type;
     NFile    *source;
 
-    Image() : type(RES_NULLU8) {};
+    Image() : type(RES_NULLU8), id(R_NULL_IMAGE){};
 
     Image(uint16_t id, uint8_t type = RES_MAIN, NFile *source = nullptr, int w = 0, int h = 0,
           bool resize = false)

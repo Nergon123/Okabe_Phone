@@ -31,6 +31,7 @@ class RGB565BufferRenderTarget : public RenderTarget {
 
     void writeColor(uint16_t color, uint32_t len) override {
         if (len > (uint32_t)windowW * windowH) { len = windowW * windowH; }
+        color = (color >> 8) | (color << 8);
 
         for (uint32_t i = 0; i < len; ++i) {
             int16_t px = windowX + (i % windowW);

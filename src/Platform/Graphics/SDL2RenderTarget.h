@@ -35,6 +35,8 @@ class SDL2RenderTarget : public RenderTarget {
     }
 
     void drawPixel(int16_t x, int16_t y, uint16_t color) override {
+        color = (color >> 8) | (color << 8);
+        
         if (!buffer || x < 0 || y < 0 || x >= width || y >= height) { return; }
         buffer[y * width + x] = color;
     }
@@ -66,6 +68,7 @@ for (int ry = 0; ry < endY - startY; ++ry) {
 }
 
     void fillScreen(uint16_t color) override {
+        color = (color >> 8) | (color << 8);
         for (int i = 0; i < width * height; ++i) { buffer[i] = color; }
         present();
     }

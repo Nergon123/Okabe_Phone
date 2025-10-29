@@ -2,6 +2,35 @@
 
 const int lastImage = 42;
 
+void graphTest() {
+    int page   = 0;
+    int button = -1;
+    tft.fillScreen(0);
+    while (true) {
+        switch (page) {
+        case 0: break;
+        }
+        button = buttonsHelding();
+
+        switch (button) {
+        case LEFT: break;
+        case RIGHT: break;
+        case BACK: return;
+        }
+    }
+}
+
+void debugMenu() {
+    NString dbgMenu[] = {"Graphics Test"};
+    int     choice    = -2;
+    while (choice != -1) {
+        choice = choiceMenu(dbgMenu, ArraySize(dbgMenu), false);
+        switch (choice) {
+        case 0: break;
+        }
+    }
+};
+
 void advancedSettings() {
     NString options[] = {
         "System",
@@ -9,8 +38,8 @@ void advancedSettings() {
         "Look and feel",
         "Experimental",
     };
-    int    lookAndFeel;
-    int    menuSelection = -2;
+    int     lookAndFeel;
+    int     menuSelection = -2;
     NString laf_opts[]    = {"Change Theme"};
 
     while (menuSelection != -1) {
@@ -31,8 +60,8 @@ void advancedSettings() {
 // It allows the user to change the wallpaper, ringtones, etc.
 void settings() {
     NString settingsOptions[] = {"Change Wallpaper", "Set call ringtone", "Set mail ringtone",
-                                "Advanced Settings"};
-    int    menuSelection     = -2;
+                                 "Advanced Settings"};
+    int     menuSelection     = -2;
     while (menuSelection != -1) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
@@ -198,16 +227,11 @@ void ringtoneSelector(bool isMail) {
     //     return;
     // }
 
-
-
     // File entry;
-
-
 
     // mOption opt[count];
     // int     iconIndex = -1;
 
-  
     // NString *compareRingtone = isMail ? &currentMailRingtonePath : &currentRingtonePath;
 
     // count = 0;

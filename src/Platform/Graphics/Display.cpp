@@ -130,8 +130,11 @@ void TFT_STUB::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t col
     }
 
     setAddrWindow(x, y, w, h);
+       
+
     activeRenderTarget->writeColor(color, w * h);
     activeRenderTarget->present();
+    
 }
 
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data) {
@@ -211,7 +214,6 @@ void TFT_STUB::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t
         x1 += _vp_x;
         y1 += _vp_y;
     }
-
     int16_t dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int16_t dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int16_t err = dx + dy, e2;
@@ -423,7 +425,6 @@ void TFT_STUB::printf(const char *fmt, ...) {
 
 void TFT_STUB::print(const char *str) {
     if (!str) { return; }
-
     while (*str) {
         if (*str == '\n') {
             _cursor_x = 0;

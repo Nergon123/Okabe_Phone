@@ -66,6 +66,7 @@ ImageData ResourceSystem::GetImageDataByID(uint16_t id, uint8_t type) {
 }
 
 ImageData ResourceSystem::GetImageDataByImage(Image image) {
+    if (image.resType < 0 || image.resType >= ArraySize(Images)) { return ImageData(R_NULL_IMAGE); }
     for (ImageData img : Images[image.resType]) {
         if (img.id == image.id) { return img; }
     }
@@ -121,7 +122,6 @@ bool ResourceSystem::DrawImage(Image image, uint8_t index, Coords pos, Coords st
                                Coords endpos, uint8_t type) {
     return DrawImage(image.id, index, pos, startpos, endpos);
 }
-
 
 ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {
 
