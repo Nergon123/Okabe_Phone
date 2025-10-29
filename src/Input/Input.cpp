@@ -263,27 +263,34 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     return result;
 }
 
-char getPCInput(){
+bool shift = false;
+
+char getPCInput() {
     char input = 0;
-    #ifdef PC
+#ifdef PC
 
     SDL_Delay(1);
     SDL_Event ev;
     while (SDL_PollEvent(&ev)) {
-        if (ev.type == SDL_QUIT) {
+        switch (ev.type) {
+        case SDL_QUIT:
             SDL_Quit();
             std::exit(0);
-        }
-        else if (ev.type == SDL_KEYDOWN) {
+            break;
+        case SDL_KEYDOWN:
             input = ev.key.keysym.sym;
+            if(input == 'u') input = '*';
             printf("Key pressed: %c\n", input);
+           
             return input;
-            
-        }
+            break;
+        break;
 
+        default: break;
+        }
     }
 #endif
-return 0;
+    return 0;
 }
 
 int lastresult = -1;
@@ -316,7 +323,7 @@ int buttonsHelding(bool _idle) {
 
     if (_idle) { idle(); }
     char input = 0;
-    input = getPCInput();
+    input      = getPCInput();
 
     int result = checkButton();
     if (lastresult != result) { millSleep = millis(); }
@@ -328,7 +335,7 @@ int buttonsHelding(bool _idle) {
     // Serial control support
     // You can control device keypad from other device through Serial port
 
-    if (Serial.available()||input!=0) {
+    if (Serial.available() || input != 0) {
 #ifndef PC
         input = Serial.read();
 #endif

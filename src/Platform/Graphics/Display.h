@@ -42,12 +42,12 @@ class TFT_STUB {
   public:
     TFT_STUB(int16_t w = 240, int16_t h = 320);
 
-    font_t currentFont;
-
+    
     RenderTarget *activeRenderTarget = nullptr;
     void          setRenderTarget(RenderTarget *target);
-
+    
     // Font rendering
+    font_t currentFont;
     void     renderGlyph(char c, int16_t x, int16_t y);
     uint16_t textcolor = TFT_WHITE; // Text foreground color
     uint8_t  textsize  = 1;         // Font size multiplier
@@ -66,11 +66,6 @@ class TFT_STUB {
     void    setRotation(uint8_t r);
     uint8_t getRotation() const;
     void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
-    // viewport support: define a drawing sub-region (x, y, w, h).
-    // When a viewport is active, drawing coordinates passed to drawPixel,
-    // setAddrWindow and similar functions are interpreted as coordinates
-    // relative to the viewport origin (0..w-1, 0..h-1). The implementation
-    // translates and clips to the absolute display coordinates.
     void setViewport(int16_t x, int16_t y, int16_t w, int16_t h);
     void resetViewport();
     void pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
@@ -90,17 +85,8 @@ class TFT_STUB {
     void print(const char *str);
     void println(const char *str);
 
-    // Generic print/println to accept Arduino NString, NStringSumHelper and
-    // std::string without depending on Arduino NString implementation.
-
-    // keep std::string overloads declared below (definitions in .cpp)
-
-    // Specific overloads to avoid ambiguous conversions
     void print(char c);
     void println(char c);
-    // std::string overloads were removed to avoid overload conflicts; use
-    // print(const char*) or print(NString) instead.
-    // print/println for Arduino `NString` or our compat `NString` type
     void print(const NString &s);
     void println(const NString &s);
 
@@ -138,14 +124,14 @@ class TFT_STUB {
 
   protected:
     int16_t  _init_w, _init_h;
-    int16_t  _w, _h;
+    int16_t  _w=240, _h=320;
     uint8_t  _rotation;
     int16_t  _addrX1, _addrY1, _addrX2, _addrY2;
-    int16_t  _cursor_x, _cursor_y;
-    uint16_t _textcolor;
+    int16_t  _cursor_x =0, _cursor_y=0;
+    uint16_t _textcolor =0 ;
     // viewport state
-    int16_t _vp_x, _vp_y, _vp_w, _vp_h;
-    bool    _vp_active;
+    int16_t _vp_x =0, _vp_y =0, _vp_w=240, _vp_h=320;
+    bool    _vp_active = false;
     bool    _vp_datum = false;
 };
 

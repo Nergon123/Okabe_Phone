@@ -20,7 +20,7 @@
 #define PROGMEM 
 
 #ifndef ESP_LOGG
-#define ESP_LOGG(level, tag, format, ...) printf("[%s][%s] " format "\n", level, tag, ##__VA_ARGS__)
+#define ESP_LOGG(level, tag, format, ...) ::printf("[%s][%s] " format "\n", level, tag, ##__VA_ARGS__)
 #endif
 #ifndef ESP_LOGI
 #define ESP_LOGI(tag, format, ...) ESP_LOGG("INFO", tag, format, ##__VA_ARGS__)

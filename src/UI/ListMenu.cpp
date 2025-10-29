@@ -5,17 +5,19 @@
 #include "../System/FontManagement.h"
 
 bool          lm_buffer = LISTMENU_BUFFER;
-RenderTarget *lm_buffer_obj =
-    lm_buffer ? new RGB565BufferRenderTarget(240, 294) : currentRenderTarget;
+RenderTarget *lm_buffer_obj;
 
 void pushBufferToScreen(int x, int y) {
     currentRenderTarget->pushBuffer(x, y, lm_buffer_obj->getWidth(), lm_buffer_obj->getHeight(),
                                     lm_buffer_obj->getBuffer(), 0, 0);
+
+    currentRenderTarget->present();
 }
 void deleteBuffer() {
     if (lm_buffer_obj->getType() == RENDER_TARGET_TYPE_BUFFER) {
         lm_buffer_obj->~RenderTarget();
-        delete lm_buffer_obj;
+        lm_buffer_obj = nullptr;
+        tft.setRenderTarget(currentRenderTarget);
     }
 }
 
@@ -87,9 +89,11 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param findex Force index of the selected option
 int listMenu(mOption *choices, int icount, bool lines, int type, NString label, bool forceIcons,
              int findex) {
-
+    lm_buffer_obj = lm_buffer ? new RGB565BufferRenderTarget(240, 294) : currentRenderTarget;
+    tft.resetViewport();
     const int bufOffset = 26;
     if (!lm_buffer) { tft.setViewport(0, bufOffset, 240, 294); }
+    else { tft.setRenderTarget(lm_buffer_obj); }
     tft.setTextWrap(false, false);
     tft.setTextColor(0);
     tft.setTextSize(1);
@@ -98,7 +102,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
     int selected     = 0;
     int page         = 0;
     int pages        = 0;
-    int y            = 1;
+    int y            = 0;
     int ly           = 25;
     int x            = 10;
     int old_selected = 0;
@@ -110,7 +114,7 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
         tft.setCursor(75, 45);
         tft.print("< Empty >");
 
-        if (lm_buffer) { pushBufferToScreen(0, 26); }
+        if (lm_buffer) { pushBufferToScreen(0, bufOffset); }
 
         while (true) {
             int bh = buttonsHelding();
@@ -171,12 +175,10 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
 
             if (selected < 0) {
                 if (page > 0) {
-
                     page--;
                     selected = per_page - 1;
                 }
                 else {
-
                     page     = pages - 1;
                     selected = (icount % per_page == 0) ? per_page - 1 : (icount % per_page) - 1;
                 }
