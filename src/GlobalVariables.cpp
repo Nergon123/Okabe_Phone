@@ -41,8 +41,8 @@ int   delayBeforeSleep = 60000;
 int   delayBeforeLock  = 15000;
 // Call state returned by SIM card
 volatile int stateCall = 6;
-// delay between SIM card checks
-volatile int DBC_MS = 1000;
+
+
 bool mcpexists = false;
 bool ip5306exists = false;
 

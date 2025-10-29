@@ -40,6 +40,9 @@
 
 #endif
 
+// delay between SIM card checks
+#define DBC_MS 5000
+
 #define SimSerial Serial1
 
 // For default serial communication

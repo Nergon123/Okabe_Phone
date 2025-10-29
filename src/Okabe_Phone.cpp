@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
                     printf("\n--scale value should be in range from 1 to 9\n");
                     return -1;
                 }
-                SDLScale = argv[i + 1][0] - '0'; // itoa
+                
+                SDLScale = atoi(argv[i + 1]);
                 SDLScale = SDLScale > 0 ? SDLScale : 1;
                 i++;
             }

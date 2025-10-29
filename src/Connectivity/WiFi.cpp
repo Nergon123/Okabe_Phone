@@ -51,6 +51,6 @@ void WiFiList() {
     // }
 }
 #else
-void WifiConnect(NString ssid, NString password){};
+void WifiConnect(NString ssid, NString password){(void)ssid;(void)password;}
 void WiFiList(){};
 #endif

@@ -88,16 +88,15 @@ void numberInput(char first) {
     const uint8_t max_char = 13;
     NString       number;
     number += first;
-    char c = 255;
+    char c = 127;
     tft.setTextColor(TFT_WHITE);
     changeFont(0);
     tft.setTextSize(3);
     tft.fillRect(0, 300, 240, 20, 0);
     tft.setCursor(0, 300);
     tft.print(number);
-    DBC_MS = 6000;
     while (true) {
-        while (c == 255) { c = buttonsHelding(); }
+        while (c == 127) { c = buttonsHelding(); }
 
         switch (c) {
         case ANSWER:
@@ -127,7 +126,6 @@ void numberInput(char first) {
         ESP_LOGI(ITAG, "%d", c);
         c = 255;
     }
-    DBC_MS = 1000;
 }
 
 /*
