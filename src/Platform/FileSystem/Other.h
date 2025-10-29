@@ -28,7 +28,7 @@ public:
 
     size_t write(const void* buf, size_t len) override { file.write((const char*)buf, len); return len; }
 bool seek(size_t pos, int mode) override {
- 
+ (void)mode;
     file.seekg(pos, std::ios::beg);
     return file.good();
 }

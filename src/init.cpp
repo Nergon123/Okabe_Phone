@@ -12,6 +12,8 @@ bool checkI2Cdevices(byte device) {
     Wire.beginTransmission(device);
     uint8_t error = Wire.endTransmission();
     return !error;
+#else
+(void)device;
 #endif
     return false;
 }
@@ -39,6 +41,7 @@ bool initSDCard(bool fast) {
     }
     return false; // failed to init
 #else
+(void)fast;
     IFileSystem* sdcard = new StdFileSystem("sd/");
     if (sdcard->begin()) {
         VFS.mount("/sd", sdcard);

@@ -131,11 +131,15 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
         return -1;
     }
     int entry_size = tft.fontHeight();
+
     if (choices[0].image.type != RES_NULLU8) {
         ImageData icon = res.GetImageDataByImage(choices[0].image);
         if (icon.height > entry_size) { entry_size = icon.height; }
         x += icon.width;
     }
+    else if (forceIcons) { x += entry_size; }
+    selected = findex;
+
     int per_page = 269 / entry_size;
     pages        = (icount + per_page - 1) / per_page;
 
@@ -322,7 +326,7 @@ int lmng_offset = 0;
 // @param color_inactive Color for the inactive options
 void renderlmng(mOption *choices, int x, int y, int icount, NString label, int index,
                 uint16_t color_active, uint16_t color_inactive) {
-    uint max_per_page = ((320 - y - tft.fontHeight()) / tft.fontHeight());
+    int max_per_page = ((320 - y - tft.fontHeight()) / tft.fontHeight());
 
     if (index >= max_per_page + lmng_offset) {
         tft.fillRect(x, y, 240 - x, 320 - y, 0);

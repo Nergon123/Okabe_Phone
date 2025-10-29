@@ -20,10 +20,10 @@ class RenderTarget {
     virtual void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
                             bool transparent, uint16_t transpColor) = 0;
                             
-    virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {}
-    virtual void writeColor(uint16_t color, uint32_t len) {}
-    virtual void pushColors(uint16_t* data, uint32_t len, bool swap = false) {}
-    virtual void fillScreen(uint16_t color) {}
+    virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {(void)xs;(void)ys;(void)w;(void)h;}
+    virtual void writeColor(uint16_t color, uint32_t len) {(void)color;(void)len;}
+    virtual void pushColors(uint16_t* data, uint32_t len, bool swap = false) {(void)data;(void)len;(void)swap;}
+    virtual void fillScreen(uint16_t color) {(void)color;}
 
     // Optional lifecycle hooks with default no-op implementations
     virtual void init() {}

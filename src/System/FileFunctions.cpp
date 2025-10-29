@@ -1,20 +1,23 @@
 #include "FileFunctions.h"
 const char* FTAG = "FileFunc";
 bool        FileOpen(NFile* file) {
-return false;
+    (void)file;
+    return false;
 }
 bool NotSupported(NFile* file) {
     ESP_LOGI(FTAG, "File not supported");
-
+    (void)file;
     // maybe some context window
     return false;
 }
 bool ViewText(NFile* file) {
     ESP_LOGI(FTAG, "ViewText Not Implemented");
+    (void)file;
     return false;
 }
 bool ViewPNG(NFile* file) {
     ESP_LOGI(FTAG, "ViewPNG Not Implemented");
+    (void)file;
     return false;
 }
 bool ApplyTheme(NFile* file) {

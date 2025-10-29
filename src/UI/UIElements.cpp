@@ -6,57 +6,57 @@ const uint16_t clr_normal     = TFT_BLACK;
 const uint16_t clr_disabled   = TFT_LIGHTGREY;
 const uint16_t clr_background = TFT_WHITE;
 
-void UIElementsLoop(UIElement *elements, size_t size, bool *exit) {
-    // TODO
-    if (!elements) {
-        ESP_LOGE("UI", "elements is nullptr");
-        return;
-    }
-    if (!exit) {
-        ESP_LOGE("UI", "exit is nullptr");
-        return;
-    }
-    while (!*exit) {
-        int direction     = -1;
-        int cur_selection = 0;
-        for (int i = 0; i < size; i++) {
-            UIElement el = elements[i];
+// void UIElementsLoop(UIElement *elements, size_t size, bool *exit) {
+//     // TODO
+//     if (!elements) {
+//         ESP_LOGE("UI", "elements is nullptr");
+//         return;
+//     }
+//     if (!exit) {
+//         ESP_LOGE("UI", "exit is nullptr");
+//         return;
+//     }
+//     while (!*exit) {
+//         int direction     = -1;
+//         int cur_selection = 0;
+//         for (int i = 0; i < size; i++) {
+//             UIElement el = elements[i];
 
-            switch (el.type) {
-            case UI_BUTTON:
-                *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection,
-                                    &direction, el.usable, el.callback);
-                if (el.isExitButton && *el.bvalue) {
-                    *exit = true;
-                    return;
-                }
-                break;
-            case UI_INPUT:
-                if (el.input == nullptr) { el.input = new NString(); }
-                *el.input = InputField(el.title, *el.input, el.y, false, i == cur_selection,
-                                       i == cur_selection, &direction, el.onlynumbers, el.usable,
-                                       el.callback);
-                break;
-            case UI_SWITCHNUMBERS:
-                sNumberChange(el.x, el.y, el.w, el.h, *el.value, el.min, el.max,
-                              i == cur_selection, &direction, el.format, el.usable, el.callback);
-                break;
-            }
-            if (direction == LEFT) { direction = UP; }
-            if (direction == RIGHT) { direction = DOWN; }
-            switch (direction) {
-            case UP:
-                cur_selection++;
-                if (cur_selection >= size) { cur_selection = 0; }
-                break;
-            case DOWN:
-                cur_selection--;
-                if (cur_selection < 0) { cur_selection = size - 1; }
-                break;
-            }
-        }
-    }
-}
+//             switch (el.type) {
+//             case UI_BUTTON:
+//                 *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection,
+//                                     &direction, el.usable, el.callback);
+//                 if (el.isExitButton && *el.bvalue) {
+//                     *exit = true;
+//                     return;
+//                 }
+//                 break;
+//             case UI_INPUT:
+//                 if (el.input == nullptr) { el.input = new NString(); }
+//                 *el.input = InputField(el.title, *el.input, el.y, false, i == cur_selection,
+//                                        i == cur_selection, &direction, el.onlynumbers, el.usable,
+//                                        el.callback);
+//                 break;
+//             case UI_SWITCHNUMBERS:
+//                 sNumberChange(el.x, el.y, el.w, el.h, *el.value, el.min, el.max,
+//                               i == cur_selection, &direction, el.format, el.usable, el.callback);
+//                 break;
+//             }
+//             if (direction == LEFT) { direction = UP; }
+//             if (direction == RIGHT) { direction = DOWN; }
+//             switch (direction) {
+//             case UP:
+//                 cur_selection++;
+//                 if (cur_selection >= size) { cur_selection = 0; }
+//                 break;
+//             case DOWN:
+//                 cur_selection--;
+//                 if (cur_selection < 0) { cur_selection = size - 1; }
+//                 break;
+//             }
+//         }
+//     }
+// }
 
 // ## UI Button
 //  Part of local "UI Kit"
@@ -124,7 +124,6 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
 // @param format: Format string for the value
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected,
                    int *direction, const char *format, bool usable, void (*callback)(void *)) {
-
     // calculation of triangle corners
     int fp  = w / 2;
     int st  = h / 5;
@@ -307,7 +306,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                             }
                             break;
                         case RIGHT:
-                            if (cursorPos < content.length()) {
+                            if (cursorPos < (int)(content.length())) {
                                 cursorPos++;
                                 length = tft.textWidth(content.substring(0, cursorPos)) + 15;
                                 if (length > width) { c_offset = width - length; }

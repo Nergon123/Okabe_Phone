@@ -93,7 +93,6 @@ extern int8_t               charge;
 extern uint8_t              brightness;
 extern uint32_t             wallpaperIndex;
 extern ulong                millSleep;
-extern volatile int         DBC_MS;
 extern volatile int         stateCall;
 extern bool                 sBarChanged;
 extern bool                 isAbleToCall;
