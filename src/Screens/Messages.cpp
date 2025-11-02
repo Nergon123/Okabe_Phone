@@ -5,7 +5,7 @@
 #include "../System/TextManipulation.h"
 #include "../UI/ListMenu.h"
 #include "../UI/UIElements.h"
-
+#include <algorithm>
 // Parse SMS messages from SIM Card
 // @param msgs Array of Message objects to store parsed messages
 // @param count Number of messages parsed
@@ -124,7 +124,6 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     int limit = 0;
     if (sms) { limit = 160; }
     else { limit = 400; }
-    NString messagebuf;
     int     curx     = 0;
     int     cury     = 0;
     int     text_pos = 0;
@@ -163,7 +162,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                     : !contact.phone.isEmpty() ? contact.phone
                     : !contact.email.isEmpty() ? contact.email
                                                : "UNKNOWN");
-        messagebuf = SplitString(messagebuf);
+        content = SplitString(content);
         if (!subject.isEmpty() || !sms) {
             position += 24;
             res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
@@ -173,13 +172,13 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
         }
         position += 24;
         tft.drawLine(0, position + y_scr, 240, position + y_scr, 0);
-        tft.print(messagebuf);
+        tft.print(content);
         int     input = -1;
         NString a[]   = {"Return", "Send Message", "Delete", "Save To Drafts"};
         int     u;
         tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20,
                      TFT_BLACK);
-       // Serial.println("CURX:" + NString(curx) + " CURY:" + NString(cury));
+        // Serial.println("CURX:" + NString(curx) + " CURY:" + NString(cury));
         /////////tft.pushSprite(0, 51);
         while (input == -1) {
 
@@ -189,21 +188,21 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
             case DOWN:
                 // if (y_scr > -height)
                 //   y_scr -= y_jump;
-                text_pos = findCharPosX(messagebuf, text_pos, DOWN);
-                findSplitPosition(messagebuf, text_pos, curx, cury);
+                text_pos = findCharPosX(content, text_pos, DOWN);
+                findSplitPosition(content, text_pos, curx, cury);
                 break;
             case UP:
                 // if (y_scr < 0)
                 //   y_scr += y_jump;
-                text_pos = findCharPosX(messagebuf, text_pos, UP);
-                findSplitPosition(messagebuf, text_pos, curx, cury);
+                text_pos = findCharPosX(content, text_pos, UP);
+                findSplitPosition(content, text_pos, curx, cury);
                 break;
             case RIGHT:
-                if (text_pos >= 0) { findSplitPosition(messagebuf, ++text_pos, curx, cury); }
+                if (text_pos >= 0) { findSplitPosition(content, ++text_pos, curx, cury); }
 
                 break;
             case LEFT:
-                if (text_pos > 0) { findSplitPosition(messagebuf, --text_pos, curx, cury); }
+                if (text_pos > 0) { findSplitPosition(content, --text_pos, curx, cury); }
 
                 break;
             case BACK:
@@ -219,7 +218,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                     ESP_LOGI("INFO", "SEND MESSAGE");
                     if (sendATCommand("AT+CMGF=1").indexOf("OK") != -1) {
                         sendATCommand("AT+CMGS=\"" + contact.phone + "\"");
-                        sendATCommand(messagebuf + char(26));
+                        sendATCommand(content + char(26));
                     }
                     /////////tft.deleteSprite()();
                     return;
@@ -242,19 +241,19 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                         //  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120,
                         //  20, 0, 240);
 
-                        if (messagebuf.length() < limit) {
+                        if (content.length() < limit) {
                             if (l != '\r') {
                                 if (l != '\b') {
 
-                                    messagebuf =
-                                        messagebuf.substring(0, text_pos) + l +
-                                        messagebuf.substring(text_pos, messagebuf.length());
+                                    content =
+                                        content.substring(0, text_pos) + l +
+                                        content.substring(text_pos, content.length());
                                     text_pos++;
                                 }
                                 else {
-                                    messagebuf =
-                                        messagebuf.substring(0, text_pos - 1) +
-                                        messagebuf.substring(text_pos, messagebuf.length());
+                                    content =
+                                        content.substring(0, text_pos - 1) +
+                                        content.substring(text_pos, content.length());
                                     input = BACK;
                                 }
                             }
@@ -270,7 +269,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                             input = BACK;
                         }
                         // ESP_LOGI("INFO","MINIMUM:" + NString(y_scr));
-                        findSplitPosition(messagebuf, text_pos, curx, cury);
+                        findSplitPosition(content, text_pos, curx, cury);
                         input = BACK;
                     }
                 }
@@ -426,12 +425,13 @@ void inbox(bool outbox) {
 
         parseMessages(messages, count);
         // Potential memory leak???
-        mOption *messagesList = new mOption[count];
-        for (int i = 0; i < count; i++) { messagesList[count - i - 1] = messages[i]; }
+        std::vector<mOption> messList;
+        for (int i = 0; i < count; i++) { messList.push_back(messages[i]); }
 
+        std::reverse(messList.begin(), messList.end());
         int choice = -2;
         while (choice != -1) {
-            choice = listMenu(messagesList, count, false, 0, title);
+            choice = listMenu(messList, messList.size(), false, 0, title);
             if (choice >= 0) {
                 exit = !messageActivity(messages[count - choice - 1]);
                 if (!exit) { choice = -1; }

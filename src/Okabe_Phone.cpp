@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
                     printf("\n--scale value should be in range from 1 to 9\n");
                     return -1;
                 }
-                
+
                 SDLScale = atoi(argv[i + 1]);
                 SDLScale = SDLScale > 0 ? SDLScale : 1;
                 i++;
@@ -66,6 +66,7 @@ void setup() {
     SetUpTime();
     hardwareInit();
 
+    
     if (ip5306exists && chrg.isChargerConnected()) { offlineCharging(); }
 
     tft.fillScreen(0x0000);

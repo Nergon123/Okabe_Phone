@@ -3,6 +3,7 @@
 #define FIRMVER         "0.1.6 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 
+#define LISTMENU_NULL    -3
 #define LISTMENU_OPTIONS -2
 #define LISTMENU_EXIT    -1
 #define LISTMENU_BUFFER  true

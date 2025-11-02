@@ -29,14 +29,14 @@ void execute_application() {
     tft.println("BOOTING INTO APPLICATION...");
     NFile* file = VFS.open(file_path.c_str(), FILE_READ);
     if (!file) {
-        ESP_LOGE("ERROR","Failed to open file!");
+        ESP_LOGE("ERROR", "Failed to open file!");
         return;
     }
 
     const esp_partition_t* partition =
         esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, "app1");
     if (!partition) {
-        ESP_LOGE("ERROR","Partition not found!");
+        ESP_LOGE("ERROR", "Partition not found!");
         return;
     }
 
@@ -67,29 +67,17 @@ void execute_application() {
 
 // Additional features screen
 void e() {
-
-    int choice = -2;
-    while (choice != -1) {
-        NString debug[] = {"Delete File", "View Text File content", "Execute Application",
-                          "Set Date/Time", "Connect To Wi-Fi"};
-        choice         = listMenu(debug, ArraySize(debug), false, 2, "Additional Features");
-        NString path;
-        NFile* file;
-        switch (choice) {
-        case 0:
-            path = fileBrowser();
-            ESP_LOGI("FILE", "DELETE %s", path.c_str());
-            VFS.remove(path);
-            break;
-        case 1:
-            // NOT IMPLEMENTED
-            break;
-        case 2: execute_application(); break;
-        case 3: setTime(&systemTime); break;
-        case 4: WiFiList(); break;
+    const NString menu[] = {
+        "FileBrowser"
+    };
+    int choice = LISTMENU_NULL;
+    while (choice != LISTMENU_EXIT){
+        choice = listMenu(menu,ArraySize(menu),false,2,"e");
+        switch(choice){
+            case 0:
+                ESP_LOGI("E","PATH: %s",fileBrowser().c_str());
+                break;
         }
-
-        break;
-    }
-    currentScreen = SCREENS::MAINMENU;
+    };
+    currentScreen  = SCREENS::MAINMENU;
 }
