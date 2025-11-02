@@ -147,8 +147,9 @@ void settings() {
 // @return The index of the selected wallpaper
 int gallery() {
     if (!VFS.exists("/sd" + resPath)) { return lastImage; }
-    mOption wallpaperOptions[] = {{.label = "Pick wallpaper...", .image = Image(R_NULL_IMAGE)}};
-    return listMenu(wallpaperOptions, ArraySize(wallpaperOptions), true, 2, "Change wallpaper");
+    std::vector<mOption> wallpaperOptions = {
+        {.label = "Pick wallpaper...", .image = Image(R_NULL_IMAGE)}};
+    return listMenu(wallpaperOptions, wallpaperOptions.size(), true, 2, "Change wallpaper");
 }
 
 // Set time screen

@@ -87,7 +87,7 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param label Title of the menu
 /// @param forceIcons Boolean indicating if icons should be forced
 /// @param findex Force index of the selected option
-int listMenu(mOption *choices, int icount, bool lines, int type, NString label, bool forceIcons,
+int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NString label, bool forceIcons,
              int findex) {
     lm_buffer_obj = lm_buffer ? new RGB565BufferRenderTarget(240, 294) : currentRenderTarget;
     tft.resetViewport();
@@ -305,14 +305,16 @@ int listMenu(mOption *choices, int icount, bool lines, int type, NString label, 
 // @param findex Index of the selected option
 int listMenu(const NString choices[], int icount, bool images, int type, NString label,
              bool forceIcons, int findex) {
-    mOption *optionArr = new mOption[icount];
+    std::vector<mOption> optionArr;
     for (int i = 0; i < icount; i++) {
-        optionArr[i].label      = choices[i];
-        optionArr[i].image      = Image();
-        optionArr[i].icon_index = 0;
+        mOption option = {.label = choices[i],.image=Image(),.icon_index=0};
+        optionArr.push_back(option);
     }
-    return listMenu(optionArr, icount, images, type, label, forceIcons, findex);
+    int result = listMenu(optionArr, icount, images, type, label, forceIcons, findex);
+    return result;
 }
+
+
 
 int lmng_offset = 0;
 // Render entry of listMenuNonGraphical()
@@ -324,7 +326,7 @@ int lmng_offset = 0;
 // @param index Index of the selected option
 // @param color_active Color for the active option
 // @param color_inactive Color for the inactive options
-void renderlmng(mOption *choices, int x, int y, int icount, NString label, int index,
+void renderlmng(std::vector<mOption> choices, int x, int y, int icount, NString label, int index,
                 uint16_t color_active, uint16_t color_inactive) {
     int max_per_page = ((320 - y - tft.fontHeight()) / tft.fontHeight());
 
@@ -354,7 +356,7 @@ void renderlmng(mOption *choices, int x, int y, int icount, NString label, int i
 // @param y Y-coordinate for the menu
 // @return Index of the selected option
 // @note This function is used for non-graphical list menus
-int listMenuNonGraphical(mOption *choices, int icount, NString label, int y) {
+int listMenuNonGraphical(std::vector<mOption> choices, int icount, NString label, int y) {
     suspendCore(true);
     int x     = 0;
     int index = 0;

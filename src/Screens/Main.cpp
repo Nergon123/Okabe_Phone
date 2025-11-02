@@ -138,8 +138,8 @@ void recovery(NString message) {
         tft.setTextSize(1);
         tft.setTextColor(0xFFFF);
         tft.println(message);
-        mOption options[2] = {{"Choose resource file"}, {"Try again"}};
-        int     choice = listMenuNonGraphical(options, ArraySize(options), "Choose action.", 150);
+        std::vector<mOption> options = {{"Choose resource file"}, {"Try again"}};
+        int     choice = listMenuNonGraphical(options, options.size(), "Choose action.", 150);
         switch (choice) {
         case 0:
             NString TempResPath = fileBrowser("/", ".nph", false);
