@@ -14,14 +14,14 @@ class Esp32File : public IFile {
     size_t write(const void* buf, size_t len) override {
         return file.write((const uint8_t*)buf, len);
     }
-    bool   seek(size_t pos, int mode) override { return file.seek(pos); }
-    void   close() override { file.close(); }
-    size_t size() override { return file.size(); }
-    bool   isDirectory() override { return file.isDirectory(); }
-    bool   available() override { return file.available(); }
+    bool        seek(size_t pos, int mode) override { return file.seek(pos); }
+    void        close() override { file.close(); }
+    size_t      size() override { return file.size(); }
+    bool        isDirectory() override { return file.isDirectory(); }
+    bool        available() override { return file.available(); }
     std::string name() const override { return std::string(file.name()); }
-    void printf(const char* format, ...) override {
-        char buffer[1024];
+    void        printf(const char* format, ...) override {
+        char    buffer[1024];
         va_list args;
         va_start(args, format);
         vsnprintf(buffer, sizeof(buffer), format, args);
@@ -29,9 +29,7 @@ class Esp32File : public IFile {
         file.write((const uint8_t*)buffer, strlen(buffer));
     }
 
-    void println(const char* str = "") override {
-        file.println(str);
-    }
+    void println(const char* str = "") override { file.println(str); }
 
     bool readLine(char* buffer, size_t maxLen) override {
         size_t idx = 0;
@@ -41,9 +39,7 @@ class Esp32File : public IFile {
                 buffer[idx] = '\0';
                 return true;
             }
-            if (c != '\r') {
-                buffer[idx++] = c;
-            }
+            if (c != '\r') { buffer[idx++] = c; }
         }
         buffer[idx] = '\0';
         return idx > 0;
@@ -56,7 +52,7 @@ class Esp32FileSystem : public IFileSystem {
   public:
     Esp32FileSystem(fs::FS* fsImpl) : fs(fsImpl) {}
 
-    bool begin() override {return false; } 
+    bool begin() override { return false; }
     bool exists(const std::string& path) override { return fs->exists(path.c_str()); }
     bool remove(const std::string& path) override { return fs->remove(path.c_str()); }
     bool mkdir(const std::string& path) override { return fs->mkdir(path.c_str()); }

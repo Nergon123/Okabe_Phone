@@ -63,7 +63,7 @@ class VirtualFileSystem : public IFileSystem {
         std::vector<std::string> dirs;
         if (path.compare("/") == 0) {
             ESP_LOGI("HIT!", "HIT!");
-            for (MountPoint mnt : mounts) { dirs.push_back(mnt.prefix.c_str()+1); }
+            for (MountPoint mnt : mounts) { dirs.push_back(mnt.prefix.c_str() + 1); }
             return dirs;
         }
         IFileSystem* fs = findFS(path, sub);

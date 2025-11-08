@@ -4,18 +4,19 @@
 #include <SDL2/SDL.h>
 #include <memory>
 
-
 class SDL2RenderTarget : public RenderTarget {
-    public:
+  public:
     SDL2RenderTarget(int16_t w, int16_t h, const char* title = "SDL Window")
         : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr), window(nullptr),
-          renderer(nullptr), texture(nullptr), windowX(0), windowY(0), windowW(w), windowH(h) {
+          renderer(nullptr), texture(nullptr), windowX(0), windowY(0), windowW(w * SDLScale),
+          windowH(h * SDLScale) {
         SDL_Init(SDL_INIT_VIDEO);
-        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w*SDLScale, h*SDLScale,
+        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h,
                                   SDL_WINDOW_SHOWN);
         if (window) {
-            renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-            SDL_RenderSetScale(renderer,SDLScale,SDLScale);
+            renderer = SDL_CreateRenderer(window, -1, 0);
+            SDL_RenderSetScale(renderer, SDLScale, SDLScale);
+            SDL_RenderSetLogicalSize(renderer, windowW, windowH);
             if (renderer) {
                 texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565,
                                             SDL_TEXTUREACCESS_STREAMING, w, h);
@@ -35,37 +36,36 @@ class SDL2RenderTarget : public RenderTarget {
     }
 
     void drawPixel(int16_t x, int16_t y, uint16_t color) override {
-        //color = (color >> 8) | (color << 8);
-        
+        // color = (color >> 8) | (color << 8);
+
         if (!buffer || x < 0 || y < 0 || x >= width || y >= height) { return; }
         buffer[y * width + x] = color;
     }
 
-void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t* data,
-                bool transparent, uint16_t transpColor) override {
-    if (!buffer || !data) return;
+    void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t* data,
+                    bool transparent, uint16_t transpColor) override {
+        if (!buffer || !data) { return; }
 
-int startX = std::max(0, static_cast<int>(x));
-int endX   = std::min(static_cast<int>(x + w), static_cast<int>(width));
+        int startX = std::max(0, static_cast<int>(x));
+        int endX   = std::min(static_cast<int>(x + w), static_cast<int>(width));
 
-int startY = std::max(0, static_cast<int>(y));
-int endY   = std::min(static_cast<int>(y + h), static_cast<int>(height));
+        int startY = std::max(0, static_cast<int>(y));
+        int endY   = std::min(static_cast<int>(y + h), static_cast<int>(height));
 
-
-for (int ry = 0; ry < endY - startY; ++ry) {
-    int dstY = startY + ry;
-    int srcY = ry + (startY - y); // adjusted for clipping
-    uint16_t* dstRow = buffer + dstY * width;
-    const uint16_t* srcRow = data + srcY * w;
-    for (int rx = 0; rx < endX - startX; ++rx) {
-        int dstX = startX + rx;
-        int srcX = rx + (startX - x);
-        uint16_t srcPx = srcRow[srcX];
-        if (transparent && srcPx == transpColor) continue;
-        dstRow[dstX] = (srcPx >> 8) | (srcPx << 8);
+        for (int ry = 0; ry < endY - startY; ++ry) {
+            int             dstY   = startY + ry;
+            int             srcY   = ry + (startY - y); // adjusted for clipping
+            uint16_t*       dstRow = buffer + dstY * width;
+            const uint16_t* srcRow = data + srcY * w;
+            for (int rx = 0; rx < endX - startX; ++rx) {
+                int      dstX  = startX + rx;
+                int      srcX  = rx + (startX - x);
+                uint16_t srcPx = srcRow[srcX];
+                if (transparent && srcPx == transpColor) { continue; }
+                dstRow[dstX] = (srcPx >> 8) | (srcPx << 8);
+            }
+        }
     }
-}
-}
 
     void fillScreen(uint16_t color) override {
         color = (color >> 8) | (color << 8);
@@ -73,7 +73,7 @@ for (int ry = 0; ry < endY - startY; ++ry) {
         present();
     }
     void writeColor(uint16_t color, uint32_t len) override {
-        if (len > (uint32_t)windowW * windowH) len = windowW * windowH;
+        if (len > (uint32_t)windowW * windowH) { len = windowW * windowH; }
 
         for (uint32_t i = 0; i < len; ++i) {
             int16_t px = windowX + (i % windowW);
@@ -89,7 +89,7 @@ for (int ry = 0; ry < endY - startY; ++ry) {
         windowW = w;
         windowH = h;
     }
-    void pushColors( uint16_t* data, uint32_t len, bool swap = false) override {
+    void pushColors(uint16_t* data, uint32_t len, bool swap = false) override {
         for (uint32_t i = 0; i < len; ++i) {
             uint16_t color = swap ? (data[i] >> 8) | (data[i] << 8) : data[i];
             writeColor(color, 1);
