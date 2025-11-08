@@ -92,7 +92,6 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
         if (VFS.exists(path)) {
             begin = VFS.open(path);
             if (!begin->isDirectory()) { return path; }
-            else { path += "/"; }
         }
         else { return path; }
         dirEntries.clear();

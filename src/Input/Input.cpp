@@ -278,6 +278,7 @@ char getPCInput() {
         case SDL_KEYDOWN:
             input = ev.key.keysym.sym;
             if(input == 'u') input = '*';
+            if(input == ']') SDL_Quit();
             //printf("Key pressed: %c\n", input);
            
             return input;
