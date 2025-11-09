@@ -11,7 +11,7 @@ class SDL2RenderTarget : public RenderTarget {
           renderer(nullptr), texture(nullptr), windowX(0), windowY(0), windowW(w * SDLScale),
           windowH(h * SDLScale) {
         SDL_Init(SDL_INIT_VIDEO);
-        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h,
+        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowW, windowH,
                                   SDL_WINDOW_SHOWN);
         if (window) {
             renderer = SDL_CreateRenderer(window, -1, 0);
@@ -66,7 +66,9 @@ class SDL2RenderTarget : public RenderTarget {
             }
         }
     }
-
+    virtual void setBrightness(int8_t percentage) override {
+        hw->setScreenBrightness(percentage);
+    }
     void fillScreen(uint16_t color) override {
         color = (color >> 8) | (color << 8);
         for (int i = 0; i < width * height; ++i) { buffer[i] = color; }

@@ -1,5 +1,5 @@
 #include "TextManipulation.h"
-#include "../Platform/Hardware.h"
+
 
 // Function to get the index of the nth occurrence of a substring in a string
 // @param count The occurrence number to find

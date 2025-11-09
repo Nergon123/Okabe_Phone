@@ -28,3 +28,4 @@ class IP5306 {
 };
 
 #endif
+extern IP5306 bat;

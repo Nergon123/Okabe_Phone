@@ -67,7 +67,7 @@ void setup() {
     hardwareInit();
 
     
-    if (ip5306exists && chrg.isChargerConnected()) { offlineCharging(); }
+    if (ip5306exists && hw->isCharging()) { offlineCharging(); }
 
     tft.fillScreen(0x0000);
     tft.setTextFont(1);

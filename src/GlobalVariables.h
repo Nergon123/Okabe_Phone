@@ -1,6 +1,5 @@
 #pragma once
 #include "Defines.h"
-#include "ExtDep/IP5306.h"
 
 #ifndef PC
 #include <Arduino.h>
@@ -12,6 +11,7 @@
 #include "Platform/ard_esp.h"
 #include "Platform/FileSystem/VFS.h"
 #include "Platform/Preferences.h"
+#include "Platform/Hardware/Hardware.h"
 #include <vector>
 // hmm....
 #include "System/ResourceSystem.h"
@@ -79,7 +79,6 @@ enum SCREENS {
     E,
 };
 
-extern IP5306   chrg;
 extern TFT_STUB tft;
 
 // extern Preferences preferences;
@@ -119,6 +118,8 @@ extern NString resPath;
 
 extern RenderTarget* currentRenderTarget;
 extern RenderTarget* bufferedRenderTarget;
+
+extern iHW* hw;
 
 extern uint8_t *resources;
 

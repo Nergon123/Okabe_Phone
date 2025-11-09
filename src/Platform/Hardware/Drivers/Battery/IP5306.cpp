@@ -109,3 +109,4 @@ uint8_t IP5306::getBatteryLevel() {
 return 3;
 }
 #endif
+IP5306 bat;

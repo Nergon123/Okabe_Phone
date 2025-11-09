@@ -6,14 +6,13 @@
 #include "Platform/Graphics/TFTESPIRenderTarget.h"
 #endif
 
-
 bool checkI2Cdevices(byte device) {
 #ifndef PC
     Wire.beginTransmission(device);
     uint8_t error = Wire.endTransmission();
     return !error;
 #else
-(void)device;
+    (void)device;
 #endif
     return false;
 }
@@ -41,8 +40,8 @@ bool initSDCard(bool fast) {
     }
     return false; // failed to init
 #else
-(void)fast;
-    IFileSystem* sdcard = new StdFileSystem("sd/");
+    (void)fast;
+    IFileSystem* sdcard = new StdFileSystem("sd/",FS_EXTERNAL);
     if (sdcard->begin()) {
         VFS.mount("/sd", sdcard);
         return true;
@@ -57,7 +56,6 @@ void hardwareInit() {
 #ifndef PC
     setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     // INIT charging IC as well as I2C
-    chrg.begin(21, 22);
     mcpexists    = checkI2Cdevices(MCP23017_ADDR);
     ip5306exists = checkI2Cdevices(IP5306_ADDR);
 
@@ -67,10 +65,10 @@ void hardwareInit() {
 #ifdef PC
     currentRenderTarget = setupSDL2RenderTarget(240, 320, "Okabe Phone Emulator");
 #else
-currentRenderTarget = setupTFTESPIRenderTarget();
+    currentRenderTarget = setupTFTESPIRenderTarget();
 #endif
-tft.setRenderTarget(currentRenderTarget);
-tft.init();
+    tft.setRenderTarget(currentRenderTarget);
+    tft.init();
 #ifndef PC
     tft.fillScreen(0x0000);
     // INIT Serial
@@ -93,12 +91,12 @@ tft.init();
 void storageInit() {
 
 #ifndef PC
-SPIFFS.begin();
-    IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS);
-    IFileSystem* sdcard = new Esp32FileSystem(&SD);
+    SPIFFS.begin();
+    IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
+    IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
 #else
-    IFileSystem* spiffs = new StdFileSystem("spiffs/");
-    IFileSystem* sdcard = new StdFileSystem("sd/");
+    IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
+    IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
 #endif
 
     sdcard->begin();
