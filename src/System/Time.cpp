@@ -12,7 +12,7 @@ void SetUpTime() {
 
     systemTime         = preferences.getLong("TIME", mktime(&tm_time));
     struct timeval now = {.tv_sec = systemTime};
-    settimeofday(&now, NULL);
+    //settimeofday(&now, NULL);
     preferences.end();
 
     systemTimeInfo = *gmtime(&systemTime);
@@ -33,5 +33,5 @@ void SaveTime(time_t time) {
     systemTimeInfo      = *gmtime(&time);
     // Serial.printf("\nSTI %d:%d, TIME: %d:%d\n", systemTimeInfo.tm_hour, systemTimeInfo.tm_min,
     // tm_time.tm_hour, tm_time.tm_min);
-    settimeofday(&data, NULL);
+   // settimeofday(&data, NULL);
 }

@@ -24,7 +24,7 @@ class RenderTarget {
     virtual void writeColor(uint16_t color, uint32_t len) {(void)color;(void)len;}
     virtual void pushColors(uint16_t* data, uint32_t len, bool swap = false) {(void)data;(void)len;(void)swap;}
     virtual void fillScreen(uint16_t color) {(void)color;}
-
+    virtual void setBrightness (int8_t percentage){(void)percentage;}
     // Optional lifecycle hooks with default no-op implementations
     virtual void init() {}
     virtual void deinit() {}

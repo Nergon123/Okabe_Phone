@@ -74,7 +74,7 @@ class StdFileSystem : public IFileSystem {
     std::string root;
 
   public:
-    explicit StdFileSystem(const std::string& rootPath) : root(rootPath) {}
+    explicit StdFileSystem(const std::string& rootPath,FileDeviceType type) : root(rootPath), fstype(type) {}
 
     bool begin() override {
         fs::create_directories(root);

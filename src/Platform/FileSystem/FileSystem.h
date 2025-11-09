@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+enum FileDeviceType { FS_NONE, FS_INTERNAL, FS_EXTERNAL };
+
 class IFile {
   public:
     virtual ~IFile()                                          = default;
@@ -27,4 +29,5 @@ class IFileSystem {
     virtual bool                     mkdir(const std::string& path)                  = 0;
     virtual IFile*                   open(const std::string& path, const char* mode) = 0;
     virtual std::vector<std::string> listDir(const std::string& path)                = 0;
+    FileDeviceType                   fstype                                          = FS_NONE;
 };

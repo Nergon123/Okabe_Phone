@@ -91,7 +91,7 @@ void ErrorWindow(NString reason) {
     tft.setTextSize(1);
     tft.setCursor(80, 120);
     changeFont(1);
-    tft.setTextColor(0xF800);
+    tft.setTextColor(TFT_RED);
     tft.println("ERROR");
     tft.setTextColor(0);
     if (tft.textWidth(reason) < 240) { xpos = (240 - tft.textWidth(reason)) / 2; }
