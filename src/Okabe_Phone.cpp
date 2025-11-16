@@ -8,8 +8,7 @@
 #include "System/Tasks.h"
 #include "init.h"
 
-#ifndef PC
-#include "esp_task_wdt.h"
+#ifdef PC
 #else
 
 void setup();
@@ -46,28 +45,16 @@ int main(int argc, char** argv) {
     return 0;
 }
 #endif
-void shutdown_handler() {
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextSize(2);
-    tft.setTextColor(TFT_RED);
-    tft.setCursor(0, 0);
-    tft.println("Shutting down...");
-    delay(100);
-}
-
 // initialize the system
 void setup() {
-#ifndef PC
-    esp_task_wdt_deinit();
-    esp_task_wdt_init(10000, false);
-    esp_register_shutdown_handler(shutdown_handler);
-#endif
-
-    SetUpTime();
-    hardwareInit();
-
     
-    if (ip5306exists && hw->isCharging()) { offlineCharging(); }
+    SetUpTime();
+
+    //hardwareInit();
+    hw->init();
+
+    if (hw->isCharging()) { offlineCharging(); }
+    
 
     tft.fillScreen(0x0000);
     tft.setTextFont(1);
@@ -75,8 +62,8 @@ void setup() {
     progressBar(0, 100, 250);
 
     // Chance to change resource file to custom one
-    if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
     storageInit();
+    if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
 
     res.CopyToRam();
     res.DrawImage(R_BOOT_LOGO);
@@ -86,18 +73,17 @@ void setup() {
     ESP_LOGI("DEVICE",
              "\nOkabePhone " FIRMVER
              "\n\n Phone firmware written by Nergon123 and contributors\n\n "
-             "Resources located in sdcard (%s)\n",
+             "Resources located in %s\n",
              resPath.c_str());
 
-    ESP_LOGI("DEVICE", "PC Build");
+    ESP_LOGI("DEVICE", "%s", hw->getDeviceName());
 
     progressBar(100, 100, 250);
 
-    Serial.updateBaudRate(SERIAL_BAUD_RATE);
 
     if (buttonsHelding(false) == '#') { AT_test(); }
 
-    millSleep = millis();
+    millSleep = hw->millis();
 }
 
 // Function to handle the main loop

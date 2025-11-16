@@ -111,9 +111,9 @@ void offlineCharging() {
     while (true) {
         if (getChargeLevel() > maxLevel) { maxLevel = getChargeLevel(); }
         for (int i = 0; i <= maxLevel; i++) {
-            ulong mill = millis();
+            ulong mill = hw->millis();
             drawLevelCharge(i);
-            while (millis() - mill < 500 || i == 3) {
+            while (hw->millis() - mill < 500 || i == 3) {
                 if (buttonsHelding(false) != -1) { return; }
             }
         }
@@ -126,6 +126,7 @@ void offlineCharging() {
  *@param message message to be displayed
  */
 void recovery(NString message) {
+    #warning recovery needs reimplementing
     initSDCard(true);
     res.Files[RES_MAIN] = nullptr;
     while (!res.Files[RES_MAIN]) {
@@ -161,11 +162,11 @@ void LockScreen() {
     ulong mill;
     bool  exit = false;
     while (!exit) {
-        mill = millis();
+        mill = hw->millis();
         while (buttonsHelding() == '*') {
-            if (millis() > mill + 1000) {
+            if (hw->millis() > mill + 1000) {
                 exit      = true;
-                millSleep = millis();
+                millSleep = hw->millis();
                 break;
             }
         }

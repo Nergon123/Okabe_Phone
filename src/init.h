@@ -9,7 +9,5 @@
 #include "UI/UIElements.h"
 #include "System/Files.h"
 
-bool initSDCard(bool fast);
-void hardwareInit();
 void storageInit();
 

@@ -1,5 +1,7 @@
 #include "FileFunctions.h"
 const char* FTAG = "FileFunc";
+
+#warning FileFunctions not implemented
 bool        FileOpen(NFile* file) {
     (void)file;
     return false;

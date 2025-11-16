@@ -13,7 +13,7 @@ void execute_application() {
     NString file_path = fileBrowser("/", "bin");
     if (strcmp(file_path.c_str(), "")) { return; }
     tft.fillScreen(0);
-    mOption mOp[2] = {{"Yes"}, {"No"}};
+    std::vector<mOption> mOp = {{"Yes"}, {"No"}};
     int     choice = listMenuNonGraphical(
         mOp, 2, "You are going to launch \"" + file_path + "\"! Are you sure about that?");
     if (choice) {

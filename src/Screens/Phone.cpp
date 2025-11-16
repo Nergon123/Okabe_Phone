@@ -141,7 +141,7 @@ void callActivity(Contact contact) {
     drawStatusBar(true);
     ongoingCall   = false;
     isAnswered    = false;
-    millSleep     = millis();
+    millSleep     = hw->millis();
     currentScreen = MAINSCREEN;
 }
 

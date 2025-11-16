@@ -1,9 +1,19 @@
 #include "../Hardware.h"
+#ifdef PC
 #include <SDL2/SDL.h>
+#include <algorithm>
+#include <chrono>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <sys/utsname.h>
+
 class Linux : iHW {
   public:
     void init() override {
-
+        initPseudoSD();
+        currentRenderTarget = setupSDL2RenderTarget(240, 320, "Okabe Phone Emulator");
     };
     ulong micros() override {
         auto now = std::chrono::system_clock::now();
@@ -11,26 +21,30 @@ class Linux : iHW {
             std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
         return duration.count();
     }
-    ulong millis() override { return micros() / 1000; };
+    ulong hw->millis() override { return micros() / 1000; };
 
     void setCPUSpeed(CPU_SPEED speed) override {
+#ifndef EMU
 
+#endif
     };
-    CPU_SPEED getCPUSpeed() override {
 
+    CPU_SPEED getCPUSpeed() override {
+#ifndef EMU
+#endif
+        return CPU_DEFAULT;
     };
     const char* getDeviceName() override {
-
-    };
-    void shutdown() override {
-
-    };
-    void reboot() override {
-
-    };
+        if (uname(&sys) == 0) { return sys.nodename; };
+        return "Unknown";
+    }
+    void shutdown() override { system("poweroff"); };
+    void reboot() override { system("reboot"); };
 
     void setScreenBrightness(int8_t value) override {
-
+        char cmd[64];
+        snprintf(cmd, sizeof(cmd), "brightnessctl set %d%% > /dev/null 2>&1", value);
+        system(cmd);
     };
     char getCharInput() override {
         char input = 0;
@@ -59,13 +73,58 @@ class Linux : iHW {
 
         return 0;
     };
-    int getKeyInput() override {
+    int getKeyInput() override { return 0; };
 
-    };
     int getBatteryCharge() override {
+        std::string path = getBatteryPath();
+        if (path.empty()) {
+            return -1; // no battery
+        }
+        return std::atoi(readFile(path + "/capacity").c_str());
+    }
 
-    };
     bool isCharging() override {
+        std::string path = getBatteryPath();
+        if (path.empty()) { return false; }
+        std::string status = readFile(path + "/status");
+        std::transform(status.begin(), status.end(), status.begin(), ::tolower);
+        return status.find("charging") != std::string::npos && status != "not charging";
+    }
 
-    };
+  private:
+    struct utsname sys;
+
+    std::string readFile(const std::string& path) {
+        std::ifstream file(path);
+        std::string   value;
+        if (file.is_open()) { std::getline(file, value); }
+        if (!value.empty() && value.back() == '\n') { value.pop_back(); }
+        return value;
+    }
+    std::string batteryPath;
+
+    std::string getBatteryPath() {
+        if (!batteryPath.empty()) { return batteryPath; }
+
+        const std::string base = "/sys/class/power_supply/";
+        for (const auto& entry : std::filesystem::directory_iterator(base)) {
+            std::string type = readFile(entry.path().string() + "/type");
+            if (type == "Battery") {
+                batteryPath = entry.path();
+                return batteryPath;
+            }
+        }
+        return "";
+    }
+
+    RenderTarget* GetScreen() override {
+        return setupSDL2RenderTarget(240, 320, "Emulator");
+    }
+
+  private:
+    void initPseudoSD() {
+        IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
+        if (sdcard->begin()) { VFS.mount("/sd", sdcard); }
+    }
 };
+#endif // PC

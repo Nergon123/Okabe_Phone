@@ -3,6 +3,7 @@
 #include "Platform/FileSystem/VFS.h"
 #include "Platform/Graphics/Display.h"
 #include <vector>
+#define OP_UNDEF 0xFFFF
 
 // Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32
 // bits

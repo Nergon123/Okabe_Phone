@@ -3,6 +3,7 @@
 const int lastImage = 42;
 
 void graphTest() {
+#warning graphTest not implemented
     int page   = 0;
     int button = -1;
     tft.fillScreen(0);
@@ -21,6 +22,7 @@ void graphTest() {
 }
 
 void debugMenu() {
+#warning debugMenu not implemented
     NString dbgMenu[] = {"Graphics Test"};
     int     choice    = -2;
     while (choice != -1) {
@@ -32,6 +34,7 @@ void debugMenu() {
 };
 
 void advancedSettings() {
+#warning advancedSettings not implemented
     NString options[] = {
         "System",
         "Connectivity",
@@ -222,6 +225,7 @@ void setTime(time_t *time) {
  * @param isMail true if the ringtone is for mail, false if it is for call
  */
 void ringtoneSelector(bool isMail) {
+#warning ringtoneSelector not implemented
     // NFile* dir = VFS.open("/sd/AUDIO");
     // if (!dir) {
     //     ErrorWindow("NO /AUDIO");

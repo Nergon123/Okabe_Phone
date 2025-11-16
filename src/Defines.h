@@ -10,8 +10,7 @@
 
 #define SIM_RX_PIN    35
 #define SIM_TX_PIN    26
-#define chipSelect    13
-#define MCP23017_ADDR 0x20
+
 #define MAX_CONTACTS  100
 
 
@@ -46,16 +45,11 @@
 
 #define SimSerial Serial1
 
-// For default serial communication
-#define SERIAL_BAUD_RATE 115200
-// For transfering data
-#define FAST_SERIAL_BAUD_RATE 921600
-// For SIM communication
-#define SIM_BAUD_RATE 115200
+
 
 #define lines_to_draw_wo_psram 3
 
-#define OP_UNDEF 0xFFFF
+
 
 #ifdef OKABE_PHONE_HW_0
 #define SIM_INT_PIN 34

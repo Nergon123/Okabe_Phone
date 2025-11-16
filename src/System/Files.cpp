@@ -41,7 +41,7 @@ uint8_t getIconByFormat(NString name) {
 // @param graphical: If true, use graphical interface
 // @return The path of the selected file or empty string if cancelled
 NString fileBrowser(NString path, NString format, bool graphical, NString title, bool saveFile) {
-
+    #warning fileBrowser probably needs reimplementing/fixing/testing
     IFile               *begin = VFS.open(path);
     std::vector<mOption> dirEntries;
     Image                img      = Image(R_FILE_MANAGER_ICONS);

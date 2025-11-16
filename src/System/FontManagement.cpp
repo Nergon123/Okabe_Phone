@@ -26,5 +26,5 @@ void changeFont(int ch,bool buffer) {
 //  @param input: string to be written
 //  @param type: type of font (0: white outcoming call font , 1: black incoming call font)
 void writeCustomFont(int x, int y, NString input, int type) {
-    // TODO
+    #warning writeCustomFont not implemented
 }
