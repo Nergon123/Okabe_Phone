@@ -1,5 +1,4 @@
 #include "IP5306.h"
-#ifdef ARDUINO
 #include <Wire.h>
 
 /*
@@ -81,32 +80,4 @@ uint8_t IP5306::getBatteryLevel() {
     default: return 0;
     }
 }
-#else
-void IP5306::begin(uint8_t sdaPin, uint8_t sclPin) {
-return;
-}
-
-uint8_t IP5306::writeBytes(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t quantity) {
-return 0;
-}
-uint8_t IP5306::readBytes(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t quantity) {
-return 0;
-}
-
-uint8_t IP5306::setup(uint8_t initPrms /*= IP5306_DEFAULT_SETUP*/) {
-return 0;
-}
-
-uint8_t IP5306::isChargerConnected() {
-return 1;
-}
-
-uint8_t IP5306::isChargeFull() {
-return 1;
-}
-
-uint8_t IP5306::getBatteryLevel() {
-return 3;
-}
-#endif
 IP5306 bat;

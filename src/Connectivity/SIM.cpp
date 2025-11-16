@@ -19,10 +19,10 @@ NString sendATCommand(NString command, uint32_t timeout, bool background) {
     SimSerial.println(command.c_str()); // Send the AT command
 
     NString   response  = "";
-    uint32_t startTime = millis();
+    uint32_t startTime = hw->millis();
 
     // Wait for response or timeout
-    while (millis() - startTime < timeout) {
+    while (hw->millis() - startTime < timeout) {
         while (SimSerial.available()) {
             char c = SimSerial.read(); // Read a single character
             response += c;             // Append it to the response

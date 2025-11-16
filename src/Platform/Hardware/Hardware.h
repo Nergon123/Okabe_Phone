@@ -9,15 +9,18 @@ class iHW {
     virtual ulong       millis(){ return micros() / 1000;};
     virtual void        setCPUSpeed(CPU_SPEED speed);
     virtual CPU_SPEED   getCPUSpeed();
+    virtual void        updateFrequencies();
     virtual const char* getDeviceName();
     virtual void        shutdown();
     virtual void        reboot();
 
     virtual void setScreenBrightness(int8_t value);
-    virtual char getInput();
+    virtual char getCharInput();
     virtual int getKeyInput();
     virtual int  getBatteryCharge();
     virtual bool isCharging();
+
+    virtual RenderTarget* GetScreen();
 };
 #ifdef PC
 #include <chrono>

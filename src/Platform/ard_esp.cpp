@@ -4,7 +4,7 @@
 #include "ard_esp.h"
 
 #ifdef PC
-unsigned long millis() {
+unsigned long hw->millis() {
     using namespace std::chrono;
     // Get current time point
     auto now = system_clock::now();
@@ -22,7 +22,6 @@ SerialClass Serial;
 SerialClass Serial1;
 
 #else
-// For ESP32 platform, these functions are already provided by Arduino framework
-extern unsigned long millis();
+
 extern void delay(unsigned long ms);
 #endif

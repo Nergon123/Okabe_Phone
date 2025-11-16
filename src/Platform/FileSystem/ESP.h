@@ -6,7 +6,7 @@
 
 class Esp32File : public IFile {
     File file;
-    
+
   public:
     Esp32File(File f) : file(f) {}
     Esp32File() : file(File()) {}
@@ -47,10 +47,11 @@ class Esp32File : public IFile {
 };
 
 class Esp32FileSystem : public IFileSystem {
-    fs::FS* fs;
+    fs::FS*        fs;
+    FileDeviceType fstype;
 
   public:
-    Esp32FileSystem(fs::FS* fsImpl,FileDeviceType fstype) : fs(fsImpl),fstype(type) {}
+    Esp32FileSystem(fs::FS* fsImpl, FileDeviceType type) : fs(fsImpl), fstype(type) {}
 
     bool begin() override { return false; }
     bool exists(const std::string& path) override { return fs->exists(path.c_str()); }

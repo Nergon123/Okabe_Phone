@@ -10,16 +10,16 @@ int         millDelay = 0;
 // Function to handle the idle state
 void idle() {
 
-    if (millis() > millSleep + (delayBeforeSleep / 2) && millis() < millSleep + delayBeforeSleep) {
+    if (hw->millis() > millSleep + (delayBeforeSleep / 2) && hw->millis() < millSleep + delayBeforeSleep) {
         setBrightness(brightness * 0.1);
         fastMode(false);
     }
-    else if (millis() > millSleep + delayBeforeSleep) { setBrightness(0); }
+    else if (hw->millis() > millSleep + delayBeforeSleep) { setBrightness(0); }
     else {
         setBrightness(brightness);
         fastMode(true);
     }
-    if (millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked) {
+    if (hw->millis() > millSleep + delayBeforeSleep + delayBeforeLock && !isScreenLocked) {
         LockScreen();
     }
 
@@ -27,55 +27,13 @@ void idle() {
 
     checkVoiceCall();
     delay(50);
-    if (millis() - millDelay > DBC_MS) {
-        millDelay = millis();
+    if (hw->millis() - millDelay > DBC_MS) {
+        millDelay = hw->millis();
         drawStatusBar();
     }
 }
 
-// check which MCP23017 button is pressed
-#ifndef PC
-#include <MCP23017.h>
-MCP23017 mcp = MCP23017(MCP23017_ADDR);
-void     initMCP() {
-    mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
-    mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
-    ESP_LOGI("KEYPAD", "KEYPAD Initalized");
-}
-int checkButton() {
-    if (!mcpexists) { return 0; }
-    mcp.portMode(MCP23017Port::A, 0xFF);
-    mcp.portMode(MCP23017Port::B, 0);
-    mcp.writePort(MCP23017Port::B, 0x00);
-    uint8_t a = mcp.readPort(MCP23017Port::A);
 
-    mcp.portMode(MCP23017Port::B, 0xFF);
-    mcp.portMode(MCP23017Port::A, 0);
-    mcp.writePort(MCP23017Port::A, 0x00);
-    uint8_t b = mcp.readPort(MCP23017Port::B);
-
-    a = ~a;
-    a >>= 1;
-    b = ~b;
-
-    uint8_t ar = 0xFF, br = 0xFF;
-    for (int i = 0; i < 8; ++i) {
-        if (a & (1 << i) && ar == 0xFF) { ar = i; }
-        if (b & (1 << i) && br == 0xFF) { br = i; }
-    }
-    ar++;
-    br++;
-
-    if (ar != 0xFF && br != 0xFF) {
-        uint8_t res = ar == 0 && br == 0 ? 0 : 21 - (ar * 3) + br;
-        return res;
-    }
-    return 0;
-}
-#else
-void initMCP() {}
-int  checkButton() { return 0; }
-#endif
 /*
  * Number input field (used on Main screen)
  * @param first first number to be displayed (since it being called by button press)
@@ -205,11 +163,11 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         }
         b = 0;
     }
-    int mil  = millis();
+    int mil  = hw->millis();
     pos      = -1;
     int curx = tft.getCursorX();
     int cury = tft.getCursorY();
-    while (millis() - mil < DIB_MS) {
+    while (hw->millis() - mil < DIB_MS) {
         curx = tft.getCursorX();
         cury = tft.getCursorY();
         // ESP_LOGI(ITAG,"POSITION:" + NString(pos));
@@ -217,14 +175,14 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
 
         if (c == input || first) {
             if (pos < (int)(strchr(buttons[currentIndex], '\r') - buttons[currentIndex])) {
-                mil = millis();
+                mil = hw->millis();
                 pos++;
                 result = buttons[currentIndex][pos];
                 showText(buttons[currentIndex], pos);
                 tft.setCursor(curx, cury);
             }
             else {
-                mil    = millis();
+                mil    = hw->millis();
                 pos    = 0;
                 result = buttons[currentIndex][pos];
                 showText(buttons[currentIndex], pos);
@@ -261,37 +219,6 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     return result;
 }
 
-bool shift = false;
-
-char getPCInput() {
-    char input = 0;
-#ifdef PC
-
-    SDL_Delay(1);
-    SDL_Event ev;
-    while (SDL_PollEvent(&ev)) {
-        switch (ev.type) {
-        case SDL_QUIT:
-            SDL_Quit();
-            std::exit(0);
-            break;
-        case SDL_KEYDOWN:
-            input = ev.key.keysym.sym;
-            if(input == 'u') input = '*';
-            if(input == ']') SDL_Quit();
-            //printf("Key pressed: %c\n", input);
-           
-            return input;
-            break;
-        break;
-
-        default: break;
-        }
-    }
-#endif
-    return 0;
-}
-
 int lastresult = -1;
 /*
  * Returns pressed button
@@ -322,12 +249,12 @@ int buttonsHelding(bool _idle) {
 
     if (_idle) { idle(); }
     char input = 0;
-    input      = getPCInput();
+    input      = hw->getCharInput();
+    int result = hw->getKeyInput();
+    
+    if (lastresult != result) { millSleep = hw->millis(); }
 
-    int result = checkButton();
-    if (lastresult != result) { millSleep = millis(); }
-
-    if (result != 0) { while (result == checkButton() && millis() - millSleep < 1500); }
+    if (result != 0) { while (result == checkButton() && hw->millis() - millSleep < 1500); }
 
     lastresult = result;
 
@@ -338,7 +265,7 @@ int buttonsHelding(bool _idle) {
 #ifndef PC
         input = Serial.read();
 #endif
-        millSleep = millis();
+        millSleep = hw->millis();
         switch (input) {
         case 'a':
             ESP_LOGI(ITAG, "LEFT");
