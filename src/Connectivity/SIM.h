@@ -6,6 +6,11 @@
 #include "../System/TextManipulation.h"
 #include "../UI/UIElements.h"
 
+class SIMCARD{
+
+
+};
+
 void   AT_test();
 NString sendATCommand(NString command, uint32_t timeout = 1000, bool background = false);
 NString getATvalue(NString command, bool background = false);

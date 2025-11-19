@@ -15,6 +15,14 @@ class Linux : iHW {
         initPseudoSD();
         currentRenderTarget = setupSDL2RenderTarget(240, 320, "Okabe Phone Emulator");
     };
+    void initStorage() override {
+        IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
+        IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
+        sdcard->begin();
+        spiffs->begin();
+        VFS.mount("/sd", sdcard);
+        VFS.mount("/spiffs", spiffs);
+    }
     ulong micros() override {
         auto now = std::chrono::system_clock::now();
         auto duration =
@@ -117,9 +125,7 @@ class Linux : iHW {
         return "";
     }
 
-    RenderTarget* GetScreen() override {
-        return setupSDL2RenderTarget(240, 320, "Emulator");
-    }
+    RenderTarget* GetScreen() override { return setupSDL2RenderTarget(240, 320, "Emulator"); }
 
   private:
     void initPseudoSD() {

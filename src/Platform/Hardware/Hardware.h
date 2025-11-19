@@ -5,6 +5,7 @@ enum CPU_SPEED { CPU_IDLE, CPU_SLOW, CPU_DEFAULT, CPU_FAST, CPU_FULL, CPU_TURBO 
 class iHW {
   public:
     virtual void        init();
+    virtual void        initStorage();
     virtual ulong       micros();
     virtual ulong       millis(){ return micros() / 1000;};
     virtual void        setCPUSpeed(CPU_SPEED speed);

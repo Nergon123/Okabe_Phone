@@ -8,19 +8,15 @@
 #define LISTMENU_EXIT    -1
 #define LISTMENU_BUFFER  true
 
-#define SIM_RX_PIN    35
-#define SIM_TX_PIN    26
-
-#define MAX_CONTACTS  100
-
-
+#define MAX_CONTACTS 100
 
 #ifdef PC
 
-#define PROGMEM 
+#define PROGMEM
 
 #ifndef ESP_LOGG
-#define ESP_LOGG(level, tag, format, ...) ::printf("[%s][%s] " format "\n", level, tag, ##__VA_ARGS__)
+#define ESP_LOGG(level, tag, format, ...)                                                         \
+    ::printf("[%s][%s] " format "\n", level, tag, ##__VA_ARGS__)
 #endif
 #ifndef ESP_LOGI
 #define ESP_LOGI(tag, format, ...) ESP_LOGG("INFO", tag, format, ##__VA_ARGS__)
@@ -45,11 +41,7 @@
 
 #define SimSerial Serial1
 
-
-
 #define lines_to_draw_wo_psram 3
-
-
 
 #ifdef OKABE_PHONE_HW_0
 #define SIM_INT_PIN 34
@@ -107,9 +99,6 @@ enum buttons {
 
 // Lowest frequency for ESP32 is 20 MHZ
 #define SLOW_CPU_FREQ_MHZ 20
-
-#define FAST_SD_FREQ 20 * 1000 * 1000
-#define SAFE_SD_FREQ 1 * 1000 * 1000
 
 // FONTS
 #define FONT0 1
