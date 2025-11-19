@@ -1,20 +1,32 @@
+#pragma once
 #include "../Drivers/Battery/IP5306.h"
 #include "../Hardware.h"
 #ifndef PC
-#include <Platform/Graphics/TFTESPIRenderTarget.h>
-#include <esp_task_wdt.h>
 #include <Esp.h>
 #include <MCP23017.h>
+#include <Platform/FileSystem/ESP.h>
+#include <Platform/FileSystem/VFS.h>
+#include <Platform/Graphics/TFTESPIRenderTarget.h>
+#include <SD.h>
 #include <SPI.h>
+#include <SPIFFS.h>
+#include <esp_task_wdt.h>
 
-#define MCP23017_ADDR         0x20
-#define SD_CS                 13
-#define SD_SCK                14
-#define SD_MISO               2
-#define SD_MOSI               15
+#define FAST_SD_FREQ          20 * 1000 * 1000
+#define SAFE_SD_FREQ          1 * 1000 * 1000
 #define SERIAL_BAUD_RATE      115200
 #define FAST_SERIAL_BAUD_RATE 921600
 #define SIM_BAUD_RATE         115200
+
+#define MCP23017_ADDR 0x20
+
+#define SD_CS   13
+#define SD_SCK  14
+#define SD_MISO 2
+#define SD_MOSI 15
+
+#define SIM_RX_PIN 35
+#define SIM_TX_PIN 26
 
 #define SimSerial Serial1
 
@@ -37,12 +49,19 @@ class DEV_ESP32 : iHW {
 
         keypad_exists  = checkI2Cdevices(MCP23017_ADDR);
         charger_exists = checkI2Cdevices(IP5306_ADDR);
-
+    };
+    void initStorage() override {
+        SPIFFS.begin();
         SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
         ESP_LOGI("SD", "SPI started");
-
-
-    };
+        initSDcard(true);
+        IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
+        IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
+        sdcard->begin();
+        VFS.mount("/sd", sdcard);
+        spiffs->begin();
+        VFS.mount("/spiffs", spiffs);
+    }
     ulong micros() override { return ::micros(); };
 
     void setCPUSpeed(CPU_SPEED speed) override {
@@ -96,9 +115,8 @@ class DEV_ESP32 : iHW {
     void updateFrequencies() override {
 
     };
-    RenderTarget* GetScreen() override {
-        return setupTFTESPIRenderTarget();
-    }
+    RenderTarget* GetScreen() override { return setupTFTESPIRenderTarget(); }
+
   private:
     void initMCP() {
         mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A

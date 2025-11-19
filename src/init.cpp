@@ -11,9 +11,7 @@
 void storageInit() {
 
 #ifndef PC
-    SPIFFS.begin();
-    IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
-    IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
+
 #else
     IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
     IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
