@@ -1,5 +1,6 @@
+#ifdef ARDUINO
 #include "IP5306.h"
-#include <Wire.h>
+
 
 /*
 
@@ -81,3 +82,4 @@ uint8_t IP5306::getBatteryLevel() {
     }
 }
 IP5306 bat;
+#endif

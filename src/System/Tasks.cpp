@@ -1,6 +1,7 @@
 // #include "Tasks.h"
 
-
+void suspendCore(bool suspend) { (void)suspend; };
+void initTasks() {};
 // #ifndef PC
 // TaskHandle_t TaskHCommand;
 // // Function to suspend/resume the freeRTOS task on core 0
@@ -25,7 +26,8 @@
 //         initSim();
 
 //         while (!_checkSim() &&
-//                hw->millis() - oldtime < 10000); // check if sim card is usable for 10 whole seconds...
+//                hw->millis() - oldtime < 10000); // check if sim card is usable for 10 whole
+//                seconds...
 //         populateContacts();
 //         ESP_LOGI("BOOT/SIM", "%s", "Done!");
 //     }

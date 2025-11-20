@@ -41,12 +41,12 @@ uint8_t getIconByFormat(NString name) {
 // @param graphical: If true, use graphical interface
 // @return The path of the selected file or empty string if cancelled
 NString fileBrowser(NString path, NString format, bool graphical, NString title, bool saveFile) {
-    #warning fileBrowser probably needs reimplementing/fixing/testing
+#warning fileBrowser probably needs reimplementing/fixing/testing
     IFile               *begin = VFS.open(path);
     std::vector<mOption> dirEntries;
     Image                img      = Image(R_FILE_MANAGER_ICONS);
-    mOption              back     = {.label = "..", .image = img, .icon_index = 1};
-    mOption              saveHere = {.label = "Save here", .image = img, .icon_index = 0};
+    mOption              back     = mOption("..", img, 1);
+    mOption              saveHere = mOption("Save here", img, 0);
     while (true) {
         title = path;
         if (path != "/") { dirEntries.push_back(back); }
@@ -56,19 +56,21 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
             std::string t_path = path + file;
             begin              = VFS.open(t_path);
             if (t_path.compare("/spiffs") == 0) {
-                dirEntries.push_back(mOption{.label = file + "/", .image = img, .icon_index = 3});
+                dirEntries.push_back(mOption(file + "/", img, 3));
                 continue;
             }
             if (t_path.compare("/sd") == 0) {
-                dirEntries.push_back(mOption{.label = file + "/", .image = img, .icon_index = 2});
+                dirEntries.push_back(mOption(file + "/", img, 2));
                 continue;
             }
             if (begin->isDirectory()) {
-                dirEntries.push_back(mOption{.label = file + "/", .image = img, .icon_index = 1});
+                dirEntries.push_back(mOption(file + "/", img, 1));
                 continue;
             }
-            dirEntries.push_back(
-                mOption{.label = file, .image = img, .icon_index = getIconByFormat(file)});
+            if ((format == "*" || format.isEmpty()) ||
+                (format.isEmpty() && NString(file).endsWith(format))) {
+                dirEntries.push_back(mOption(file, img, getIconByFormat(file)));
+            }
         }
         files.clear();
         int selection = graphical ? listMenu(dirEntries, dirEntries.size(), false, 2, title)
@@ -84,7 +86,7 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
         }
         else if (saveFile && selection == 1) { return path + "/" + saveFile; }
         else if (selection == 0 && path != "/") {
-            path = path.substring(path.lastIndexOf('/', 0),path.length()-1);
+            path = path.substring(path.lastIndexOf('/', 0), path.length() - 1);
         }
         else if (selection < 0) { return (char)selection + "\0"; }
         else {}

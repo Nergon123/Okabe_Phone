@@ -9,7 +9,7 @@ void ResourceSystem::Init(NFile *Main, NFile *Wallpapers) {
     Files[RES_WALLPAPERS] = Wallpapers;
     Images[RES_MAIN].clear();
     Images[RES_WALLPAPERS].clear();
-    for (int i = 0; i < sizeof(Files) / sizeof(Files[0]); i++) {
+    for (size_t i = 0; i < sizeof(Files) / sizeof(Files[0]); i++) {
         if (!Files[i]) {
             ESP_LOGW("RES", "%s resource file is not available. Using Built-in.", names[i]);
         }
@@ -66,7 +66,7 @@ ImageData ResourceSystem::GetImageDataByID(uint16_t id, uint8_t type) {
 }
 
 ImageData ResourceSystem::GetImageDataByImage(Image image) {
-    if (image.resType < 0 || image.resType >= ArraySize(Images)) { return ImageData(R_NULL_IMAGE); }
+    if (image.resType >= ArraySize(Images)) { return ImageData(R_NULL_IMAGE); }
     for (ImageData img : Images[image.resType]) {
         if (img.id == image.id) { return img; }
     }
@@ -81,7 +81,6 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
         return false;
     }
     else if (id == R_NULL_IMAGE) { return false; }
-    bool is_buffer = tft.activeRenderTarget->getType() == RENDER_TARGET_TYPE_BUFFER;
     if (pos.x == OP_UNDEF) { pos.x = img.x; }
     if (pos.y == OP_UNDEF) { pos.y = img.y; }
     if (endpos.x <= 0) { endpos.x = img.width; }
@@ -97,13 +96,15 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     uint32_t size  = height * img.width * 2;
     if (size == 0) { return false; }
 #ifndef PC
-    bool isLines = psramFound() && !is_buffer;
+    bool is_buffer = tft.activeRenderTarget->getType() == RENDER_TARGET_TYPE_BUFFER;
+    bool isLines   = psramFound() && !is_buffer;
 #else
     bool isLines = false;
 #endif
     int lines = isLines ? lines_to_draw_wo_psram : img.height;
-//    ESP_LOGI("RES", "Drawing Image ID:%d Index:%d at %d,%d Size:%dx%d (from %d) on %s", id, index,
-//             pos.x, pos.y, width, height, start, is_buffer ? "TFT" : "RenderTarget");
+    //    ESP_LOGI("RES", "Drawing Image ID:%d Index:%d at %d,%d Size:%dx%d (from %d) on %s", id,
+    //    index,
+    //             pos.x, pos.y, width, height, start, is_buffer ? "TFT" : "RenderTarget");
     for (int i = 0; i < height; i += lines) {
 
         if (height - i < lines) { lines = height % lines; }
@@ -120,7 +121,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
 }
 bool ResourceSystem::DrawImage(Image image, uint8_t index, Coords pos, Coords startpos,
                                Coords endpos, uint8_t type) {
-    return DrawImage(image.id, index, pos, startpos, endpos);
+    return DrawImage(image.id, index, pos, startpos, endpos, type);
 }
 
 ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {

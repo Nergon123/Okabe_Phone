@@ -1,8 +1,8 @@
 #pragma once
-#include "../Drivers/Battery/IP5306.h"
 #include "../Hardware.h"
 #ifndef PC
 #include <Esp.h>
+#include "../Drivers/Battery/IP5306.h"
 #include <MCP23017.h>
 #include <Platform/FileSystem/ESP.h>
 #include <Platform/FileSystem/VFS.h>
@@ -32,7 +32,7 @@
 
 MCP23017 mcp(MCP23017_ADDR);
 
-class DEV_ESP32 : iHW {
+class DEV_ESP32 : public iHW {
   public:
     void init() override {
         esp_task_wdt_deinit();

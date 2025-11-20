@@ -98,7 +98,7 @@ void MainScreen() {
 
 // @param level available levels: `0 1 2 3`, where 0 is empty
 void drawLevelCharge(uint8_t level) {
-    if (level < 0 || level > 3) { return; }
+    if (level > 3) { return; }
 
     if (level == 0) { tft.fillRect(40, 105, 150, 70, 0x0000); }
     else { tft.fillRect(45 + 48 * (level - 1), 110, 43, 60, 0xffff); }
@@ -127,7 +127,7 @@ void offlineCharging() {
  */
 void recovery(NString message) {
     #warning recovery needs reimplementing
-    initSDCard(true);
+   hw->initStorage();
     res.Files[RES_MAIN] = nullptr;
     while (!res.Files[RES_MAIN]) {
         tft.setCursor(0, 40);

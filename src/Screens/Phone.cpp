@@ -159,7 +159,7 @@ void contactss() {
     while (!exit) {
 
         NString contactNames[contacts.size()];
-        for (int i = 0; i < contacts.size(); ++i) { contactNames[i] = contacts[i].name; }
+        for (size_t i = 0; i < contacts.size(); ++i) { contactNames[i] = contacts[i].name; }
         int selectedContactIndex =
             listMenu(contactNames, contacts.size(), false, 1, "Address Book");
 

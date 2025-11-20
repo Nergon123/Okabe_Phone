@@ -16,9 +16,9 @@ int getChargeLevel() {
 ulong funcTime = 0;
 void  GetFuncTime(bool start, const char *who = "UNKNOWN") {
 #ifdef DEVMODE
-    if (start) { funcTime = micros(); }
+    if (start) { funcTime = hw->micros(); }
     else {
-        ESP_LOGD("PERFOMANCE", "\n%s run for %.3f ms\n", who, (float)(micros() - funcTime) / 1000);
+        ESP_LOGD("PERFOMANCE", "\n%s run for %.3f ms\n", who, (float)(hw->micros() - funcTime) / 1000);
     }
 #endif
 }

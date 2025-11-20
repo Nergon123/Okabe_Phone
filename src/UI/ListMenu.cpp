@@ -87,8 +87,8 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param label Title of the menu
 /// @param forceIcons Boolean indicating if icons should be forced
 /// @param findex Force index of the selected option
-int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NString label, bool forceIcons,
-             int findex) {
+int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NString label,
+             bool forceIcons, int findex) {
     lm_buffer_obj = lm_buffer ? new RGB565BufferRenderTarget(240, 294) : currentRenderTarget;
     tft.resetViewport();
     const int bufOffset = 26;
@@ -307,14 +307,12 @@ int listMenu(const NString choices[], int icount, bool images, int type, NString
              bool forceIcons, int findex) {
     std::vector<mOption> optionArr;
     for (int i = 0; i < icount; i++) {
-        mOption option = {.label = choices[i],.image=Image(),.icon_index=0};
+        mOption option = mOption(choices[i], Image(), 0);
         optionArr.push_back(option);
     }
     int result = listMenu(optionArr, icount, images, type, label, forceIcons, findex);
     return result;
 }
-
-
 
 int lmng_offset = 0;
 // Render entry of listMenuNonGraphical()

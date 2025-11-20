@@ -254,7 +254,7 @@ int buttonsHelding(bool _idle) {
     
     if (lastresult != result) { millSleep = hw->millis(); }
 
-    if (result != 0) { while (result == checkButton() && hw->millis() - millSleep < 1500); }
+    if (result != 0) { while (result == hw->getKeyInput() && hw->millis() - millSleep < 1500); }
 
     lastresult = result;
 

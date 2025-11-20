@@ -18,9 +18,9 @@ unsigned int getIndexOfCount(int count, NString input, NString str, unsigned int
 // @param posX The x-coordinate of the split position
 // @param posY The y-coordinate of the split position
 // @param direction The direction to search (UP or DOWN)
-void findSplitPosition(NString text, int charIndex, int &posX, int &posY, int direction) {
+void findSplitPosition(NString text, size_t charIndex, int &posX, int &posY, int direction) {
     int lastNewLine  = 0;
-    int curPosInText = 0;
+    size_t curPosInText = 0;
     posX             = 0;
     posY             = 0;
     for (; curPosInText < charIndex; curPosInText++) {
@@ -43,19 +43,19 @@ int findCharPosX(NString text, int &charIndex, int direction) {
     int prevNL       = 0;
     int lastNewLine  = 0;
     int nextNL       = text.length();
-    int curPosInText = 0;
+    ulong curPosInText = 0;
     int posX         = 0;
     int targetX      = 0;
-    for (; curPosInText <= charIndex && curPosInText < text.length(); curPosInText++) {
+    for (; curPosInText <= (ulong)charIndex && curPosInText < text.length(); curPosInText++) {
         posX = tft.textWidth(text.substring(lastNewLine, curPosInText).c_str());
         if (posX >= 240 || text[curPosInText] == '\n') {
             prevNL      = lastNewLine;
             lastNewLine = curPosInText + 1;
             posX        = 0;
         }
-        if (curPosInText == charIndex) { targetX = posX; }
+        if (curPosInText == (ulong)charIndex) { targetX = posX; }
     }
-    for (int i = lastNewLine; i < text.length(); i++) {
+    for (size_t i = lastNewLine; i < text.length(); i++) {
         if (text[i] == '\n' || tft.textWidth(text.substring(lastNewLine, i + 1)) >= 240) {
             nextNL = i;
             break;
@@ -63,14 +63,14 @@ int findCharPosX(NString text, int &charIndex, int direction) {
     }
     if (direction == UP && prevNL >= 0) {
         curPosInText = prevNL;
-        for (; curPosInText < lastNewLine; curPosInText++) {
+        for (; curPosInText < (ulong)lastNewLine; curPosInText++) {
             posX = tft.textWidth(text.substring(prevNL, curPosInText + 1));
             if (posX >= targetX + 5 || text[curPosInText] == '\n') { break; }
         }
     }
-    else if (direction == DOWN && nextNL < text.length()) {
+    else if (direction == DOWN && (ulong)nextNL < text.length()) {
         lastNewLine = nextNL + 1;
-        for (int i = lastNewLine; i < text.length(); i++) {
+        for (ulong i = lastNewLine; i < text.length(); i++) {
             if (text[i] == '\n' || tft.textWidth(text.substring(lastNewLine, i + 1)) >= 240 ||
                 i == text.length() - 1) {
                 nextNL = i;
@@ -141,7 +141,7 @@ void getCharacterPosition(NString str, int &x, int &y, int &index, int direction
     int              charCount   = 0;
     NString           currentLine = "";
     std::vector<int> lineStarts;
-    for (int i = 0; i < str.length(); i++) {
+    for (size_t i = 0; i < str.length(); i++) {
         char currentChar = str[i];
         if (currentChar == '\n') {
             y += tft.fontHeight();
@@ -171,7 +171,7 @@ void getCharacterPosition(NString str, int &x, int &y, int &index, int direction
             }
         }
         if (charCount == index) {
-            int    b             = 0;
+            size_t    b             = 0;
             NString lineSubstring = currentLine;
             while (b < lineSubstring.length() &&
                    tft.textWidth(lineSubstring.substring(0, b)) <= screenWidth) {
@@ -192,7 +192,7 @@ NString HEXTOASCII(NString hex) {
     hex.toUpperCase();
     NString output;
 
-    for (int i = 0; i < hex.length(); i += 2) {
+    for (size_t i = 0; i < hex.length(); i += 2) {
         char h  = hex[i];
         char l  = hex[i + 1];
         int  hv = (h >= '0' && h <= '9') ? h - '0' : h - 'A' + 10;
@@ -214,7 +214,7 @@ int measureStringHeight(const NString &text) {
 
     NString word = "";
 
-    for (int i = 0; i < text.length(); i++) {
+    for (size_t i = 0; i < text.length(); i++) {
         char c = text[i];
 
         if (c == '\r' && i + 1 < text.length() && text[i + 1] == '\n') {
