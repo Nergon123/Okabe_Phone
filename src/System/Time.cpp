@@ -11,7 +11,7 @@ void SetUpTime() {
     preferences.begin("TimePhone");
 
     systemTime         = preferences.getLong("TIME", mktime(&tm_time));
-    struct timeval now = {.tv_sec = systemTime};
+    //struct timeval now = {.tv_sec = systemTime};
     //settimeofday(&now, NULL);
     preferences.end();
 

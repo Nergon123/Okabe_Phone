@@ -69,7 +69,7 @@ void parseMessages(Message *&msgs, int &count) {
             if (number.indexOf('p') != -1) { curContact.name = "SERVICE NUMBER"; }
             else { curContact.name = number; }
             curContact.index = -1;
-            for (int u = 0; u < contacts.size(); u++) {
+            for (size_t u = 0; u < contacts.size(); u++) {
                 if (contacts[u].phone.indexOf(checknumber) != -1) {
                     curContact = contacts[u];
                     break;
@@ -121,7 +121,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     // size of accessible height of current viewport
     const int TLVP = 238;
 
-    int limit = 0;
+    size_t limit = 0;
     if (sms) { limit = 160; }
     else { limit = 400; }
     int     curx     = 0;

@@ -151,7 +151,7 @@ void settings() {
 int gallery() {
     if (!VFS.exists("/sd" + resPath)) { return lastImage; }
     std::vector<mOption> wallpaperOptions = {
-        {.label = "Pick wallpaper...", .image = Image(R_NULL_IMAGE)}};
+        mOption("Pick wallpaper...",Image())};
     return listMenu(wallpaperOptions, wallpaperOptions.size(), true, 2, "Change wallpaper");
 }
 
@@ -179,7 +179,7 @@ void setTime(time_t *time) {
     tft.setCursor(111, 187);
     tft.print(":");
 
-    tm  tm_time   = *gmtime(&systemTime);
+    tm  tm_time   = *gmtime(time);
     int temp_year = 1900 + tm_time.tm_year;
 
     int  choice    = 0;
@@ -226,6 +226,7 @@ void setTime(time_t *time) {
  */
 void ringtoneSelector(bool isMail) {
 #warning ringtoneSelector not implemented
+    (void)isMail;
     // NFile* dir = VFS.open("/sd/AUDIO");
     // if (!dir) {
     //     ErrorWindow("NO /AUDIO");

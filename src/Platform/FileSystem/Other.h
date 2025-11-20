@@ -72,7 +72,7 @@ class StdFile : public IFile {
 
 class StdFileSystem : public IFileSystem {
     std::string root;
-
+    FileDeviceType fstype;
   public:
     explicit StdFileSystem(const std::string& rootPath,FileDeviceType type) : root(rootPath), fstype(type) {}
 

@@ -282,8 +282,8 @@ void populateContacts() {
 #else
 
 void   AT_test(){};
-NString sendATCommand(NString command, uint32_t timeout , bool background ){return "PC";};
-NString getATvalue(NString command, bool background ){return "PC";};
+NString sendATCommand(NString command, uint32_t timeout , bool background ){(void)command;(void)timeout;(void)background;return "PC";};
+NString getATvalue(NString command, bool background ){(void)command;(void)background;return "PC";};
 bool   checkSim(){return true;};
 bool   _checkSim(){return true;};
 void   initSim(){};

@@ -1,5 +1,6 @@
 #include "../Hardware.h"
 #ifdef PC
+#include <Platform/Graphics/SDL2RenderTarget.h>
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <chrono>
@@ -9,11 +10,10 @@
 #include <string>
 #include <sys/utsname.h>
 
-class Linux : iHW {
+class DEV_LINUX : public iHW {
   public:
     void init() override {
         initPseudoSD();
-        currentRenderTarget = setupSDL2RenderTarget(240, 320, "Okabe Phone Emulator");
     };
     void initStorage() override {
         IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
@@ -29,13 +29,9 @@ class Linux : iHW {
             std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
         return duration.count();
     }
-    ulong hw->millis() override { return micros() / 1000; };
+    ulong millis() override { return micros() / 1000; };
 
-    void setCPUSpeed(CPU_SPEED speed) override {
-#ifndef EMU
-
-#endif
-    };
+    void setCPUSpeed(CPU_SPEED speed) override { (void)speed; };
 
     CPU_SPEED getCPUSpeed() override {
 #ifndef EMU
@@ -46,13 +42,23 @@ class Linux : iHW {
         if (uname(&sys) == 0) { return sys.nodename; };
         return "Unknown";
     }
-    void shutdown() override { system("poweroff"); };
-    void reboot() override { system("reboot"); };
+    void shutdown() override {
+#ifndef EMU
+        system("poweroff");
+#endif
+    };
+    void reboot() override { 
+        #ifndef EMU
+        system("reboot");
+#endif
+     };
 
     void setScreenBrightness(int8_t value) override {
+#ifndef EMU
         char cmd[64];
         snprintf(cmd, sizeof(cmd), "brightnessctl set %d%% > /dev/null 2>&1", value);
         system(cmd);
+#endif
     };
     char getCharInput() override {
         char input = 0;

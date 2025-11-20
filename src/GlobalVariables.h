@@ -7,11 +7,11 @@
 #include <PNGdec.h>
 #include <TFT_eSPI.h>
 #endif
-#include "Platform/NString.h"
-#include "Platform/ard_esp.h"
 #include "Platform/FileSystem/VFS.h"
-#include "Platform/Preferences.h"
 #include "Platform/Hardware/Hardware.h"
+#include "Platform/NString.h"
+#include "Platform/Preferences.h"
+#include "Platform/ard_esp.h"
 #include <vector>
 // hmm....
 #include "System/ResourceSystem.h"
@@ -31,6 +31,10 @@ struct mOption {
     NString label;
     Image   image;
     uint8_t icon_index;
+    mOption(NString label) : label(label), image(Image()), icon_index(0) {};
+    mOption(NString label, Image image) : label(label), image(image), icon_index(0) {};
+    mOption(NString label, Image image, uint8_t icon_index)
+        : label(label), image(image), icon_index(icon_index) {};
 };
 
 // SMS status
@@ -52,8 +56,8 @@ struct Message {
     NString longdate;
 
     operator mOption() const {
-        return mOption{date + " " + contact.name, .image = Image(R_LIST_MAIL_ICONS),
-                       .icon_index = (status == status::NEW ? (uint8_t)0 : (uint8_t)1)};
+        return mOption(date + " " + contact.name, Image(R_LIST_MAIL_ICONS),
+                       status == status::NEW ? (uint8_t)0 : (uint8_t)1);
     }
 
     Message(Contact _contact, NString _subject, NString _content, NString _date, NString _longdate,
@@ -121,7 +125,7 @@ extern RenderTarget* bufferedRenderTarget;
 
 extern iHW* hw;
 
-extern uint8_t *resources;
+extern uint8_t* resources;
 
 // Function to get the size of an array ... bruh
 template <typename T, size_t N> size_t ArraySize(T (&)[N]) { return N; }
