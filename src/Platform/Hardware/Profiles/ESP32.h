@@ -45,7 +45,7 @@ class DEV_ESP32 : public iHW {
         initMCP();
 
         pinMode(TFT_BL, OUTPUT);
-        analogWrite(TFT_BL, 0);
+        setScreenBrightness(100);
 
         keypad_exists  = checkI2Cdevices(MCP23017_ADDR);
         charger_exists = checkI2Cdevices(IP5306_ADDR);

@@ -9,19 +9,7 @@
 
 // Function to initialize the storage
 void storageInit() {
-
-#ifndef PC
-
-#else
-    IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
-    IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
-#endif
-
-    sdcard->begin();
-    VFS.mount("/sd", sdcard);
-    spiffs->begin();
-    VFS.mount("/spiffs", spiffs);
-    ESP_LOGI("SPIFFS", "SPIFFS started");
+hw->initStorage();
 
     preferences.begin("settings", false);
     resPath = preferences.getString("resPath", resPath.c_str());

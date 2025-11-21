@@ -1,5 +1,4 @@
 #include "GlobalVariables.h"
-#include "Platform/ESPPlatform.h"
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/Hardware/Profiles/ESP32.h"
 #include "Platform/Hardware/Profiles/Linux.h"

@@ -1,5 +1,4 @@
 #include "Input.h"
-#include "../Platform/ESPPlatform.h"
 #include "../Platform/ard_esp.h"
 #ifdef PC
 #include <SDL2/SDL.h>
@@ -43,46 +42,56 @@ void numberInput(char first) {
     tft.fillRect(0, 300, 240, 20, 0);
     sBarChanged = true;
     drawStatusBar();
-    const uint8_t max_char = 13;
+
+    const uint8_t max_length = 13;
     NString       number;
     number += first;
-    char c = 127;
+
+    int c = 127;
+
     tft.setTextColor(TFT_WHITE);
     changeFont(0);
     tft.setTextSize(3);
-    tft.fillRect(0, 300, 240, 20, 0);
-    tft.setCursor(0, 300);
-    tft.print(number);
+
+    auto redraw = [&]() {
+        tft.fillRect(0, 300, 240, 20, 0);
+        tft.setCursor(0, 300);
+        tft.print(number);
+    };
+
+    redraw();
+
     while (true) {
-        while (c == 127 || c < 0) { c = buttonsHelding(); }
+        while (c == 127 || c == -1) { c = buttonsHelding(); }
 
         switch (c) {
+
         case ANSWER:
             if (!number.isEmpty()) { makeCall(Contact("", number)); }
-
             return;
+
         case LEFT:
-            number.remove(number.length() - 1);
-            tft.fillRect(0, 300, 240, 20, 0);
-            tft.setCursor(0, 300);
-            tft.print(number);
-
+            if (!number.isEmpty()) { // <-- FIXED!
+                number.remove(number.length() - 1);
+                redraw();
+            }
             break;
+
         case BACK: return;
-        default: break;
-        }
 
-        if ((c >= '0' || c == '*' || c == '#') && c <= '9' && number.length() < max_char) {
-            if (!simIsBusy) { sendATCommand("AT+CLDTMF=15,\"" + NString(char(c)) + "\",10", 1); }
-            number += c;
-            tft.fillRect(0, 300, 240, 20, 0);
-            tft.setCursor(0, 300);
-            tft.print(number);
-            c = 255;
-        }
+        default:
+            if ((std::isdigit(static_cast<unsigned char>(c)) || c == '*' || c == '#') &&
+                number.length() < max_length) {
+                if (!simIsBusy) {
+                    sendATCommand("AT+CLDTMF=15,\"" + NString(char(c)) + "\",10", 1);
+                }
 
-        ESP_LOGI(ITAG, "%d", c);
-        c = 255;
+                number += char(c);
+                redraw();
+            }
+            break;
+        }
+        c = 127; // reset key
     }
 }
 
@@ -242,7 +251,7 @@ int buttonsHelding(bool _idle) {
      * D-DECLINE
      * 0-SELECT
      *
-     * because we don't have BACK button Button D (Decline) also acts as BACK
+     * because we don't have separate BACK button Button D (Decline) also acts as BACK
      *
      *
      */
@@ -252,6 +261,7 @@ int buttonsHelding(bool _idle) {
         currentRenderTarget->present();
     }
 #endif
+
     if (_idle) { idle(); }
     char input = 0;
     input      = hw->getCharInput();
@@ -266,9 +276,11 @@ int buttonsHelding(bool _idle) {
     // Serial control support
     // You can control device keypad from other device through Serial port
 
-    if (Serial.available() || input != 0) {
 #ifndef PC
+    if (Serial.available() || input != 0) {
         input = Serial.read();
+#else
+    if (input != 0) {
 #endif
         millSleep = hw->millis();
         switch (input) {
@@ -314,11 +326,7 @@ int buttonsHelding(bool _idle) {
 #endif
             break;
         default:
-            if (input >= '0' && input <= '9') {
-                ESP_LOGI(ITAG, "%c", input);
-                result += 10;
-                result -= '1';
-            }
+            if (input >= '0' && input <= '9') { return input; }
             break;
         }
     }
@@ -334,13 +342,11 @@ int buttonsHelding(bool _idle) {
     case 20: return '0';
     case 21: return '#';
     default:
-        if (result > 9 && result < 19) {
-            result -= 10;
-            result += '1';
-            return result;
+        if (result >= 10 && result <= 18) {
+            return char('1' + (result - 10));
+            break;
         }
-        break;
-    }
 
-    return -1;
+        return -1;
+    }
 }

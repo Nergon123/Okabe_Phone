@@ -102,9 +102,6 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     bool isLines = false;
 #endif
     int lines = isLines ? lines_to_draw_wo_psram : img.height;
-    //    ESP_LOGI("RES", "Drawing Image ID:%d Index:%d at %d,%d Size:%dx%d (from %d) on %s", id,
-    //    index,
-    //             pos.x, pos.y, width, height, start, is_buffer ? "TFT" : "RenderTarget");
     for (int i = 0; i < height; i += lines) {
 
         if (height - i < lines) { lines = height % lines; }

@@ -4,10 +4,10 @@
 
 #ifndef PC
 #include <TFT_eSPI.h>
-TFT_eSPI _tft;
 
 class TFTESPIRenderTarget : public RenderTarget {
   public:
+    TFT_eSPI _tft;
     TFTESPIRenderTarget(int w, int h) : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr) {
         init();
     }
@@ -35,9 +35,7 @@ class TFTESPIRenderTarget : public RenderTarget {
 
     void writeColor(uint16_t color, uint32_t len) override { _tft.writeColor(color, len); }
 
-    virtual void setBrightness(int8_t percentage) override {
-        hw->setScreenBrightness(percentage);
-    }
+    virtual void setBrightness(int8_t percentage) override { hw->setScreenBrightness(percentage); }
 
     void fillScreen(uint16_t color) override { _tft.fillScreen(color); }
 

@@ -1,6 +1,5 @@
 #include "UIElements.h"
 #include <functional>
-#include "../Platform/ESPPlatform.h"
 const uint16_t clr_selected   = TFT_RED;
 const uint16_t clr_normal     = TFT_BLACK;
 const uint16_t clr_disabled   = TFT_LIGHTGREY;

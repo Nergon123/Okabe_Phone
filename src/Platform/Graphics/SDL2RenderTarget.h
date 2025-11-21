@@ -61,8 +61,9 @@ class SDL2RenderTarget : public RenderTarget {
                 int      dstX  = startX + rx;
                 int      srcX  = rx + (startX - x);
                 uint16_t srcPx = srcRow[srcX];
+                srcPx =  (srcPx >> 8) | (srcPx << 8);
                 if (transparent && srcPx == transpColor) { continue; }
-                dstRow[dstX] = (srcPx >> 8) | (srcPx << 8);
+                dstRow[dstX] = srcPx;
             }
         }
     }
