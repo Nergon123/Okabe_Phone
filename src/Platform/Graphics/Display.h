@@ -128,7 +128,8 @@ class TFT_STUB {
     uint8_t  _rotation;
     int16_t  _addrX1, _addrY1, _addrX2, _addrY2;
     int16_t  _cursor_x =0, _cursor_y=0;
-    uint16_t _textcolor =0 ;
+    uint16_t _textcolor =0,_textbgcolor =0;
+    bool _textbgopaque = false;
     // viewport state
     int16_t _vp_x =0, _vp_y =0, _vp_w=240, _vp_h=320;
     bool    _vp_active = false;

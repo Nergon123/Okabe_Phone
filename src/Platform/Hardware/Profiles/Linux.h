@@ -12,9 +12,7 @@
 
 class DEV_LINUX : public iHW {
   public:
-    void init() override {
-        initPseudoSD();
-    };
+    void init() override { initPseudoSD(); };
     void initStorage() override {
         IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
         IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
@@ -47,17 +45,19 @@ class DEV_LINUX : public iHW {
         system("poweroff");
 #endif
     };
-    void reboot() override { 
-        #ifndef EMU
+    void reboot() override {
+#ifndef EMU
         system("reboot");
 #endif
-     };
+    };
 
     void setScreenBrightness(int8_t value) override {
 #ifndef EMU
         char cmd[64];
         snprintf(cmd, sizeof(cmd), "brightnessctl set %d%% > /dev/null 2>&1", value);
         system(cmd);
+#else
+        (void)value;
 #endif
     };
     char getCharInput() override {

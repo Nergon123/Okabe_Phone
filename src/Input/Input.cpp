@@ -10,7 +10,8 @@ int         millDelay = 0;
 // Function to handle the idle state
 void idle() {
 
-    if (hw->millis() > millSleep + (delayBeforeSleep / 2) && hw->millis() < millSleep + delayBeforeSleep) {
+    if (hw->millis() > millSleep + (delayBeforeSleep / 2) &&
+        hw->millis() < millSleep + delayBeforeSleep) {
         setBrightness(brightness * 0.1);
         fastMode(false);
     }
@@ -33,7 +34,6 @@ void idle() {
     }
 }
 
-
 /*
  * Number input field (used on Main screen)
  * @param first first number to be displayed (since it being called by button press)
@@ -54,7 +54,7 @@ void numberInput(char first) {
     tft.setCursor(0, 300);
     tft.print(number);
     while (true) {
-        while (c == 127) { c = buttonsHelding(); }
+        while (c == 127 || c < 0) { c = buttonsHelding(); }
 
         switch (c) {
         case ANSWER:
@@ -247,11 +247,16 @@ int buttonsHelding(bool _idle) {
      *
      */
 
+#ifdef PC
+    if (currentRenderTarget && currentRenderTarget->getType() == RENDER_TARGET_TYPE_SCREEN) {
+        currentRenderTarget->present();
+    }
+#endif
     if (_idle) { idle(); }
     char input = 0;
     input      = hw->getCharInput();
     int result = hw->getKeyInput();
-    
+
     if (lastresult != result) { millSleep = hw->millis(); }
 
     if (result != 0) { while (result == hw->getKeyInput() && hw->millis() - millSleep < 1500); }
