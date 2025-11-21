@@ -63,7 +63,7 @@ void incomingCall(Contact contact) {
  */
 void makeCall(Contact contact) {
     if (!checkSim()) { return; }
-    isAnswered = true;
+    isAnswered = false;
     sendATCommand("ATD" + contact.phone + ";");
     callActivity(contact);
 }
@@ -94,7 +94,7 @@ void callActivity(Contact contact) {
     tft.setTextSize(1);
     tft.setCursor(85, 95);
     tft.print("Calling...");
-    stateCall = GetState();
+    stateCall = DIALING;
     delay(50);
     bool hang = false;
     while (stateCall == DIALING) {

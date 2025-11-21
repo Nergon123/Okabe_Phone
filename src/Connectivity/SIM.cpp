@@ -1,6 +1,7 @@
 #include "SIM.h"
 
 #ifndef PC
+#define SIM_BAUD_RATE 115200
 /*
  * Send AT command to Sim Card module
  * @param command AT command to send
