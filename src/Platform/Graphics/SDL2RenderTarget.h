@@ -11,8 +11,8 @@ class SDL2RenderTarget : public RenderTarget {
           renderer(nullptr), texture(nullptr), windowX(0), windowY(0), windowW(w * SDLScale),
           windowH(h * SDLScale) {
         SDL_Init(SDL_INIT_VIDEO);
-        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowW, windowH,
-                                  SDL_WINDOW_SHOWN);
+        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowW,
+                                  windowH, SDL_WINDOW_SHOWN);
         if (window) {
             renderer = SDL_CreateRenderer(window, -1, 0);
             SDL_RenderSetScale(renderer, SDLScale, SDLScale);
@@ -66,23 +66,20 @@ class SDL2RenderTarget : public RenderTarget {
             }
         }
     }
-    virtual void setBrightness(int8_t percentage) override {
-        hw->setScreenBrightness(percentage);
-    }
-    void fillScreen(uint16_t color) override {
+    virtual void setBrightness(int8_t percentage) override { hw->setScreenBrightness(percentage); }
+    void         fillScreen(uint16_t color) override {
         color = (color >> 8) | (color << 8);
         for (int i = 0; i < width * height; ++i) { buffer[i] = color; }
         present();
     }
     void writeColor(uint16_t color, uint32_t len) override {
-        if (len > (uint32_t)windowW * windowH) { len = windowW * windowH; }
+        int16_t x0 = std::max<int16_t>(0, windowX);
+        int16_t y0 = std::max<int16_t>(0, windowY);
+        int16_t x1 = std::min<int16_t>(width, windowX + windowW);
+        int16_t y1 = std::min<int16_t>(height, windowY + windowH);
 
-        for (uint32_t i = 0; i < len; ++i) {
-            int16_t px = windowX + (i % windowW);
-            int16_t py = windowY + (i / windowW);
-            if (px >= 0 && px < width && py >= 0 && py < height) {
-                buffer[py * width + px] = color;
-            }
+        for (int16_t py = y0; py < y1; py++) {
+            for (int16_t px = x0; px < x1; px++) { buffer[py * width + px] = color; }
         }
     }
     virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {

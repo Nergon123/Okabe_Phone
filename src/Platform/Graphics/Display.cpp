@@ -44,29 +44,29 @@ void TFT_STUB::fillScreen(uint16_t color) {
 }
 
 void TFT_STUB::setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {
-    if (_vp_active) {
-        int32_t abs_xs = (int32_t)xs + _vp_x;
-        int32_t abs_ys = (int32_t)ys + _vp_y;
-        int32_t abs_x2 = abs_xs + w;
-        int32_t abs_y2 = abs_ys + h;
+    // if (_vp_active) {
+    //     int32_t abs_xs = (int32_t)xs + _vp_x;
+    //     int32_t abs_ys = (int32_t)ys + _vp_y;
+    //     int32_t abs_x2 = abs_xs + w;
+    //     int32_t abs_y2 = abs_ys + h;
 
-        int32_t vx1 = _vp_x;
-        int32_t vy1 = _vp_y;
-        int32_t vx2 = _vp_x + _vp_w;
-        int32_t vy2 = _vp_y + _vp_h;
+    //     int32_t vx1 = _vp_x;
+    //     int32_t vy1 = _vp_y;
+    //     int32_t vx2 = _vp_x + _vp_w;
+    //     int32_t vy2 = _vp_y + _vp_h;
 
-        int32_t ix1 = abs_xs > vx1 ? abs_xs : vx1;
-        int32_t iy1 = abs_ys > vy1 ? abs_ys : vy1;
-        int32_t ix2 = abs_x2 < vx2 ? abs_x2 : vx2;
-        int32_t iy2 = abs_y2 < vy2 ? abs_y2 : vy2;
+    //     int32_t ix1 = abs_xs > vx1 ? abs_xs : vx1;
+    //     int32_t iy1 = abs_ys > vy1 ? abs_ys : vy1;
+    //     int32_t ix2 = abs_x2 < vx2 ? abs_x2 : vx2;
+    //     int32_t iy2 = abs_y2 < vy2 ? abs_y2 : vy2;
 
-        if (ix2 <= ix1 || iy2 <= iy1) {
-            // empty intersection, nothing to set
-            return;
-        }
-        setViewport((int16_t)ix1, (int16_t)iy1, (int16_t)(ix2 - ix1), (int16_t)(iy2 - iy1));
-        return;
-    }
+    //     if (ix2 <= ix1 || iy2 <= iy1) {
+    //         // empty intersection, nothing to set
+    //         return;
+    //     }
+    //     //setViewport((int16_t)ix1, (int16_t)iy1, (int16_t)(ix2 - ix1), (int16_t)(iy2 - iy1));
+    //     return;
+    // }
     activeRenderTarget->setAddrWindow(xs, ys, w, h);
 }
 
@@ -105,7 +105,11 @@ void TFT_STUB::setRotation(uint8_t r) {
     }
 }
 
-void TFT_STUB::setTextColor(uint16_t color, uint16_t bg, bool opaque) { textcolor = color; }
+void TFT_STUB::setTextColor(uint16_t color, uint16_t bg, bool opaque) {
+    textcolor     = color;
+    _textbgcolor  = bg;
+    _textbgopaque = opaque;
+}
 
 void TFT_STUB::setTextSize(uint8_t size) { textsize = size; }
 
@@ -128,13 +132,10 @@ void TFT_STUB::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t col
         x += _vp_x;
         y += _vp_y;
     }
-
     setAddrWindow(x, y, w, h);
-       
 
     activeRenderTarget->writeColor(color, w * h);
     activeRenderTarget->present();
-    
 }
 
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data) {
@@ -298,6 +299,7 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
         if (uc > 127) {
             return; // or the max index of your font array
         }
+        if (_textbgopaque) { fillRect(x, y, 5 * textsize, 8 * textsize, _textbgcolor); }
 
         for (int col = 0; col < 5; col++) {
             uint8_t line = font[uc * 5 + col];
@@ -314,14 +316,19 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
         _cursor_x += 6 * textsize;
     }
     else if (currentFont.font) {
-        c -= currentFont.font->first;                   // character index
-        GFXglyph *glyph  = &currentFont.font->glyph[c]; // correct glyph for this char
+        c -= currentFont.font->first;                        // character index
+        GFXglyph *glyph  = &currentFont.font->glyph[(int)c]; // correct glyph for this char
         uint8_t  *bitmap = currentFont.font->bitmap;
         uint32_t  bo     = glyph->bitmapOffset;
         uint8_t   w = glyph->width, h = glyph->height;
         int8_t    xo = glyph->xOffset, yo = glyph->yOffset;
         uint8_t   xx, yy, bits = 0, bit = 0;
         int16_t   xo16 = 0, yo16 = 0;
+        if (_textbgopaque) {
+            uint16_t cellW = glyph->xAdvance * textsize;
+            uint16_t cellH = currentFont.font->yAdvance * textsize;
+            fillRect(x, y - cellH, cellW, cellH, _textbgcolor);
+        }
 
         if (textsize > 1) {
             xo16 = xo;
