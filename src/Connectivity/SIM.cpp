@@ -13,7 +13,7 @@ NString sendATCommand(NString command, uint32_t timeout, bool background) {
     if (SimSerial.baudRate() != SIM_BAUD_RATE) { SimSerial.updateBaudRate(SIM_BAUD_RATE); }
     bool _simIsBusy = simIsBusy;
     while (_simIsBusy) {
-        delay(50);
+        hw->delay(50);
         _simIsBusy = simIsBusy;
     }
     simIsBusy = true;

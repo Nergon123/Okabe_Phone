@@ -95,12 +95,12 @@ void callActivity(Contact contact) {
     tft.setCursor(85, 95);
     tft.print("Calling...");
     stateCall = DIALING;
-    delay(50);
+    hw->delay(50);
     bool hang = false;
     while (stateCall == DIALING) {
         for (int i = 7; i >= 0; i--) {
             spinAnim(55, 60, 12, 6, i);
-            delay(40);
+            hw->delay(40);
             if (buttonsHelding() == DECLINE) {
                 hang = true;
                 // calling = false;
@@ -137,7 +137,7 @@ void callActivity(Contact contact) {
     const char* callEnded = "End of Call..";
     tft.setCursor(120 - tft.textWidth(callEnded) / 2, 150);
     tft.print(callEnded);
-    delay(1000);
+    hw->delay(1000);
     drawStatusBar(true);
     ongoingCall   = false;
     isAnswered    = false;

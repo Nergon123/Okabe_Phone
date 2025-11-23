@@ -33,11 +33,11 @@ void writeCustomFont(int x, int y, NString input, int type) {
     int spacing = 0;
     int image;
     switch (type) {
-        case 0: image = R_OUTGOING_CALL_FONT; break;
-        case 1: image = R_INCOMING_CALL_FONT; break;
-        
-        default: return; // wrong/missing type...
+    case 0: image = R_OUTGOING_CALL_FONT; break;
+    case 1: image = R_INCOMING_CALL_FONT; break;
+
+    default: return; // wrong/missing type...
     }
     int xAdvance = res.GetImageDataByID(image).width;
-    for (size_t i = 0; i < input.length(); i++) {  }
+    for (size_t i = 0; i < input.length(); i++) {}
 }

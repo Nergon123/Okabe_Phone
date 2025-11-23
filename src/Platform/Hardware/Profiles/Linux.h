@@ -9,10 +9,11 @@
 #include <fstream>
 #include <string>
 #include <sys/utsname.h>
+#include <thread>
 
 class DEV_LINUX : public iHW {
   public:
-    void init() override { initPseudoSD(); };
+    void init() override { };
     void initStorage() override {
         IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
         IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
@@ -28,8 +29,8 @@ class DEV_LINUX : public iHW {
         return duration.count();
     }
     ulong millis() override { return micros() / 1000; };
-
-    void setCPUSpeed(CPU_SPEED speed) override { (void)speed; };
+    void  delay(ulong ms) override { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+    void  setCPUSpeed(CPU_SPEED speed) override { (void)speed; };
 
     CPU_SPEED getCPUSpeed() override {
 #ifndef EMU
@@ -134,9 +135,5 @@ class DEV_LINUX : public iHW {
     RenderTarget* GetScreen() override { return setupSDL2RenderTarget(240, 320, "Emulator"); }
 
   private:
-    void initPseudoSD() {
-        IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
-        if (sdcard->begin()) { VFS.mount("/sd", sdcard); }
-    }
 };
 #endif // PC

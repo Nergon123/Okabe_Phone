@@ -11,7 +11,7 @@
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/NString.h"
 #include "Platform/Preferences.h"
-#include "Platform/ard_esp.h"
+
 #include <vector>
 // hmm....
 #include "System/ResourceSystem.h"

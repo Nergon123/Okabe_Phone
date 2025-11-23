@@ -36,6 +36,8 @@
 
 #endif
 
+#define NI_delay(old_millis, ms) hw->millis() - old_millis < ms
+
 // delay between SIM card checks
 #define DBC_MS 5000
 
