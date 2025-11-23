@@ -28,16 +28,25 @@ void changeFont(int ch, bool buffer) {
 //  @param y: y position on the screen
 //  @param input: string to be written
 //  @param type: type of font (0: white outcoming call font , 1: black incoming call font)
+//  @note Expected char sequence: `0123456789#*X/:`
 void writeCustomFont(int x, int y, NString input, int type) {
-#warning writeCustomFont not implemented
-    int spacing = 0;
-    int image;
+    NString seq     = "0123456789#*X/:";
+    int     spacing = 0;
+    int     image;
     switch (type) {
     case 0: image = R_OUTGOING_CALL_FONT; break;
     case 1: image = R_INCOMING_CALL_FONT; break;
-
     default: return; // wrong/missing type...
     }
+
     int xAdvance = res.GetImageDataByID(image).width;
-    for (size_t i = 0; i < input.length(); i++) {}
+    for (size_t i = 0; i < input.length(); i++) { 
+        for (size_t u = 0; u < seq.length(); u++) {
+            if (input[i] == seq[u]) {
+                res.DrawImage(image, u, {x, y});
+                x += xAdvance + spacing;
+                break;
+            }
+        }
+    }
 }
