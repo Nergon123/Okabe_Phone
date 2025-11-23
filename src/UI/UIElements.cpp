@@ -409,7 +409,7 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
         tft.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.fillRect(69, y, i, h, color);
-            if (!fast) { delay(5); }
+            if (!fast) { hw->delay(5); }
         }
     }
     else {
@@ -417,7 +417,7 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
         tft.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.fillRect(69, y, i, h, color);
-            if (!fast) { delay(5); }
+            if (!fast) { hw->delay(5); }
         }
 #endif
     }

@@ -1,14 +1,18 @@
 #include "Input.h"
-#include "../Platform/ard_esp.h"
+
 #ifdef PC
 #include <SDL2/SDL.h>
 #endif
 const char *ITAG      = "INPUT";
 int         millDelay = 0;
+int         idleDelay = 0;
+
 
 // Function to handle the idle state
 void idle() {
 
+    if (NI_delay(idleDelay, 50)) { return; }
+    idleDelay = hw->millis();
     if (hw->millis() > millSleep + (delayBeforeSleep / 2) &&
         hw->millis() < millSleep + delayBeforeSleep) {
         setBrightness(brightness * 0.1);
@@ -26,7 +30,6 @@ void idle() {
     drawStatusBar(false);
 
     checkVoiceCall();
-    delay(50);
     if (hw->millis() - millDelay > DBC_MS) {
         millDelay = hw->millis();
         drawStatusBar();

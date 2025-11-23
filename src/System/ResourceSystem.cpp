@@ -59,6 +59,7 @@ void ResourceSystem::failure(const char *msg, bool important) {
 }
 
 ImageData ResourceSystem::GetImageDataByID(uint16_t id, uint8_t type) {
+    if (type > sizeof(Images) / sizeof(Images[0])) { return ImageData(R_NULL_IMAGE); }
     for (ImageData img : Images[type]) {
         if (img.id == id) { return img; }
     }

@@ -1,8 +1,8 @@
 #pragma once
 #include "../Hardware.h"
 #ifndef PC
-#include <Esp.h>
 #include "../Drivers/Battery/IP5306.h"
+#include <Esp.h>
 #include <MCP23017.h>
 #include <Platform/FileSystem/ESP.h>
 #include <Platform/FileSystem/VFS.h>
@@ -50,11 +50,12 @@ class DEV_ESP32 : public iHW {
         keypad_exists  = checkI2Cdevices(MCP23017_ADDR);
         charger_exists = checkI2Cdevices(IP5306_ADDR);
     };
+
     void initStorage() override {
         SPIFFS.begin();
         SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
         ESP_LOGI("SD", "SPI started");
-        initSDcard(true);
+        sdcard_exists       = initSDcard(true);
         IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
         IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
         sdcard->begin();
@@ -63,8 +64,8 @@ class DEV_ESP32 : public iHW {
         VFS.mount("/spiffs", spiffs);
     }
     ulong micros() override { return ::micros(); };
-
-    void setCPUSpeed(CPU_SPEED speed) override {
+    void  delay(ulong ms) override { ::delay(ms); };
+    void  setCPUSpeed(CPU_SPEED speed) override {
         // setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     };
     CPU_SPEED getCPUSpeed() override {
@@ -123,6 +124,7 @@ class DEV_ESP32 : public iHW {
         mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
         ESP_LOGI("KEYPAD", "KEYPAD Initalized");
     }
+
     bool initSDcard(bool fast) {
         uint32_t freq  = fast ? FAST_SD_FREQ : SAFE_SD_FREQ;
         int      tries = 0;
@@ -141,7 +143,7 @@ class DEV_ESP32 : public iHW {
         }
         return false; // failed to init
     }
-
+    bool sdcard_exists  = false;
     bool keypad_exists  = false;
     bool charger_exists = false;
     bool checkI2Cdevices(byte device) {

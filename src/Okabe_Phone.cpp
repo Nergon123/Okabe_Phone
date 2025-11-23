@@ -2,15 +2,12 @@
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/Hardware/Profiles/ESP32.h"
 #include "Platform/Hardware/Profiles/Linux.h"
-#include "Platform/ard_esp.h"
 #include "Screens/Main.h"
 #include "System/ResourceSystem.h"
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
 bool err = false;
-
-
 
 int start() {
 #ifdef PC
@@ -22,9 +19,9 @@ int start() {
     // hardwareInit();
     hw->init();
     currentRenderTarget = hw->GetScreen();
-    ESP_LOGI("INIT","Main render target %p",currentRenderTarget);
+    ESP_LOGI("INIT", "Main render target %p", currentRenderTarget);
     if (!currentRenderTarget) {
-        
+
         ESP_LOGE("INIT", "Error occurred when initializing screen (GetScreen returned nullptr)");
         return 2;
     }
@@ -70,12 +67,12 @@ int main(int argc, char** argv) {
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--scale") == 0) {
             if (argv[i + 1]) {
-                if (strlen(argv[i + 1]) > 1 || argv[i + 1][0] <= '0' || argv[i + 1][0] > '9') {
+                SDLScale = atoi(argv[i + 1]);
+                if (SDLScale < 1 || SDLScale > 9) {
                     printf("\n--scale value should be in range from 1 to 9\n");
                     return -1;
                 }
 
-                SDLScale = atoi(argv[i + 1]);
                 SDLScale = SDLScale > 0 ? SDLScale : 1;
                 i++;
             }

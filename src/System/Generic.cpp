@@ -37,13 +37,13 @@ void setBrightness(uint8_t percentage) {
             // smooth brightness change
             for (int i = currentBrightness; i <= percentage; i++) {
                 hw->setScreenBrightness(i);
-                delay(5);
+                hw->delay(5);
             }
         }
         else {
             for (int i = currentBrightness; i >= percentage; i--) {
                 hw->setScreenBrightness(i);
-                delay(5);
+                hw->delay(5);
             }
         }
     }

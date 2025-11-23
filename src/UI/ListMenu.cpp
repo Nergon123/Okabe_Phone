@@ -65,10 +65,11 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
         res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.x = 0, .y = yy}, {.x = 0, .y = yy},
                       {.x = 0, .y = yy + esize}, RES_MAIN);
     }
-
-    ImageData imgData = res.GetImageDataByImage(choice.image);
-    res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0},
-                  choice.image.type);
+    if (choice.image.id != R_NULL_IMAGE) {
+        ImageData imgData = res.GetImageDataByImage(choice.image);
+        res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0},
+                      choice.image.type);
+    }
     if (lines) {
         tft.drawLine(0, yy, 240, yy, 0);
         tft.drawLine(0, yy + esize, 240, yy + esize, 0);
@@ -481,7 +482,6 @@ int choiceMenu(const NString choices[], int count, bool context) {
             int xx = x - 5;
             tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
             tft.print(choices[choice]);
-            delay(100);
             break;
         }
         case SELECT: {
@@ -531,8 +531,6 @@ int choiceMenu(const NString choices[], int count, bool context) {
             int xx = x - 5;
             tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
             tft.print(choices[choice]);
-
-            delay(100);
             break;
         }
         }
