@@ -159,7 +159,7 @@ void ResourceSystem::CopyToRam(uint8_t type) {
                 Files[type]->read(reinterpret_cast<uint8_t *>(cache[type]), Files[type]->size());
 
             if (readB != Files[type]->size()) {
-                ESP_LOGE("CopyToRam", "Size mismatch %d != %d", Files[type]->size(), readB);
+                ESP_LOGE("CopyToRam", "Size mismatch %ld != %ld", Files[type]->size(), readB);
                 bootText("copying to ram not successfull.");
 
                 // free(cache[type]);

@@ -41,7 +41,7 @@ void WiFiList() {
     //     int32_t  c, d;
     //     for (int i = 0; i < count; i++) { WiFi.getNetworkInfo(i, names[i].c_str(), enc[i], c, l, d); }
 
-    //     int ch = listMenu(names, count, false, 0, "WI-FI");
+    //     int ch = listMenu(names, count, false, LM_SETTINGS, "WI-FI");
     //     if (ch == -1) { return; }
     //     else {
     //         // TODO: Actually Connect to WiFi

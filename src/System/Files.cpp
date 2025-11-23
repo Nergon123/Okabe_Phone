@@ -1,28 +1,13 @@
 #include "Files.h"
 
-/*
-Icons TODO:
-0    File
-1    Folder
-2    SD
-3    SPIFFS
-4    IMAGE
-5    AUDIO
-6    NPH
-7    TXT
-*/
-
 struct iconFormat {
     uint8_t     icon;
     const char *format;
 };
 
 const iconFormat fileFormats[] = {
-    {4, ".png"},               // image icon
-    {5, ".wav"}, {5, ".flac"}, // audio icon
-    {6, ".nph"},               // theme icon
-    {7, ".txt"},               // doc  icon
-    {0, ""},                   // default icon
+    {LM_ICO_IMAGE, ".png"}, {LM_ICO_AUDIO, ".wav"}, {LM_ICO_AUDIO, ".flac"},
+    {LM_ICO_THEME, ".nph"}, {LM_ICO_TEXT, ".txt"},  {0, ""},
 };
 
 uint8_t getIconByFormat(NString name) {
@@ -44,9 +29,10 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
 #warning fileBrowser probably needs reimplementing/fixing/testing
     IFile               *begin = VFS.open(path);
     std::vector<mOption> dirEntries;
-    Image                img      = Image(R_FILE_MANAGER_ICONS);
-    mOption              back     = mOption("..", img, 1);
-    mOption              saveHere = mOption("Save here", img, 0);
+    Image                img  = Image(R_FILE_MANAGER_ICONS);
+    mOption              back = mOption("..", img, LM_ICO_FOLDER);
+    mOption              saveHere =
+        mOption("Save here", img, LM_ICO_FILE); // TODO: maybe replace with floppy icon
     while (true) {
         title = path;
         if (path != "/") { dirEntries.push_back(back); }
@@ -56,15 +42,15 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
             std::string t_path = path + file;
             begin              = VFS.open(t_path);
             if (t_path.compare("/spiffs") == 0) {
-                dirEntries.push_back(mOption(file + "/", img, 3));
+                dirEntries.push_back(mOption(file + "/", img, LM_ICO_INTERNAL_STORAGE));
                 continue;
             }
             if (t_path.compare("/sd") == 0) {
-                dirEntries.push_back(mOption(file + "/", img, 2));
+                dirEntries.push_back(mOption(file + "/", img, LM_ICO_SDCARD));
                 continue;
             }
             if (begin->isDirectory()) {
-                dirEntries.push_back(mOption(file + "/", img, 1));
+                dirEntries.push_back(mOption(file + "/", img, LM_ICO_FOLDER));
                 continue;
             }
             if ((format == "*" || format.isEmpty()) ||
@@ -73,8 +59,9 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
             }
         }
         files.clear();
-        int selection = graphical ? listMenu(dirEntries, dirEntries.size(), false, 2, title)
-                                  : listMenuNonGraphical(dirEntries, dirEntries.size(), title);
+        int selection = graphical
+                            ? listMenu(dirEntries, dirEntries.size(), false, LM_SETTINGS, title)
+                            : listMenuNonGraphical(dirEntries, dirEntries.size(), title);
         if (selection >= (saveFile ? 2 : 1) || path == "/") {
             bool root = path == "/";
 

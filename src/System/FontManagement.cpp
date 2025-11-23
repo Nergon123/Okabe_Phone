@@ -1,6 +1,6 @@
 #include "FontManagement.h"
 
-void changeFont(int ch, bool buffer) {
+void changeFont(int ch) {
     // 5x7 font is index 0
     if (ch == 0) {
         tft.currentFont.isGFX = false;
@@ -9,7 +9,7 @@ void changeFont(int ch, bool buffer) {
     else {
         static const GFXfont* fonts[] = {&FONT1, &FONT2, &FONT3, &FONT4};
         ch -= 1; // adjust to 0-based index
-        if (ch >= 0 && ch < ArraySize(fonts)) {
+        if (ch >= 0 && (size_t)ch < ArraySize(fonts)) {
             tft.currentFont.isGFX = true;
             tft.currentFont.font  = fonts[ch];
         }
@@ -40,7 +40,7 @@ void writeCustomFont(int x, int y, NString input, int type) {
     }
 
     int xAdvance = res.GetImageDataByID(image).width;
-    for (size_t i = 0; i < input.length(); i++) { 
+    for (size_t i = 0; i < input.length(); i++) {
         for (size_t u = 0; u < seq.length(); u++) {
             if (input[i] == seq[u]) {
                 res.DrawImage(image, u, {x, y});

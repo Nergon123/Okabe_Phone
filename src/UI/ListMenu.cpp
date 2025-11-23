@@ -84,7 +84,7 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param choices Array of mOption objects representing the menu options
 /// @param icount Number of options in the menu
 /// @param lines Boolean indicating if lines should be drawn between options
-/// @param type Icon to display in the header 0: `messages` 1: `phone` 2: `settings`
+/// @param type Icon to display in the header. See `enum LM_TYPE` in `ListMenu.h`
 /// @param label Title of the menu
 /// @param forceIcons Boolean indicating if icons should be forced
 /// @param findex Force index of the selected option
@@ -441,8 +441,7 @@ int choiceMenu(const NString choices[], int count, bool context) {
         switch (buttonsHelding()) {
         case BACK: {
             exit = true;
-
-            return -1;
+            return LISTMENU_EXIT;
             break;
         }
         case UP: {
@@ -535,5 +534,5 @@ int choiceMenu(const NString choices[], int count, bool context) {
         }
         }
     }
-    return -1;
+    return LISTMENU_EXIT;
 }

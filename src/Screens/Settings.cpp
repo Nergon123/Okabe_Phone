@@ -24,8 +24,8 @@ void graphTest() {
 void debugMenu() {
 #warning debugMenu not implemented
     NString dbgMenu[] = {"Graphics Test"};
-    int     choice    = -2;
-    while (choice != -1) {
+    int     choice    = LISTMENU_NULL;
+    while (choice < 0) {
         choice = choiceMenu(dbgMenu, ArraySize(dbgMenu), false);
         switch (choice) {
         case 0: break;
@@ -41,8 +41,8 @@ void advancedSettings() {
         "Look and feel",
         "Experimental",
     };
-    int     lookAndFeel;
-    int     menuSelection = -2;
+    int     lookAndFeel   = LISTMENU_NULL;
+    int     menuSelection = LISTMENU_NULL;
     NString laf_opts[]    = {"Change Theme"};
 
     while (menuSelection != -1) {
@@ -150,9 +150,8 @@ void settings() {
 // @return The index of the selected wallpaper
 int gallery() {
     if (!VFS.exists("/sd" + resPath)) { return lastImage; }
-    std::vector<mOption> wallpaperOptions = {
-        mOption("Pick wallpaper...",Image())};
-    return listMenu(wallpaperOptions, wallpaperOptions.size(), true, 2, "Change wallpaper");
+    std::vector<mOption> wallpaperOptions = {mOption("Pick wallpaper...", Image())};
+    return listMenu(wallpaperOptions, wallpaperOptions.size(), true, LM_SETTINGS, "Change wallpaper");
 }
 
 // Set time screen
@@ -255,7 +254,7 @@ void ringtoneSelector(bool isMail) {
 
     // int choice = 0;
     // while (choice != -1) {
-    //     choice = listMenu(opt, count, false, 2, "Set ringtone", true, choice);
+    //     choice = listMenu(opt, count, false, LM_SETTINGS, "Set ringtone", true, choice);
     //     if (choice < 0) { return; }
     //     if (iconIndex >= 0) { opt[iconIndex].image = Image(); }
     //     // TODO DRAW NOTE ICON
