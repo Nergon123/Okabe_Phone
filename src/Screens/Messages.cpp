@@ -431,7 +431,7 @@ void inbox(bool outbox) {
         std::reverse(messList.begin(), messList.end());
         int choice = -2;
         while (choice != -1) {
-            choice = listMenu(messList, messList.size(), false, 0, title);
+            choice = listMenu(messList, messList.size(), false, LM_MESSAGES, title);
             if (choice >= 0) {
                 exit = !messageActivity(messages[count - choice - 1]);
                 if (!exit) { choice = -1; }

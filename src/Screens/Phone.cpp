@@ -161,7 +161,7 @@ void contactss() {
         NString contactNames[contacts.size()];
         for (size_t i = 0; i < contacts.size(); ++i) { contactNames[i] = contacts[i].name; }
         int selectedContactIndex =
-            listMenu(contactNames, contacts.size(), false, 1, "Address Book");
+            listMenu(contactNames, contacts.size(), false, LM_CONTACTS, "Address Book");
 
         if (selectedContactIndex != LISTMENU_EXIT && contacts.size() > 0) {
             int contextMenuSelection = -1;

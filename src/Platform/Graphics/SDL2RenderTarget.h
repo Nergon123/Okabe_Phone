@@ -61,7 +61,7 @@ class SDL2RenderTarget : public RenderTarget {
                 int      dstX  = startX + rx;
                 int      srcX  = rx + (startX - x);
                 uint16_t srcPx = srcRow[srcX];
-                srcPx =  (srcPx >> 8) | (srcPx << 8);
+                srcPx          = (srcPx >> 8) | (srcPx << 8);
                 if (transparent && srcPx == transpColor) { continue; }
                 dstRow[dstX] = srcPx;
             }
@@ -82,6 +82,7 @@ class SDL2RenderTarget : public RenderTarget {
         for (int16_t py = y0; py < y1; py++) {
             for (int16_t px = x0; px < x1; px++) { buffer[py * width + px] = color; }
         }
+        (void)len;
     }
     virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {
         windowX = xs;

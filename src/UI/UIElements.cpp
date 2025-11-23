@@ -5,58 +5,6 @@ const uint16_t clr_normal     = TFT_BLACK;
 const uint16_t clr_disabled   = TFT_LIGHTGREY;
 const uint16_t clr_background = TFT_WHITE;
 
-// void UIElementsLoop(UIElement *elements, size_t size, bool *exit) {
-//     // TODO
-//     if (!elements) {
-//         ESP_LOGE("UI", "elements is nullptr");
-//         return;
-//     }
-//     if (!exit) {
-//         ESP_LOGE("UI", "exit is nullptr");
-//         return;
-//     }
-//     while (!*exit) {
-//         int direction     = -1;
-//         int cur_selection = 0;
-//         for (int i = 0; i < size; i++) {
-//             UIElement el = elements[i];
-
-//             switch (el.type) {
-//             case UI_BUTTON:
-//                 *el.bvalue = button(el.title, el.x, el.y, el.w, el.h, i == cur_selection,
-//                                     &direction, el.usable, el.callback);
-//                 if (el.isExitButton && *el.bvalue) {
-//                     *exit = true;
-//                     return;
-//                 }
-//                 break;
-//             case UI_INPUT:
-//                 if (el.input == nullptr) { el.input = new NString(); }
-//                 *el.input = InputField(el.title, *el.input, el.y, false, i == cur_selection,
-//                                        i == cur_selection, &direction, el.onlynumbers, el.usable,
-//                                        el.callback);
-//                 break;
-//             case UI_SWITCHNUMBERS:
-//                 sNumberChange(el.x, el.y, el.w, el.h, *el.value, el.min, el.max,
-//                               i == cur_selection, &direction, el.format, el.usable, el.callback);
-//                 break;
-//             }
-//             if (direction == LEFT) { direction = UP; }
-//             if (direction == RIGHT) { direction = DOWN; }
-//             switch (direction) {
-//             case UP:
-//                 cur_selection++;
-//                 if (cur_selection >= size) { cur_selection = 0; }
-//                 break;
-//             case DOWN:
-//                 cur_selection--;
-//                 if (cur_selection < 0) { cur_selection = size - 1; }
-//                 break;
-//             }
-//         }
-//     }
-// }
-
 // ## UI Button
 //  Part of local "UI Kit"
 //  @param title: Button title
@@ -67,8 +15,7 @@ const uint16_t clr_background = TFT_WHITE;
 //  @param selected: Boolean indicating if the button is selected
 //  @param direction: Pointer to the direction variable
 //  @return: Boolean indicating if the button was pressed
-bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int *direction,
-            bool usable, void (*callback)(void *)) {
+bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
 
     tft.fillRect(xpos, ypos, w, h, clr_background);
     tft.drawRect(xpos, ypos, w, h, clr_normal);
@@ -77,27 +24,19 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
         tft.setTextColor(clr_selected);
         tft.drawRect(xpos, ypos, w, h, clr_selected);
     }
-    if (!usable) {
-        tft.setTextColor(clr_disabled);
-        tft.drawRect(xpos, ypos, w, h, clr_disabled);
-    }
 
     int x = (w - tft.textWidth(title.c_str())) / 2;
     int y = h - ((h - tft.fontHeight()));
 
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title.c_str());
-    if (!usable) { return false; }
+
     bool exit = false;
 
     if (selected) {
         while (!exit) {
             *direction = buttonsHelding();
-            if (*direction == SELECT) {
-                if (callback != nullptr) { callback(nullptr); }
-                return true;
-            }
-            else if (*direction != -1) { exit = true; }
+            if (*direction != -1) { exit = true; }
         }
     }
 
@@ -122,7 +61,7 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
 // @param direction: Pointer to the direction variable
 // @param format: Format string for the value
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected,
-                   int *direction, const char *format, bool usable, void (*callback)(void *)) {
+                   int *direction, const char *format) {
     // calculation of triangle corners
     int fp  = w / 2;
     int st  = h / 5;
@@ -193,8 +132,8 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 //  @param direction: Pointer to the direction variable
 //  @param onlynumbers: Boolean indicating if only numbers are allowed
 //  @return: String containing the input
-NString InputField(NString title, NString content, int ypos, bool onlydraw, bool selected, bool used,
-                  int *direction, bool onlynumbers, bool usable, void (*callback)(void *)) {
+NString InputField(NString title, NString content, int ypos, bool onlydraw, bool selected,
+                   bool used, int *direction, bool onlynumbers) {
 
     content.trim();
     if (used) { selected = true; }
@@ -449,15 +388,16 @@ void sysError(NString reason) {
     tft.println("==ERROR==");
     tft.setTextColor(0xFFFF);
     tft.setTextSize(1);
-    tft.println(NString(
-        "\n\n\nThere a problem with your device\n\nTechnical details:\n\n\nReason:" + reason +
-        "\n\n\n\n\n" REPOSITORY_LINK "\n\n").c_str());
+    tft.println(
+        NString("\n\n\nThere a problem with your device\n\nTechnical details:\n\n\nReason:" +
+                reason + "\n\n\n\n\n" REPOSITORY_LINK "\n\n")
+            .c_str());
 
     tft.println("Press any button to restart\nor reset button to reset the device");
     ESP_LOGE("ERROR", "%s", reason.c_str());
     while (buttonsHelding(false) == -1);
-    #ifndef PC
+#ifndef PC
     ESP.restart();
-    #endif
+#endif
     for (;;);
 }

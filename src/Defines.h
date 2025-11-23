@@ -109,6 +109,5 @@ enum buttons {
 #define FONT3 FreeMono9pt7b
 #define FONT4 FreeSans12pt7b
 
-#define FILE_VERSION 1
 
 

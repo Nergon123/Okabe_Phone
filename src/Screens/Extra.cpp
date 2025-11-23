@@ -72,7 +72,7 @@ void e() {
     };
     int choice = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT){
-        choice = listMenu(menu,ArraySize(menu),false,2,"e");
+        choice = listMenu(menu,ArraySize(menu),false,LM_SETTINGS,"e");
         switch(choice){
             case 0:
                 ESP_LOGI("E","PATH: %s",fileBrowser().c_str());
