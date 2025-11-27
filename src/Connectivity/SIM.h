@@ -6,18 +6,15 @@
 #include "../System/TextManipulation.h"
 #include "../UI/UIElements.h"
 
-class SIMCARD{
+class SIMCARD {};
 
-
-};
-
-void   AT_test();
+void    AT_test();
 NString sendATCommand(NString command, uint32_t timeout = 1000, bool background = false);
 NString getATvalue(NString command, bool background = false);
-bool   checkSim();
-bool   _checkSim();
-void   initSim();
-int    getSignalLevel();
-void   populateContacts();
-void   checkVoiceCall();
-int GetState();
+bool    checkSim();
+bool    _checkSim();
+void    initSim();
+int     getSignalLevel();
+void    populateContacts();
+void    checkVoiceCall();
+int     GetState();

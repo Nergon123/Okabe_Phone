@@ -9,7 +9,7 @@ RenderTarget *lm_buffer_obj;
 
 void pushBufferToScreen(int x, int y) {
     currentRenderTarget->pushBuffer(x, y, lm_buffer_obj->getWidth(), lm_buffer_obj->getHeight(),
-                                    lm_buffer_obj->getBuffer(), 0, 0);
+                                    lm_buffer_obj->getBuffer(), false, 0);
 
     currentRenderTarget->present();
 }
@@ -18,6 +18,7 @@ void deleteBuffer() {
         lm_buffer_obj->~RenderTarget();
         lm_buffer_obj = nullptr;
         tft.setRenderTarget(currentRenderTarget);
+        ESP_LOGI("LISTMENU","Deleted buffer");
     }
 }
 
@@ -121,15 +122,18 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
             int bh = buttonsHelding();
             if (bh == SELECT) {
                 tft.resetViewport();
+                deleteBuffer();
                 return LISTMENU_OPTIONS;
             }
             else if (bh != -1) {
                 tft.resetViewport();
+                deleteBuffer();
                 return LISTMENU_EXIT;
             }
         };
         tft.resetViewport();
-        return -1;
+        deleteBuffer();
+        return LISTMENU_EXIT;
     }
     int entry_size = tft.fontHeight();
 
