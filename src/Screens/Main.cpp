@@ -126,8 +126,8 @@ void offlineCharging() {
  *@param message message to be displayed
  */
 void recovery(NString message) {
-    #warning recovery needs reimplementing
-   hw->initStorage();
+#warning recovery needs reimplementing
+    hw->initStorage();
     res.Files[RES_MAIN] = nullptr;
     while (!res.Files[RES_MAIN]) {
         tft.setCursor(0, 40);
@@ -140,13 +140,13 @@ void recovery(NString message) {
         tft.setTextColor(0xFFFF);
         tft.println(message);
         std::vector<mOption> options = {{"Choose resource file"}, {"Try again"}};
-        int     choice = listMenuNonGraphical(options, options.size(), "Choose action.", 150);
+        int choice = listMenuNonGraphical(options, options.size(), "Choose action.", 150);
         switch (choice) {
         case 0:
             NString TempResPath = fileBrowser("/", ".nph", false);
             resPath             = TempResPath;
             NFile *nFile        = VFS.open(resPath);
-            res.Init(nFile); 
+            res.Init(nFile);
             res.CopyToRam(RES_MAIN);
             if (res.Files[RES_MAIN]) { return; }
             break;
@@ -156,6 +156,7 @@ void recovery(NString message) {
 
 // Function to lock keypad
 void LockScreen() {
+#ifdef lockscreen
     sBarChanged    = true;
     isScreenLocked = true;
     drawStatusBar();
@@ -174,4 +175,7 @@ void LockScreen() {
     isScreenLocked = false;
     sBarChanged    = true;
     drawStatusBar();
+#else
+#warning LockScreen is disabled.
+#endif
 }

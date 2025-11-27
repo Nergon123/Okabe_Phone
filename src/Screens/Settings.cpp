@@ -28,7 +28,7 @@ void debugMenu() {
     while (choice < 0) {
         choice = choiceMenu(dbgMenu, ArraySize(dbgMenu), false);
         switch (choice) {
-        case 0: break;
+        case 0: graphTest(); break;
         }
     }
 };
@@ -151,7 +151,8 @@ void settings() {
 int gallery() {
     if (!VFS.exists("/sd" + resPath)) { return lastImage; }
     std::vector<mOption> wallpaperOptions = {mOption("Pick wallpaper...", Image())};
-    return listMenu(wallpaperOptions, wallpaperOptions.size(), true, LM_SETTINGS, "Change wallpaper");
+    return listMenu(wallpaperOptions, wallpaperOptions.size(), true, LM_SETTINGS,
+                    "Change wallpaper");
 }
 
 // Set time screen

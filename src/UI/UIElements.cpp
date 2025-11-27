@@ -134,157 +134,128 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 //  @return: String containing the input
 NString InputField(NString title, NString content, int ypos, bool onlydraw, bool selected,
                    bool used, int *direction, bool onlynumbers) {
-
     content.trim();
+
     if (used) { selected = true; }
+
+    // --- Draw the title ---
     tft.resetViewport();
-    tft.setTextColor(clr_normal);
     tft.setTextWrap(false);
     tft.setCursor(5, ypos - 5);
     changeFont(1);
     tft.setTextSize(1);
-
-    if (selected) { tft.setTextColor(clr_selected); }
-    else { tft.setTextColor(clr_normal); }
-
+    tft.setTextColor(selected ? clr_selected : clr_normal);
     tft.print(title);
     tft.setTextColor(clr_normal);
     changeFont(3);
 
+    // Input box metrics
     int cursorPos = content.length();
+    int boxX      = 5;
+    int boxWidth  = 235 - boxX;
+    int boxHeight = 25;
+    int viewX     = 0;
+    int viewY     = 0;
     int yoff      = tft.fontHeight();
-    int xpos      = 5;
-    int width     = 235 - xpos;
-    int height    = 25;
-    int dypos     = 0;
     int c_offset  = 0;
 
-    tft.setViewport(xpos, ypos, width, height);
-    xpos = 0;
-    tft.setCursor(xpos + 5, dypos + yoff);
+    // Viewport for the input line
+    tft.setViewport(boxX, ypos, boxWidth, boxHeight);
 
-    int length = tft.textWidth(content.substring(0, cursorPos)) + 15;
+    auto redrawField = [&](bool drawCursor) {
+        tft.fillRect(viewX, viewY, boxWidth, boxHeight, clr_background);
+        tft.drawRect(viewX, viewY, boxWidth, boxHeight, selected ? clr_selected : clr_normal);
 
-    if (length > width) { c_offset = width - length; }
+        // Recalculate text shift
+        int pixelLen = tft.textWidth(content.substring(0, cursorPos)) + 15;
+        c_offset     = (pixelLen > boxWidth) ? (boxWidth - pixelLen) : 0;
 
-    if (selected) { tft.setCursor(xpos + 5 + c_offset, dypos + yoff); }
+        tft.setCursor(5 + c_offset, yoff);
 
-    tft.fillRect(xpos, dypos, width, height, clr_background);
-    tft.drawRect(xpos, dypos, width, height, clr_normal);
+        tft.print(content);
 
-    if (selected) { tft.drawRect(xpos, dypos, width, height, clr_selected); }
+        if (selected && drawCursor) {
+            int cx = tft.textWidth(content.substring(0, cursorPos)) + 5 + c_offset;
+            tft.fillRect(cx, 3, CWIDTH, boxHeight - 6, clr_normal);
+        }
+    };
 
-    tft.print(content);
+    // Initial draw (non-edit mode or before editing)
+    redrawField(false);
 
-    bool exit = false;
-    int  c    = -1;
+    if (onlydraw || !used) {
+        tft.resetViewport();
+        return content;
+    }
 
-    if (!onlydraw) {
-        if (used) {
-            length = tft.textWidth(content.substring(0, cursorPos)) + 15;
+    // ===========================
+    //      EDIT MODE
+    // ===========================
 
-            if (length > width) { c_offset = width - length; }
+    bool    exit        = false;
+    bool    dirty       = true; // force one draw
+    int     lastCursor  = cursorPos;
+    NString lastContent = content;
 
-            tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH,
-                         height - 6, clr_normal);
+    while (!exit) {
 
-            tft.drawRect(xpos, ypos, width, height, clr_selected);
+        int c = buttonsHelding();
+        if (c == -1) { continue; }
 
-            while (!exit) {
-
-                while (c == -1) { c = buttonsHelding(); }
-                if (c != -1) {
-                    if (c >= '0' && c <= '9') {
-
-                        // Serial.println("C_OFFSET:" + NString(c_offset));
-
-                        char TI = textInput(c, onlynumbers, true);
-                        if (TI != '\0') {
-                            if (TI != '\n') {
-                                if (TI != '\b') {
-                                    content = content.substring(0, cursorPos) + TI +
-                                              content.substring(cursorPos, content.length());
-                                    cursorPos++;
-                                }
-                                else {
-                                    content = content.substring(0, cursorPos - 1) +
-                                              content.substring(cursorPos, content.length());
-                                    cursorPos--;
-                                }
-                            }
-                        }
-                        length = tft.textWidth(content.substring(0, cursorPos)) + 15;
-                        if (length > width) { c_offset = width - length; }
-                        tft.fillRect(xpos, dypos, width, height, clr_background);
-                        tft.drawRect(xpos, dypos, width, height, clr_selected);
-                        tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
-                        tft.println(content);
-                        tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5,
-                                     3, CWIDTH, height - 6, clr_normal);
-                        c = buttonsHelding();
+        // Handle number input
+        if (c >= '0' && c <= '9') {
+            char TI = textInput(c, onlynumbers, true);
+            if (TI != '\0' && TI != '\n') {
+                if (TI == '\b') {
+                    if (cursorPos > 0) {
+                        content = content.substring(0, cursorPos - 1) +
+                                  content.substring(cursorPos, content.length());
+                        cursorPos--;
                     }
-                    else {
-                        switch (c) {
-                        case LEFT:
-                            if (cursorPos > 0) {
-
-                                cursorPos--;
-                                length = tft.textWidth(content.substring(0, cursorPos)) + 15;
-                                if (length > width) { c_offset = width - length; }
-                                tft.fillRect(xpos, dypos, width, height, clr_background);
-                                tft.drawRect(xpos, dypos, width, height, clr_selected);
-                                tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
-                                tft.println(content);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) +
-                                                 c_offset + 5,
-                                             3, CWIDTH, height - 6, clr_normal);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos + 1)) +
-                                                 c_offset + 5,
-                                             3, CWIDTH, height - 6, clr_background);
-                            }
-                            break;
-                        case RIGHT:
-                            if (cursorPos < (int)(content.length())) {
-                                cursorPos++;
-                                length = tft.textWidth(content.substring(0, cursorPos)) + 15;
-                                if (length > width) { c_offset = width - length; }
-                                tft.fillRect(xpos, dypos, width, height, clr_background);
-                                tft.drawRect(xpos, dypos, width, height, clr_selected);
-                                tft.setCursor(xpos + 5 + c_offset, dypos + yoff);
-                                tft.println(content);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos - 1)) +
-                                                 c_offset + 5,
-                                             3, CWIDTH, height - 6, clr_normal);
-                                tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) +
-                                                 c_offset + 5,
-                                             3, CWIDTH, height - 6, clr_background);
-                            }
-                            break;
-
-                        case UP:
-                            *direction = UP;
-                            exit       = true;
-                            break;
-
-                        case DOWN:
-                            *direction = DOWN;
-                            exit       = true;
-                            break;
-                        default: *direction = BACK; break;
-                        }
-                        c = buttonsHelding();
-                    }
+                }
+                else {
+                    content = content.substring(0, cursorPos) + TI +
+                              content.substring(cursorPos, content.length());
+                    cursorPos++;
                 }
             }
         }
-    }
+        else {
+            switch (c) {
+            case LEFT:
+                if (cursorPos > 0) { cursorPos--; }
+                break;
+            case RIGHT:
+                if (cursorPos < (int)content.length()) { cursorPos++; }
+                break;
+            case UP:
+                if (direction) { *direction = UP; }
+                exit = true;
+                break;
+            case DOWN:
+                if (direction) { *direction = DOWN; }
+                exit = true;
+                break;
+            default:
+                if (direction) { *direction = BACK; }
+                exit = true;
+                break;
+            }
+        }
+        if (cursorPos != lastCursor || content != lastContent) {
+            dirty       = true;
+            lastCursor  = cursorPos;
+            lastContent = content;
+        }
 
-    tft.fillRect(tft.textWidth(content.substring(0, cursorPos)) + c_offset + 5, 3, CWIDTH,
-                 height - 6, clr_background);
-    tft.fillRect(xpos, dypos, width, height, clr_background);
-    tft.drawRect(xpos, dypos, width, height, clr_normal);
-    tft.setCursor(xpos + 5, dypos + yoff);
-    tft.println(content);
+        if (dirty) {
+            redrawField(true);
+            dirty = false;
+        }
+    }
+    selected = false;
+    redrawField(false);
+
     tft.resetViewport();
     tft.setCursor(5, ypos - 5);
     changeFont(1);

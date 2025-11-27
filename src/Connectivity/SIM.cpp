@@ -19,7 +19,7 @@ NString sendATCommand(NString command, uint32_t timeout, bool background) {
     simIsBusy = true;
     SimSerial.println(command.c_str()); // Send the AT command
 
-    NString   response  = "";
+    NString  response  = "";
     uint32_t startTime = hw->millis();
 
     // Wait for response or timeout
@@ -33,7 +33,8 @@ NString sendATCommand(NString command, uint32_t timeout, bool background) {
     if (response.indexOf("+CLIP:") != -1) {
         int indexClip = response.indexOf("+CLIP:");
         int comma     = getIndexOfCount(2, response, "\"", indexClip);
-       ESP_LOGI("INFO","STATUS: %s",response.substring(comma, response.indexOf(',', comma + 1)).c_str());
+        ESP_LOGI("INFO", "STATUS: %s",
+                 response.substring(comma, response.indexOf(',', comma + 1)).c_str());
     }
 
     if (!isCalling) {
@@ -70,7 +71,7 @@ NString sendATCommand(NString command, uint32_t timeout, bool background) {
 NString getATvalue(NString command, bool background) {
 
     NString response = sendATCommand(command, 1000, background);
-    NString result = "";
+    NString result   = "";
 
     if (response.indexOf("ERROR") != -1) { return "ERROR"; }
 
@@ -81,7 +82,6 @@ NString getATvalue(NString command, bool background) {
 
         result = response.substring(startIdx + 1, endIdx);
         result.trim();
-
     }
     else {
         result = response;
@@ -246,7 +246,7 @@ void populateContacts() {
 
     while ((startIndex = response.indexOf("+CPBR: ", endIndex)) != -1) {
         startIndex += 7; // Skip "+CPBR: "
-        endIndex     = response.indexOf('\n', startIndex);
+        endIndex      = response.indexOf('\n', startIndex);
         NString entry = response.substring(startIndex, endIndex);
 
         // Split the entry into components
@@ -255,8 +255,8 @@ void populateContacts() {
 
         // Extract index
         NString indexStr     = entry.substring(0, commaIndex);
-        int    contactIndex = indexStr.toInt();
-        entry               = entry.substring(commaIndex + 1);
+        int     contactIndex = indexStr.toInt();
+        entry                = entry.substring(commaIndex + 1);
 
         commaIndex = entry.indexOf(',');
         if (commaIndex == -1) { break; }
@@ -282,14 +282,23 @@ void populateContacts() {
 }
 #else
 
-void   AT_test(){};
-NString sendATCommand(NString command, uint32_t timeout , bool background ){(void)command;(void)timeout;(void)background;return "PC";};
-NString getATvalue(NString command, bool background ){(void)command;(void)background;return "PC";};
-bool   checkSim(){return true;};
-bool   _checkSim(){return true;};
-void   initSim(){};
-int    getSignalLevel(){return 0;};
-void   populateContacts(){};
-void   checkVoiceCall(){};
-int GetState(){return 0;};
+void    AT_test() {};
+NString sendATCommand(NString command, uint32_t timeout, bool background) {
+    (void)command;
+    (void)timeout;
+    (void)background;
+    return "PC";
+};
+NString getATvalue(NString command, bool background) {
+    (void)command;
+    (void)background;
+    return "PC";
+};
+bool checkSim() { return true; };
+bool _checkSim() { return true; };
+void initSim() {};
+int  getSignalLevel() { return 0; };
+void populateContacts() {};
+void checkVoiceCall() {};
+int  GetState() { return 0; };
 #endif
