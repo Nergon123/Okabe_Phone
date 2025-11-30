@@ -7,7 +7,6 @@ const char *ITAG      = "INPUT";
 int         millDelay = 0;
 int         idleDelay = 0;
 
-
 // Function to handle the idle state
 void idle() {
 
@@ -74,7 +73,7 @@ void numberInput(char first) {
             return;
 
         case LEFT:
-            if (!number.isEmpty()) { // <-- FIXED!
+            if (!number.isEmpty()) {
                 number.remove(number.length() - 1);
                 redraw();
             }
@@ -123,7 +122,7 @@ void showText(const char *text, int pos) {
     tft.setTextSize(2);
     tft.setCursor(0, INPUT_LOCATION_Y);
 
-    for (int i = 0; i < (int)(strchr(text, '\r') - text); i++) {
+    for (int i = 0; text[i] != 0; i++) {
         if (i != pos) { tft.setTextColor(0xFFFF, 0, true); }
         else { tft.setTextColor(0xFFFF, 0x001F, true); }
         if (text[i] == '\n') { tft.print("NL"); }
@@ -131,7 +130,7 @@ void showText(const char *text, int pos) {
         else { tft.print(text[i]); }
     }
 
-    tft.textcolor = textColor;
+    tft.setTextColor(textColor);
     changeFont(pfont);
     tft.setTextSize(textSize);
     if (viewport) { tft.setViewport(vx, vy, w, h); }
@@ -146,14 +145,13 @@ void showText(const char *text, int pos) {
  */
 char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *retButton) {
     if (input == -1) { return 0; }
-    char buttons[12][12] = {" \b0+@\n\r", "1,.?!()\r",   "2ABCabc\r", "3DEFdef\r",
-                            "4GHIghi\r",  "5JKLjkl\r",   "6MNOmno\r", "7PQRSpqrs\r",
-                            "8TUVtuv\r",  "9WXYZwxyz\r", "*\r",       "#\r"};
+    char buttons[12][12] = {" \b0+@\n", "1,.?!()",   "2ABCabc", "3DEFdef",   "4GHIghi", "5JKLjkl",
+                            "6MNOmno",  "7PQRSpqrs", "8TUVtuv", "9WXYZwxyz", "*",       "#"};
 
-    if (nonl) { buttons[0][5] = '\r'; }
+    if (nonl) { buttons[0][5] = '\0'; }
     if (onlynumbers) {
-        buttons[0][2] = '\r';
-        for (int i = 1; i < 12; i++) { buttons[i][1] = '\r'; }
+        buttons[0][2] = '\0';
+        for (int i = 1; i < 12; i++) { buttons[i][1] = '\0'; }
     }
     bool first = true;
     // int  sizes[12];
@@ -163,30 +161,30 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
                         : input == '*'               ? 10
                         : input == '#'               ? 11
                                                      : -1;
+
     if (currentIndex == -1) {
-        ESP_LOGI(ITAG, "%s", NString("UNKNOWN BUTTON:" + NString(input)).c_str());
+        ESP_LOGI(ITAG, "UNKNOWN BUTTON:%d", input);
         return 0;
     }
 
-    for (int i = 0; i < 12; i++) {
-        int b = 0;
-        for (; b < 12; b++) {
-            if (buttons[i][b] == '\r') { break; }
-        }
-        b = 0;
-    }
-    int mil  = hw->millis();
-    pos      = -1;
-    int curx = tft.getCursorX();
-    int cury = tft.getCursorY();
+    // for (int i = 0; i < 12; i++) {
+    //     int b = 0;
+    //     for (; b < 12; b++) {
+    //         if (buttons[i][b] == '\0') { break; }
+    //     }
+    //     b = 0;
+    // }
+    ulong mil = hw->millis();
+    pos     = -1;
+    int curx;
+    int cury;
     while (hw->millis() - mil < DIB_MS) {
         curx = tft.getCursorX();
         cury = tft.getCursorY();
-        // ESP_LOGI(ITAG,"POSITION:" + NString(pos));
         int c = buttonsHelding();
 
         if (c == input || first) {
-            if (pos < (int)(strchr(buttons[currentIndex], '\r') - buttons[currentIndex])) {
+            if (pos < (int)(strchr(buttons[currentIndex], '\0') - buttons[currentIndex])) {
                 mil = hw->millis();
                 pos++;
                 result = buttons[currentIndex][pos];
