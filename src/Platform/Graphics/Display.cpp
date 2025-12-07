@@ -36,7 +36,6 @@ void TFT_STUB::pushColors(uint16_t *data, int16_t len, bool swap) {
 void TFT_STUB::fillScreen(uint16_t color) {
     if (!activeRenderTarget) { return; }
     if (!_vp_active) {
-        // fill entire screen (no-op implementation)
         activeRenderTarget->fillScreen(color);
         return;
     }
@@ -44,29 +43,29 @@ void TFT_STUB::fillScreen(uint16_t color) {
 }
 
 void TFT_STUB::setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {
-    // if (_vp_active) {
-    //     int32_t abs_xs = (int32_t)xs + _vp_x;
-    //     int32_t abs_ys = (int32_t)ys + _vp_y;
-    //     int32_t abs_x2 = abs_xs + w;
-    //     int32_t abs_y2 = abs_ys + h;
-
-    //     int32_t vx1 = _vp_x;
-    //     int32_t vy1 = _vp_y;
-    //     int32_t vx2 = _vp_x + _vp_w;
-    //     int32_t vy2 = _vp_y + _vp_h;
-
-    //     int32_t ix1 = abs_xs > vx1 ? abs_xs : vx1;
-    //     int32_t iy1 = abs_ys > vy1 ? abs_ys : vy1;
-    //     int32_t ix2 = abs_x2 < vx2 ? abs_x2 : vx2;
-    //     int32_t iy2 = abs_y2 < vy2 ? abs_y2 : vy2;
-
-    //     if (ix2 <= ix1 || iy2 <= iy1) {
-    //         // empty intersection, nothing to set
-    //         return;
-    //     }
-    //     //setViewport((int16_t)ix1, (int16_t)iy1, (int16_t)(ix2 - ix1), (int16_t)(iy2 - iy1));
-    //     return;
-    // }
+//     if (_vp_active) {
+//         int32_t abs_xs = (int32_t)xs + _vp_x;
+//         int32_t abs_ys = (int32_t)ys + _vp_y;
+//         int32_t abs_x2 = abs_xs + w;
+//         int32_t abs_y2 = abs_ys + h;
+// // 
+//         int32_t vx1 = _vp_x;
+//         int32_t vy1 = _vp_y;
+//         int32_t vx2 = _vp_x + _vp_w;
+//         int32_t vy2 = _vp_y + _vp_h;
+// // 
+//         int32_t ix1 = abs_xs > vx1 ? abs_xs : vx1;
+//         int32_t iy1 = abs_ys > vy1 ? abs_ys : vy1;
+//         int32_t ix2 = abs_x2 < vx2 ? abs_x2 : vx2;
+//         int32_t iy2 = abs_y2 < vy2 ? abs_y2 : vy2;
+// // 
+//         if (ix2 <= ix1 || iy2 <= iy1) {
+//             // empty intersection, nothing to set
+//             return;
+//         }
+//         setViewport((int16_t)ix1, (int16_t)iy1, (int16_t)(ix2 - ix1), (int16_t)(iy2 - iy1));
+//         return;
+//     }
     activeRenderTarget->setAddrWindow(xs, ys, w, h);
 }
 

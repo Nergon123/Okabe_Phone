@@ -15,29 +15,48 @@ class TFTESPIRenderTarget : public RenderTarget {
     void init() override {
         _tft.init();
         _tft.fillScreen(TFT_BLACK);
+        _tft.endWrite();
     }
 
-    void drawPixel(int16_t x, int16_t y, uint16_t color) override { _tft.drawPixel(x, y, color); }
+    void drawPixel(int16_t x, int16_t y, uint16_t color) override {
+        _tft.startWrite();
+        _tft.drawPixel(x, y, color);
+        _tft.endWrite();
+    }
 
     void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t* data,
                     bool transparent, uint16_t transpColor) override {
+        _tft.startWrite();
         if (transparent) { _tft.pushImage(x, y, w, h, data, transpColor); }
         else { _tft.pushImage(x, y, w, h, data); }
+        _tft.endWrite();
     }
 
     void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) override {
+              _tft.startWrite();
         _tft.setAddrWindow(xs, ys, w, h);
+              _tft.endWrite();
     }
 
     void pushColors(uint16_t* data, uint32_t len, bool swap = false) override {
+        _tft.startWrite();
         _tft.pushColors(data, len, swap);
+        _tft.endWrite();
     }
 
-    void writeColor(uint16_t color, uint32_t len) override { _tft.writeColor(color, len); }
+    void writeColor(uint16_t color, uint32_t len) override {
+        _tft.startWrite();
+        _tft.writeColor(color, len);
+        _tft.endWrite();
+    }
 
     virtual void setBrightness(int8_t percentage) override { hw->setScreenBrightness(percentage); }
 
-    void fillScreen(uint16_t color) override { _tft.fillScreen(color); }
+    void fillScreen(uint16_t color) override {
+        _tft.startWrite();
+        _tft.fillScreen(color);
+        _tft.endWrite();
+    }
 
     void present() override {} // no buffering on TFT
     void deinit() override {}  // no cleanup needed

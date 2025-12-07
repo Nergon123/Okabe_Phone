@@ -10,11 +10,12 @@
 bool err = false;
 
 int start() {
-#ifdef PC
+#ifdef __LINUX__
     hw = new DEV_LINUX();
-#else
+#elif defined(ESP32)
     hw = new DEV_ESP32();
 #endif
+
     SetUpTime();
     // hardwareInit();
     hw->init();

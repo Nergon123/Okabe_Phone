@@ -262,7 +262,6 @@ int buttonsHelding(bool _idle) {
         currentRenderTarget->present();
     }
 #endif
-
     if (_idle) { idle(); }
     char input = 0;
     input      = hw->getCharInput();
@@ -277,12 +276,8 @@ int buttonsHelding(bool _idle) {
     // Serial control support
     // You can control device keypad from other device through Serial port
 
-#ifndef PC
-    if (Serial.available() || input != 0) {
-        input = Serial.read();
-#else
+
     if (input != 0) {
-#endif
         millSleep = hw->millis();
         switch (input) {
         case 'a':

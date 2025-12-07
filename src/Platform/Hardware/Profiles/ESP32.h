@@ -27,6 +27,8 @@
 
 #define SIM_RX_PIN 35
 #define SIM_TX_PIN 26
+#define I2C_SDA    21
+#define I2C_SCL    22
 
 #define SimSerial Serial1
 
@@ -38,6 +40,15 @@ class DEV_ESP32 : public iHW {
         esp_task_wdt_deinit();
         esp_task_wdt_init(10000, false);
 
+        Wire.setPins(I2C_SDA, I2C_SCL);
+        if (Wire.begin()) {
+            ESP_LOGI("I2C", "I2C initalized at SDA:%d SCL:%d Freq: %d kHz", I2C_SDA, I2C_SCL,
+                     Wire.getClock() / 1000);
+        }
+        else {
+            ESP_LOGE("I2C", "Error occured when initializing I2C (SDA:%d SCL:%d Freq: %d kHz)",
+                     I2C_SDA, I2C_SCL, Wire.getClock() / 1000);
+        }
         Serial.begin(SERIAL_BAUD_RATE);
         ESP_LOGI("SERIAL", "Serial initalized at %d baud", SERIAL_BAUD_RATE);
         SimSerial.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
@@ -47,8 +58,11 @@ class DEV_ESP32 : public iHW {
         pinMode(TFT_BL, OUTPUT);
         setScreenBrightness(100);
 
-        keypad_exists  = checkI2Cdevices(MCP23017_ADDR);
+        keypad_exists = checkI2Cdevices(MCP23017_ADDR);
+        if (keypad_exists) { ESP_LOGI("KEYPAD", "MCP23017 Initalized"); }
+        else { ESP_LOGE("KEYPAD", "MCP23017 cannot be initalized"); }
         charger_exists = checkI2Cdevices(IP5306_ADDR);
+        
     };
 
     void initStorage() override {
@@ -69,15 +83,18 @@ class DEV_ESP32 : public iHW {
         // setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     };
     CPU_SPEED getCPUSpeed() override {
-
+        
     };
     const char* getDeviceName() override { return ESP.getChipModel(); };
     void        shutdown() override { reboot(); };
     void        reboot() override { ESP.restart(); };
 
     void setScreenBrightness(int8_t value) override { analogWrite(TFT_BL, (value * 255) / 100); };
-    char getCharInput() override { return Serial.read(); };
-    int  getKeyInput() override {
+    char getCharInput() override {
+        if (Serial.available()) { return Serial.read(); }
+        return 0;
+    };
+    int getKeyInput() override {
         if (!keypad_exists) { return 0; }
         mcp.portMode(MCP23017Port::A, 0xFF);
         mcp.portMode(MCP23017Port::B, 0);
@@ -122,7 +139,6 @@ class DEV_ESP32 : public iHW {
     void initMCP() {
         mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
         mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B
-        ESP_LOGI("KEYPAD", "KEYPAD Initalized");
     }
 
     bool initSDcard(bool fast) {
@@ -148,7 +164,7 @@ class DEV_ESP32 : public iHW {
     bool charger_exists = false;
     bool checkI2Cdevices(byte device) {
         Wire.beginTransmission(device);
-        uint8_t error = Wire.endTransmission();
+        bool error = Wire.endTransmission() != 0;
         return !error;
     }
 };
