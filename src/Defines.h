@@ -8,8 +8,6 @@
 #define LISTMENU_EXIT    -1
 #define LISTMENU_BUFFER  true
 
-#define MAX_CONTACTS 100
-
 #ifdef PC
 
 #define PROGMEM
@@ -34,9 +32,13 @@
 #define ESP_LOGV(tag, format, ...) ESP_LOGG("VERBOSE", tag, format, ##__VA_ARGS__)
 #endif
 
+#else
+#include <esp_log.h>
 #endif
 
-#define NI_delay(old_millis, ms) hw->millis() - old_millis < ms
+#define NI_delay(old_millis, ms) (hw->millis() - old_millis < ms)
+
+
 
 // delay between SIM card checks
 #define DBC_MS 5000
@@ -65,8 +67,6 @@
 
 // CURSOR WIDTH (PIXELS)
 #define CWIDTH 1
-
-// #define LOG
 
 ///////CALL STATES/////////
 enum callStates {
@@ -108,6 +108,4 @@ enum buttons {
 #define FONT2 FreeSansBold9pt7b
 #define FONT3 FreeMono9pt7b
 #define FONT4 FreeSans12pt7b
-
-
 

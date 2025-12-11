@@ -103,13 +103,9 @@ void numberInput(char first) {
  * @param pos selected character position
  */
 void showText(const char *text, int pos) {
-
-    int  h        = tft.getViewportHeight();
-    int  w        = tft.getViewportWidth();
-    int  vx       = tft.getViewportX();
-    int  vy       = tft.getViewportY();
+    Viewport vp = tft.getViewport();
     bool viewport = false;
-    if (tft.getViewportHeight() < 320) {
+    if (vp.h < 320) {
         tft.resetViewport();
         viewport = true;
     }
@@ -133,7 +129,7 @@ void showText(const char *text, int pos) {
     tft.setTextColor(textColor);
     changeFont(pfont);
     tft.setTextSize(textSize);
-    if (viewport) { tft.setViewport(vx, vy, w, h); }
+    if (viewport) { tft.setViewport(vp); }
 }
 
 /*
@@ -207,13 +203,9 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     }
 
     tft.setCursor(curx, cury);
+    Viewport vp = tft.getViewport();
     bool viewport = false;
-    int  h        = tft.getViewportHeight();
-    int  w        = tft.getViewportWidth();
-    int  vx       = tft.getViewportX();
-    int  vy       = tft.getViewportY();
-
-    if (tft.getViewportHeight() < 320) {
+    if (vp.h < 320) {
         tft.resetViewport();
         viewport = true;
     }
@@ -224,7 +216,7 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         // 20, 0, INPUT_LOCATION_Y);
         // TODO
     }
-    if (viewport) { tft.setViewport(vx, vy, w, h); }
+    if (viewport) { tft.setViewport(vp); }
     if (result == '\r') { return 0; }
     return result;
 }

@@ -7,7 +7,6 @@
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
-bool err = false;
 
 int start() {
 #ifdef __LINUX__
@@ -27,6 +26,7 @@ int start() {
         return 2;
     }
     tft.setRenderTarget(currentRenderTarget);
+    hw->postScreenInit();
     if (hw->isCharging()) { offlineCharging(); }
 
     tft.fillScreen(0x0000);
@@ -41,10 +41,10 @@ int start() {
     res.CopyToRam();
     res.DrawImage(R_BOOT_LOGO);
     bootText("Initializing RTOS tasks...");
-    initTasks();
+    initBackgroundTasks();
 
     ESP_LOGI("DEVICE",
-             "\nOkabePhone " FIRMVER
+             FIRMVER
              "\n\n Phone firmware written by Nergon123 and contributors\n\n "
              "Resources located in %s\n",
              resPath.c_str());
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
             }
         }
         if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-            printf("Okabe Phone " FIRMVER "\n" REPOSITORY_LINK "\n"
+            printf("Phone " FIRMVER "\n" REPOSITORY_LINK "\n"
                    "\n\t--help, -h         Show this screen"
                    "\n\t--scale n, -s n    Multiply window size by n times"
                    "\n\n");

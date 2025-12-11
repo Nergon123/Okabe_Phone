@@ -34,9 +34,22 @@ class VirtualFileSystem : public IFileSystem {
         for (auto& m : mounts) { ok &= m.fs->begin(); }
         return ok;
     }
-
+    
     bool exists(const std::string& path) override {
-        std::string  sub;
+        std::string sub;
+
+        // Case: path is itself a mount point prefix
+        for (auto& m : mounts) {
+            if (m.prefix == path) {
+                return true; // treat mount point as a directory
+            }
+            // Optional: treat with trailing slash as same directory
+            if (m.prefix == path.substr(0, m.prefix.size()) &&
+                (path.size() == m.prefix.size() + 1) && path.back() == '/') {
+                return true;
+            }
+        }
+
         IFileSystem* fs = findFS(path, sub);
         return fs ? fs->exists(sub) : false;
     }

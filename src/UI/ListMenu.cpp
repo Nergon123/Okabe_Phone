@@ -8,17 +8,21 @@ bool          lm_buffer = LISTMENU_BUFFER;
 RenderTarget *lm_buffer_obj;
 
 void pushBufferToScreen(int x, int y) {
+    if (!lm_buffer_obj || !lm_buffer_obj->getBuffer()) {
+        ESP_LOGW("LM", "Attempted to push null buffer!");
+        return;
+    }
     currentRenderTarget->pushBuffer(x, y, lm_buffer_obj->getWidth(), lm_buffer_obj->getHeight(),
                                     lm_buffer_obj->getBuffer(), false, 0);
 
     currentRenderTarget->present();
 }
 void deleteBuffer() {
-    if (lm_buffer_obj->getType() == RENDER_TARGET_TYPE_BUFFER) {
-        lm_buffer_obj->~RenderTarget();
-        lm_buffer_obj = nullptr;
+    if (lm_buffer_obj && lm_buffer_obj->getType() == RENDER_TARGET_TYPE_BUFFER) {
         tft.setRenderTarget(currentRenderTarget);
-        ESP_LOGI("LISTMENU","Deleted buffer");
+        delete lm_buffer_obj;
+        lm_buffer_obj = nullptr;
+        ESP_LOGI("LISTMENU", "Deleted buffer");
     }
 }
 

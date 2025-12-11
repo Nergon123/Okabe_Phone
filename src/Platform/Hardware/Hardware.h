@@ -7,6 +7,7 @@ class iHW {
   public:
     virtual void  init() {};
     virtual void  initStorage() {};
+    virtual void  postScreenInit() {};
     virtual ulong micros() { return 0; };
     virtual ulong millis() { return micros() / 1000; };
     virtual void  delay(ulong ms) {

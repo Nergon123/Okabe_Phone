@@ -10,6 +10,8 @@
 #include <SD.h>
 #include <SPI.h>
 #include <SPIFFS.h>
+#include <UI/UIElements.h>
+#include <esp_debug_helpers.h>
 #include <esp_task_wdt.h>
 
 #define FAST_SD_FREQ          20 * 1000 * 1000
@@ -39,6 +41,7 @@ class DEV_ESP32 : public iHW {
     void init() override {
         esp_task_wdt_deinit();
         esp_task_wdt_init(10000, false);
+        esp_log_level_set("ledc", ESP_LOG_NONE); // brightness logger
 
         Wire.setPins(I2C_SDA, I2C_SCL);
         if (Wire.begin()) {
@@ -62,28 +65,27 @@ class DEV_ESP32 : public iHW {
         if (keypad_exists) { ESP_LOGI("KEYPAD", "MCP23017 Initalized"); }
         else { ESP_LOGE("KEYPAD", "MCP23017 cannot be initalized"); }
         charger_exists = checkI2Cdevices(IP5306_ADDR);
-        
     };
 
     void initStorage() override {
-        SPIFFS.begin();
         SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
         ESP_LOGI("SD", "SPI started");
+        bootText("Initializing SDCard...");
         sdcard_exists       = initSDcard(true);
         IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
         IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
-        sdcard->begin();
-        VFS.mount("/sd", sdcard);
-        spiffs->begin();
-        VFS.mount("/spiffs", spiffs);
+        if (sdcard_exists) { VFS.mount("/sd", sdcard); }
+        bootText("Initializing SPIFFS...");
+        if (SPIFFS.begin()) { VFS.mount("/spiffs", spiffs); }
     }
+    void  postScreenInit() override { showResetReason(); }
     ulong micros() override { return ::micros(); };
     void  delay(ulong ms) override { ::delay(ms); };
     void  setCPUSpeed(CPU_SPEED speed) override {
         // setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     };
     CPU_SPEED getCPUSpeed() override {
-        
+
     };
     const char* getDeviceName() override { return ESP.getChipModel(); };
     void        shutdown() override { reboot(); };
@@ -126,9 +128,11 @@ class DEV_ESP32 : public iHW {
     };
     int getBatteryCharge() override {
         if (charger_exists) { return bat.getBatteryLevel(); }
+        return 3;
     };
     bool isCharging() override {
         if (charger_exists) { return bat.isChargerConnected(); }
+        return false;
     };
     void updateFrequencies() override {
 
@@ -136,6 +140,37 @@ class DEV_ESP32 : public iHW {
     RenderTarget* GetScreen() override { return setupTFTESPIRenderTarget(); }
 
   private:
+    void showResetReason() {
+        const char* reason;
+        switch (esp_reset_reason()) {
+        case ESP_RST_PANIC: reason = "CORE PANIC"; break;
+        case ESP_RST_INT_WDT: reason = "INTERRUPT WATCHDOG TIMEOUT"; break;
+        case ESP_RST_TASK_WDT: reason = "TASK WATCHDOG TIMEOUT"; break;
+        case ESP_RST_WDT: reason = "WATCHDOG TIMEOUT"; break;
+        // case ESP_RST_DEEPSLEEP: break;
+        case ESP_RST_BROWNOUT: reason = "BROWNOUT"; break;
+        // case ESP_RST_SDIO: break;
+        default: return;
+        }
+        for (int x = 0; x < 240; x++) {
+            for (int y = 0; y < 320; y++) {
+                if (x % 4 == 1 && y % 4 == 1) { tft.drawPixel(x, y, rand() % 0xAAAA); }
+            }
+        }
+        tft.setCursor(0, 20);
+        tft.setTextSize(4);
+        tft.setTextColor(0xffff, 0, true);
+        tft.println("> FATAL! <");
+        tft.setTextSize(1);
+        tft.printf("\n\n%s\n\nPress anything to continue.", reason);
+        ulong old_millis = hw->millis();
+        while ((!getKeyInput() && !getCharInput())) {
+            delay(50);
+            if (!NI_delay(old_millis,5000)) { break; }
+        };
+        tft.fillScreen(0);
+    }
+
     void initMCP() {
         mcp.writeRegister(MCP23017Register::GPIO_A, 0x00); // Reset port A
         mcp.writeRegister(MCP23017Register::GPIO_B, 0x00); // Reset port B

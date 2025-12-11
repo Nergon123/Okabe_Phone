@@ -6,10 +6,9 @@
 #include "Platform/Graphics/TFTESPIRenderTarget.h"
 #endif
 
-
 // Function to initialize the storage
 void storageInit() {
-hw->initStorage();
+    hw->initStorage();
 
     preferences.begin("settings", false);
     resPath = preferences.getString("resPath", resPath.c_str());

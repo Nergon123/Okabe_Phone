@@ -46,9 +46,9 @@ bool ip5306exists = false;
 
 // Contacts storage
 std::vector<Contact> contacts;
-// Handle for background SIM checks
 
 VirtualFileSystem VFS;
+
 // forbid to change fastMode
 bool          lockFastMode         = false;
 RenderTarget* currentRenderTarget  = nullptr;
@@ -65,6 +65,10 @@ NString lastSIMerror            = "";
 
 iHW* hw;
 
+
+#ifdef TASK
+std::vector<TASK> tasks;
+#endif
 #ifdef PC
 int SDLScale = 1;
 #endif

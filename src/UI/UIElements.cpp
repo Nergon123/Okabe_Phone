@@ -336,11 +336,12 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
 
 void bootText(NString text, int x, int y, int w, int h) {
     if (lastpercentage == 100) { return; }
-    tft.fillRect(x, y, w, h, TFT_BLACK);
     tft.setTextFont(0);
     tft.setTextSize(1);
     if (x < 0) { x = 120 - (tft.textWidth(text.c_str()) / 2); }
     tft.setViewport(0, y, w, h);
+    tft.fillRect(0, 0, w, h, TFT_BLACK);
+    tft.fillScreen(0);
     tft.setTextColor(TFT_WHITE);
     tft.setCursor(x, 0);
     tft.print(text.c_str());

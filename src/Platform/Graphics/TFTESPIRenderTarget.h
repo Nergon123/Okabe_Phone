@@ -33,9 +33,9 @@ class TFTESPIRenderTarget : public RenderTarget {
     }
 
     void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) override {
-              _tft.startWrite();
+        _tft.startWrite();
         _tft.setAddrWindow(xs, ys, w, h);
-              _tft.endWrite();
+        _tft.endWrite();
     }
 
     void pushColors(uint16_t* data, uint32_t len, bool swap = false) override {
@@ -43,14 +43,16 @@ class TFTESPIRenderTarget : public RenderTarget {
         _tft.pushColors(data, len, swap);
         _tft.endWrite();
     }
-
+    void     setViewport(Viewport vp) override { _tft.setViewport(vp.x, vp.y, vp.w, vp.h); }
+    Viewport getViewport() {
+        return Viewport(_tft.getViewportX(), _tft.getViewportY(), _tft.getViewportWidth(),
+                        _tft.getViewportHeight());
+    };
     void writeColor(uint16_t color, uint32_t len) override {
         _tft.startWrite();
         _tft.writeColor(color, len);
         _tft.endWrite();
     }
-
-    virtual void setBrightness(int8_t percentage) override { hw->setScreenBrightness(percentage); }
 
     void fillScreen(uint16_t color) override {
         _tft.startWrite();

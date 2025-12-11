@@ -1,5 +1,5 @@
-#ifndef OKABE_TFT_ESPI_STUB_H
-#define OKABE_TFT_ESPI_STUB_H
+#ifndef TFT_ESPI_STUB_H
+#define TFT_ESPI_STUB_H
 #include "../NString.h"
 #include "Defines.h"
 #include "Fonts/font5x7.h"
@@ -7,9 +7,8 @@
 #include "RenderTargets.h"
 #include <stdarg.h>
 
-
 struct font_t {
-    bool     isGFX;
+    bool           isGFX;
     const GFXfont *font;
 };
 // color definitions
@@ -42,12 +41,11 @@ class TFT_STUB {
   public:
     TFT_STUB(int16_t w = 240, int16_t h = 320);
 
-    
     RenderTarget *activeRenderTarget = nullptr;
     void          setRenderTarget(RenderTarget *target);
-    
+
     // Font rendering
-    font_t currentFont;
+    font_t   currentFont;
     void     renderGlyph(char c, int16_t x, int16_t y);
     uint16_t textcolor = TFT_WHITE; // Text foreground color
     uint8_t  textsize  = 1;         // Font size multiplier
@@ -61,15 +59,17 @@ class TFT_STUB {
     virtual void pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data);
     // window / pixel push (no-op default)
     virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h);
-    virtual void pushColors( uint16_t *data, int16_t len, bool swap = false);
+    virtual void pushColors(uint16_t *data, int16_t len, bool swap = false);
     // rotation/origin
-    void    setRotation(uint8_t r);
-    uint8_t getRotation() const;
-    void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
-    void setViewport(int16_t x, int16_t y, int16_t w, int16_t h);
-    void resetViewport();
-    void pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
-                   uint16_t transpColor);
+    void     setRotation(uint8_t r);
+    uint8_t  getRotation() const;
+    void     drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+    void     setViewport(int16_t x, int16_t y, int16_t w, int16_t h);
+    void     setViewport(Viewport vp);
+    Viewport getViewport();
+    void     resetViewport();
+    void     pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
+                       uint16_t transpColor);
     // size getters
     int16_t width() const;
     int16_t height() const;
@@ -101,13 +101,6 @@ class TFT_STUB {
     int  getCursorX() const;
     int  getCursorY() const;
 
-    // viewport getters used throughout the project
-    int  getViewportWidth() const;
-    int  getViewportHeight() const;
-    int  getViewportX() const;
-    int  getViewportY() const;
-    bool getViewportDatum() const;
-
     // drawing primitives used across the codebase
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
     void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
@@ -124,16 +117,12 @@ class TFT_STUB {
 
   protected:
     int16_t  _init_w, _init_h;
-    int16_t  _w=240, _h=320;
+    int16_t  _w = 240, _h = 320;
     uint8_t  _rotation;
     int16_t  _addrX1, _addrY1, _addrX2, _addrY2;
-    int16_t  _cursor_x =0, _cursor_y=0;
-    uint16_t _textcolor =0,_textbgcolor =0;
-    bool _textbgopaque = false;
-    // viewport state
-    int16_t _vp_x =0, _vp_y =0, _vp_w=240, _vp_h=320;
-    bool    _vp_active = false;
-    bool    _vp_datum = false;
+    int16_t  _cursor_x = 0, _cursor_y = 0;
+    uint16_t _textcolor = 0, _textbgcolor = 0;
+    bool     _textbgopaque = false;
 };
 
-#endif // OKABE_TFT_ESPI_STUB_H
+#endif // TFT_ESPI_STUB_H

@@ -4,4 +4,5 @@
 int getChargeLevel();
 void fastMode(bool status);
 void setBrightness(uint8_t percentage);
+void setBrightnessTask(void *);
 extern uint8_t currentBrightness;

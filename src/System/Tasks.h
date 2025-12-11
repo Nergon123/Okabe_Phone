@@ -1,8 +1,14 @@
 #pragma once
-#include "../GlobalVariables.h"
 #include "../Connectivity/SIM.h"
-#ifndef PC
+#include "../GlobalVariables.h"
+#ifdef INC_FREERTOS_H
 extern TaskHandle_t TaskHCommand;
+#elif defined(PC)
+#include <thread>
 #endif
-void initTasks();
-void suspendCore(bool suspend) ;
+void initBackgroundTasks();
+void suspendCore(bool suspend);
+
+TASK LaunchTask(void (*function)(void *parameters),const char *name = "New Task", void *parameters = nullptr,
+                int stackSize = 1024,  int priority = 1,
+                int core = 1);

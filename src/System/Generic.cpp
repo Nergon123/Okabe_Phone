@@ -18,7 +18,8 @@ void  GetFuncTime(bool start, const char *who = "UNKNOWN") {
 #ifdef DEVMODE
     if (start) { funcTime = hw->micros(); }
     else {
-        ESP_LOGD("PERFOMANCE", "\n%s run for %.3f ms\n", who, (float)(hw->micros() - funcTime) / 1000);
+        ESP_LOGD("PERFOMANCE", "\n%s run for %.3f ms\n", who,
+                 (float)(hw->micros() - funcTime) / 1000);
     }
 #endif
 }
@@ -27,25 +28,24 @@ void  GetFuncTime(bool start, const char *who = "UNKNOWN") {
 // @param status: true for fast mode, false for slow mode
 void fastMode(bool status) { hw->setCPUSpeed(status ? CPU_SPEED::CPU_FAST : CPU_IDLE); }
 
-uint8_t currentBrightness = brightness;
-// Set screen brightness
-// @param percentage: brightness percentage (0-100)
-void setBrightness(uint8_t percentage) {
-    constrain(percentage, 0, 100);
-    if (currentBrightness != percentage) {
-        if (percentage > currentBrightness) {
-            // smooth brightness change
-            for (int i = currentBrightness; i <= percentage; i++) {
-                hw->setScreenBrightness(i);
-                hw->delay(5);
-            }
+uint8_t currentBrightness = 50; // initial
+uint8_t targetBrightness  = 50;
+
+void setBrightnessTask(void *) {
+    for (;;) {
+        if (currentBrightness != targetBrightness) {
+            if (targetBrightness > currentBrightness) { currentBrightness++; }
+            else { currentBrightness--; }
+
+            hw->setScreenBrightness(currentBrightness);
         }
-        else {
-            for (int i = currentBrightness; i >= percentage; i--) {
-                hw->setScreenBrightness(i);
-                hw->delay(5);
-            }
-        }
+        hw->delay(5); // or whatever step speed you want
     }
-    currentBrightness = percentage;
+}
+
+void setBrightness(uint8_t percentage) {
+    targetBrightness = constrain(percentage, 0, 100);
+
+    // launch the task only if it’s not already running
+
 }

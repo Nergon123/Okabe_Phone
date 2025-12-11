@@ -1,7 +1,7 @@
-// #include "Tasks.h"
+#include "Tasks.h"
 
 void suspendCore(bool suspend) { (void)suspend; };
-void initTasks() {};
+
 // #ifndef PC
 // TaskHandle_t TaskHCommand;
 // // Function to suspend/resume the freeRTOS task on core 0
@@ -15,66 +15,78 @@ void initTasks() {};
 //         else { vTaskResume(TaskHCommand); }
 //     }
 // }
+//
+// Function to handle the idle task
+void TaskIdleHandler(void *parameter) {
 
-// // Function to handle the idle task
-// void TaskIdleHandler(void *parameter) {
+    uint32_t oldtime = hw->millis();
+    time(&systemTime);
+    if (sendATCommand("AT").indexOf("OK") != -1) {
+        ESP_LOGI("BOOT/SIM", "%s", "Setting up sim card please wait...");
+        initSim();
 
-//     uint32_t oldtime = hw->millis();
+        while (!_checkSim() && NI_delay(oldtime, 10000)) {
+            hw->delay(1000);
+        } // check if sim card is usable for 10 whole seconds...
+        populateContacts();
+        ESP_LOGI("BOOT/SIM", "%s", "Done!");
+    }
+    else {
+        ESP_LOGI("BOOT/SIM", "%s", "SIM card not responding");
+        simIsUsable = false;
+    }
 
-//     if (sendATCommand("AT").indexOf("OK") != -1) {
-//         ESP_LOGI("BOOT/SIM", "%s", "Setting up sim card please wait...");
-//         initSim();
+    while (true) {
+        time(&systemTime);
+        while (!simIsBusy && simIsUsable) {
+            backgroundBusy = true;
+            if (getSignalLevel() != _signal || getChargeLevel() != charge) {
+                if (ongoingCall) { stateCall = GetState(); }
+                _signal = getSignalLevel();
 
-//         while (!_checkSim() &&
-//                hw->millis() - oldtime < 10000); // check if sim card is usable for 10 whole
-//                seconds...
-//         populateContacts();
-//         ESP_LOGI("BOOT/SIM", "%s", "Done!");
-//     }
-//     else {
-//         ESP_LOGI("BOOT/SIM", "%s", "SIM card not responding");
-//         simIsUsable = false;
-//     }
+                charge = getChargeLevel();
 
-//     while (true) {
+                simIsUsable = _checkSim();
+                ESP_LOGI("SIGNAL", "Signal: %d, Charge: %d, SIM USABLE:%d\n", _signal, charge,
+                         simIsUsable);
+                if (contacts.size() == 0) { populateContacts(); }
+                sBarChanged = true;
+            }
+            hw->delay(DBC_MS);
+            backgroundBusy = false;
+        }
+        if (!simIsUsable) {
+            // DBC_MS      = 10000;
+            ///simIsUsable = _checkSim();// it can't breath
+            charge      = getChargeLevel();
+            if (_signal != -1) {
+                _signal     = -1;
+                sBarChanged = true;
+            }
+        }
+        // else { DBC_MS = 3000; }
+        backgroundBusy = false;
+        hw->delay(DBC_MS);
+    }
+}
 
-//         while (!simIsBusy && simIsUsable) {
-//             backgroundBusy = true;
-//             if (getSignalLevel() != _signal || getChargeLevel() != charge) {
-//                 if (ongoingCall) { stateCall = GetState(); }
-//                 _signal = getSignalLevel();
+void initBackgroundTasks() {
+    LaunchTask(TaskIdleHandler, "Idle Task", nullptr, 4096, 3);
+    LaunchTask(setBrightnessTask, "setBrightness", nullptr, 1024, 1);
+};
 
-//                 charge = getChargeLevel();
-
-//                 simIsUsable = _checkSim();
-//                 ESP_LOGI("SIGNAL", "Signal: %d, Charge: %d, SIM USABLE:%d\n", _signal, charge,
-//                          simIsUsable);
-//                 if (contacts.size() == 0) { populateContacts(); }
-//                 sBarChanged = true;
-//             }
-//             vTaskDelay(pdMS_TO_TICKS(DBC_MS));
-//             backgroundBusy = false;
-//         }
-//         if (!simIsUsable) {
-//             DBC_MS      = 10000;
-//             simIsUsable = _checkSim();
-//             charge      = getChargeLevel();
-//             if (_signal != -1) {
-//                 _signal     = -1;
-//                 sBarChanged = true;
-//             }
-//         }
-//         else { DBC_MS = 3000; }
-//         backgroundBusy = false;
-//         vTaskDelay(pdMS_TO_TICKS(DBC_MS));
-//     }
-// }
-
-// // Function to initialize the tasks
-// void initTasks() {
-//     xTaskCreatePinnedToCore(TaskIdleHandler, "Core0Checker", 10000, NULL, 1, &TaskHCommand, 0);
-// }
-// #else
-// void initTasks(){};
-// void suspendCore(bool suspend){} ;
-// #endif
+TASK LaunchTask(void (*function)(void *parameters), const char *name, void *parameters,
+                int stackSize, int priority, int core) {
+#ifdef INC_FREERTOS_H
+    TaskHandle_t t;
+    xTaskCreatePinnedToCore(function, name, stackSize, parameters, priority, &t, core);
+    return t;
+#elif defined(PC)
+    std::thread t(function, parameters);
+    return t;
+    (void)name;
+    (void)priority;
+    (void)core;
+    (void)stackSize;
+#endif
+}

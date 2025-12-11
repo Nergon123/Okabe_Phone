@@ -1,7 +1,9 @@
 #pragma once
 #include "Defines.h"
 
-#ifndef PC
+#ifdef PC
+#include <thread>
+#else
 #include <Arduino.h>
 #include <MCP23017.h>
 #include <PNGdec.h>
@@ -133,6 +135,12 @@ template <typename T, size_t N> size_t ArraySize(T (&)[N]) { return N; }
 extern time_t systemTime;
 extern tm     systemTimeInfo;
 
+#ifdef PC
+#define TASK std::thread
+#elif defined(INC_FREERTOS_H)
+#define TASK TaskHandle_t
+#endif
+extern std::vector<TASK> tasks;
 #ifdef PC
 extern int SDLScale;
 #endif
