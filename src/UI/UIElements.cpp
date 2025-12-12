@@ -160,18 +160,19 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     int c_offset  = 0;
 
     // Viewport for the input line
-    tft.setViewport(boxX, ypos, boxWidth, boxHeight);
 
     auto redrawField = [&](bool drawCursor) {
+        tft.setViewport(boxX, ypos, boxWidth, boxHeight);
+        ESP_LOGI("REDRAWFIELD", "%d %d", ypos, tft.getViewport().y);
         tft.fillRect(viewX, viewY, boxWidth, boxHeight, clr_background);
         tft.drawRect(viewX, viewY, boxWidth, boxHeight, selected ? clr_selected : clr_normal);
 
         // Recalculate text shift
+        changeFont(3);
         int pixelLen = tft.textWidth(content.substring(0, cursorPos)) + 15;
         c_offset     = (pixelLen > boxWidth) ? (boxWidth - pixelLen) : 0;
-
         tft.setCursor(5 + c_offset, yoff);
-
+        tft.setTextColor(clr_normal);
         tft.print(content);
 
         if (selected && drawCursor) {

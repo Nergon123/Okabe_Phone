@@ -197,7 +197,7 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         }
         if (c != input && c != -1) {
             mil = DIB_MS + 1;
-            if (!retButton) { *retButton = c; }
+            if (!retButton) { retButton = new int(c); }
         }
         first = false;
     }

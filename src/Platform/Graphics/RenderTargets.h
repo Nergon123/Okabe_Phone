@@ -29,10 +29,22 @@ class RenderTarget {
     virtual ~RenderTarget() = default;
 
     // Core drawing operations - implemented by concrete render targets
-    virtual void drawPixel(int16_t x, int16_t y, uint16_t color) { NOT_IMPLEMENTED; }
+    virtual void drawPixel(int16_t x, int16_t y, uint16_t color) {
+        NOT_IMPLEMENTED;
+        (void)x;
+        (void)y;
+        (void)color;
+    }
     virtual void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
                             bool transparent, uint16_t transpColor) {
         NOT_IMPLEMENTED;
+        (void)x;
+        (void)y;
+        (void)w;
+        (void)h;
+        (void)data;
+        (void)transparent;
+        (void)transpColor;
     }
     virtual void setViewport(Viewport vp) {
         NOT_IMPLEMENTED;

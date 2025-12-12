@@ -13,8 +13,8 @@ int  listMenu(std::vector<mOption> choices, int icount, bool images, int type, N
 
 enum LM_TYPE {
     LM_MESSAGES = 0,
-    LM_CONTACTS = 1,
-    LM_SETTINGS = 2,
+    LM_SETTINGS = 1,
+    LM_CONTACTS = 2,
 };
 
 enum LIST_ICONS {

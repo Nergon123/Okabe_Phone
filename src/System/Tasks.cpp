@@ -57,8 +57,8 @@ void TaskIdleHandler(void *parameter) {
         }
         if (!simIsUsable) {
             // DBC_MS      = 10000;
-            ///simIsUsable = _checkSim();// it can't breath
-            charge      = getChargeLevel();
+            /// simIsUsable = _checkSim();// it can't breath
+            charge = getChargeLevel();
             if (_signal != -1) {
                 _signal     = -1;
                 sBarChanged = true;
@@ -82,6 +82,7 @@ TASK LaunchTask(void (*function)(void *parameters), const char *name, void *para
     xTaskCreatePinnedToCore(function, name, stackSize, parameters, priority, &t, core);
     return t;
 #elif defined(PC)
+    return std::thread(); // TODO fix
     std::thread t(function, parameters);
     return t;
     (void)name;

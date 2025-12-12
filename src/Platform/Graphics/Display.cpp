@@ -24,6 +24,9 @@ void TFT_STUB::fillScreen(uint16_t color) {
 }
 
 void TFT_STUB::setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {
+    Viewport vp = getViewport();
+    xs += vp.x;
+    ys += vp.y;
     activeRenderTarget->setAddrWindow(xs, ys, w, h);
 }
 
@@ -122,7 +125,7 @@ void TFT_STUB::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
     if (len <= 0) { return; }
 
     // Use render target's fast write
-    activeRenderTarget->setAddrWindow(startX, y, len, 1);
+    setAddrWindow(startX, y, len, 1);
     activeRenderTarget->writeColor(color, len);
 }
 
@@ -184,13 +187,22 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
 }
 
 void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
+    if (!activeRenderTarget) return;
 
+    // Get current viewport offsets
+    Viewport vp = getViewport();
+    int16_t ox = vp.x;
+    int16_t oy = vp.y;
+
+    // Classic 5x7 font
     if (!currentFont.isGFX) {
         unsigned char uc = static_cast<unsigned char>(c);
-        if (uc > 127) {
-            return; // or the max index of your font array
+        if (uc > 127) return;
+
+        // Draw opaque background if enabled
+        if (_textbgopaque) {
+            fillRect(x , y , 6 * textsize, 8 * textsize, _textbgcolor);
         }
-        if (_textbgopaque) { fillRect(x, y, 5 * textsize, 8 * textsize, _textbgcolor); }
 
         for (int col = 0; col < 5; col++) {
             uint8_t line = font[uc * 5 + col];
@@ -204,65 +216,74 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
                 }
             }
         }
+
         _cursor_x += 6 * textsize;
+        return;
     }
-    else if (currentFont.font) {
-        c -= currentFont.font->first;                        // character index
-        GFXglyph *glyph  = &currentFont.font->glyph[(int)c]; // correct glyph for this char
-        uint8_t  *bitmap = currentFont.font->bitmap;
-        uint32_t  bo     = glyph->bitmapOffset;
-        uint8_t   w = glyph->width, h = glyph->height;
-        int8_t    xo = glyph->xOffset, yo = glyph->yOffset;
-        uint8_t   xx, yy, bits = 0, bit = 0;
-        int16_t   xo16 = 0, yo16 = 0;
-        if (_textbgopaque) {
-            uint16_t cellW = glyph->xAdvance * textsize;
-            uint16_t cellH = currentFont.font->yAdvance * textsize;
-            fillRect(x, y - cellH, cellW, cellH, _textbgcolor);
-        }
 
-        if (textsize > 1) {
-            xo16 = xo;
-            yo16 = yo;
-        }
+    // GFX font
+    if (!currentFont.font) return;
 
-        // GFXFF rendering speed up
-        uint16_t hpc = 0; // Horizontal foreground pixel count
-        for (yy = 0; yy < h; yy++) {
-            for (xx = 0; xx < w; xx++) {
-                if (bit == 0) {
-                    bits = bitmap[bo++];
-                    bit  = 0x80;
-                }
-                if (bits & bit) { hpc++; }
-                else {
-                    if (hpc) {
-                        if (textsize == 1) {
-                            drawFastHLine(x + xo + xx - hpc, y + yo + yy, hpc, textcolor);
-                        }
-                        else {
-                            fillRect(x + (xo16 + xx - hpc) * textsize, y + (yo16 + yy) * textsize,
-                                     textsize * hpc, textsize, textcolor);
-                        }
-                        hpc = 0;
-                    }
-                }
-                bit >>= 1;
+    c -= currentFont.font->first;                   // glyph index
+    GFXglyph *glyph = &currentFont.font->glyph[(int)c];
+    uint8_t  *bitmap = currentFont.font->bitmap;
+    uint32_t  bo = glyph->bitmapOffset;
+    uint8_t   w = glyph->width, h = glyph->height;
+    int8_t    xo = glyph->xOffset, yo = glyph->yOffset;
+    int16_t   xo16 = xo, yo16 = yo;                // scaled offsets
+
+    if (textsize > 1) {
+        xo16 = xo;
+        yo16 = yo;
+    }
+
+    // Draw opaque background if enabled
+    if (_textbgopaque) {
+        uint16_t cellW = glyph->xAdvance * textsize;
+        uint16_t cellH = currentFont.font->yAdvance * textsize;
+        fillRect(x, y - cellH , cellW, cellH, _textbgcolor);
+    }
+
+    uint16_t hpc = 0;  // horizontal pixel count
+    uint8_t  bits = 0, bit = 0;
+    for (uint8_t yy = 0; yy < h; yy++) {
+        for (uint8_t xx = 0; xx < w; xx++) {
+            if (bit == 0) {
+                bits = bitmap[bo++];
+                bit  = 0x80;
             }
-            // Draw pixels for this line as we are about to increment yy
-            if (hpc) {
+
+            if (bits & bit) {
+                hpc++;
+            } else if (hpc) {
+                // Draw accumulated horizontal pixels
+                int drawX = x + (xo16 + xx - hpc);
+                int drawY = y + (yo16 + yy);
                 if (textsize == 1) {
-                    drawFastHLine(x + xo + xx - hpc, y + yo + yy, hpc, textcolor);
-                }
-                else {
-                    fillRect(x + (xo16 + xx - hpc) * textsize, y + (yo16 + yy) * textsize,
-                             textsize * hpc, textsize, textcolor);
+                    drawFastHLine(drawX, drawY, hpc, textcolor);
+                } else {
+                    fillRect(drawX, drawY, hpc * textsize, textsize, textcolor);
                 }
                 hpc = 0;
             }
+
+            bit >>= 1;
         }
-        _cursor_x += glyph->xAdvance * textsize;
+
+        // Draw any remaining pixels at end of line
+        if (hpc) {
+            int drawX = x + (xo16 + w - hpc);
+            int drawY = y + (yo16 + yy);
+            if (textsize == 1) {
+                drawFastHLine(drawX, drawY, hpc, textcolor);
+            } else {
+                fillRect(drawX, drawY, hpc * textsize, textsize, textcolor);
+            }
+            hpc = 0;
+        }
     }
+
+    _cursor_x += glyph->xAdvance * textsize;
 }
 
 int TFT_STUB::textWidth(const std::string &s) const {

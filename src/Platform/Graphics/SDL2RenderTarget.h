@@ -24,6 +24,7 @@ class SDL2RenderTarget : public RenderTarget {
                 std::memset(buffer, 0, w * h * sizeof(uint16_t));
             }
         }
+        vp = Viewport(0, 0, w, h);
         present();
     }
 
@@ -35,21 +36,11 @@ class SDL2RenderTarget : public RenderTarget {
         SDL_Quit();
     }
 
-    void setViewport(Viewport newVp) override {
-        // clamp to screen dimensions
-        if (newVp.x < 0) { newVp.x = 0; }
-        if (newVp.y < 0) { newVp.y = 0; }
-        if (newVp.x + newVp.w > width) { newVp.w = width - newVp.x; }
-        if (newVp.y + newVp.h > height) { newVp.h = height - newVp.y; }
-        vp = newVp;
-    }
-
-    Viewport getViewport() override { return vp; }
-
     void drawPixel(int16_t x, int16_t y, uint16_t color) override {
-        if (!buffer) { return; }
-        if (x < vp.x || y < vp.y || x >= vp.x + vp.w || y >= vp.y + vp.h) { return; }
-        buffer[y * width + x] = (color >> 8) | (color << 8);
+        // color = (color >> 8) | (color << 8);
+
+        if (!buffer || x < vp.x || y < vp.y || x >= vp.x + vp.w || y >= vp.y + vp.h) { return; }
+        buffer[y * width + x] = color;
     }
 
     void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t* data,
@@ -63,34 +54,85 @@ class SDL2RenderTarget : public RenderTarget {
 
         for (int ry = 0; ry < endY - startY; ++ry) {
             int             dstY   = startY + ry;
-            int             srcY   = ry + (startY - y);
-            const uint16_t* srcRow = data + srcY * w;
+            int             srcY   = ry + (startY - y); // adjusted for clipping
             uint16_t*       dstRow = buffer + dstY * width;
+            const uint16_t* srcRow = data + srcY * w;
             for (int rx = 0; rx < endX - startX; ++rx) {
-                int      dstX = startX + rx;
-                int      srcX = rx + (startX - x);
-                uint16_t px   = (srcRow[srcX] >> 8) | (srcRow[srcX] << 8);
-                if (transparent && px == transpColor) { continue; }
-                dstRow[dstX] = px;
+                int      dstX  = startX + rx;
+                int      srcX  = rx + (startX - x);
+                uint16_t srcPx = srcRow[srcX];
+                srcPx          = (srcPx >> 8) | (srcPx << 8);
+                if (transparent && srcPx == transpColor) { continue; }
+                dstRow[dstX] = srcPx;
+            }
+        }
+    }
+    
+    void fillScreen(uint16_t color) override {
+        color = (color >> 8) | (color << 8);
+        if (!buffer) return;
+        for (int y = vp.y; y < vp.y + vp.h; ++y) {
+            for (int x = vp.x; x < vp.x + vp.w; ++x) {
+                buffer[y * width + x] = color;
             }
         }
     }
 
-    void fillScreen(uint16_t color) override {
-        color = (color >> 8) | (color << 8);
-        if (!buffer) { return; }
-        for (int y = vp.y; y < vp.y + vp.h; ++y) {
-            for (int x = vp.x; x < vp.x + vp.w; ++x) { buffer[y * width + x] = color; }
+    void writeColor(uint16_t color, uint32_t len) override {
+        int16_t x0 = std::max<int16_t>(0, windowX);
+        int16_t y0 = std::max<int16_t>(0, windowY);
+        int16_t x1 = std::min<int16_t>(width, windowX + windowW);
+        int16_t y1 = std::min<int16_t>(height, windowY + windowH);
+
+        for (int16_t py = y0; py < y1; py++) {
+            for (int16_t px = x0; px < x1; px++) { buffer[py * width + px] = color; }
         }
-        present();
+        (void)len;
     }
 
+    void setViewport(Viewport newVp) override {
+        if (newVp.x < 0) { newVp.x = 0; }
+        if (newVp.y < 0) { newVp.y = 0; }
+        if (newVp.x + newVp.w > width) { newVp.w = width - newVp.x; }
+        if (newVp.y + newVp.h > height) { newVp.h = height - newVp.y; }
+        vp = newVp;
+    }
+    Viewport getViewport() override { return vp; }
+
+    virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {
+        windowX = xs;
+        windowY = ys;
+        windowW = w;
+        windowH = h;
+    }
+    void pushColors(uint16_t* data, uint32_t len, bool swap = false) override {
+        for (uint32_t i = 0; i < len; ++i) {
+            uint16_t color = swap ? (data[i] >> 8) | (data[i] << 8) : data[i];
+            writeColor(color, 1);
+        }
+    }
+
+    void present() override {
+        if (!texture || !renderer || !buffer) { return; }
+        SDL_UpdateTexture(texture, NULL, buffer, width * sizeof(uint16_t));
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        SDL_RenderPresent(renderer);
+    }
+
+    void init() override { /* Already initialized in constructor */ }
+    void deinit() override { /* Cleanup handled in destructor */ }
+
+    bool        isValid() const { return window && renderer && texture && buffer; }
+    SDL_Window* getWindow() const { return window; }
+
   private:
+    Viewport      vp;
     SDL_Window*   window;
     SDL_Renderer* renderer;
     SDL_Texture*  texture;
-    Viewport      vp; // viewport
-}
+    int           windowX, windowY, windowW, windowH;
+};
 
 // Factory function that matches the existing pattern
 inline RenderTarget* setupSDL2RenderTarget(int16_t width, int16_t height,
