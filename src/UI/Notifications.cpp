@@ -7,7 +7,7 @@
 // @param force: If true, force redraw of the status bar if false only redraw if time has changed
 void drawStatusBar(bool force) {
 
-    sBarChanged = force;
+    sBarChanged += force;
 
     tm sbtime = *gmtime(&systemTime);
     if (sbtime.tm_min != systemTimeInfo.tm_min) {
@@ -17,12 +17,15 @@ void drawStatusBar(bool force) {
     }
 
     if (sBarChanged) {
-        Viewport vp = tft.getViewport();
+        font_t   _currentFont = tft.currentFont;
+        uint16_t ccolor       = tft.textcolor;
+        int      textSize     = tft.textsize;
+        Viewport vp           = tft.getViewport();
         tft.resetViewport();
 
         if (_signal < 0) { _signal = 0; }
         if (_signal > 3) { _signal = 3; }
-        RenderTarget* before = currentRenderTarget;
+        RenderTarget* before = tft.activeRenderTarget;
         RenderTarget* buf    = new RGB565BufferRenderTarget(240, 26);
         sBarChanged          = false;
         charge               = getChargeLevel();
@@ -44,9 +47,12 @@ void drawStatusBar(bool force) {
             tft.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
         }
         tft.setRenderTarget(before);
-        before->pushBuffer(0, 0, buf->getWidth(), buf->getHeight(), buf->getBuffer(), 0, 0);
-        before->present();
+        currentRenderTarget->pushBuffer(0, 0, buf->getWidth(), buf->getHeight(), buf->getBuffer(), 0, 0);
+        currentRenderTarget->present();
         tft.setViewport(vp);
+        tft.setTextSize(textSize);
+        tft.textcolor   = ccolor;
+        tft.currentFont = _currentFont;
     }
 }
 // Function to show a confirmation window

@@ -1,10 +1,10 @@
 #include "Messages.h"
 #include "../GlobalVariables.h"
 #include "../Input/Input.h"
-
 #include "../System/TextManipulation.h"
 #include "../UI/ListMenu.h"
 #include "../UI/UIElements.h"
+#include <Platform/Graphics/RGB565BufferRenderTarget.h>
 #include <algorithm>
 // Parse SMS messages from SIM Card
 // @param msgs Array of Message objects to store parsed messages
@@ -119,34 +119,34 @@ void messages() {
  */
 void messageActivityOut(Contact contact, NString subject, NString content, bool sms) {
     // size of accessible height of current viewport
-    const int TLVP = 238;
-
+    const int TLVP = 269;
+    tft.resetViewport();
     size_t limit = 0;
     if (sms) { limit = 160; }
     else { limit = 400; }
-    int     curx     = 0;
-    int     cury     = 0;
-    int     text_pos = 0;
-    int     position = 0;
+    int curx     = 0;
+    int cury     = 0;
+    int text_pos = 0;
+    int position = 0;
     drawStatusBar();
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_ICONS, 0);
     // jump in pixels per one button press
     int y_jump = 22;
     // offset of screen in height
-    int y_scr  = 0;
-    int y_text = 18;
-    int min_y  = y_scr;
+    int           y_scr      = 0;
+    int           y_text     = 18;
+    int           min_y      = y_scr;
     tft.setCursor(30, 45);
     tft.setTextSize(1);
     changeFont(1);
-    changeFont(1);
     tft.setTextColor(0xffff);
-
+    
     tft.print("Outgoing Mail");
     tft.setTextColor(0);
-
-    // tft.setViewport(0, 51, 240, 269, true);
+    RenderTarget *mes_buffer = setupBufferRenderTarget(240, TLVP);
+    tft.setRenderTarget(mes_buffer);
+    
     bool exit = false;
     while (!exit) {
         position = 0;
@@ -158,6 +158,8 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                       RES_MAIN);
         // drawImage(0, position + y_scr, in_mail[2], true);
         tft.setCursor(24, position + y_text + y_scr);
+        changeFont(1);
+
         tft.println(!contact.name.isEmpty()    ? contact.name
                     : !contact.phone.isEmpty() ? contact.phone
                     : !contact.email.isEmpty() ? contact.email
@@ -168,18 +170,21 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
             res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
                           RES_MAIN);
             tft.setCursor(24, position + y_text + y_scr);
+            changeFont(1);
             tft.println(subject);
         }
         position += 24;
         tft.drawLine(0, position + y_scr, 240, position + y_scr, 0);
+        changeFont(1);
         tft.print(content);
         int     input = -1;
-        NString a[]   = {"Return", "Send Message", "Delete", "Save To Drafts"};
+        NString a[]   = {"Continue", "Send Message", "Delete", "Save To Drafts"};
         int     u;
         tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20,
                      TFT_BLACK);
         // Serial.println("CURX:" + NString(curx) + " CURY:" + NString(cury));
         /////////tft.pushSprite(0, 51);
+        mes_buffer->CopyBufferToRT(0, 51, currentRenderTarget);
         while (input == -1) {
 
             if (y_scr < min_y) { min_y = y_scr; }
@@ -188,21 +193,30 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
             case DOWN:
                 // if (y_scr > -height)
                 //   y_scr -= y_jump;
+                changeFont(1);
                 text_pos = findCharPosX(content, text_pos, DOWN);
                 findSplitPosition(content, text_pos, curx, cury);
                 break;
             case UP:
                 // if (y_scr < 0)
                 //   y_scr += y_jump;
+                changeFont(1);
                 text_pos = findCharPosX(content, text_pos, UP);
                 findSplitPosition(content, text_pos, curx, cury);
                 break;
             case RIGHT:
-                if (text_pos >= 0) { findSplitPosition(content, ++text_pos, curx, cury); }
+
+                if (text_pos >= 0) {
+                    changeFont(1);
+                    findSplitPosition(content, ++text_pos, curx, cury);
+                }
 
                 break;
             case LEFT:
-                if (text_pos > 0) { findSplitPosition(content, --text_pos, curx, cury); }
+                if (text_pos > 0) {
+                    changeFont(1);
+                    findSplitPosition(content, --text_pos, curx, cury);
+                }
 
                 break;
             case BACK:
@@ -221,6 +235,8 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                         sendATCommand(content + char(26));
                     }
                     /////////tft.deleteSprite()();
+                    delete mes_buffer;
+                    tft.setRenderTarget(currentRenderTarget);
                     return;
                     break;
                 case 2: ESP_LOGI("INFO", "DELETE"); break;
@@ -245,15 +261,13 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                             if (l != '\r') {
                                 if (l != '\b') {
 
-                                    content =
-                                        content.substring(0, text_pos) + l +
-                                        content.substring(text_pos, content.length());
+                                    content = content.substring(0, text_pos) + l +
+                                              content.substring(text_pos, content.length());
                                     text_pos++;
                                 }
                                 else {
-                                    content =
-                                        content.substring(0, text_pos - 1) +
-                                        content.substring(text_pos, content.length());
+                                    content = content.substring(0, text_pos - 1) +
+                                              content.substring(text_pos, content.length());
                                     input = BACK;
                                 }
                             }
@@ -269,6 +283,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                             input = BACK;
                         }
                         // ESP_LOGI("INFO","MINIMUM:" + NString(y_scr));
+                        changeFont(1);
                         findSplitPosition(content, text_pos, curx, cury);
                         input = BACK;
                     }
@@ -278,10 +293,12 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
         }
         // tft.resetViewport();
 
-        // tft.setViewport(0, 51, 240, 269, true);
+        // tft.setViewport(0, 51, 240, 269);
     }
     /////////tft.deleteSprite()();
-    // tft.resetViewport();
+    tft.resetViewport();
+    delete mes_buffer;
+    tft.setRenderTarget(currentRenderTarget);
 }
 
 /*

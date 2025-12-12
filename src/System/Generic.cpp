@@ -28,8 +28,8 @@ void  GetFuncTime(bool start, const char *who = "UNKNOWN") {
 // @param status: true for fast mode, false for slow mode
 void fastMode(bool status) { hw->setCPUSpeed(status ? CPU_SPEED::CPU_FAST : CPU_IDLE); }
 
-uint8_t currentBrightness = 50; // initial
-uint8_t targetBrightness  = 50;
+uint8_t currentBrightness = 70; // initial
+uint8_t targetBrightness  = 70;
 
 void setBrightnessTask(void *) {
     for (;;) {
@@ -39,13 +39,10 @@ void setBrightnessTask(void *) {
 
             hw->setScreenBrightness(currentBrightness);
         }
-        hw->delay(5); // or whatever step speed you want
+        hw->delay(5);
     }
 }
 
 void setBrightness(uint8_t percentage) {
     targetBrightness = constrain(percentage, 0, 100);
-
-    // launch the task only if it’s not already running
-
 }

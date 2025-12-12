@@ -59,7 +59,7 @@ class DEV_ESP32 : public iHW {
         initMCP();
 
         pinMode(TFT_BL, OUTPUT);
-        setScreenBrightness(100);
+        setScreenBrightness(0);
 
         keypad_exists = checkI2Cdevices(MCP23017_ADDR);
         if (keypad_exists) { ESP_LOGI("KEYPAD", "MCP23017 Initalized"); }

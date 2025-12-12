@@ -8,14 +8,8 @@ bool          lm_buffer = LISTMENU_BUFFER;
 RenderTarget *lm_buffer_obj;
 
 void pushBufferToScreen(int x, int y) {
-    if (!lm_buffer_obj || !lm_buffer_obj->getBuffer()) {
-        ESP_LOGW("LM", "Attempted to push null buffer!");
-        return;
-    }
-    currentRenderTarget->pushBuffer(x, y, lm_buffer_obj->getWidth(), lm_buffer_obj->getHeight(),
-                                    lm_buffer_obj->getBuffer(), false, 0);
-
-    currentRenderTarget->present();
+    ESP_LOGD("PUSHBUFFER", "X: %d Y:%d", x, y);
+    lm_buffer_obj->CopyBufferToRT(x, y, currentRenderTarget);
 }
 void deleteBuffer() {
     if (lm_buffer_obj && lm_buffer_obj->getType() == RENDER_TARGET_TYPE_BUFFER) {
@@ -27,7 +21,7 @@ void deleteBuffer() {
 }
 
 // Header for the list menu
-// @param type Type of menu (0: messages, 1: contacts, 2: settings)
+// @param type Type of menu
 // @param title Title of the menu
 // @param page Current page number
 // @param pages Total number of pages
@@ -57,8 +51,7 @@ void listMenu_header(int type, NString title, int page, int pages, int y) {
 /// @param esize Entry size
 /// @param lines Boolean indicating if lines should be drawn between options
 /// @param selected Boolean indicating if the entry is selected
-/// @param unselected Boolean indicating if the entry is unselected (I dont fucking remember why
-/// its not just selected = false)
+/// @param unselected Boolean indicating if the entry is unselected
 void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool lines, bool selected,
                     bool unselected) {
     uint16_t color_active = 0xFDD3;

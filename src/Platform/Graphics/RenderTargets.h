@@ -28,6 +28,15 @@ class RenderTarget {
 
     virtual ~RenderTarget() = default;
 
+    virtual void CopyBufferToRT(int x, int y, RenderTarget *target) {
+        if (type != RENDER_TARGET_TYPE_BUFFER || !buffer) {
+            ESP_LOGE("VIRT RT", "Source is not a buffer or buffer invalid");
+            return;
+        }
+        target->pushBuffer(x, y, width, height, buffer, false, 0);
+        target->present();
+    }
+
     // Core drawing operations - implemented by concrete render targets
     virtual void drawPixel(int16_t x, int16_t y, uint16_t color) {
         NOT_IMPLEMENTED;

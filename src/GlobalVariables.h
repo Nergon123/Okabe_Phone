@@ -138,7 +138,11 @@ extern tm     systemTimeInfo;
 #ifdef PC
 #define TASK std::thread
 #elif defined(INC_FREERTOS_H)
+#define ENDTASK(x) vTaskDelete(x)
 #define TASK TaskHandle_t
+#endif
+#ifndef ENDTASK
+#define ENDTASK(x) (void)x;
 #endif
 extern std::vector<TASK> tasks;
 #ifdef PC

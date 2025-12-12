@@ -1,7 +1,7 @@
 #pragma once
 #include "RenderTargets.h"
+#include <System/Generic.h>
 #include <functional>
-
 #ifndef PC
 #include <TFT_eSPI.h>
 
@@ -11,11 +11,13 @@ class TFTESPIRenderTarget : public RenderTarget {
     TFTESPIRenderTarget(int w, int h) : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr) {
         init();
     }
-
+    
     void init() override {
+        hw->setScreenBrightness(0);
         _tft.init();
         _tft.fillScreen(TFT_BLACK);
         _tft.endWrite();
+        hw->setScreenBrightness(currentBrightness);
     }
 
     void drawPixel(int16_t x, int16_t y, uint16_t color) override {

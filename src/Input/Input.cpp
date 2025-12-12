@@ -103,8 +103,10 @@ void numberInput(char first) {
  * @param pos selected character position
  */
 void showText(const char *text, int pos) {
-    Viewport vp = tft.getViewport();
-    bool viewport = false;
+    Viewport      vp       = tft.getViewport();
+    bool          viewport = false;
+    RenderTarget *before   = tft.activeRenderTarget;
+    tft.setRenderTarget(currentRenderTarget);
     if (vp.h < 320) {
         tft.resetViewport();
         viewport = true;
@@ -130,6 +132,7 @@ void showText(const char *text, int pos) {
     changeFont(pfont);
     tft.setTextSize(textSize);
     if (viewport) { tft.setViewport(vp); }
+    tft.setRenderTarget(before);
 }
 
 /*
@@ -171,12 +174,12 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     //     b = 0;
     // }
     ulong mil = hw->millis();
-    pos     = -1;
+    pos       = -1;
     int curx;
     int cury;
     while (hw->millis() - mil < DIB_MS) {
-        curx = tft.getCursorX();
-        cury = tft.getCursorY();
+        curx  = tft.getCursorX();
+        cury  = tft.getCursorY();
         int c = buttonsHelding();
 
         if (c == input || first) {
@@ -203,8 +206,8 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     }
 
     tft.setCursor(curx, cury);
-    Viewport vp = tft.getViewport();
-    bool viewport = false;
+    Viewport vp       = tft.getViewport();
+    bool     viewport = false;
     if (vp.h < 320) {
         tft.resetViewport();
         viewport = true;
@@ -267,7 +270,6 @@ int buttonsHelding(bool _idle) {
 
     // Serial control support
     // You can control device keypad from other device through Serial port
-
 
     if (input != 0) {
         millSleep = hw->millis();

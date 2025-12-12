@@ -31,7 +31,7 @@ void incomingCall(Contact contact) {
     tft.setCursor(90, 140);
     changeFont(4);
     tft.setTextSize(1);
-    tft.print("Ca l l ing"); //Spacing to match original bad kerning >_<
+    tft.print("Ca l l ing"); // Spacing to match original bad kerning >_<
     res.DrawImage(R_PHONE_ICON);
     // drawImage(45, 105, PHONE_ICON);
 
@@ -196,7 +196,7 @@ void contactss() {
         }
         else if (LISTMENU_OPTIONS) {
             const NString choice[1] = {"Create"};
-            int          CMS       = choiceMenu({choice}, 1, true);
+            int           CMS       = choiceMenu({choice}, 1, true);
             if (!CMS) { editContact(Contact("", "", "", contacts.size())); }
             else { exit = true; }
         }
@@ -217,7 +217,7 @@ void editContact(Contact contact) {
 
     res.DrawImage(R_LIST_MENU_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_ICONS, 1);
+    res.DrawImage(R_LIST_HEADER_ICONS, LM_CONTACTS);
     drawStatusBar();
     tft.setCursor(30, 45);
     tft.setTextSize(1);
@@ -230,10 +230,7 @@ void editContact(Contact contact) {
 
     button("SAVE", 10, 285, 100, 28);
     button("CANCEL", 120, 285, 100, 28);
-    bool save   = false;
-    bool cancel = false;
-    bool exit   = false;
-    while (!exit) {
+    while (true) {
         switch (pos) {
         case 0:
             boxString[pos] =
@@ -244,15 +241,16 @@ void editContact(Contact contact) {
                                         &direction, true);
             break;
         case 2:
-            save = button("SAVE", 10, 285, 100, 28, true, &direction);
-            if (save) {
+            direction = 0;
+            button("SAVE", 10, 285, 100, 28, true, &direction);
+            if (direction == SELECT) {
                 if (boxString[1].isEmpty()) { break; }
                 if (boxString[0].isEmpty()) { boxString[0] = boxString[1]; }
 
                 sendATCommand("AT+CPBS=\"SM\"");
                 NString request = "AT+CPBW=" + NString(contact.index) + ",\"" + boxString[1] +
-                                 "\"," + NString(boxString[1].indexOf("+") == 0 ? 145 : 129) +
-                                 ",\"" + boxString[0] + "\"";
+                                  "\"," + NString(boxString[1].indexOf("+") == 0 ? 145 : 129) +
+                                  ",\"" + boxString[0] + "\"";
                 NString result = sendATCommand(request);
                 populateContacts();
                 return;
@@ -260,8 +258,9 @@ void editContact(Contact contact) {
 
             break;
         case 3:
-            cancel = button("CANCEL", 120, 285, 100, 28, true, &direction);
-            if (cancel) { return; }
+            direction = 0;
+            button("CANCEL", 120, 285, 100, 28, true, &direction);
+            if (direction == SELECT) { return; }
             break;
         default: pos = 0; break;
         }

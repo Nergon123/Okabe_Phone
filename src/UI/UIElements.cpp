@@ -26,17 +26,16 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
     }
 
     int x = (w - tft.textWidth(title.c_str())) / 2;
-    int y = h - ((h - tft.fontHeight()));
+    int y = h - (h - tft.fontHeight()) - 3;
 
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title.c_str());
 
-    bool exit = false;
-
     if (selected) {
-        while (!exit) {
+        while (true) {
             *direction = buttonsHelding();
-            if (*direction != -1) { exit = true; }
+
+            if (*direction != -1) { break; }
         }
     }
 
@@ -44,6 +43,7 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
     tft.fillRect(xpos, ypos, w, h, clr_background);
     tft.drawRect(xpos, ypos, w, h, clr_normal);
     tft.setCursor(xpos + x, ypos + y);
+    changeFont(1);
     tft.print(title);
 
     return false;

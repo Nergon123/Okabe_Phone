@@ -93,7 +93,7 @@ class RGB565BufferRenderTarget : public RenderTarget {
     Viewport vp;
 };
 
-// Provide the previously-declared factory here inlined for convenience.
+// Setup rgb565 BufferRenderTarget.
 inline RenderTarget *setupBufferRenderTarget(int16_t width, int16_t height) {
     return new RGB565BufferRenderTarget(width, height);
 }
