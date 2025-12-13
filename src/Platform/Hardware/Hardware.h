@@ -14,6 +14,7 @@ class iHW {
         ulong mil = millis();
         while (millis() < mil + ms);
     }
+    virtual int         getWifiStrength(){return -1;}
     virtual void        setCPUSpeed(CPU_SPEED speed) { (void)speed; };
     virtual CPU_SPEED   getCPUSpeed() { return CPU_DEFAULT; };
     virtual void        updateFrequencies() {};

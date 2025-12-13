@@ -2,6 +2,7 @@
 #include "../System/ResourceSystem.h"
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "Platform/Graphics/RenderTargets.h"
+
 // ## Draw status bar
 // This function draws the status bar on the screen
 // @param force: If true, force redraw of the status bar if false only redraw if time has changed
@@ -33,6 +34,8 @@ void drawStatusBar(bool force) {
         res.DrawImage(R_STATUSBAR_BACKGROUND);
         res.DrawImage(R_SIGNAL_STRENGTH, _signal);
         res.DrawImage(R_BATTERY_CHARGE, charge);
+        int8_t wifi = hw->getWifiStrength();
+        if (wifi >= 0 && wifi <= 4) { res.DrawImage(R_STATUSBAR_NETWORK, NSB_WIFI_0 + wifi); }
         //  tft.print(NString(charge) + NString("%"));
         changeFont(1);
         tft.setTextSize(1);
@@ -47,7 +50,8 @@ void drawStatusBar(bool force) {
             tft.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
         }
         tft.setRenderTarget(before);
-        currentRenderTarget->pushBuffer(0, 0, buf->getWidth(), buf->getHeight(), buf->getBuffer(), 0, 0);
+        currentRenderTarget->pushBuffer(0, 0, buf->getWidth(), buf->getHeight(), buf->getBuffer(),
+                                        0, 0);
         currentRenderTarget->present();
         tft.setViewport(vp);
         tft.setTextSize(textSize);

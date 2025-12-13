@@ -28,8 +28,8 @@ void SaveTime(time_t time) {
 
     preferences.end();
 
-    time_t         t    = time;
-    struct timeval data = {t, 0};
+   // time_t         t    = time;
+   // struct timeval data = {t, 0};
     systemTimeInfo      = *gmtime(&time);
     // Serial.printf("\nSTI %d:%d, TIME: %d:%d\n", systemTimeInfo.tm_hour, systemTimeInfo.tm_min,
     // tm_time.tm_hour, tm_time.tm_min);

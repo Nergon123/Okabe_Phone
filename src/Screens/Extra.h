@@ -6,6 +6,7 @@
 #include "../Connectivity/_WiFi.h"
 #include "../GlobalVariables.h"
 #include "../System/Tasks.h"
+#include <Connectivity/OTA.h>
 #ifndef PC
 #include <Arduino.h>
 #include "esp_ota_ops.h"

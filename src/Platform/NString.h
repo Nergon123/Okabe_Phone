@@ -4,6 +4,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <stdint.h>
+#include <algorithm>
+
+// REMOVE ALL MACROS AND ATTRIBUTES
+// Use a namespace to avoid conflicts
+namespace Platform {
 
 class NString {
   public:
@@ -22,46 +28,46 @@ class NString {
     NString &operator=(const NString &)     = default;
     NString &operator=(NString &&) noexcept = default;
 
-    // concatenation helpers
-    NString &operator+=(const NString &o) {
-        s_.append(o.s_);
-        return *this;
+    NString& operator+=(const NString&);
+    NString& operator+=(const char*);
+    NString& operator+=(char);
+
+    // Use member function operators instead of friends
+    NString operator+(const NString& other) const {
+        return NString(s_ + other.s_);
     }
-    NString &operator+=(const char *c) {
-        if (c) { s_.append(c); }
-        return *this;
+    
+    NString operator+(const char* other) const {
+        return NString(s_ + (other ? other : ""));
     }
-    NString &operator+=(char c) {
-        s_.push_back(c);
-        return *this;
+    
+    NString operator+(char other) const {
+        return NString(s_ + other);
     }
 
-    friend NString operator+(const NString &a, const NString &b) { return NString(a.s_ + b.s_); }
-    friend NString operator+(const NString &a, const char *b) {
-        return NString(a.s_ + (b ? b : ""));
+    // Comparison operators as member functions
+    bool operator==(const NString& other) const {
+        return s_ == other.s_;
     }
-    friend NString operator+(const char *a, const NString &b) {
-        return NString((a ? a : "") + b.s_);
+    
+    bool operator==(const char* other) const {
+        return s_ == (other ? other : "");
     }
-    friend NString operator+(const NString &a, char b) {
-        return NString(a.s_ + std::string(1, b));
+    
+    bool operator!=(const NString& other) const {
+        return !(*this == other);
     }
-
-    // Add comparison operators after other friend operators
-    friend bool operator==(const NString& a, const NString& b) { return a.s_ == b.s_; }
-    friend bool operator==(const NString& a, const char* b) { return a.s_ == (b ? b : ""); }
-    friend bool operator==(const char* a, const NString& b) { return (a ? a : "") == b.s_; }
-
-    friend bool operator!=(const NString& a, const NString& b) { return !(a == b); }
-    friend bool operator!=(const NString& a, const char* b) { return !(a == b); }
-    friend bool operator!=(const char* a, const NString& b) { return !(a == b); }
+    
+    bool operator!=(const char* other) const {
+        return !(*this == other);
+    }
 
     // length and emptiness
     unsigned long length() const { return (unsigned long)s_.size(); }
     bool          isEmpty() const { return s_.empty(); }
 
     // substring
-    NString substring(ulong from, ulong to) const {
+    NString substring(unsigned long from, unsigned long to) const {
         if (from >= s_.size()) { return NString(); }
         if (to > s_.size()) { to = s_.size(); }
         if (to <= from) { return NString(); }
@@ -69,7 +75,7 @@ class NString {
     }
     NString substring(unsigned long from) const {
         if (from >= s_.size()) { return NString(); }
-        ulong to = s_.size();
+        unsigned long to = s_.size();
         if (to <= from) { return NString(); }
         return NString(s_.substr(from, to - from));
     }
@@ -161,3 +167,35 @@ class NString {
   private:
     std::string s_;
 };
+
+// Global operators INSIDE THE NAMESPACE
+inline NString operator+(const char* a, const NString& b) {
+    return NString(a ? a : "") + b;
+}
+
+inline bool operator==(const char* a, const NString& b) {
+    return (a ? a : "") == b.stdstr();
+}
+
+inline bool operator!=(const char* a, const NString& b) {
+    return !(a == b);
+}
+
+// += operators
+inline NString& NString::operator+=(const NString& o) {
+    s_ += o.s_;
+    return *this;
+}
+
+inline NString& NString::operator+=(const char* c) {
+    if (c) s_ += c;
+    return *this;
+}
+
+inline NString& NString::operator+=(char c) {
+    s_ += c;
+    return *this;
+}
+
+} // namespace Platform
+using Platform::NString; 

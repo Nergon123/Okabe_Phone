@@ -175,8 +175,8 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     // }
     ulong mil = hw->millis();
     pos       = -1;
-    int curx;
-    int cury;
+    int curx  = tft.getCursorX();
+    int cury  = tft.getCursorY();
     while (hw->millis() - mil < DIB_MS) {
         curx  = tft.getCursorX();
         cury  = tft.getCursorY();

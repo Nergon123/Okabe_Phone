@@ -189,11 +189,6 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
 void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
     if (!activeRenderTarget) return;
 
-    // Get current viewport offsets
-    Viewport vp = getViewport();
-    int16_t ox = vp.x;
-    int16_t oy = vp.y;
-
     // Classic 5x7 font
     if (!currentFont.isGFX) {
         unsigned char uc = static_cast<unsigned char>(c);

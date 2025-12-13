@@ -13,8 +13,8 @@ void execute_application() {
     NString file_path = fileBrowser("/", "bin");
     if (strcmp(file_path.c_str(), "")) { return; }
     tft.fillScreen(0);
-    std::vector<mOption> mOp = {{"Yes"}, {"No"}};
-    int     choice = listMenuNonGraphical(
+    std::vector<mOption> mOp    = {{"Yes"}, {"No"}};
+    int                  choice = listMenuNonGraphical(
         mOp, 2, "You are going to launch \"" + file_path + "\"! Are you sure about that?");
     if (choice) {
         sBarChanged = true;
@@ -69,19 +69,17 @@ void execute_application() {
 void e() {
     const NString menu[] = {
         "FileBrowser",
-        "Connect To WiFI"
+        "Connect To WiFI",
+        "OTA web update",
     };
     int choice = LISTMENU_NULL;
-    while (choice != LISTMENU_EXIT){
-        choice = listMenu(menu,ArraySize(menu),false,LM_SETTINGS,"Extra");
-        switch(choice){
-            case 0:
-                ESP_LOGI("E","PATH: %s",fileBrowser().c_str());
-                break;
-            case 1:
-                WiFiList();
-                break;
+    while (choice != LISTMENU_EXIT) {
+        choice = listMenu(menu, ArraySize(menu), false, LM_SETTINGS, "Extra");
+        switch (choice) {
+        case 0: ESP_LOGI("E", "PATH: %s", fileBrowser().c_str()); break;
+        case 1: WiFiList(); break;
+        case 2: OTAactivity(); break;
         }
     };
-    currentScreen  = SCREENS::MAINMENU;
+    currentScreen = SCREENS::MAINMENU;
 }

@@ -84,9 +84,7 @@ class DEV_ESP32 : public iHW {
     void  setCPUSpeed(CPU_SPEED speed) override {
         // setCpuFrequencyMhz(FAST_CPU_FREQ_MHZ);
     };
-    CPU_SPEED getCPUSpeed() override {
-
-    };
+    CPU_SPEED   getCPUSpeed() override { return CPU_DEFAULT; };
     const char* getDeviceName() override { return ESP.getChipModel(); };
     void        shutdown() override { reboot(); };
     void        reboot() override { ESP.restart(); };
@@ -95,6 +93,15 @@ class DEV_ESP32 : public iHW {
     char getCharInput() override {
         if (Serial.available()) { return Serial.read(); }
         return 0;
+    };
+    int getWifiStrength() override {
+        if (WiFi.status() != WL_CONNECTED) { return -1; }
+        int8_t rssi = WiFi.RSSI();
+    if (rssi >= -50) return 4;
+    if (rssi >= -60) return 3;
+    if (rssi >= -70) return 2;
+    if (rssi >= -80) return 1;
+    return 0;
     };
     int getKeyInput() override {
         if (!keypad_exists) { return 0; }
@@ -166,7 +173,7 @@ class DEV_ESP32 : public iHW {
         ulong old_millis = hw->millis();
         while ((!getKeyInput() && !getCharInput())) {
             delay(50);
-            if (!NI_delay(old_millis,5000)) { break; }
+            if (!NI_delay(old_millis, 5000)) { break; }
         };
         tft.fillScreen(0);
     }

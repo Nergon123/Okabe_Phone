@@ -26,4 +26,11 @@ enum LIST_ICONS {
     LM_ICO_AUDIO            = 5,
     LM_ICO_THEME            = 6,
     LM_ICO_TEXT             = 7,
+    LM_ICO_CHECK_UNCHECKED  = 8,
+    LM_ICO_CHECK_CHECKED    = 9,
+    LM_ICO_WIRELESS_0       = 10,
+    LM_ICO_WIRELESS_1       = 11,
+    LM_ICO_WIRELESS_2       = 12,
+    LM_ICO_WIRELESS_3       = 13,
+    LM_ICO_WIRELESS_4       = 14,
 };
