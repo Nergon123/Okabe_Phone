@@ -336,6 +336,7 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
 }
 
 void bootText(NString text, int x, int y, int w, int h) {
+    ESP_LOGI("BOOT","%s",text.c_str());
     if (lastpercentage == 100) { return; }
     tft.setTextFont(0);
     tft.setTextSize(1);

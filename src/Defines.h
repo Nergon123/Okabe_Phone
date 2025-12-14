@@ -1,6 +1,6 @@
 #pragma once
-
-#define FIRMVER         "0.1.6 ALPHA"
+#define HOSTNAME        "okabe_phone"
+#define FIRMVER         "0.2.0 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 
 #define LISTMENU_NULL    -3
@@ -37,8 +37,6 @@
 #endif
 
 #define NI_delay(old_millis, ms) (hw->millis() - old_millis < ms)
-
-
 
 // delay between SIM card checks
 #define DBC_MS 5000
@@ -108,4 +106,3 @@ enum buttons {
 #define FONT2 FreeSansBold9pt7b
 #define FONT3 FreeMono9pt7b
 #define FONT4 FreeSans12pt7b
-

@@ -6,7 +6,6 @@
 #else
 #include <Arduino.h>
 #include <MCP23017.h>
-#include <PNGdec.h>
 #include <TFT_eSPI.h>
 #endif
 #include "Platform/FileSystem/VFS.h"

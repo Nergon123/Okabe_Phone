@@ -1,5 +1,6 @@
 #pragma once
 #include "RenderTargets.h"
+#include <Platform/ESP32Memory.h>
 #include <cstdint>
 #include <cstring>
 
@@ -8,7 +9,7 @@ class RGB565BufferRenderTarget : public RenderTarget {
     RGB565BufferRenderTarget(int16_t w, int16_t h)
         : RenderTarget(RENDER_TARGET_TYPE_BUFFER, w, h, nullptr) {
         size_t sz = static_cast<size_t>(w) * static_cast<size_t>(h);
-        buffer    = (sz > 0) ? new uint16_t[sz] : nullptr;
+        buffer    = (sz > 0) ? (uint16_t *)ps_malloc(sz * sizeof(uint16_t)) : nullptr;
         if (buffer) { std::memset(buffer, 0, sz * sizeof(uint16_t)); }
 
         vp = {0, 0, w, h};
@@ -36,11 +37,10 @@ class RGB565BufferRenderTarget : public RenderTarget {
         windowW = w;
         windowH = h;
 
-
-            if (windowX < vp.x) { windowX = vp.x; }
-            if (windowY < vp.y) { windowY = vp.y; }
-            if (windowX + windowW > vp.x + vp.w) { windowW = (vp.x + vp.w) - windowX; }
-            if (windowY + windowH > vp.y + vp.h) { windowH = (vp.y + vp.h) - windowY; }
+        if (windowX < vp.x) { windowX = vp.x; }
+        if (windowY < vp.y) { windowY = vp.y; }
+        if (windowX + windowW > vp.x + vp.w) { windowW = (vp.x + vp.w) - windowX; }
+        if (windowY + windowH > vp.y + vp.h) { windowH = (vp.y + vp.h) - windowY; }
     }
 
     void writeColor(uint16_t color, uint32_t len) override {

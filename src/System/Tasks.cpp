@@ -2,20 +2,6 @@
 
 void suspendCore(bool suspend) { (void)suspend; };
 
-// #ifndef PC
-// TaskHandle_t TaskHCommand;
-// // Function to suspend/resume the freeRTOS task on core 0
-// // @param suspend: true to suspend the task, false to resume it
-// void suspendCore(bool suspend) {
-//     if (TaskHCommand) {
-//         if (suspend) {
-//             vTaskSuspend(TaskHCommand);
-//             simIsBusy = false;
-//         }
-//         else { vTaskResume(TaskHCommand); }
-//     }
-// }
-//
 // Function to handle the idle task
 void TaskIdleHandler(void *parameter) {
 

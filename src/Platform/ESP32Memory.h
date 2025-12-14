@@ -4,7 +4,7 @@
 #include <cstdlib>
 
 inline bool psramFound() {
-    return false;
+    return true;
 }
 
 inline void* ps_malloc(size_t size) {

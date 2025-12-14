@@ -9,17 +9,15 @@
  */
 void execute_application() {
 #ifndef PC
-    suspendCore(true);
     NString file_path = fileBrowser("/", "bin");
-    if (strcmp(file_path.c_str(), "")) { return; }
+    if (file_path.isEmpty()) { return; }
     tft.fillScreen(0);
     std::vector<mOption> mOp    = {{"Yes"}, {"No"}};
     int                  choice = listMenuNonGraphical(
-        mOp, 2, "You are going to launch \"" + file_path + "\"! Are you sure about that?");
+        mOp, 2, "You are going to boot \"" + file_path + "\"! Are you sure about that?");
     if (choice) {
         sBarChanged = true;
         drawStatusBar();
-        suspendCore(false);
         return;
     }
     tft.fillScreen(0);
@@ -29,14 +27,13 @@ void execute_application() {
     tft.println("BOOTING INTO APPLICATION...");
     NFile* file = VFS.open(file_path.c_str(), FILE_READ);
     if (!file) {
-        ESP_LOGE("ERROR", "Failed to open file!");
+        ESP_LOGE("EXEC", "Failed to open file!");
         return;
     }
 
-    const esp_partition_t* partition =
-        esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, "app1");
+    const esp_partition_t* partition =  esp_ota_get_next_update_partition(NULL);
     if (!partition) {
-        ESP_LOGE("ERROR", "Partition not found!");
+        ESP_LOGE("EXEC", "Partition not found!");
         return;
     }
 
@@ -71,6 +68,7 @@ void e() {
         "FileBrowser",
         "Connect To WiFI",
         "OTA web update",
+        "Boot application"
     };
     int choice = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {

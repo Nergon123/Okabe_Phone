@@ -8,6 +8,22 @@
 #include "System/Time.h"
 #include "init.h"
 
+
+#ifdef IDF_VER
+extern "C" void app_main(void)
+{
+    initArduino();
+
+    setup();
+
+    while (true) {
+        loop();
+        vTaskDelay(1);
+    }
+}
+#endif
+
+
 int start() {
 #ifdef __LINUX__
     hw = new DEV_LINUX();

@@ -13,3 +13,5 @@ PLAN.MD
 *.nph
 **/test_formats/
 *.cfg
+build/
+*.old

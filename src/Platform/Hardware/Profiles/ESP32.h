@@ -39,6 +39,7 @@ MCP23017 mcp(MCP23017_ADDR);
 class DEV_ESP32 : public iHW {
   public:
     void init() override {
+        WiFi.setHostname(HOSTNAME);
         esp_task_wdt_deinit();
         esp_task_wdt_init(10000, false);
         esp_log_level_set("ledc", ESP_LOG_NONE); // brightness logger
@@ -71,7 +72,7 @@ class DEV_ESP32 : public iHW {
         SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
         ESP_LOGI("SD", "SPI started");
         bootText("Initializing SDCard...");
-        sdcard_exists       = initSDcard(true);
+        sdcard_exists       = false;//initSDcard(true);
         IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
         IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
         if (sdcard_exists) { VFS.mount("/sd", sdcard); }
@@ -187,9 +188,11 @@ class DEV_ESP32 : public iHW {
         uint32_t freq  = fast ? FAST_SD_FREQ : SAFE_SD_FREQ;
         int      tries = 0;
 
+        if(!SD.begin(SD_CS,SPI,SAFE_SD_FREQ))return false;
+
         while (tries < 5) {
             if (freq >= getCpuFrequencyMhz() * 1000000) { freq /= 4; }
-            ESP_LOGI("SD", "TRYING %lu Hz", freq);
+            ESP_LOGI("SD", "TRYING %u Hz", freq);
 
             if (SD.begin(SD_CS, SPI, freq)) {
                 IFileSystem* sd = new Esp32FileSystem(&SD, FS_EXTERNAL);

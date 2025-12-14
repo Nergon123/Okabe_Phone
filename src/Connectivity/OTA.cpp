@@ -2,40 +2,65 @@
 #ifdef ARDUINO
 WebServer server(80);
 WebOTA    ota(server);
+
+void WebOTATask(void* param) {
+    WebServer* server = (WebServer*)param;
+    while (true) {
+        server->handleClient();
+        vTaskDelay(1); // yield to watchdog
+    }
+    vTaskDelete(NULL);
+}
 #endif
+
 void OTAactivity() {
 #ifdef ARDUINO
     if (WiFi.status() != WL_CONNECTED) {
         ErrorWindow("WiFi is Not Connected");
         return;
-    };
-    // Set device info for OTA update
+    }
+
     tft.fillScreen(0);
     ota.setDeviceInfo(String(FIRMVER), "OkabePhone");
     tft.setCursor(0, 50);
     tft.setTextColor(TFT_WHITE);
     tft.setTextFont(0);
     tft.printf("WAITING FOR OTA\nhttp://%s/update", WiFi.localIP().toString().c_str());
+
     // Callbacks
-    ota.onStart([](const String &filename) {
+    ota.onStart([](const String& filename) {
         tft.fillScreen(0);
-        bootText(NString("Start updating ") + NString(filename.c_str()));
+        tft.setCursor(0, 50);
+        tft.printf("Update Started %s\n", filename.c_str());
     });
-    bool once = false ;ota.onProgress([&](size_t current, size_t total) {
-        if (!once) {
-            bootText("Updating...",-1,180);
-            once = true;
-        }
+    ota.onProgress([&](size_t current, size_t total) {
         progressBar((int)current, (int)total, 230, 8, TFT_WHITE, false, true);
     });
-    ota.onEnd([]() { bootText("Update finished"); });
-    ota.onError([](int err) { bootText("[OTA] Error: %d\n", err); });
+    ota.onEnd([]() {
+        tft.setTextColor(TFT_GREEN);
+        tft.printf("Update Finished\n");
+    });
+    ota.onError([](int err) {
+        tft.setTextColor(TFT_RED);
+        tft.printf("OTA ERROR %d\n", err);
+        tft.setTextColor(TFT_WHITE);
+    });
 
     ota.begin();
     server.begin();
+
+    // This thing need more stack for some reason
+    TaskHandle_t* update = NULL;
+    xTaskCreate(WebOTATask, "WebOTATask", 16384, &server, 1, update);
+
     while (true) {
-        server.handleClient();
-        if (buttonsHelding(false) == BACK) { return; }
+        if (buttonsHelding(false) == BACK) {
+            if (update /*what if it will be null and whole application will be killed T_T*/) {
+                vTaskDelete(update);
+            }
+            break;
+        }
+        delay(1); // yield
     }
 #else
     ErrorWindow("Not supported on current platform...");
