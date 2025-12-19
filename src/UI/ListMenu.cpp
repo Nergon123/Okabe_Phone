@@ -1,8 +1,8 @@
 #include "ListMenu.h"
-#include "../Platform/ESP32Memory.h"
+#include "Platform/ESP32Memory.h"
 
-#include "../Platform/Graphics/RGB565BufferRenderTarget.h"
-#include "../System/FontManagement.h"
+#include "Platform/Graphics/RGB565BufferRenderTarget.h"
+#include "System/FontManagement.h"
 
 bool          lm_buffer = LISTMENU_BUFFER;
 RenderTarget *lm_buffer_obj;
@@ -140,7 +140,7 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
         x += icon.width;
     }
     else if (forceIcons) { x += entry_size; }
-    selected = findex;
+    if (findex >= 0 && findex < icount) { selected = findex; }
 
     int per_page = 269 / entry_size;
     pages        = (icount + per_page - 1) / per_page;

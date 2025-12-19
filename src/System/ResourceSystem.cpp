@@ -1,5 +1,5 @@
 #include "ResourceSystem.h"
-#include "../Platform/ESP32Memory.h"
+#include "Platform/ESP32Memory.h"
 #include "Generic.h"
 Coords czero = {0, 0};
 Coords cnone = {-1, -1};

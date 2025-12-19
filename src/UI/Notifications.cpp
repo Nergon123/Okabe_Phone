@@ -1,5 +1,5 @@
 #include "Notifications.h"
-#include "../System/ResourceSystem.h"
+#include "System/ResourceSystem.h"
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "Platform/Graphics/RenderTargets.h"
 

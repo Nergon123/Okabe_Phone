@@ -1,5 +1,5 @@
 #include "Generic.h"
-#include "../Platform/ESP32Memory.h"
+#include "Platform/ESP32Memory.h"
 /*
  * Get the current charge level of the battery
  * @return `int`: 0-3 of 3

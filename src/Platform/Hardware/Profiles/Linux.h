@@ -1,4 +1,4 @@
-#include "../Hardware.h"
+#include "Platform/Hardware/Hardware.h"
 #ifdef PC
 #include <Platform/Graphics/SDL2RenderTarget.h>
 #include <SDL2/SDL.h>

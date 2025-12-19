@@ -1,5 +1,5 @@
 #pragma once
-#include "../GlobalVariables.h"
+#include "GlobalVariables.h"
 #include "Extra.h"
 #include "Messages.h"
 #include "Phone.h"

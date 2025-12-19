@@ -14,7 +14,6 @@ const uint16_t clr_background = TFT_WHITE;
 //  @param h: Button height
 //  @param selected: Boolean indicating if the button is selected
 //  @param direction: Pointer to the direction variable
-//  @return: Boolean indicating if the button was pressed
 bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int *direction) {
 
     tft.fillRect(xpos, ypos, w, h, clr_background);
@@ -30,11 +29,11 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
 
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title.c_str());
-
+    bool pressed = false;
     if (selected) {
         while (true) {
             *direction = buttonsHelding();
-
+            pressed    = *direction == SELECT;
             if (*direction != -1) { break; }
         }
     }
@@ -45,8 +44,7 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
     tft.setCursor(xpos + x, ypos + y);
     changeFont(1);
     tft.print(title);
-
-    return false;
+    return pressed;
 }
 
 // Input field for numbers
@@ -267,6 +265,72 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     return content;
 }
 
+
+// ## Dynamic Input Field Screen
+bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selected,
+                 NString confirmbtn, NString cancelbtn) {
+    res.DrawImage(R_LIST_MENU_BACKGROUND);
+    res.DrawImage(R_LIST_HEADER_BACKGROUND);
+    res.DrawImage(R_LIST_HEADER_ICONS, LM_SETTINGS);
+    drawStatusBar();
+    tft.setCursor(30, 45);
+    tft.setTextSize(1);
+    changeFont(1);
+    tft.setTextColor(0xffff);
+    tft.print(title);
+    int spacing   = 50;
+    int ystart    = 70;
+    int direction = -1;
+    button(confirmbtn, 10, 285, 100, 28);
+    button(cancelbtn, 120, 285, 100, 28);
+    for (int i = 0; i < fields.size(); i++) {
+        fields.at(i).notConfirmed = fields.at(i).resultstr;
+        InputField(fields.at(i).name, fields.at(i).notConfirmed, ystart + spacing * i, 1, 0, 0);
+    }
+    while (true) {
+        if (selected >= 0 && selected < fields.size()) {
+            FIELD &currentField = fields.at(selected);
+
+            currentField.notConfirmed = InputField(currentField.name, currentField.notConfirmed,
+                                                   ystart + spacing * selected, false, 1, 1,
+                                                   &direction, currentField.OnlyNumbers);
+        }
+        else if (selected < fields.size() + 2) {
+
+            if (button(confirmbtn, 10, 285, 100, 28, selected == fields.size(), &direction)) {
+                for (int i = 0; i < fields.size(); i++) {
+                    fields.at(i).resultstr = fields.at(i).notConfirmed;
+                }
+                return true;
+            }
+
+            if (button(cancelbtn, 120, 285, 100, 28, selected == fields.size() + 1, &direction)) {
+                return false;
+            };
+        }
+        switch (direction) {
+        case UP:
+            if (selected > 0) { selected--; }
+            else { selected = fields.size() + 1; }
+            break;
+        case DOWN:
+            if (selected < fields.size() + 2) { selected++; }
+            else { selected = 0; }
+            break;
+        case LEFT:
+            if (selected > 0) { selected--; }
+            else { selected = fields.size() + 1; }
+            break;
+
+        case RIGHT:
+            if (selected < fields.size() + 2) { selected++; }
+            else { selected = 0; }
+            break;
+        case BACK: return false;
+        }
+    }
+}
+
 // Animation of spinning circles in rectangle, used in outgoing call
 // @param x: X position on the screen
 // @param y: Y position on the screen
@@ -336,7 +400,7 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
 }
 
 void bootText(NString text, int x, int y, int w, int h) {
-    ESP_LOGI("BOOT","%s",text.c_str());
+    ESP_LOGI("BOOT", "%s", text.c_str());
     if (lastpercentage == 100) { return; }
     tft.setTextFont(0);
     tft.setTextSize(1);

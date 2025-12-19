@@ -210,80 +210,15 @@ void contactss() {
  * @param contact Contact object containing contact information
  */
 void editContact(Contact contact) {
-    int pos       = 0;
-    int textboxes = 2;
-    int buttons   = 2;
-    int direction;
-
-    res.DrawImage(R_LIST_MENU_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_ICONS, LM_CONTACTS);
-    drawStatusBar();
-    tft.setCursor(30, 45);
-    tft.setTextSize(1);
-    changeFont(1);
-    tft.setTextColor(0xffff);
-    NString boxString[textboxes] = {contact.name, contact.phone};
-    tft.print("Edit Contact");
-    InputField("Name", contact.name, 70, true, false, false);
-    InputField("Phone Number", contact.phone, 120, true, false, false);
-
-    button("SAVE", 10, 285, 100, 28);
-    button("CANCEL", 120, 285, 100, 28);
-    while (true) {
-        switch (pos) {
-        case 0:
-            boxString[pos] =
-                InputField("Name", boxString[pos], 70, false, false, true, &direction);
-            break;
-        case 1:
-            boxString[pos] = InputField("Phone Number", boxString[pos], 120, false, false, true,
-                                        &direction, true);
-            break;
-        case 2:
-            direction = 0;
-            button("SAVE", 10, 285, 100, 28, true, &direction);
-            if (direction == SELECT) {
-                if (boxString[1].isEmpty()) { break; }
-                if (boxString[0].isEmpty()) { boxString[0] = boxString[1]; }
-
-                sendATCommand("AT+CPBS=\"SM\"");
-                NString request = "AT+CPBW=" + NString(contact.index) + ",\"" + boxString[1] +
-                                  "\"," + NString(boxString[1].indexOf("+") == 0 ? 145 : 129) +
-                                  ",\"" + boxString[0] + "\"";
-                NString result = sendATCommand(request);
-                populateContacts();
-                return;
-            }
-
-            break;
-        case 3:
-            direction = 0;
-            button("CANCEL", 120, 285, 100, 28, true, &direction);
-            if (direction == SELECT) { return; }
-            break;
-        default: pos = 0; break;
-        }
-        switch (direction) {
-        case DOWN:
-            if (pos < textboxes) { pos++; }
-            else if (pos < textboxes + buttons)
-                ;
-            else { pos = 0; }
-            break;
-        case UP:
-            if (pos > textboxes) { pos = textboxes - 1; }
-
-            else if (pos > 0) { pos--; }
-
-            break;
-        default: break;
-        case RIGHT:
-            if (pos < textboxes + buttons - 1) { pos++; }
-            break;
-        case LEFT:
-            if (pos > textboxes) { pos--; }
-            break;
-        }
-    }
+    std::vector<FIELD> fields = {FIELD("Name", contact.name, false),
+                                 FIELD("Number", contact.phone, true)};
+    if (!InputFieldS("Edit Contact", fields, LM_CONTACTS, 0, "Save", "Cancel")) { return; }
+    if (contact.phone.isEmpty()) { return; }
+    if (contact.name.isEmpty()) { contact.name = contact.phone; }
+    sendATCommand("AT+CPBS=\"SM\"");
+    NString request = "AT+CPBW=" + NString(contact.index) + ",\"" + contact.phone + "\"," +
+                      NString(contact.phone.indexOf("+") == 0 ? 145 : 129) + ",\"" + contact.name +
+                      "\"";
+    NString result = sendATCommand(request);
+    populateContacts();
 }

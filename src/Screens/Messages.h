@@ -1,5 +1,5 @@
 #pragma once
-#include "../GlobalVariables.h"
+#include "GlobalVariables.h"
 void messages();
 void inbox(bool outbox);
 bool messageActivity(Contact contact, NString date = "", NString subject = "", NString content = "", int index = -1, bool outcoming = false, bool sms = true);

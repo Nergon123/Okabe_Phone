@@ -1,11 +1,11 @@
 #pragma once
-#include "../GlobalVariables.h"
-#include "../Input/Input.h"
+#include "GlobalVariables.h"
+#include "Input/Input.h"
 
-#include "../System/FontManagement.h"
-#include "../System/TextManipulation.h"
-#include "../System/Time.h"
-#include "../UI/UIElements.h"
+#include "System/FontManagement.h"
+#include "System/TextManipulation.h"
+#include "System/Time.h"
+#include "UI/UIElements.h"
 
 enum NetworkStatusBarIcons {
     NSB_WIFI_0       = 0,

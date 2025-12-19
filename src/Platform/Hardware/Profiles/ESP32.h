@@ -1,7 +1,7 @@
 #pragma once
-#include "../Hardware.h"
+#include "Platform/Hardware/Hardware.h"
 #ifndef PC
-#include "../Drivers/Battery/IP5306.h"
+#include "Platform/Hardware/Drivers/Battery/IP5306.h"
 #include <Esp.h>
 #include <MCP23017.h>
 #include <Platform/FileSystem/ESP.h>

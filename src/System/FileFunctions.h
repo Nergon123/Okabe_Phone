@@ -1,4 +1,4 @@
-#include "../UI/Notifications.h"
+#include "UI/Notifications.h"
 #include "Files.h"
 #include "GlobalVariables.h"
 typedef bool (*FileFunc)(NFile* file);

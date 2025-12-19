@@ -1,5 +1,5 @@
 #pragma once
-#include "../GlobalVariables.h"
+#include "GlobalVariables.h"
 #include <vector>
 
 unsigned int getIndexOfCount(int count, NString input, NString str, unsigned int fromIndex = 0);

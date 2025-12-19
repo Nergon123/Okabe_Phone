@@ -1,9 +1,9 @@
 #include "Messages.h"
-#include "../GlobalVariables.h"
-#include "../Input/Input.h"
-#include "../System/TextManipulation.h"
-#include "../UI/ListMenu.h"
-#include "../UI/UIElements.h"
+#include "GlobalVariables.h"
+#include "Input/Input.h"
+#include "System/TextManipulation.h"
+#include "UI/ListMenu.h"
+#include "UI/UIElements.h"
 #include <Platform/Graphics/RGB565BufferRenderTarget.h>
 #include <algorithm>
 // Parse SMS messages from SIM Card

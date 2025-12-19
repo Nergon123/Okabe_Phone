@@ -1,8 +1,8 @@
 #pragma once
-#include "../Input/Input.h"
-#include "../GlobalVariables.h"
-#include "../Connectivity/SIM.h"
-#include "../System/FontManagement.h"
+#include "Input/Input.h"
+#include "GlobalVariables.h"
+#include "Connectivity/SIM.h"
+#include "System/FontManagement.h"
 
 struct Contact;
 void makeCall(Contact contact);

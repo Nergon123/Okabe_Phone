@@ -1,6 +1,6 @@
 #pragma once
-#include "../Connectivity/SIM.h"
-#include "../GlobalVariables.h"
+#include "Connectivity/SIM.h"
+#include "GlobalVariables.h"
 #ifdef INC_FREERTOS_H
 extern TaskHandle_t TaskHCommand;
 #elif defined(PC)

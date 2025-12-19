@@ -1,12 +1,11 @@
 #pragma once
-#include "../GlobalVariables.h"
-#include "../Input/Input.h"
+#include "GlobalVariables.h"
+#include "Input/Input.h"
 
-#include "../System/Generic.h"
-#include "../System/TextManipulation.h"
-#include "../UI/UIElements.h"
+#include "System/Generic.h"
+#include "System/TextManipulation.h"
+#include "UI/UIElements.h"
 
-class SIMCARD {};
 
 void    AT_test();
 NString sendATCommand(NString command, uint32_t timeout = 1000, bool background = false);
