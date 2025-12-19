@@ -72,7 +72,7 @@ class DEV_ESP32 : public iHW {
         SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
         ESP_LOGI("SD", "SPI started");
         bootText("Initializing SDCard...");
-        sdcard_exists       = false;//initSDcard(true);
+        sdcard_exists       = false; // initSDcard(true);
         IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
         IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
         if (sdcard_exists) { VFS.mount("/sd", sdcard); }
@@ -96,13 +96,13 @@ class DEV_ESP32 : public iHW {
         return 0;
     };
     int getWifiStrength() override {
-        if (WiFi.status() != WL_CONNECTED) { return -1; }
+        if (WiFi.getMode() == WIFI_MODE_NULL) { return -1; }
+        if (WiFi.status() != WL_CONNECTED) { return 0; }
         int8_t rssi = WiFi.RSSI();
-    if (rssi >= -50) return 4;
-    if (rssi >= -60) return 3;
-    if (rssi >= -70) return 2;
-    if (rssi >= -80) return 1;
-    return 0;
+        if (rssi >= -50) { return 4; }
+        if (rssi >= -60) { return 3; }
+        if (rssi >= -70) { return 2; }
+        return 1;
     };
     int getKeyInput() override {
         if (!keypad_exists) { return 0; }
@@ -188,7 +188,7 @@ class DEV_ESP32 : public iHW {
         uint32_t freq  = fast ? FAST_SD_FREQ : SAFE_SD_FREQ;
         int      tries = 0;
 
-        if(!SD.begin(SD_CS,SPI,SAFE_SD_FREQ))return false;
+        if (!SD.begin(SD_CS, SPI, SAFE_SD_FREQ)) { return false; }
 
         while (tries < 5) {
             if (freq >= getCpuFrequencyMhz() * 1000000) { freq /= 4; }

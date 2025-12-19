@@ -8,9 +8,9 @@ class RGB565BufferRenderTarget : public RenderTarget {
   public:
     RGB565BufferRenderTarget(int16_t w, int16_t h)
         : RenderTarget(RENDER_TARGET_TYPE_BUFFER, w, h, nullptr) {
-        size_t sz = static_cast<size_t>(w) * static_cast<size_t>(h);
-        buffer    = (sz > 0) ? (uint16_t *)ps_malloc(sz * sizeof(uint16_t)) : nullptr;
-        if (buffer) { std::memset(buffer, 0, sz * sizeof(uint16_t)); }
+        bufferSize = static_cast<size_t>(w) * static_cast<size_t>(h);
+        buffer    = (bufferSize > 0) ? (uint16_t *)ps_malloc(bufferSize * sizeof(uint16_t)) : nullptr;
+        if (buffer) { std::memset(buffer, 0, bufferSize * sizeof(uint16_t)); }
 
         vp = {0, 0, w, h};
     }
@@ -45,6 +45,7 @@ class RGB565BufferRenderTarget : public RenderTarget {
 
     void writeColor(uint16_t color, uint32_t len) override {
         color = (color >> 8) | (color << 8);
+        if (windowW <= 0 || windowH <= 0) { return; }
         if (len > (uint32_t)windowW * windowH) { len = windowW * windowH; }
 
         for (uint32_t i = 0; i < len; ++i) {
@@ -54,6 +55,8 @@ class RGB565BufferRenderTarget : public RenderTarget {
             if ((px < vp.x || py < vp.y || px >= vp.x + vp.w || py >= vp.y + vp.h)) { continue; }
 
             if (px < 0 || py < 0 || px >= width || py >= height) { continue; }
+            uint32_t position = py*width+px;
+            if(position>=bufferSize)return;
             buffer[py * width + px] = color;
         }
     }
@@ -91,6 +94,7 @@ class RGB565BufferRenderTarget : public RenderTarget {
   private:
     int16_t  windowX = 0, windowY = 0, windowW = 0, windowH = 0;
     Viewport vp;
+    size_t bufferSize;
 };
 
 // Setup rgb565 BufferRenderTarget.

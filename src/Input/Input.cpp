@@ -258,6 +258,7 @@ int buttonsHelding(bool _idle) {
     }
 #endif
     if (_idle) { idle(); }
+    hw->delay(1); //watchdog feed
     char input = 0;
     input      = hw->getCharInput();
     int result = hw->getKeyInput();

@@ -82,6 +82,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
         return false;
     }
     else if (id == R_NULL_IMAGE) { return false; }
+    if (index >= img.count) { return false; } // out of array
     if (pos.x == OP_UNDEF) { pos.x = img.x; }
     if (pos.y == OP_UNDEF) { pos.y = img.y; }
     if (endpos.x <= 0) { endpos.x = img.width; }
@@ -110,7 +111,8 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
         ImageBuffer imageBuffer =
             GetRGB565(img, lines * img.width * 2, start + i * img.width * 2, type);
         if (!imageBuffer.pointer) {
-            sysError("/nDRAWIMAGE:Imagebuffer Pointer is null\nprobably no MALLOC_CAP_SPIRAM in menuconfig");
+            sysError("/nDRAWIMAGE:Imagebuffer Pointer is null\nprobably something wrong with "
+                     "SPIRAM/PSRAM");
             return false;
         }
         if (img.flags & 1 /*if transparent*/) {
@@ -136,8 +138,7 @@ ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start
     }
 
     buffer.freeNeeded = true;
-    if (psramFound()) { buffer.pointer = (uint16_t *)ps_malloc(size); }
-    else { buffer.pointer = (uint16_t *)malloc(size); }
+    buffer.pointer    = (uint16_t *)malloc(size);
 
     Files[type]->seek(img.offset + start);
     Files[type]->read(reinterpret_cast<uint8_t *>(buffer.pointer), size);
@@ -147,11 +148,11 @@ ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start
 
 void ResourceSystem::CopyToRam(uint8_t type) {
     bootText("Copying file to RAM...");
-  
+
     if (cache[type]) { free(cache[type]); }
     cache[type] = nullptr;
 #ifndef PC
-  ESP_LOGI("PSRAM", "Free %u bytes from %u required",
+    ESP_LOGI("PSRAM", "Free %u bytes from %u required",
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT), Files[type]->size());
     if (psramFound() &&
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) > Files[type]->size())

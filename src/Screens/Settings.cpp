@@ -2,39 +2,113 @@
 
 const int lastImage = 42;
 
-void graphTest() {
-#warning graphTest not implemented
-    int page   = 0;
-    int button = -1;
-    tft.fillScreen(0);
-    while (true) {
-        switch (page) {
-        case 0: break;
-        }
-        button = buttonsHelding();
-
-        switch (button) {
-        case LEFT: break;
-        case RIGHT: break;
-        case BACK: return;
+void debugMenu() {}
+#define WIFI_BIT_AP  0b01
+#define WIFI_BIT_STA 0b10
+#ifdef WiFi_h
+static wifi_mode_t bitsToWifiMode(uint8_t bits) {
+    if ((bits & WIFI_BIT_AP) && (bits & WIFI_BIT_STA)) { return WIFI_MODE_APSTA; }
+    if (bits & WIFI_BIT_AP) { return WIFI_MODE_AP; }
+    if (bits & WIFI_BIT_STA) { return WIFI_MODE_STA; }
+    return WIFI_MODE_NULL;
+}
+void WiFiSettings() {
+    std::vector<mOption> options = {
+        mOption("Auto Connect", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
+        mOption("Auto Reconnect", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
+        mOption("Set Hostname")};
+    int choice = LISTMENU_NULL;
+    while (choice != LISTMENU_EXIT) {
+        options.at(0).icon_index =
+            WiFi.getAutoConnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
+        options.at(1).icon_index =
+            WiFi.getAutoReconnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
+        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi Settings");
+        switch (choice) {
+        case 0: WiFi.setAutoConnect(!WiFi.getAutoConnect()); break;
+        case 1: WiFi.setAutoReconnect(!WiFi.getAutoReconnect()); break;
+        // SetHostname TODO Implement
+        case 2: ErrorWindow("Not Implemented"); break;
         }
     }
 }
-
-void debugMenu() {
-#warning debugMenu not implemented
-    NString dbgMenu[] = {"Graphics Test"};
-    int     choice    = LISTMENU_NULL;
-    while (choice < 0) {
-        choice = choiceMenu(dbgMenu, ArraySize(dbgMenu), false);
+void HotspotSettings() {
+    std::vector<mOption> options = {
+        mOption("Auto Connect", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
+        mOption("Auto Reconnect", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
+        mOption("Set Hostname")};
+    int choice = LISTMENU_NULL;
+    while (choice != LISTMENU_EXIT) {
+        options.at(0).icon_index =
+            WiFi.getAutoConnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
+        options.at(1).icon_index =
+            WiFi.getAutoReconnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
+        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi Settings");
         switch (choice) {
-        case 0: graphTest(); break;
+        case 0: WiFi.setAutoConnect(!WiFi.getAutoConnect()); break;
+        case 1: WiFi.setAutoReconnect(!WiFi.getAutoReconnect()); break;
+        // SetHostname TODO Implement
+        case 2: ErrorWindow("Not Implemented"); break;
         }
     }
-};
+}
+#endif
 
+void WiFiMenu() {
+#ifdef WiFi_h
+    std::vector<mOption> options = {
+        mOption("Wi-Fi", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
+        mOption("Wi-Fi Hotspot", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
+        mOption("Wi-Fi Settings"), mOption("Hotspot settings"), mOption("Scan WiFi networks")};
+    int choice = LISTMENU_NULL;
+    while (choice != LISTMENU_EXIT) {
+        uint8_t wifimode;
+
+        switch (WiFi.getMode()) {
+        case WIFI_MODE_NULL: wifimode = 0; break;
+        case WIFI_MODE_AP: wifimode = WIFI_BIT_AP; break;
+        case WIFI_MODE_STA: wifimode = WIFI_BIT_STA; break;
+        case WIFI_MODE_APSTA: wifimode = WIFI_BIT_AP | WIFI_BIT_STA; break;
+        default: wifimode = 0; break;
+        }
+        options.at(0).icon_index =
+            wifimode & WIFI_BIT_AP ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
+        options.at(1).icon_index =
+            wifimode & WIFI_BIT_STA ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
+        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi");
+        switch (choice) {
+        case 0: // toggle Wi-Fi
+            wifimode ^= WIFI_BIT_STA;
+            WiFi.mode(bitsToWifiMode(wifimode));
+            break;
+
+        case 1: // toggle Hotspot
+            wifimode ^= WIFI_BIT_AP;
+            WiFi.mode(bitsToWifiMode(wifimode));
+            break;
+        case 2: WiFiSettings(); break;
+        case 3: HotspotSettings(); break;
+        case 4: WiFiList(); break;
+        }
+    }
+#else
+    ErrorWindow("Not supported");
+
+#endif
+}
+void connectivityMenu() {
+    NString options[] = {
+        "Wi-Fi",
+    };
+    int selection = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        selection = choiceMenu(options, ArraySize(options), false);
+        switch (selection) {
+        case 0: WiFiMenu(); break;
+        }
+    }
+}
 void advancedSettings() {
-#warning advancedSettings not implemented
     NString options[] = {
         "System",
         "Connectivity",
@@ -45,12 +119,13 @@ void advancedSettings() {
     int     menuSelection = LISTMENU_NULL;
     NString laf_opts[]    = {"Change Theme"};
 
-    while (menuSelection != -1) {
+    while (menuSelection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
 
         menuSelection = choiceMenu(options, ArraySize(options), false);
         switch (menuSelection) {
+        case 1: connectivityMenu(); break;
         case 2: lookAndFeel = choiceMenu(laf_opts, ArraySize(laf_opts), false); break;
 
         default: return;
@@ -64,8 +139,8 @@ void advancedSettings() {
 void settings() {
     NString settingsOptions[] = {"Change Wallpaper", "Set call ringtone", "Set mail ringtone",
                                  "Advanced Settings"};
-    int     menuSelection     = -2;
-    while (menuSelection != -1) {
+    int     menuSelection     = LISTMENU_NULL;
+    while (menuSelection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
         menuSelection        = choiceMenu(settingsOptions, ArraySize(settingsOptions), false);

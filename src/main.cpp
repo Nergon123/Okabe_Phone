@@ -1,28 +1,28 @@
+#include "Screens/Main.h"
 #include "GlobalVariables.h"
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/Hardware/Profiles/ESP32.h"
 #include "Platform/Hardware/Profiles/Linux.h"
-#include "Screens/Main.h"
 #include "System/ResourceSystem.h"
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
 
-
 #ifdef IDF_VER
-extern "C" void app_main(void)
-{
-    initArduino();
-
-    setup();
-
+TaskHandle_t *TaskLoop_Handle;
+void          TaskLoop(void *) {
     while (true) {
         loop();
         vTaskDelay(1);
     }
 }
+extern "C" void app_main(void) {
+    initArduino();
+    setup();
+    xTaskCreate(TaskLoop, "TaskLoop", 20 * 1024, NULL, 2, TaskLoop_Handle);
+    vTaskDelete(NULL);
+}
 #endif
-
 
 int start() {
 #ifdef __LINUX__
@@ -60,9 +60,8 @@ int start() {
     initBackgroundTasks();
 
     ESP_LOGI("DEVICE",
-             FIRMVER
-             "\n\n Phone firmware written by Nergon123 and contributors\n\n "
-             "Resources located in %s\n",
+             FIRMVER "\n\n Phone firmware written by Nergon123 and contributors\n\n "
+                     "Resources located in %s\n",
              resPath.c_str());
 
     ESP_LOGI("DEVICE", "%s", hw->getDeviceName());
@@ -80,7 +79,7 @@ void setup() { start(); }
 void loop() { screens(); }
 
 #ifdef PC
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--scale") == 0) {
             if (argv[i + 1]) {

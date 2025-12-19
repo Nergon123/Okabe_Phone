@@ -83,6 +83,8 @@ void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint1
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
                          uint16_t transpColor) {
     if (activeRenderTarget) {
+        //probably should be fixed in ImageEditor
+        transpColor = (transpColor >> 8) | (transpColor << 8); 
         activeRenderTarget->pushBuffer(x, y, w, h, data, true, transpColor);
         activeRenderTarget->present();
     }
@@ -187,17 +189,15 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
 }
 
 void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
-    if (!activeRenderTarget) return;
+    if (!activeRenderTarget) { return; }
 
     // Classic 5x7 font
     if (!currentFont.isGFX) {
         unsigned char uc = static_cast<unsigned char>(c);
-        if (uc > 127) return;
+        if (uc > 127) { return; }
 
         // Draw opaque background if enabled
-        if (_textbgopaque) {
-            fillRect(x , y , 6 * textsize, 8 * textsize, _textbgcolor);
-        }
+        if (_textbgopaque) { fillRect(x, y, 6 * textsize, 8 * textsize, _textbgcolor); }
 
         for (int col = 0; col < 5; col++) {
             uint8_t line = font[uc * 5 + col];
@@ -217,15 +217,15 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
     }
 
     // GFX font
-    if (!currentFont.font) return;
+    if (!currentFont.font) { return; }
 
-    c -= currentFont.font->first;                   // glyph index
-    GFXglyph *glyph = &currentFont.font->glyph[(int)c];
+    c -= currentFont.font->first; // glyph index
+    GFXglyph *glyph  = &currentFont.font->glyph[(int)c];
     uint8_t  *bitmap = currentFont.font->bitmap;
-    uint32_t  bo = glyph->bitmapOffset;
+    uint32_t  bo     = glyph->bitmapOffset;
     uint8_t   w = glyph->width, h = glyph->height;
     int8_t    xo = glyph->xOffset, yo = glyph->yOffset;
-    int16_t   xo16 = xo, yo16 = yo;                // scaled offsets
+    int16_t   xo16 = xo, yo16 = yo; // scaled offsets
 
     if (textsize > 1) {
         xo16 = xo;
@@ -236,10 +236,10 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
     if (_textbgopaque) {
         uint16_t cellW = glyph->xAdvance * textsize;
         uint16_t cellH = currentFont.font->yAdvance * textsize;
-        fillRect(x, y - cellH , cellW, cellH, _textbgcolor);
+        fillRect(x, y - cellH, cellW, cellH, _textbgcolor);
     }
 
-    uint16_t hpc = 0;  // horizontal pixel count
+    uint16_t hpc  = 0; // horizontal pixel count
     uint8_t  bits = 0, bit = 0;
     for (uint8_t yy = 0; yy < h; yy++) {
         for (uint8_t xx = 0; xx < w; xx++) {
@@ -248,17 +248,13 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
                 bit  = 0x80;
             }
 
-            if (bits & bit) {
-                hpc++;
-            } else if (hpc) {
+            if (bits & bit) { hpc++; }
+            else if (hpc) {
                 // Draw accumulated horizontal pixels
                 int drawX = x + (xo16 + xx - hpc);
                 int drawY = y + (yo16 + yy);
-                if (textsize == 1) {
-                    drawFastHLine(drawX, drawY, hpc, textcolor);
-                } else {
-                    fillRect(drawX, drawY, hpc * textsize, textsize, textcolor);
-                }
+                if (textsize == 1) { drawFastHLine(drawX, drawY, hpc, textcolor); }
+                else { fillRect(drawX, drawY, hpc * textsize, textsize, textcolor); }
                 hpc = 0;
             }
 
@@ -269,11 +265,8 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
         if (hpc) {
             int drawX = x + (xo16 + w - hpc);
             int drawY = y + (yo16 + yy);
-            if (textsize == 1) {
-                drawFastHLine(drawX, drawY, hpc, textcolor);
-            } else {
-                fillRect(drawX, drawY, hpc * textsize, textsize, textcolor);
-            }
+            if (textsize == 1) { drawFastHLine(drawX, drawY, hpc, textcolor); }
+            else { fillRect(drawX, drawY, hpc * textsize, textsize, textcolor); }
             hpc = 0;
         }
     }
