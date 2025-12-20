@@ -62,7 +62,7 @@ class TFTESPIRenderTarget : public RenderTarget {
         _tft.endWrite();
     }
 
-    void present() override {} // no buffering on TFT
+    void present() override {} // no buffering on TFT (should be)
     void deinit() override {}  // no cleanup needed
 };
 

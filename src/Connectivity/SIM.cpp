@@ -124,7 +124,7 @@ void checkVoiceCall() {
 
 // Throw full screen error if there no sim card
 bool checkSim() {
-    if (!simIsUsable) { ErrorWindow(lastSIMerror); }
+    if (!simIsUsable) { InfoWindow(lastSIMerror); }
     return simIsUsable;
 }
 
@@ -152,7 +152,6 @@ int GetState() {
     return atoi(result.c_str());
 }
 
-// @link
 // Function to initialize the SIM card
 // This function sends AT commands to the SIM card to set it up
 void initSim() {

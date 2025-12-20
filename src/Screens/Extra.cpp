@@ -31,7 +31,7 @@ void execute_application() {
         return;
     }
 
-    const esp_partition_t* partition =  esp_ota_get_next_update_partition(NULL);
+    const esp_partition_t* partition = esp_ota_get_next_update_partition(NULL);
     if (!partition) {
         ESP_LOGE("EXEC", "Partition not found!");
         return;
@@ -64,19 +64,14 @@ void execute_application() {
 
 // Additional features screen
 void e() {
-    const NString menu[] = {
-        "FileBrowser",
-        "Connect To WiFI",
-        "OTA web update",
-        "Boot application"
-    };
-    int choice = LISTMENU_NULL;
+    const NString menu[] = {"FileBrowser", "OTA web update", "Boot application"};
+    int           choice = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
         choice = listMenu(menu, ArraySize(menu), false, LM_SETTINGS, "Extra");
         switch (choice) {
         case 0: ESP_LOGI("E", "PATH: %s", fileBrowser().c_str()); break;
-        case 1: WiFiList(); break;
-        case 2: OTAactivity(); break;
+        case 1: OTAactivity(); break;
+        case 2: execute_application(); break;
         }
     };
     currentScreen = SCREENS::MAINMENU;

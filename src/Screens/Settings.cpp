@@ -3,109 +3,16 @@
 const int lastImage = 42;
 
 void debugMenu() {}
-#define WIFI_BIT_AP  0b01
-#define WIFI_BIT_STA 0b10
-#ifdef WiFi_h
-static wifi_mode_t bitsToWifiMode(uint8_t bits) {
-    if ((bits & WIFI_BIT_AP) && (bits & WIFI_BIT_STA)) { return WIFI_MODE_APSTA; }
-    if (bits & WIFI_BIT_AP) { return WIFI_MODE_AP; }
-    if (bits & WIFI_BIT_STA) { return WIFI_MODE_STA; }
-    return WIFI_MODE_NULL;
-}
 
-void setHostname(bool Ap) {
-    NString            hostname;
-    std::vector<FIELD> fields = {FIELD("Hostname", hostname, false)};
-    if (InputFieldS("Set Hostname", fields)) {
-        if (Ap) { WiFi.softAPsetHostname(hostname.c_str()); }
-        else { WiFi.setHostname(hostname.c_str()); };
-    }
-}
-void WiFiSettings() {
-    std::vector<mOption> options = {
-        mOption("Auto Connect", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
-        mOption("Auto Reconnect", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
-        mOption("Set Hostname")};
-    int choice = LISTMENU_NULL;
-    while (choice != LISTMENU_EXIT) {
-        options.at(0).icon_index =
-            WiFi.getAutoConnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        options.at(1).icon_index =
-            WiFi.getAutoReconnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi Settings");
-        switch (choice) {
-        case 0: WiFi.setAutoConnect(!WiFi.getAutoConnect()); break;
-        case 1: WiFi.setAutoReconnect(!WiFi.getAutoReconnect()); break;
-        // SetHostname TODO Implement
-        case 2: setHostname(false); break;
-        }
-    }
-}
-void HotspotSettings() {
-    return;/////////////
-    std::vector<mOption> options = {
-        mOption("Change Properties"),
-    };
-
-    int choice = LISTMENU_NULL;
-    while (choice != LISTMENU_EXIT) {
-
-            listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi Settings", false, choice);
-        switch (choice) {
-        case 0:  break;
-        }
-    }
-}
-#endif
-
-void WiFiMenu() {
-#ifdef WiFi_h
-    std::vector<mOption> options = {
-        mOption("Wi-Fi", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
-        mOption("Wi-Fi Hotspot", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
-        mOption("Wi-Fi Settings"), mOption("Hotspot settings"), mOption("Scan WiFi networks")};
-    int choice = 0;
-    while (choice != LISTMENU_EXIT) {
-        uint8_t wifimode;
-
-        switch (WiFi.getMode()) {
-        case WIFI_MODE_NULL: wifimode = 0; break;
-        case WIFI_MODE_AP: wifimode = WIFI_BIT_AP; break;
-        case WIFI_MODE_STA: wifimode = WIFI_BIT_STA; break;
-        case WIFI_MODE_APSTA: wifimode = WIFI_BIT_AP | WIFI_BIT_STA; break;
-        default: wifimode = 0; break;
-        }
-        options.at(1).icon_index =
-            wifimode & WIFI_BIT_AP ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        options.at(0).icon_index =
-            wifimode & WIFI_BIT_STA ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi", 1, choice);
-        switch (choice) {
-        case 0: // toggle Wi-Fi
-            wifimode ^= WIFI_BIT_STA;
-            WiFi.mode(bitsToWifiMode(wifimode));
-            break;
-
-        case 1: // toggle Hotspot
-            wifimode ^= WIFI_BIT_AP;
-            WiFi.mode(bitsToWifiMode(wifimode));
-            break;
-        case 2: WiFiSettings(); break;
-        case 3: HotspotSettings(); break;
-        case 4: WiFiList(); break;
-        }
-    }
-#else
-    ErrorWindow("Not supported");
-
-#endif
-}
 void connectivityMenu() {
+
     NString options[] = {
         "Wi-Fi",
     };
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
         selection = choiceMenu(options, ArraySize(options), false);
         switch (selection) {
         case 0: WiFiMenu(); break;
@@ -308,7 +215,7 @@ void ringtoneSelector(bool isMail) {
     (void)isMail;
     // NFile* dir = VFS.open("/sd/AUDIO");
     // if (!dir) {
-    //     ErrorWindow("NO /AUDIO");
+    //     InfoWindow("NO /AUDIO");
     //     return;
     // }
 

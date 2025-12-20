@@ -16,7 +16,7 @@ void WebOTATask(void* param) {
 void OTAactivity() {
 #ifdef ARDUINO
     if (WiFi.status() != WL_CONNECTED) {
-        ErrorWindow("WiFi is Not Connected");
+        InfoWindow("WiFi is Not Connected");
         return;
     }
 
@@ -63,6 +63,6 @@ void OTAactivity() {
         delay(1); // yield
     }
 #else
-    ErrorWindow("Not supported on current platform...");
+    InfoWindow("Not supported on current platform...");
 #endif // ARDUINO
 }

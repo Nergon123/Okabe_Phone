@@ -1,7 +1,7 @@
 #include "Notifications.h"
-#include "System/ResourceSystem.h"
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "Platform/Graphics/RenderTargets.h"
+#include "System/ResourceSystem.h"
 
 // ## Draw status bar
 // This function draws the status bar on the screen
@@ -87,22 +87,25 @@ bool confirmation(NString reason, NString yes, NString no) {
     return false;
 }
 
-// Function to show an error window
-// This function is called when an error occurs
-// @param reason The reason for the error
-void ErrorWindow(NString reason) {
+// @param reason The body of message
+// @param title Title of notification (to previously replace ERROR text, making it just a Info
+// Window)
+// @param WaitForButton wait for any button or show message like loading screen
+// @param titleColor RGB565 color for title
+void InfoWindow(NString reason, NString title, bool WaitForButton, uint16_t titlecolor) {
 
     int xpos = 0;
     drawWallpaper();
     res.DrawImage(R_FULL_NOTIFICATION);
     tft.setTextSize(1);
-    tft.setCursor(80, 120);
+    if (tft.textWidth(title) < 240) { xpos = (240 - tft.textWidth(title)) / 2; }
+    tft.setCursor(xpos, 120);
     changeFont(1);
-    tft.setTextColor(TFT_RED);
-    tft.println("ERROR");
+    tft.setTextColor(titlecolor);
+    tft.println(title);
     tft.setTextColor(0);
     if (tft.textWidth(reason) < 240) { xpos = (240 - tft.textWidth(reason)) / 2; }
     tft.setCursor(xpos, 150);
     tft.print(SplitString(reason));
-    while (buttonsHelding() == -1);
+    if (WaitForButton) { while (buttonsHelding() == -1); }
 }

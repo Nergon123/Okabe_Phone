@@ -13,6 +13,7 @@
 #include <UI/UIElements.h>
 #include <esp_debug_helpers.h>
 #include <esp_task_wdt.h>
+#include <esp_wifi.h>
 
 #define FAST_SD_FREQ          20 * 1000 * 1000
 #define SAFE_SD_FREQ          1 * 1000 * 1000
@@ -39,9 +40,17 @@ MCP23017 mcp(MCP23017_ADDR);
 class DEV_ESP32 : public iHW {
   public:
     void init() override {
-        WiFi.setHostname(HOSTNAME);
         esp_task_wdt_deinit();
         esp_task_wdt_init(10000, false);
+
+        
+        char    default_hostname[32];
+        uint8_t eth_mac[6];
+        esp_wifi_get_mac((wifi_interface_t)WIFI_IF_STA, eth_mac);
+        snprintf(default_hostname, 32, "%s%02X%02X%02X", CONFIG_IDF_TARGET "-", eth_mac[3],
+                 eth_mac[4], eth_mac[5]); //default hostname from esp wifi arduino implementation
+        if (strcmp(default_hostname, WiFi.getHostname()) == 0) { WiFi.setHostname(HOSTNAME); }
+
         esp_log_level_set("ledc", ESP_LOG_NONE); // brightness logger
 
         Wire.setPins(I2C_SDA, I2C_SCL);

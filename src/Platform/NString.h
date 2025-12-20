@@ -7,8 +7,6 @@
 #include <stdint.h>
 #include <algorithm>
 
-// REMOVE ALL MACROS AND ATTRIBUTES
-// Use a namespace to avoid conflicts
 namespace Platform {
 
 class NString {
