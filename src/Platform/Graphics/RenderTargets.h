@@ -92,6 +92,7 @@ class RenderTarget {
 
         (void)color;
     }
+    virtual void setUseBuffer(bool useBuffer) { (void)useBuffer; };
     // Optional lifecycle hooks with default no-op implementations
     virtual void init() {}
     virtual void deinit() {}

@@ -33,6 +33,7 @@ void MainMenu() {
     res.DrawImage(R_MENU_MAIL_ICON, 1);
     int choice = 0;
     for (int i = 0; i < 4; i++) { rendermenu(choice, i); }
+    currentRenderTarget->present();
     int old_choice = 0;
     while (true) {
         switch (buttonsHelding()) {
@@ -46,6 +47,7 @@ void MainMenu() {
             }
             res.DrawImage(R_MENU_BACKGROUND);
             rendermenu(choice, choice);
+            currentRenderTarget->present();
             break;
         }
 
@@ -53,6 +55,7 @@ void MainMenu() {
             old_choice = choice;
             choice -= 2;
             rendermenu(choice, old_choice);
+            currentRenderTarget->present();
             break;
         }
 
@@ -60,12 +63,14 @@ void MainMenu() {
             old_choice = choice;
             choice += 2;
             rendermenu(choice, old_choice);
+            currentRenderTarget->present();
             break;
         }
         case LEFT: {
             old_choice = choice;
             choice--;
             rendermenu(choice, old_choice);
+            currentRenderTarget->present();
             break;
         }
 
@@ -73,6 +78,7 @@ void MainMenu() {
             old_choice = choice;
             choice++;
             rendermenu(choice, old_choice);
+            currentRenderTarget->present();
             break;
         }
         }
@@ -85,11 +91,13 @@ void MainScreen() {
     drawWallpaper();
     changeFont(0);
     drawStatusBar(true);
+    currentRenderTarget->present();
     while (1) {
         int button = buttonsHelding();
         if ((button >= '0' && button <= '9') || button == '*' || button == '#') {
             numberInput(button);
             drawWallpaper();
+            currentRenderTarget->present();
         }
         else if (button == UP || button == SELECT) { break; }
     }
@@ -113,12 +121,14 @@ void offlineCharging() {
         for (int i = 0; i <= maxLevel; i++) {
             ulong mill = hw->millis();
             drawLevelCharge(i);
+            currentRenderTarget->present();
             while (hw->millis() - mill < 500 || i == 3) {
                 if (buttonsHelding(false) != -1) { return; }
             }
         }
     }
     tft.fillScreen(0x0000);
+    currentRenderTarget->present();
 }
 
 /*
@@ -126,6 +136,7 @@ void offlineCharging() {
  *@param message message to be displayed
  */
 void recovery(NString message) {
+    sysError("No resource file");
 #warning recovery needs reimplementing
     hw->initStorage();
     res.Files[RES_MAIN] = nullptr;
@@ -157,9 +168,8 @@ void recovery(NString message) {
 // Function to lock keypad
 void LockScreen() {
 #ifdef lockscreen
-    sBarChanged    = true;
     isScreenLocked = true;
-    drawStatusBar();
+    drawStatusBar(true);
     ulong mill;
     bool  exit = false;
     while (!exit) {
@@ -173,8 +183,7 @@ void LockScreen() {
         }
     }
     isScreenLocked = false;
-    sBarChanged    = true;
-    drawStatusBar();
+    drawStatusBar(true);
 #else
 #warning LockScreen is disabled.
 #endif

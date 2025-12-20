@@ -43,13 +43,14 @@ class DEV_ESP32 : public iHW {
         esp_task_wdt_deinit();
         esp_task_wdt_init(10000, false);
 
-        
         char    default_hostname[32];
         uint8_t eth_mac[6];
         esp_wifi_get_mac((wifi_interface_t)WIFI_IF_STA, eth_mac);
         snprintf(default_hostname, 32, "%s%02X%02X%02X", CONFIG_IDF_TARGET "-", eth_mac[3],
-                 eth_mac[4], eth_mac[5]); //default hostname from esp wifi arduino implementation
-        if (strcmp(default_hostname, WiFi.getHostname()) == 0) { WiFi.setHostname(HOSTNAME); }
+                 eth_mac[4], eth_mac[5]); // default hostname from esp wifi arduino implementation
+        const char* current = WiFi.getHostname();
+        ESP_LOGI("WIFI","CURRENT hostname %s %p\nDEFAULT %s, CUSTOM %s",current,current,default_hostname,HOSTNAME);
+        if (current && strcmp(default_hostname, current) == 0) { WiFi.setHostname(HOSTNAME); }
 
         esp_log_level_set("ledc", ESP_LOG_NONE); // brightness logger
 
@@ -180,6 +181,7 @@ class DEV_ESP32 : public iHW {
         tft.println("> FATAL! <");
         tft.setTextSize(1);
         tft.printf("\n\n%s\n\nPress anything to continue.", reason);
+        currentRenderTarget->present();
         ulong old_millis = hw->millis();
         while ((!getKeyInput() && !getCharInput())) {
             delay(50);

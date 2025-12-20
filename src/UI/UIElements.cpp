@@ -29,6 +29,7 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
 
     tft.setCursor(xpos + x, ypos + y);
     tft.print(title.c_str());
+    currentRenderTarget->present();
     bool pressed = false;
     if (selected) {
         while (true) {
@@ -44,6 +45,7 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
     tft.setCursor(xpos + x, ypos + y);
     changeFont(1);
     tft.print(title);
+    currentRenderTarget->present();
     return pressed;
 }
 
@@ -94,6 +96,7 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
         tft.drawRect(0, 0, w, h, selected ? clr_selected : clr_normal);
         tft.fillRect(1, 1, w - 2, h - 2, clr_background);
         tft.print(text);
+        currentRenderTarget->present();
     };
     DrawBox();
     bool exit = false;
@@ -161,7 +164,6 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
 
     auto redrawField = [&](bool drawCursor) {
         tft.setViewport(boxX, ypos, boxWidth, boxHeight);
-        ESP_LOGI("REDRAWFIELD", "%d %d", ypos, tft.getViewport().y);
         tft.fillRect(viewX, viewY, boxWidth, boxHeight, clr_background);
         tft.drawRect(viewX, viewY, boxWidth, boxHeight, selected ? clr_selected : clr_normal);
 
@@ -177,6 +179,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
             int cx = tft.textWidth(content.substring(0, cursorPos)) + 5 + c_offset;
             tft.fillRect(cx, 3, CWIDTH, boxHeight - 6, clr_normal);
         }
+        currentRenderTarget->present();
     };
 
     // Initial draw (non-edit mode or before editing)
@@ -261,10 +264,10 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     tft.setTextSize(1);
     tft.setTextColor(clr_normal);
     tft.print(title);
+    currentRenderTarget->present();
     content.trim();
     return content;
 }
-
 
 // ## Dynamic Input Field Screen
 bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selected,
@@ -287,6 +290,7 @@ bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selecte
         fields.at(i).notConfirmed = fields.at(i).resultstr;
         InputField(fields.at(i).name, fields.at(i).notConfirmed, ystart + spacing * i, 1, 0, 0);
     }
+    currentRenderTarget->present();
     while (true) {
         if (selected >= 0 && selected < fields.size()) {
             FIELD &currentField = fields.at(selected);
@@ -348,6 +352,7 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
 
     while (printed_count < max_count) {
         for (int j = offset; j >= 0 && printed_count < max_count; j--) {
+
             if (draw) { res.DrawImage(R_CALL_ANIM_DOTS, j % img.count, {x + xt, y + yt}); }
 
             // Update position in spin path
@@ -361,6 +366,7 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
 
             printed_count++;
         }
+        currentRenderTarget->present();
 
         offset = 7; // Reset offset after each full circle iteration
     }
@@ -384,7 +390,10 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
         tft.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.fillRect(69, y, i, h, color);
-            if (!fast) { hw->delay(5); }
+            if (!fast) {
+                hw->delay(5);
+                currentRenderTarget->present();
+            }
         }
     }
     else {
@@ -392,11 +401,15 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
         tft.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.fillRect(69, y, i, h, color);
-            if (!fast) { hw->delay(5); }
+            if (!fast) {
+                hw->delay(5);
+                currentRenderTarget->present();
+            }
         }
 #endif
     }
     lastpercentage = percentage;
+    currentRenderTarget->present();
 }
 
 void bootText(NString text, int x, int y, int w, int h) {
@@ -412,6 +425,7 @@ void bootText(NString text, int x, int y, int w, int h) {
     tft.setCursor(x, 0);
     tft.print(text.c_str());
     tft.resetViewport();
+    currentRenderTarget->present();
 }
 
 // ## Critical system error
@@ -433,6 +447,8 @@ void sysError(NString reason) {
 
     tft.println("Press any button to restart\nor reset button to reset the device");
     ESP_LOGE("ERROR", "%s", reason.c_str());
+    currentRenderTarget->present();
+
     while (buttonsHelding(false) == -1);
 #ifndef PC
     ESP.restart();

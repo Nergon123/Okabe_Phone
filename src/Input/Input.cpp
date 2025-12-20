@@ -59,6 +59,7 @@ void numberInput(char first) {
         tft.fillRect(0, 300, 240, 20, 0);
         tft.setCursor(0, 300);
         tft.print(number);
+        currentRenderTarget->present();
     };
 
     redraw();
@@ -133,6 +134,7 @@ void showText(const char *text, int pos) {
     tft.setTextSize(textSize);
     if (viewport) { tft.setViewport(vp); }
     tft.setRenderTarget(before);
+    currentRenderTarget->present();
 }
 
 /*
@@ -144,6 +146,7 @@ void showText(const char *text, int pos) {
  */
 char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *retButton) {
     if (input == -1) { return 0; }
+    currentRenderTarget->setUseBuffer(false);
     char buttons[12][12] = {" \b0+@\n", "1,.?!()",   "2ABCabc", "3DEFdef",   "4GHIghi", "5JKLjkl",
                             "6MNOmno",  "7PQRSpqrs", "8TUVtuv", "9WXYZwxyz", "*",       "#"};
 
@@ -212,16 +215,13 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         tft.resetViewport();
         viewport = true;
     }
-    if (!dontRedraw) {
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, INPUT_LOCATION_Y - 51}, {0, INPUT_LOCATION_Y},
-                      {0, INPUT_LOCATION_Y});
-        // drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, INPUT_LOCATION_Y - 51, 120,
-        // 20, 0, INPUT_LOCATION_Y);
-        // TODO
-    }
     if (viewport) { tft.setViewport(vp); }
+    currentRenderTarget->setUseBuffer(true);
+    currentRenderTarget->present();
     if (result == '\r') { return 0; }
+
     return result;
+    (void)dontRedraw;
 }
 
 int lastresult = -1;
@@ -252,13 +252,8 @@ int buttonsHelding(bool _idle) {
      *
      */
 
-#ifdef PC
-    if (currentRenderTarget && currentRenderTarget->getType() == RENDER_TARGET_TYPE_SCREEN) {
-        currentRenderTarget->present();
-    }
-#endif
     if (_idle) { idle(); }
-    hw->delay(1); //watchdog feed
+    hw->delay(1); // watchdog feed
     char input = 0;
     input      = hw->getCharInput();
     int result = hw->getKeyInput();

@@ -144,9 +144,9 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     
     tft.print("Outgoing Mail");
     tft.setTextColor(0);
-    RenderTarget *mes_buffer = setupBufferRenderTarget(240, TLVP);
-    tft.setRenderTarget(mes_buffer);
-    
+    //RenderTarget *mes_buffer = setupBufferRenderTarget(240, TLVP);
+    //tft.setRenderTarget(mes_buffer);
+    currentRenderTarget->present();
     bool exit = false;
     while (!exit) {
         position = 0;
@@ -184,7 +184,8 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                      TFT_BLACK);
         // Serial.println("CURX:" + NString(curx) + " CURY:" + NString(cury));
         /////////tft.pushSprite(0, 51);
-        mes_buffer->CopyBufferToRT(0, 51, currentRenderTarget);
+        currentRenderTarget->present();
+        //mes_buffer->CopyBufferToRT(0, 51, currentRenderTarget);
         while (input == -1) {
 
             if (y_scr < min_y) { min_y = y_scr; }
@@ -234,9 +235,6 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                         sendATCommand("AT+CMGS=\"" + contact.phone + "\"");
                         sendATCommand(content + char(26));
                     }
-                    /////////tft.deleteSprite()();
-                    delete mes_buffer;
-                    tft.setRenderTarget(currentRenderTarget);
                     return;
                     break;
                 case 2: ESP_LOGI("INFO", "DELETE"); break;
@@ -297,8 +295,6 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     }
     /////////tft.deleteSprite()();
     tft.resetViewport();
-    delete mes_buffer;
-    tft.setRenderTarget(currentRenderTarget);
 }
 
 /*
@@ -370,6 +366,7 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
         tft.drawLine(0, 48 + y_scr, 240, 48 + y_scr, 0);
         int height = measureStringHeight(content) + 50;
         tft.print(content);
+        currentRenderTarget->present();
         int ch = -2;
         int r  = -1;
         while (r == -1) {
@@ -441,7 +438,6 @@ void inbox(bool outbox) {
         exit = true;
 
         parseMessages(messages, count);
-        // Potential memory leak???
         std::vector<mOption> messList;
         for (int i = 0; i < count; i++) { messList.push_back(messages[i]); }
 

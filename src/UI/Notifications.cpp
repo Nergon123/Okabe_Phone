@@ -73,7 +73,7 @@ bool confirmation(NString reason, NString yes, NString no) {
     if (tft.textWidth(reason) < 240) { tft.setCursor((230 - tft.textWidth(reason)) / 2, 130); }
     else { tft.setCursor(0, 130); }
     tft.println(SplitString(reason));
-
+    currentRenderTarget->present();
     int  pos = 0;
     int  direction;
     bool exit = false;
@@ -107,5 +107,6 @@ void InfoWindow(NString reason, NString title, bool WaitForButton, uint16_t titl
     if (tft.textWidth(reason) < 240) { xpos = (240 - tft.textWidth(reason)) / 2; }
     tft.setCursor(xpos, 150);
     tft.print(SplitString(reason));
+    currentRenderTarget->present();
     if (WaitForButton) { while (buttonsHelding() == -1); }
 }

@@ -164,7 +164,7 @@ void setTime(time_t *time) {
     tft.print("TIME");
     tft.setCursor(111, 187);
     tft.print(":");
-
+    currentRenderTarget->present();
     tm  tm_time   = *gmtime(time);
     int temp_year = 1900 + tm_time.tm_year;
 

@@ -10,7 +10,9 @@
 
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
-void          TaskLoop(void *) {
+
+void TaskLoop(void *) {
+    setup();
     while (true) {
         loop();
         vTaskDelay(1);
@@ -18,7 +20,6 @@ void          TaskLoop(void *) {
 }
 extern "C" void app_main(void) {
     initArduino();
-    setup();
     xTaskCreate(TaskLoop, "TaskLoop", 20 * 1024, NULL, 2, TaskLoop_Handle);
     vTaskDelete(NULL);
 }

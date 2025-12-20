@@ -4,22 +4,6 @@
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "System/FontManagement.h"
 
-bool          lm_buffer = LISTMENU_BUFFER;
-RenderTarget *lm_buffer_obj;
-
-void pushBufferToScreen(int x, int y) {
-    ESP_LOGD("PUSHBUFFER", "X: %d Y:%d", x, y);
-    lm_buffer_obj->CopyBufferToRT(x, y, currentRenderTarget);
-}
-void deleteBuffer() {
-    if (lm_buffer_obj && lm_buffer_obj->getType() == RENDER_TARGET_TYPE_BUFFER) {
-        tft.setRenderTarget(currentRenderTarget);
-        delete lm_buffer_obj;
-        lm_buffer_obj = nullptr;
-        ESP_LOGI("LISTMENU", "Deleted buffer");
-    }
-}
-
 // Header for the list menu
 // @param type Type of menu
 // @param title Title of the menu
@@ -88,11 +72,8 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param findex Force index of the selected option
 int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NString label,
              bool forceIcons, int findex) {
-    lm_buffer_obj = lm_buffer ? new RGB565BufferRenderTarget(240, 294) : currentRenderTarget;
-    tft.resetViewport();
-    const int bufOffset = 26;
-    if (!lm_buffer) { tft.setViewport(0, bufOffset, 240, 294); }
-    else { tft.setRenderTarget(lm_buffer_obj); }
+    tft.setViewport(0, 26, 240, 294);
+    //    const int bufOffset = 26;
     tft.setTextWrap(false, false);
     tft.setTextColor(0);
     tft.setTextSize(1);
@@ -113,23 +94,20 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
         tft.setCursor(75, 45);
         tft.print("< Empty >");
 
-        if (lm_buffer) { pushBufferToScreen(0, bufOffset); }
+        currentRenderTarget->present();
 
         while (true) {
             int bh = buttonsHelding();
             if (bh == SELECT) {
                 tft.resetViewport();
-                deleteBuffer();
                 return LISTMENU_OPTIONS;
             }
             else if (bh != -1) {
                 tft.resetViewport();
-                deleteBuffer();
                 return LISTMENU_EXIT;
             }
         };
         tft.resetViewport();
-        deleteBuffer();
         return LISTMENU_EXIT;
     }
     int entry_size = tft.fontHeight();
@@ -154,8 +132,7 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
     }
     listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size, lines,
                    true, false);
-    pushBufferToScreen(0, bufOffset);
-
+    currentRenderTarget->present();
     bool exit                = false;
     int  total_items_on_page = 0;
     while (!exit) {
@@ -163,14 +140,12 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
 
         switch (c) {
         case SELECT:
-            pushBufferToScreen(0, bufOffset);
-            deleteBuffer();
+            currentRenderTarget->present();
             tft.resetViewport();
             return selected + (page * per_page);
             break;
         case BACK:
-            pushBufferToScreen(0, bufOffset);
-            deleteBuffer();
+            currentRenderTarget->present();
             tft.resetViewport();
             return LISTMENU_EXIT;
             break;
@@ -208,8 +183,7 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
 
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size,
                            lines, true, false);
-            pushBufferToScreen(0, bufOffset);
-
+            currentRenderTarget->present();
             break;
 
         case DOWN:
@@ -248,8 +222,7 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
             listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)], entry_size,
                            lines, true, false);
 
-            pushBufferToScreen(0, bufOffset);
-
+            currentRenderTarget->present();
             break;
         case RIGHT:
             if (pages > 1) {
@@ -267,7 +240,7 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
                 }
                 listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)],
                                entry_size, lines, true, false);
-                pushBufferToScreen(0, bufOffset);
+                currentRenderTarget->present();
             }
             break;
         case LEFT:
@@ -286,12 +259,11 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
                 }
                 listMenu_entry(selected, x, y + ly, choices[selected + (page * per_page)],
                                entry_size, lines, true, false);
-                pushBufferToScreen(0, bufOffset);
+                currentRenderTarget->present();
             }
             break;
         }
     }
-    deleteBuffer();
 
     tft.resetViewport();
     return LISTMENU_EXIT;
@@ -347,6 +319,7 @@ void renderlmng(std::vector<mOption> choices, int x, int y, int icount, NString 
         else { tft.setTextColor(color_inactive); }
         if (i < icount) { tft.println("  " + choices[i].label); }
     }
+    currentRenderTarget->present();
 }
 
 // listMenu that doesn't use images
@@ -437,6 +410,7 @@ int choiceMenu(const NString choices[], int count, bool context) {
     int yy = (y + (mul * choice)) - 10;
     int xx = x - 5;
     tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
+    currentRenderTarget->present();
     bool exit = false;
     while (!exit) {
         switch (buttonsHelding()) {
@@ -482,6 +456,7 @@ int choiceMenu(const NString choices[], int count, bool context) {
             int xx = x - 5;
             tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
             tft.print(choices[choice]);
+            currentRenderTarget->present();
             break;
         }
         case SELECT: {
@@ -502,6 +477,7 @@ int choiceMenu(const NString choices[], int count, bool context) {
                     tft.setCursor(x, y + (mul * i));
                     tft.print(choices[i]);
                 }
+                currentRenderTarget->present();
             }
             else {
                 tft.setTextSize(1);
@@ -531,6 +507,7 @@ int choiceMenu(const NString choices[], int count, bool context) {
             int xx = x - 5;
             tft.fillTriangle(xx - 10, yy, xx - 10, yy + 10, xx - 2, yy + 5, color_active);
             tft.print(choices[choice]);
+            currentRenderTarget->present();
             break;
         }
         }

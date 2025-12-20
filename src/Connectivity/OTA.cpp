@@ -24,8 +24,9 @@ void OTAactivity() {
     ota.setDeviceInfo(String(FIRMVER), "OkabePhone");
     tft.setCursor(0, 50);
     tft.setTextColor(TFT_WHITE);
-    tft.setTextFont(0);
-    tft.printf("WAITING FOR OTA\nhttp://%s/update", WiFi.localIP().toString().c_str());
+    changeFont(0);
+    tft.printf("WAITING FOR OTA\nhttp://%s/update\nor\nhttp://%s/update",
+               WiFi.localIP().toString().c_str(), WiFi.getHostname());
 
     // Callbacks
     ota.onStart([](const String& filename) {
@@ -49,13 +50,13 @@ void OTAactivity() {
     ota.begin();
     server.begin();
 
-    // This thing need more stack for some reason
+    // This thing needs more stack
     TaskHandle_t* update = NULL;
     xTaskCreate(WebOTATask, "WebOTATask", 16384, &server, 1, update);
 
     while (true) {
         if (buttonsHelding(false) == BACK) {
-            if (update /*what if it will be null and whole application will be killed T_T*/) {
+            if (update /*what if it will be null and the whole application will be killed T_T*/) {
                 vTaskDelete(update);
             }
             break;

@@ -70,13 +70,11 @@ void TFT_STUB::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t col
     setAddrWindow(x, y, w, h);
 
     activeRenderTarget->writeColor(color, w * h);
-    activeRenderTarget->present();
 }
 
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data) {
     if (activeRenderTarget) {
         activeRenderTarget->pushBuffer(x, y, w, h, data, false, 0);
-        activeRenderTarget->present();
     }
 }
 
@@ -86,7 +84,6 @@ void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint1
         //probably should be fixed in ImageEditor
         transpColor = (transpColor >> 8) | (transpColor << 8); 
         activeRenderTarget->pushBuffer(x, y, w, h, data, true, transpColor);
-        activeRenderTarget->present();
     }
 }
 
@@ -104,7 +101,6 @@ void TFT_STUB::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t col
     setAddrWindow(x + w - 1, y + 1, 1, h - 2);
     activeRenderTarget->writeColor(color, h - 2);
 
-    activeRenderTarget->present();
 }
 void TFT_STUB::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
     if (!activeRenderTarget) { return; }
@@ -150,7 +146,6 @@ void TFT_STUB::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t
         }
     }
 
-    activeRenderTarget->present();
 }
 
 void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2,
@@ -185,7 +180,6 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
         for (int16_t j = ax; j <= bx; j++) { drawPixel(j, y0 + i, color); }
     }
 
-    activeRenderTarget->present();
 }
 
 void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
@@ -347,7 +341,6 @@ void TFT_STUB::print(const char *str) {
         }
         str++;
     }
-    activeRenderTarget->present();
 }
 
 void TFT_STUB::println(const char *str) {
