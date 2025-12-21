@@ -15,7 +15,8 @@ void WebOTATask(void* param) {
 
 void OTAactivity() {
 #ifdef ARDUINO
-    if (WiFi.status() != WL_CONNECTED) {
+    if (WiFi.status() != WL_CONNECTED && WiFi.getMode() != WIFI_MODE_AP &&
+        WiFi.getMode() != WIFI_MODE_APSTA) {
         InfoWindow("WiFi is Not Connected");
         return;
     }
@@ -25,15 +26,19 @@ void OTAactivity() {
     tft.setCursor(0, 50);
     tft.setTextColor(TFT_WHITE);
     changeFont(0);
-    tft.printf("WAITING FOR OTA\nhttp://%s/update\nor\nhttp://%s/update",
-               WiFi.localIP().toString().c_str(), WiFi.getHostname());
-	currentRenderTarget->present();
+    NString WiFIIP = "";
+    if (WiFi.localIP()[0] != 0) { WiFIIP = WiFi.localIP().toString().c_str(); }
+    else if (WiFi.softAPIP()[0] != 0) { WiFIIP = WiFi.softAPIP().toString().c_str(); }
+
+    tft.printf("WAITING FOR OTA\nhttp://%s/update\nor\nhttp://%s/update", WiFIIP.c_str(),
+               WiFi.getHostname());
+    currentRenderTarget->present();
     // Callbacks
     ota.onStart([](const String& filename) {
         tft.fillScreen(0);
         tft.setCursor(0, 50);
         tft.printf("Update Started %s\n", filename.c_str());
-       currentRenderTarget->present(); 
+        currentRenderTarget->present();
     });
     ota.onProgress([&](size_t current, size_t total) {
         progressBar((int)current, (int)total, 230, 8, TFT_WHITE, false, true);
