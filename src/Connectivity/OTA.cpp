@@ -27,12 +27,13 @@ void OTAactivity() {
     changeFont(0);
     tft.printf("WAITING FOR OTA\nhttp://%s/update\nor\nhttp://%s/update",
                WiFi.localIP().toString().c_str(), WiFi.getHostname());
-
+	currentRenderTarget->present();
     // Callbacks
     ota.onStart([](const String& filename) {
         tft.fillScreen(0);
         tft.setCursor(0, 50);
         tft.printf("Update Started %s\n", filename.c_str());
+       currentRenderTarget->present(); 
     });
     ota.onProgress([&](size_t current, size_t total) {
         progressBar((int)current, (int)total, 230, 8, TFT_WHITE, false, true);
@@ -40,11 +41,13 @@ void OTAactivity() {
     ota.onEnd([]() {
         tft.setTextColor(TFT_GREEN);
         tft.printf("Update Finished\n");
+        currentRenderTarget->present();
     });
     ota.onError([](int err) {
         tft.setTextColor(TFT_RED);
         tft.printf("OTA ERROR %d\n", err);
         tft.setTextColor(TFT_WHITE);
+        currentRenderTarget->present();
     });
 
     ota.begin();

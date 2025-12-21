@@ -62,6 +62,8 @@ class RGB565BufferRenderTarget : public RenderTarget {
     }
     void drawPixel(int16_t x, int16_t y, uint16_t color) override {
         if (!buffer) { return; }
+        x+=vp.x;
+        y+=vp.y;
         if (x < vp.x || y < vp.y || x >= vp.x + vp.w || y >= vp.y + vp.h) { return; }
         buffer[y * width + x] = color;
     }
@@ -69,7 +71,8 @@ class RGB565BufferRenderTarget : public RenderTarget {
     void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
                     bool transparent, uint16_t transpColor) override {
         if (!buffer || !data) { return; }
-
+		x+=vp.x;
+		y+=vp.y;
         for (int ry = 0; ry < h; ++ry) {
             int16_t dstY = y + ry;
             if (dstY < vp.y || dstY >= vp.y + vp.h) { continue; }

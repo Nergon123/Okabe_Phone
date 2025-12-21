@@ -73,7 +73,6 @@ void WiFiList() {
             int ch = listMenu(list, count, false, LM_SETTINGS, "WI-FI");
             if (ch == -1) { return; }
             else {
-                // TODO: Actually Connect to WiFi
                 WifiPrompt(list.at(ch).label, enc[ch]);
                 return;
             }
@@ -116,7 +115,6 @@ void WiFiSettings() {
         switch (choice) {
         case 0: WiFi.setAutoConnect(!WiFi.getAutoConnect()); break;
         case 1: WiFi.setAutoReconnect(!WiFi.getAutoReconnect()); break;
-        // SetHostname TODO Implement
         case 2: setHostname(false); break;
         }
     }
