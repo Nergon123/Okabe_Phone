@@ -46,7 +46,8 @@ class SDL2RenderTarget : public RenderTarget {
     void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t* data,
                     bool transparent, uint16_t transpColor) override {
         if (!buffer || !data) { return; }
-
+        x += vp.x;
+        y += vp.y;
         int startX = std::max(x, vp.x);
         int endX   = std::min(x + w, vp.x + vp.w);
         int startY = std::max(y, vp.y);
@@ -67,14 +68,12 @@ class SDL2RenderTarget : public RenderTarget {
             }
         }
     }
-    
+
     void fillScreen(uint16_t color) override {
         color = (color >> 8) | (color << 8);
-        if (!buffer) return;
+        if (!buffer) { return; }
         for (int y = vp.y; y < vp.y + vp.h; ++y) {
-            for (int x = vp.x; x < vp.x + vp.w; ++x) {
-                buffer[y * width + x] = color;
-            }
+            for (int x = vp.x; x < vp.x + vp.w; ++x) { buffer[y * width + x] = color; }
         }
     }
 

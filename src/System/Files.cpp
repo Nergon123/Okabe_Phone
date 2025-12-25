@@ -28,7 +28,7 @@ NString normalize(NString p) {
 // This function allows the user to browse files on the SD card
 //
 // @param dir: Directory to browse
-// @param format: File format to filter (e.g., ".txt")
+// @param format: File format to filter (e.g., ".txt") or |.txt|.png| for multiple files
 // @param graphical: If true, use graphical interface
 // @return The path of the selected file or empty string if cancelled
 NString fileBrowser(NString path, NString format, bool graphical, NString title, bool saveMode,
@@ -65,6 +65,9 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
                 bool show = false;
                 if (format == "*" || format.isEmpty()) { show = true; }
                 else if (NString(name).endsWith(format)) { show = true; }
+                else if (format.indexOf("|" + name.substr(name.find_last_of('.')) + "|") != -1) {
+                    show = true;
+                }
 
                 if (show) { entries.push_back(mOption(name, iconSet, getIconByFormat(name))); }
             }
