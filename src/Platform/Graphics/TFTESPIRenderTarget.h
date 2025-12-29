@@ -44,7 +44,10 @@ class TFTESPIRenderTarget : public RenderTarget {
             return;
         }
         _tft.startWrite();
-        if (transparent) { _tft.pushImage(x, y, w, h, data, transpColor); }
+        if (transparent) {
+            transpColor = (transpColor >> 8) | (transpColor << 8);
+            _tft.pushImage(x, y, w, h, data, transpColor);
+        }
         else { _tft.pushImage(x, y, w, h, data); }
         _tft.endWrite();
     }
@@ -99,9 +102,8 @@ class TFTESPIRenderTarget : public RenderTarget {
         _tft.fillScreen(color);
         _tft.endWrite();
     }
-    void setUseBuffer(bool useBuffer) override{
-        _useBuffer = useBuffer;
-    }
+    void setUseBuffer(bool useBuffer) override { _useBuffer = useBuffer; }
+    bool getUseBuffer() override { return _useBuffer; }
     void present() override {
         if (_useBuffer && bufferTargetToFlip) {
             _tft.pushImage(0, 0, 240, 320, bufferTargetToFlip->getBuffer());
@@ -109,7 +111,5 @@ class TFTESPIRenderTarget : public RenderTarget {
     }
 };
 
-inline RenderTarget* setupTFTESPIRenderTarget() {
-    return new TFTESPIRenderTarget(240, 320, true);
-}
+inline RenderTarget* setupTFTESPIRenderTarget() { return new TFTESPIRenderTarget(240, 320, true); }
 #endif

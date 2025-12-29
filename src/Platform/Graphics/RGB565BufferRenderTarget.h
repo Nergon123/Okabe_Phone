@@ -1,6 +1,5 @@
 #pragma once
 #include "RenderTargets.h"
-#include <Platform/ESP32Memory.h>
 #include <cstdint>
 #include <cstring>
 

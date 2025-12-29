@@ -37,7 +37,19 @@ void advancedSettings() {
         menuSelection = choiceMenu(options, ArraySize(options), false);
         switch (menuSelection) {
         case 1: connectivityMenu(); break;
-        case 2: lookAndFeel = choiceMenu(laf_opts, ArraySize(laf_opts), false); break;
+        case 2:
+            lookAndFeel = choiceMenu(laf_opts, ArraySize(laf_opts), false);
+            if (lookAndFeel == 0) {
+                NString filepath = fileBrowser("/", ".nph");
+                if (VFS.exists(filepath)) {
+                    NFile *resource = VFS.open(filepath);
+                    InfoWindow("Applying Theme...", "INFO", false, TFT_BLUE);
+                    res.Init(resource);
+                    res.CopyToRam();
+                    if (res.cache[RES_MAIN]) { res.Files[RES_MAIN]->close(); }
+                }
+            }
+            break;
 
         default: return;
         }
@@ -138,7 +150,8 @@ int gallery() {
     if (!VFS.exists("/sd" + resPath)) { return lastImage; }
     std::vector<mOption> wallpaperOptions = {mOption("Pick wallpaper...", Image())};
     return listMenu(wallpaperOptions, wallpaperOptions.size(), true, LM_SETTINGS,
-                    "Change wallpaper");
+                    "Change wallpaper")
+        .index;
 }
 
 // Set time screen
@@ -241,7 +254,7 @@ void ringtoneSelector(bool isMail) {
 
     // int choice = 0;
     // while (choice != -1) {
-    //     choice = listMenu(opt, count, false, LM_SETTINGS, "Set ringtone", true, choice);
+    //     choice = listMenu(opt, count, false, LM_SETTINGS, "Set ringtone", true, choice).index;
     //     if (choice < 0) { return; }
     //     if (iconIndex >= 0) { opt[iconIndex].image = Image(); }
     //     // TODO DRAW NOTE ICON

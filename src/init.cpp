@@ -10,7 +10,7 @@
 void storageInit() {
     hw->initStorage();
 
-    preferences.begin("settings", false);
+    preferences.begin("System", false);
     resPath = preferences.getString("resPath", resPath.c_str());
 
     if (!VFS.exists(resPath)) {

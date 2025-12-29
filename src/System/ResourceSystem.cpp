@@ -1,5 +1,4 @@
 #include "ResourceSystem.h"
-#include "Platform/ESP32Memory.h"
 #include "Generic.h"
 Coords czero = {0, 0};
 Coords cnone = {-1, -1};
@@ -7,6 +6,11 @@ Coords cnone = {-1, -1};
 void ResourceSystem::Init(NFile *Main, NFile *Wallpapers) {
     Files[RES_MAIN]       = Main;
     Files[RES_WALLPAPERS] = Wallpapers;
+
+    free(cache[RES_MAIN]);
+    cache[RES_MAIN] = nullptr;
+    free(cache[RES_WALLPAPERS]);
+    cache[RES_WALLPAPERS] = nullptr;
     Images[RES_MAIN].clear();
     Images[RES_WALLPAPERS].clear();
     for (size_t i = 0; i < sizeof(Files) / sizeof(Files[0]); i++) {
@@ -111,7 +115,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
         ImageBuffer imageBuffer =
             GetRGB565(img, lines * img.width * 2, start + i * img.width * 2, type);
         if (!imageBuffer.pointer) {
-            sysError("/nDRAWIMAGE:Imagebuffer Pointer is null\nprobably something wrong with "
+            sysError("\nDRAWIMAGE:Imagebuffer Pointer is null\nprobably something wrong with "
                      "SPIRAM/PSRAM");
             return false;
         }
@@ -171,7 +175,9 @@ void ResourceSystem::CopyToRam(uint8_t type) {
 
                 // free(cache[type]);
                 // cache[type] = nullptr;
+
             }
+        
         }
     }
 }

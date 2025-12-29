@@ -1,5 +1,5 @@
 #include "ListMenu.h"
-#include "Platform/ESP32Memory.h"
+
 
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "System/FontManagement.h"
@@ -70,8 +70,8 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 /// @param label Title of the menu
 /// @param forceIcons Boolean indicating if icons should be forced
 /// @param findex Force index of the selected option
-int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NString label,
-             bool forceIcons, int findex) {
+LM_RET_VALUE listMenu(std::vector<mOption> choices, int icount, bool lines, int type,
+                      NString label, bool forceIcons, int findex) {
     tft.setViewport(0, 26, 240, 294);
     //    const int bufOffset = 26;
     tft.setTextWrap(false, false);
@@ -100,15 +100,15 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
             int bh = buttonsHelding();
             if (bh == SELECT) {
                 tft.resetViewport();
-                return LISTMENU_OPTIONS;
+                return LM_RET_VALUE(LISTMENU_OPTIONS, bh);
             }
             else if (bh != -1) {
                 tft.resetViewport();
-                return LISTMENU_EXIT;
+                return LM_RET_VALUE(LISTMENU_EXIT, bh);
             }
         };
         tft.resetViewport();
-        return LISTMENU_EXIT;
+        return LM_RET_VALUE(LISTMENU_EXIT);
     }
     int entry_size = tft.fontHeight();
 
@@ -139,11 +139,7 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
         int c = buttonsHelding();
 
         switch (c) {
-        case SELECT:
-            currentRenderTarget->present();
-            tft.resetViewport();
-            return selected + (page * per_page);
-            break;
+
         case BACK:
             currentRenderTarget->present();
             tft.resetViewport();
@@ -262,6 +258,13 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
                 currentRenderTarget->present();
             }
             break;
+        default:
+            if (c == SELECT || c == ANSWER) {
+                currentRenderTarget->present();
+                tft.resetViewport();
+                return LM_RET_VALUE(selected + (page * per_page), c);
+            }
+            break;
         }
     }
 
@@ -277,14 +280,14 @@ int listMenu(std::vector<mOption> choices, int icount, bool lines, int type, NSt
 // @param label Title of the menu
 // @param forceIcons Boolean indicating if icons should be forced
 // @param findex Index of the selected option
-int listMenu(const NString choices[], int icount, bool images, int type, NString label,
-             bool forceIcons, int findex) {
+LM_RET_VALUE listMenu(const NString choices[], int icount, bool images, int type, NString label,
+                      bool forceIcons, int findex) {
     std::vector<mOption> optionArr;
     for (int i = 0; i < icount; i++) {
         mOption option = mOption(choices[i], Image(), 0);
         optionArr.push_back(option);
     }
-    int result = listMenu(optionArr, icount, images, type, label, forceIcons, findex);
+    LM_RET_VALUE result = listMenu(optionArr, icount, images, type, label, forceIcons, findex);
     return result;
 }
 

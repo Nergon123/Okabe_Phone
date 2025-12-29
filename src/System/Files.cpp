@@ -72,11 +72,15 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
                 if (show) { entries.push_back(mOption(name, iconSet, getIconByFormat(name))); }
             }
 
-            if (f) { delete f; }
+            if (f) {
+                f->close();
+                delete f;
+            }
         }
 
-        int selection = graphical ? listMenu(entries, entries.size(), false, LM_SETTINGS, path)
-                                  : listMenuNonGraphical(entries, entries.size(), path);
+        int selection = graphical
+                            ? listMenu(entries, entries.size(), false, LM_SETTINGS, path).index
+                            : listMenuNonGraphical(entries, entries.size(), path);
 
         if (selection < 0) {
             return NString(); // return empty string to indicate cancel

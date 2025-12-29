@@ -34,7 +34,7 @@ class VirtualFileSystem : public IFileSystem {
         for (auto& m : mounts) { ok &= m.fs->begin(); }
         return ok;
     }
-    
+
     bool exists(const std::string& path) override {
         std::string sub;
 

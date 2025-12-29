@@ -45,8 +45,10 @@ class StdFile : public IFile {
         file.seekg(currentPos);
         return sz;
     }
-    bool isDirectory() override { return fs::is_directory(filePath); }
-    bool available() override { return file.good() && !file.eof(); }
+    bool   isDirectory() override { return fs::is_directory(filePath); }
+    bool   available() override { return file.good() && !file.eof(); }
+    size_t position() override {return file.tellg();};
+
     void printf(const char* format, ...) override {
         char    buffer[1024];
         va_list args;
@@ -71,10 +73,12 @@ class StdFile : public IFile {
 };
 
 class StdFileSystem : public IFileSystem {
-    std::string root;
+    std::string    root;
     FileDeviceType fstype;
+
   public:
-    explicit StdFileSystem(const std::string& rootPath,FileDeviceType type) : root(rootPath), fstype(type) {}
+    explicit StdFileSystem(const std::string& rootPath, FileDeviceType type)
+        : root(rootPath), fstype(type) {}
 
     bool begin() override {
         fs::create_directories(root);

@@ -136,9 +136,10 @@ void offlineCharging() {
  *@param message message to be displayed
  */
 void recovery(NString message) {
-    sysError("No resource file");
-#warning recovery needs reimplementing
-    hw->initStorage();
+    if (res.Files[RES_MAIN]) {
+        free(res.Files[RES_MAIN]);
+        delete res.Files[RES_MAIN];
+    }
     res.Files[RES_MAIN] = nullptr;
     while (!res.Files[RES_MAIN]) {
         tft.setCursor(0, 40);
@@ -159,7 +160,13 @@ void recovery(NString message) {
             NFile *nFile        = VFS.open(resPath);
             res.Init(nFile);
             res.CopyToRam(RES_MAIN);
-            if (res.Files[RES_MAIN]) { return; }
+
+            if (res.Files[RES_MAIN]) {
+                preferences.begin("System");
+                preferences.putString("resPath", resPath.c_str());
+                preferences.end();
+                return;
+            }
             break;
         }
     }

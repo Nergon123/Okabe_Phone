@@ -7,7 +7,6 @@
 #include "UI/UIElements.h"
 #include "UI/Notifications.h"
 #include "Input/Input.h"
-#include "System/PNGDraw.h"
 #include "System/Time.h"
 void settings();
 void setTime(time_t *time);

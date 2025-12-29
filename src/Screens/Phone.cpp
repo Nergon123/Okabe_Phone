@@ -160,14 +160,16 @@ void contactss() {
 
         NString contactNames[contacts.size()];
         for (size_t i = 0; i < contacts.size(); ++i) { contactNames[i] = contacts[i].name; }
-        int selectedContactIndex =
+        LM_RET_VALUE choice =
             listMenu(contactNames, contacts.size(), false, LM_CONTACTS, "Address Book");
+        int selectedContactIndex = choice.index;
 
         if (selectedContactIndex != LISTMENU_EXIT && contacts.size() > 0) {
             int contextMenuSelection = -1;
-
-            contextMenuSelection = choiceMenu(contactMenuItems, 5, true);
-
+            if (choice.button != ANSWER) {
+                contextMenuSelection = choiceMenu(contactMenuItems, 5, true);
+            }
+            else { contextMenuSelection = 0; }
             switch (contextMenuSelection) {
 
             case 0:
@@ -194,7 +196,7 @@ void contactss() {
                 break;
             }
         }
-        else if (LISTMENU_OPTIONS) {
+        else if (selectedContactIndex == LISTMENU_OPTIONS) {
             const NString choice[1] = {"Create"};
             int           CMS       = choiceMenu({choice}, 1, true);
             if (!CMS) { editContact(Contact("", "", "", contacts.size())); }

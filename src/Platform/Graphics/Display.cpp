@@ -73,16 +73,14 @@ void TFT_STUB::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t col
 }
 
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data) {
-    if (activeRenderTarget) {
-        activeRenderTarget->pushBuffer(x, y, w, h, data, false, 0);
-    }
+    if (activeRenderTarget) { activeRenderTarget->pushBuffer(x, y, w, h, data, false, 0); }
 }
 
 void TFT_STUB::pushImage(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
                          uint16_t transpColor) {
     if (activeRenderTarget) {
-        //probably should be fixed in ImageEditor
-        transpColor = (transpColor >> 8) | (transpColor << 8); 
+        // probably should be fixed in ImageEditor
+        transpColor = (transpColor >> 8) | (transpColor << 8);
         activeRenderTarget->pushBuffer(x, y, w, h, data, true, transpColor);
     }
 }
@@ -100,7 +98,6 @@ void TFT_STUB::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t col
     // Right edge
     setAddrWindow(x + w - 1, y + 1, 1, h - 2);
     activeRenderTarget->writeColor(color, h - 2);
-
 }
 void TFT_STUB::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
     if (!activeRenderTarget) { return; }
@@ -145,7 +142,6 @@ void TFT_STUB::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t
             y0 += sy;
         }
     }
-
 }
 
 void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2,
@@ -179,7 +175,6 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
         if (ax > bx) { std::swap(ax, bx); }
         for (int16_t j = ax; j <= bx; j++) { drawPixel(j, y0 + i, color); }
     }
-
 }
 
 void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
@@ -307,7 +302,9 @@ int16_t TFT_STUB::width() const { return _w; }
 int16_t TFT_STUB::height() const { return _h; }
 
 uint16_t TFT_STUB::color565(uint8_t red, uint8_t green, uint8_t blue) const {
-    return ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | (blue >> 3);
+    uint16_t color = ((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3);
+
+    return (color << 8) | (color >> 8);
 }
 
 void TFT_STUB::setCursor(int16_t x, int16_t y) {

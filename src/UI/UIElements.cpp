@@ -349,7 +349,8 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     int       printed_count = 0;
     int       xt = 0, yt = 0;
     bool      draw = true;
-
+    bool      wasBuffer = currentRenderTarget->getUseBuffer();
+    currentRenderTarget->setUseBuffer(false);
     while (printed_count < max_count) {
         for (int j = offset; j >= 0 && printed_count < max_count; j--) {
 
@@ -370,6 +371,7 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
 
         offset = 7; // Reset offset after each full circle iteration
     }
+    currentRenderTarget->setUseBuffer(wasBuffer);
 }
 
 int lastpercentage;
@@ -410,9 +412,12 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
     }
     lastpercentage = percentage;
     currentRenderTarget->present();
+
 }
 
 void bootText(NString text, int x, int y, int w, int h) {
+
+
     ESP_LOGI("BOOT", "%s", text.c_str());
     if (lastpercentage == 100) { return; }
     tft.setTextFont(0);
@@ -426,6 +431,7 @@ void bootText(NString text, int x, int y, int w, int h) {
     tft.print(text.c_str());
     tft.resetViewport();
     currentRenderTarget->present();
+
 }
 
 // ## Critical system error
@@ -434,7 +440,7 @@ void bootText(NString text, int x, int y, int w, int h) {
 void sysError(NString reason) {
     tft.fillScreen(0x0000);
     tft.setCursor(10, 40);
-    tft.setTextFont(1);
+    changeFont(0);
     tft.setTextSize(4);
     tft.setTextColor(0xF001); // FOOL :3
     tft.println("==ERROR==");

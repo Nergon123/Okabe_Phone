@@ -42,16 +42,6 @@ class DEV_ESP32 : public iHW {
     void init() override {
         esp_task_wdt_deinit();
         esp_task_wdt_init(10000, false);
-
-        char    default_hostname[32];
-        uint8_t eth_mac[6];
-        esp_wifi_get_mac((wifi_interface_t)WIFI_IF_STA, eth_mac);
-        snprintf(default_hostname, 32, "%s%02X%02X%02X", CONFIG_IDF_TARGET "-", eth_mac[3],
-                 eth_mac[4], eth_mac[5]); // default hostname from esp wifi arduino implementation
-        const char* current = WiFi.getHostname();
-        ESP_LOGI("WIFI","CURRENT hostname %s %p\nDEFAULT %s, CUSTOM %s",current,current,default_hostname,HOSTNAME);
-        if (current && strcmp(default_hostname, current) == 0) { WiFi.setHostname(HOSTNAME); }
-
         esp_log_level_set("ledc", ESP_LOG_NONE); // brightness logger
 
         Wire.setPins(I2C_SDA, I2C_SCL);
@@ -76,6 +66,7 @@ class DEV_ESP32 : public iHW {
         if (keypad_exists) { ESP_LOGI("KEYPAD", "MCP23017 Initalized"); }
         else { ESP_LOGE("KEYPAD", "MCP23017 cannot be initalized"); }
         charger_exists = checkI2Cdevices(IP5306_ADDR);
+        delay(3000);
     };
 
     void initStorage() override {
@@ -88,6 +79,7 @@ class DEV_ESP32 : public iHW {
         if (sdcard_exists) { VFS.mount("/sd", sdcard); }
         bootText("Initializing SPIFFS...");
         if (SPIFFS.begin()) { VFS.mount("/spiffs", spiffs); }
+
     }
     void  postScreenInit() override { showResetReason(); }
     ulong micros() override { return ::micros(); };
@@ -159,6 +151,7 @@ class DEV_ESP32 : public iHW {
 
   private:
     void showResetReason() {
+        return;
         const char* reason;
         switch (esp_reset_reason()) {
         case ESP_RST_PANIC: reason = "CORE PANIC"; break;

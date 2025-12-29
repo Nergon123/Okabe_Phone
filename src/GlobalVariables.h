@@ -12,6 +12,7 @@
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/NString.h"
 #include "Platform/Preferences.h"
+#include "Platform/Graphics/ImageProcessor.h"
 
 #include <vector>
 // hmm....
@@ -22,9 +23,15 @@ struct Contact {
     NString phone;
     NString name;
     NString email;
-    Contact() : index(-1), phone(""), name(""), email("") {}
-    Contact(NString _name, NString _phone, NString _email = "", int _index = -1)
+    Contact(NString _name = "", NString _phone = "", NString _email = "", int _index = -1)
         : index(_index), phone(_phone), name(_name), email(_email) {}
+};
+
+// what listMenu returns
+struct LM_RET_VALUE {
+    int index;
+    int button;
+    LM_RET_VALUE(int index, int button = -1) : index(index), button(button) {};
 };
 
 // Options for list Menu
@@ -32,19 +39,14 @@ struct mOption {
     NString label;
     Image   image;
     uint8_t icon_index;
-    mOption(NString label) : label(label), image(Image()), icon_index(0) {};
-    mOption(NString label, Image image) : label(label), image(image), icon_index(0) {};
-    mOption(NString label, Image image, uint8_t icon_index)
-        : label(label), image(image), icon_index(icon_index) {};
+    void (*_function)();
+    mOption(NString label, Image image = Image(), uint8_t icon_index = 0,
+            void (*_function)() = nullptr)
+        : label(label), image(image), icon_index(icon_index), _function(_function) {};
 };
 
 // SMS status
-enum status {
-
-    NEW     = 'N',
-    REPLIED = 'R',
-    READED  = 'D'
-};
+enum status { NEW = 'N', REPLIED = 'R', READED = 'D' };
 
 struct Message {
     int     index;
@@ -61,14 +63,11 @@ struct Message {
                        status == status::NEW ? (uint8_t)0 : (uint8_t)1);
     }
 
-    Message(Contact _contact, NString _subject, NString _content, NString _date, NString _longdate,
+    Message(Contact _contact = Contact(), NString _subject = "", NString _content = "",
+            NString _date = "00/00", NString _longdate = "00/00/00 00:00",
             bool _isOutgoing = false, unsigned char _status = status::NEW, int _index = -1)
         : index(_index), status(_status), isOutgoing(_isOutgoing), contact(_contact),
           subject(_subject), content(_content), date(_date), longdate(_longdate) {}
-
-    Message()
-        : index(-1), status(status::NEW), isOutgoing(false), contact(Contact()), subject(""),
-          content(""), date("00/00"), longdate("00/00/00 00:00") {}
 };
 struct STR_DIR {
     NString text;
@@ -161,7 +160,7 @@ extern tm     systemTimeInfo;
 #define TASK std::thread
 #elif defined(INC_FREERTOS_H)
 #define ENDTASK(x) vTaskDelete(x)
-#define TASK TaskHandle_t
+#define TASK       TaskHandle_t
 #endif
 #ifndef ENDTASK
 #define ENDTASK(x) (void)x;

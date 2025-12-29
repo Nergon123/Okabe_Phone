@@ -7,6 +7,7 @@
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
+#include <Screens/ImageViewer.h>
 
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
@@ -45,7 +46,7 @@ int start() {
     tft.setRenderTarget(currentRenderTarget);
     hw->postScreenInit();
     if (hw->isCharging()) { offlineCharging(); }
-
+    currentRenderTarget->setUseBuffer(false);
     tft.fillScreen(0x0000);
     tft.setTextFont(1);
     tft.setCursor(0, 0);
@@ -56,6 +57,7 @@ int start() {
     if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
 
     res.CopyToRam();
+    if (res.cache[RES_MAIN]) { res.Files[RES_MAIN]->close(); }
     res.DrawImage(R_BOOT_LOGO);
     bootText("Initializing RTOS tasks...");
     initBackgroundTasks();
@@ -70,7 +72,7 @@ int start() {
     progressBar(100, 100, 250);
 
     if (buttonsHelding(false) == '#') { AT_test(); }
-
+    currentRenderTarget->setUseBuffer(true);
     millSleep = hw->millis();
     return 0;
 }
