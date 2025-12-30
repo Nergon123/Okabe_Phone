@@ -67,9 +67,10 @@ void e() {
     const NString menu[] = {"FileBrowser", "OTA web update", "Boot application", "View Image",
                             "Wallpaper Modes"};
 
-    const NString wallpaperModes[] ={"CENTERED", "TILED", "FILLED", "STRETCHED", "FIT_HORIZONTALY", "FIT_VERTICALY" };
-    int wallpaperMode = IMG_CENTERED;
-    int           choice = LISTMENU_NULL;
+    const NString wallpaperModes[] = {"CENTERED",  "TILED",           "FILLED",
+                                      "STRETCHED", "FIT_HORIZONTALY", "FIT_VERTICALY"};
+    int           wallpaperMode    = IMG_CENTERED;
+    int           choice           = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
         choice = listMenu(menu, ArraySize(menu), false, LM_SETTINGS, "Extra").index;
         switch (choice) {
@@ -78,14 +79,13 @@ void e() {
         case 2: execute_application(); break;
         case 3: ImageViewer(fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|")); break;
         case 4:
-        NString path = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|");
-        while(wallpaperMode!=LISTMENU_EXIT){
-            wallpaperMode = choiceMenu(wallpaperModes,ArraySize(wallpaperModes),true);
-            drawImageWithMode(path,(ImageMode)wallpaperMode,0,26);
-            while(buttonsHelding() == -1);
-
-        }
-        break;
+            NString path = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|");
+            while (wallpaperMode != LISTMENU_EXIT) {
+                wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
+                drawImageWithMode(path, (ImageMode)wallpaperMode, 0, 26);
+                while (buttonsHelding() == -1);
+            }
+            break;
         }
     };
     currentScreen = SCREENS::MAINMENU;
