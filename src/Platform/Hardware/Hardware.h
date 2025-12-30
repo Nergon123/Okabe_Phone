@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include <Platform/Graphics/RenderTargets.h>
 #include <Platform/NString.h>
+#include <vector>
 enum CPU_SPEED { CPU_IDLE, CPU_DEFAULT, CPU_FAST };
 struct HttpAnswer {
     int     code;
@@ -15,6 +16,7 @@ enum class HttpMethod { GET, POST, PUT, DELETE_, PATCH };
 
 class iHW {
   public:
+    virtual ~iHW();
     virtual void  init() {};
     virtual void  initStorage() {};
     virtual void  postScreenInit() {};
@@ -32,13 +34,19 @@ class iHW {
     virtual void        shutdown() {};
     virtual void        reboot() {};
 
-    virtual void          setScreenBrightness(int8_t value) { (void)value; };
-    virtual char          getCharInput() { return 0; };
-    virtual int           getKeyInput() { return 0; };
-    virtual int           getBatteryCharge() { return 3; };
-    virtual bool          isCharging() { return 0; };
-    virtual HttpAnswer    httpSend(HttpMethod method, NString& url, NString& payload,
-                                   const std::vector<HttpHeader>& headers, uint16_t timeout);
+    virtual void       setScreenBrightness(int8_t value) { (void)value; };
+    virtual char       getCharInput() { return 0; };
+    virtual int        getKeyInput() { return 0; };
+    virtual int        getBatteryCharge() { return 3; };
+    virtual bool       isCharging() { return 0; };
+    virtual HttpAnswer httpSend(HttpMethod method, const NString& url, NString& payload,
+                                const std::vector<HttpHeader>& headers, uint16_t timeout) {
+        (void)method;
+        (void)url;
+        (void)payload, (void)headers;
+        (void)timeout;
+        return {0, nullptr};
+    };
     virtual RenderTarget* GetScreen() { return nullptr; };
 };
 #ifdef PC

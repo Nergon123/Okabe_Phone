@@ -1,6 +1,7 @@
 #pragma once
 #include <Defines.h>
 #include <cstdint>
+#include <cstdio>
 struct Viewport {
     int16_t x = 0;
     int16_t y = 0;

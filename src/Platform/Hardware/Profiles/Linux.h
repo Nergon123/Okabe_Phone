@@ -10,8 +10,9 @@
 #include <string>
 #include <sys/utsname.h>
 #include <thread>
+extern "C" {
 #include <curl/curl.h>
-
+}
 class DEV_LINUX : public iHW {
   public:
     void init() override {};
@@ -105,8 +106,8 @@ class DEV_LINUX : public iHW {
         return size * nmemb;
     }
 
-    HttpAnswer httpSend(HttpMethod method, const NString& url, const NString& payload,
-                        const std::vector<HttpHeader>& headers,uint16_t timeout) override{
+HttpAnswer    httpSend(HttpMethod method, const NString& url, NString& payload,
+                                   const std::vector<HttpHeader>& headers, uint16_t timeout)override {
         HttpAnswer answ;
 
         CURL* curl = curl_easy_init();
@@ -148,7 +149,9 @@ class DEV_LINUX : public iHW {
 
         case HttpMethod::DELETE_:
             curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-            if (!payload.isEmpty()) { curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str()); }
+            if (!payload.isEmpty()) {
+                curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
+            }
             break;
 
         case HttpMethod::PATCH:
@@ -175,6 +178,7 @@ class DEV_LINUX : public iHW {
 
         return answ;
     }
+
     bool isCharging() override {
         std::string path = getBatteryPath();
         if (path.empty()) { return false; }

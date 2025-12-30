@@ -148,7 +148,7 @@ class DEV_ESP32 : public iHW {
 
     };
     RenderTarget* GetScreen() override { return setupTFTESPIRenderTarget(); }
-    HttpAnswer    httpSend(HttpMethod method, NString &url, NString &payload,
+    HttpAnswer    httpSend(HttpMethod method, const NString &url, NString &payload,
                            const std::vector<HttpHeader>& headers, uint16_t timeout) override {
         HttpAnswer answ;
         http.setTimeout(timeout);
