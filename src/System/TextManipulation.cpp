@@ -17,8 +17,7 @@ unsigned int getIndexOfCount(int count, NString input, NString str, unsigned int
 // @param charIndex The character index to find the split position for
 // @param posX The x-coordinate of the split position
 // @param posY The y-coordinate of the split position
-// @param direction The direction to search (UP or DOWN)
-void findSplitPosition(NString text, size_t charIndex, int &posX, int &posY, int direction) {
+void findSplitPosition(NString text, size_t charIndex, int &posX, int &posY) {
     int lastNewLine  = 0;
     size_t curPosInText = 0;
     posX             = 0;

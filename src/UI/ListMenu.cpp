@@ -376,7 +376,7 @@ int listMenuNonGraphical(std::vector<mOption> choices, int icount, NString label
 // mini list menu
 // @param choices Array of strings representing the menu options
 // @param count Number of options in the menu
-// @param context Boolean indicating if the menu is in context
+// @param context Boolean indicating if the menu is window
 int choiceMenu(const NString choices[], int count, bool context) {
     int      x              = 30;
     int      y              = 95;

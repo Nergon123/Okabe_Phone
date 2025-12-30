@@ -3,7 +3,7 @@
 void suspendCore(bool suspend) { (void)suspend; };
 
 // Function to handle the idle task
-void TaskIdleHandler(void *parameter) {
+void TaskIdleHandler(void *) {
 
     uint32_t oldtime = hw->millis();
     time(&systemTime);

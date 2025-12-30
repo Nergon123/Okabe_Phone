@@ -49,7 +49,7 @@ image_data displayPNG(const NString path, int w, int h,bool onlyParams) {
     IFile* f = VFS.open(path, "r");
     if (!f) {
         ESP_LOGE("IMG", "Failed to open %s", path.c_str());
-        return {-1, -1, "Failed to open file"};
+        return {-1, -1, "Failed to open file",nullptr};
     }
 
     int            width, height, channels;
@@ -70,7 +70,7 @@ image_data displayPNG(const NString path, int w, int h,bool onlyParams) {
     int            targetW = (w > 0) ? w : width;
     int            targetH = (h > 0) ? h : height;
     unsigned char* resized = resizePNG(img, width, height, targetW, targetH);
-    if (!resized) { return {-1, -1, "Failed to resize image"}; }
+    if (!resized) { return {-1, -1, "Failed to resize image",nullptr}; }
     uint16_t* data = convertRGBToRGB565(resized, targetW, targetH);
 
     return {width, height, nullptr, data};

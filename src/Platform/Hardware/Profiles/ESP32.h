@@ -66,7 +66,7 @@ class DEV_ESP32 : public iHW {
         if (keypad_exists) { ESP_LOGI("KEYPAD", "MCP23017 Initalized"); }
         else { ESP_LOGE("KEYPAD", "MCP23017 cannot be initalized"); }
         charger_exists = checkI2Cdevices(IP5306_ADDR);
-        delay(3000);
+        delay(2000); //give some time for espressif hardware to initialize
     };
 
     void initStorage() override {

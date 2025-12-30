@@ -6,17 +6,23 @@ struct iconFormat {
 };
 
 const iconFormat fileFormats[] = {
-    {LM_ICO_IMAGE, ".png"}, {LM_ICO_AUDIO, ".wav"}, {LM_ICO_AUDIO, ".flac"},
-    {LM_ICO_THEME, ".nph"}, {LM_ICO_TEXT, ".txt"},  {0, ""},
+    {LM_ICO_IMAGE, "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|"},
+    {LM_ICO_AUDIO, "|.wav|.mp3|.m4a|.flac|"},
+    {LM_ICO_THEME, "|.nph|"},
+    {LM_ICO_TEXT, "|.md|.txt|"},
+    {0, ""},
 };
 
 uint8_t getIconByFormat(NString name) {
+    NString format = name.substring(name.lastIndexOf('.'), name.length() - 1);
     for (size_t i = 0; i < sizeof(fileFormats) / sizeof(fileFormats[0]); i++) {
-        if (name.endsWith(fileFormats[i].format)) { return fileFormats[i].icon; }
+        if (format.indexOf("|" + NString(fileFormats[i].format) + "|") != -1) {
+            return fileFormats[i].icon;
+        }
+        return 0;
     }
     return 0;
 }
-
 NString normalize(NString p) {
     // Prevent deleting the root slash
     while (p.endsWith("/") && p != "/") { p.remove(p.length() - 1); }
