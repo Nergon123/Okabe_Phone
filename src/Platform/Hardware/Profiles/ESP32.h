@@ -3,6 +3,7 @@
 #ifndef PC
 #include "Platform/Hardware/Drivers/Battery/IP5306.h"
 #include <Esp.h>
+#include <HTTPClient.h>
 #include <MCP23017.h>
 #include <Platform/FileSystem/ESP.h>
 #include <Platform/FileSystem/VFS.h>
@@ -66,7 +67,7 @@ class DEV_ESP32 : public iHW {
         if (keypad_exists) { ESP_LOGI("KEYPAD", "MCP23017 Initalized"); }
         else { ESP_LOGE("KEYPAD", "MCP23017 cannot be initalized"); }
         charger_exists = checkI2Cdevices(IP5306_ADDR);
-        delay(2000); //give some time for espressif hardware to initialize
+        delay(2000); // give some time for espressif hardware to initialize
     };
 
     void initStorage() override {
@@ -79,7 +80,6 @@ class DEV_ESP32 : public iHW {
         if (sdcard_exists) { VFS.mount("/sd", sdcard); }
         bootText("Initializing SPIFFS...");
         if (SPIFFS.begin()) { VFS.mount("/spiffs", spiffs); }
-
     }
     void  postScreenInit() override { showResetReason(); }
     ulong micros() override { return ::micros(); };
@@ -148,9 +148,32 @@ class DEV_ESP32 : public iHW {
 
     };
     RenderTarget* GetScreen() override { return setupTFTESPIRenderTarget(); }
+    HttpAnswer    httpSend(HttpMethod method, NString &url, NString &payload,
+                           const std::vector<HttpHeader>& headers, uint16_t timeout) override {
+        HttpAnswer answ;
+        http.setTimeout(timeout);
+        if (!http.begin(url.c_str())) { return answ; }
+        for (const HttpHeader& header : headers) {
+            http.addHeader(header.name.c_str(), header.content.c_str());
+        }
+
+        switch (method) {
+        case HttpMethod::GET: answ.code = http.GET(); break;
+        case HttpMethod::POST: answ.code = http.POST(payload.c_str()); break;
+        case HttpMethod::PUT: answ.code = http.PUT(payload.c_str()); break;
+        case HttpMethod::DELETE_: answ.code = http.sendRequest("DELETE", payload.c_str()); break;
+        case HttpMethod::PATCH: answ.code = http.sendRequest("PATCH", payload.c_str()); break;
+        }
+
+        if (answ.code > 0) { answ.response = http.getString().c_str(); }
+        else { answ.response = "Error: " + NString(http.errorToString(answ.code)); }
+        http.end();
+        return answ;
+    }
 
   private:
-    void showResetReason() {
+    HTTPClient http;
+    void       showResetReason() {
         return;
         const char* reason;
         switch (esp_reset_reason()) {

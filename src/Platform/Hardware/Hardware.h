@@ -1,7 +1,17 @@
 #pragma once
 #include "stdlib.h"
 #include <Platform/Graphics/RenderTargets.h>
-enum CPU_SPEED { CPU_IDLE, CPU_SLOW, CPU_DEFAULT, CPU_FAST, CPU_FULL, CPU_TURBO };
+#include <Platform/NString.h>
+enum CPU_SPEED { CPU_IDLE, CPU_DEFAULT, CPU_FAST };
+struct HttpAnswer {
+    int     code;
+    NString response;
+};
+struct HttpHeader {
+    NString name;
+    NString content;
+};
+enum class HttpMethod { GET, POST, PUT, DELETE_, PATCH };
 
 class iHW {
   public:
@@ -14,7 +24,7 @@ class iHW {
         ulong mil = millis();
         while (millis() < mil + ms);
     }
-    virtual int         getWifiStrength(){return -1;}
+    virtual int         getWifiStrength() { return -1; }
     virtual void        setCPUSpeed(CPU_SPEED speed) { (void)speed; };
     virtual CPU_SPEED   getCPUSpeed() { return CPU_DEFAULT; };
     virtual void        updateFrequencies() {};
@@ -22,12 +32,13 @@ class iHW {
     virtual void        shutdown() {};
     virtual void        reboot() {};
 
-    virtual void setScreenBrightness(int8_t value) { (void)value; };
-    virtual char getCharInput() { return 0; };
-    virtual int  getKeyInput() { return 0; };
-    virtual int  getBatteryCharge() { return 3; };
-    virtual bool isCharging() { return 0; };
-
+    virtual void          setScreenBrightness(int8_t value) { (void)value; };
+    virtual char          getCharInput() { return 0; };
+    virtual int           getKeyInput() { return 0; };
+    virtual int           getBatteryCharge() { return 3; };
+    virtual bool          isCharging() { return 0; };
+    virtual HttpAnswer    httpSend(HttpMethod method, NString& url, NString& payload,
+                                   const std::vector<HttpHeader>& headers, uint16_t timeout);
     virtual RenderTarget* GetScreen() { return nullptr; };
 };
 #ifdef PC

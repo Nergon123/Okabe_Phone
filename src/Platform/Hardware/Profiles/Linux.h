@@ -10,10 +10,11 @@
 #include <string>
 #include <sys/utsname.h>
 #include <thread>
+#include <curl/curl.h>
 
 class DEV_LINUX : public iHW {
   public:
-    void init() override { };
+    void init() override {};
     void initStorage() override {
         IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
         IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
@@ -97,7 +98,83 @@ class DEV_LINUX : public iHW {
         }
         return std::atoi(readFile(path + "/capacity").c_str());
     }
+    // Helper callback for libcurl to collect response
+    static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+        std::string* response = reinterpret_cast<std::string*>(userp);
+        response->append(reinterpret_cast<char*>(contents), size * nmemb);
+        return size * nmemb;
+    }
 
+    HttpAnswer httpSend(HttpMethod method, const NString& url, const NString& payload,
+                        const std::vector<HttpHeader>& headers,uint16_t timeout) override{
+        HttpAnswer answ;
+
+        CURL* curl = curl_easy_init();
+        if (!curl) { return answ; }
+
+        std::string responseString;
+
+        // URL
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        // Timeout (optional, 5 sec)
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)timeout);
+
+        // Response callback
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseString);
+
+        // Headers
+        struct curl_slist* chunk = nullptr;
+        for (const auto& h : headers) {
+            std::string line = h.name.c_str() + std::string(": ") + h.content.c_str();
+            chunk            = curl_slist_append(chunk, line.c_str());
+        }
+        if (chunk) { curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk); }
+
+        // HTTP Method
+        switch (method) {
+        case HttpMethod::GET: curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L); break;
+
+        case HttpMethod::POST:
+            curl_easy_setopt(curl, CURLOPT_POST, 1L);
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
+            break;
+
+        case HttpMethod::PUT:
+            curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
+            break;
+
+        case HttpMethod::DELETE_:
+            curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+            if (!payload.isEmpty()) { curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str()); }
+            break;
+
+        case HttpMethod::PATCH:
+            curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH");
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
+            break;
+        }
+
+        // Perform request
+        CURLcode res = curl_easy_perform(curl);
+
+        if (res == CURLE_OK) {
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &answ.code);
+            answ.response = responseString;
+        }
+        else {
+            answ.code     = -1; // indicate error
+            answ.response = "Curl error: " + std::string(curl_easy_strerror(res));
+        }
+
+        // Cleanup
+        if (chunk) { curl_slist_free_all(chunk); }
+        curl_easy_cleanup(curl);
+
+        return answ;
+    }
     bool isCharging() override {
         std::string path = getBatteryPath();
         if (path.empty()) { return false; }
