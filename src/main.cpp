@@ -7,7 +7,7 @@
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
-#include <Screens/ImageViewer.h>
+
 
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;

@@ -43,6 +43,10 @@
 
 #define NI_delay(old_millis, ms) (hw->millis() - old_millis < ms)
 
+#ifndef ulong
+typedef unsigned long ulong;
+#endif
+
 // delay between SIM card checks
 #define DBC_MS 5000
 

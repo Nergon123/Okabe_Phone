@@ -106,8 +106,8 @@ class DEV_LINUX : public iHW {
         return size * nmemb;
     }
 
-HttpAnswer    httpSend(HttpMethod method, const NString& url, NString& payload,
-                                   const std::vector<HttpHeader>& headers, uint16_t timeout)override {
+    HttpAnswer httpSend(HttpMethod method, const NString& url, NString& payload,
+                        const std::vector<HttpHeader>& headers, uint16_t timeout) override {
         HttpAnswer answ;
 
         CURL* curl = curl_easy_init();
@@ -203,7 +203,8 @@ HttpAnswer    httpSend(HttpMethod method, const NString& url, NString& payload,
         if (!batteryPath.empty()) { return batteryPath; }
 
         const std::string base = "/sys/class/power_supply/";
-        for (const auto& entry : std::filesystem::directory_iterator(base)) {
+        auto              opts = std::filesystem::directory_options::skip_permission_denied;    
+        for (const auto& entry : std::filesystem::directory_iterator(base, opts)) {
             std::string type = readFile(entry.path().string() + "/type");
             if (type == "Battery") {
                 batteryPath = entry.path();

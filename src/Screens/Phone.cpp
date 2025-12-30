@@ -22,7 +22,6 @@ bool isCalling = false;
 void incomingCall(Contact contact) {
     drawWallpaper();
     res.DrawImage(R_FULL_NOTIFICATION);
-    // drawImage(0, 90, FULL_SCREEN_NOTIFICATION_IMAGE);
     changeFont(1);
     tft.setTextColor(0);
     tft.setCursor(15, 170);
@@ -31,17 +30,13 @@ void incomingCall(Contact contact) {
     tft.setCursor(90, 140);
     changeFont(4);
     tft.setTextSize(1);
-    tft.print("Ca l l ing"); // Spacing to match original bad kerning >_<
+    tft.print("Recieving call"); 
     res.DrawImage(R_PHONE_ICON);
-    // drawImage(45, 105, PHONE_ICON);
-
     writeCustomFont(55, 185, contact.phone, 1);
     res.DrawImage(R_PHONE_ICON_LIGHTNING, 0);
-    // drawImage(73, 90, LIGHTNING_ANIMATION[0]);
     int button = buttonsHelding();
     while (isCalling) {
         button = buttonsHelding();
-
         switch (button) {
         case ANSWER:
             if (sendATCommand("ATA").indexOf("NO CARRIER") == -1) { callActivity(contact); }
@@ -57,10 +52,6 @@ void incomingCall(Contact contact) {
     }
 }
 
-/*
- * Function to make a call
- * @param contact Contact object containing contact information (duh)
- */
 void makeCall(Contact contact) {
     if (!checkSim()) { return; }
     isAnswered = false;
@@ -68,10 +59,6 @@ void makeCall(Contact contact) {
     callActivity(contact);
 }
 
-/*
- * call activity screen
- * @param contact Contact object containing contact information
- */
 void callActivity(Contact contact) {
     ongoingCall = true;
     // bool calling = true;
@@ -88,13 +75,12 @@ void callActivity(Contact contact) {
 
     tft.setTextSize(2);
     tft.setCursor(0, 180 + 60);
-    // tft.print(contact.number);
     writeCustomFont(5, 240, contact.phone);
 
     tft.setTextSize(1);
     tft.setCursor(85, 95);
     tft.print("Calling...");
-    stateCall = DIALING;
+    stateCall = GetState();
     hw->delay(50);
     bool hang = false;
     while (stateCall == DIALING) {
@@ -114,7 +100,7 @@ void callActivity(Contact contact) {
     }
     if (hang) {
         // if hang up
-        sendATCommand("ATH");
+        
         ongoingCall = false;
 
         return;

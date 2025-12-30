@@ -132,13 +132,13 @@ bool checkSim() {
  * Get Call status from SIM Card Module
  *
  * Status defined (see Defines.h):
- * `0 ACTIVE`
- * 1 HELD
- * 2 DIALING
- * 3 ALERTING
- * 4 INCOMING
- * 5 WAITING
- * 6 DISCONNECT
+ * `0` ACTIVE
+ * `1` HELD
+ * `2` DIALING
+ * `3` ALERTING
+ * `4` INCOMING
+ * `5` WAITING
+ * `6` DISCONNECT
  */
 int GetState() {
     NString result = sendATCommand("AT+CLCC");
