@@ -1,7 +1,146 @@
 #include "SIM.h"
-
 #ifndef PC
 #define SIM_BAUD_RATE 115200
+
+static uint8_t hexNibble(char c) {
+    if (c >= '0' && c <= '9') { return c - '0'; }
+    if (c >= 'A' && c <= 'F') { return c - 'A' + 10; }
+    if (c >= 'a' && c <= 'f') { return c - 'a' + 10; }
+    return 0;
+}
+
+static uint8_t hexByte(const char* s) { return (hexNibble(s[0]) << 4) | hexNibble(s[1]); }
+
+static NString swapSemi(const char* s, int len) {
+    NString out;
+    for (int i = 0; i < len; i += 2) {
+        out += s[i + 1];
+        if (s[i] != 'F') { out += s[i]; }
+    }
+    return out;
+}
+
+// GSM 7-bit unpack
+static NString decode7bit(const uint8_t* data, int septets, int skipBits) {
+    NString  out;
+    uint16_t carry     = 0;
+    int      carryBits = skipBits;
+
+    for (int i = 0; i < septets; i++) {
+        int byteIndex = (i * 7 + skipBits) / 8;
+        int bitOffset = (i * 7 + skipBits) % 8;
+
+        uint16_t v = data[byteIndex] | (data[byteIndex + 1] << 8);
+        char     c = (v >> bitOffset) & 0x7F;
+
+        if (c == 0) { c = '@'; }
+        out += c;
+    }
+    return out;
+}
+
+static NString decodeUCS2(const uint8_t* data, int len) {
+    NString out;
+    for (int i = 0; i < len; i += 2) {
+        uint16_t ch = (data[i] << 8) | data[i + 1];
+        if (ch < 0x80) { out += (char)ch; }
+        else { out += '?'; }
+    }
+    return out;
+}
+
+std::vector<Message> parseMessages() {
+    std::vector<Message> msgs;
+    msgs.clear();
+
+    NString response = sendATCommand("AT+CMGL=4"); // list ALL in PDU mode
+
+    // split into lines
+    std::vector<NString> lines;
+    int                  s = 0;
+    while (true) {
+        int e = response.indexOf('\n', s);
+        if (e == -1) {
+            lines.push_back(response.substring(s));
+            break;
+        }
+        lines.push_back(response.substring(s, e));
+        s = e + 1;
+    }
+
+    for (size_t i = 0; i + 1 < lines.size(); i++) {
+
+        if (!lines[i].startsWith("+CMGL:")) { continue; }
+
+        Message msg;
+
+        // +CMGL: index,status,,len
+        int c1     = lines[i].indexOf(',');
+        msg.index  = lines[i].substring(7, c1).toInt();
+        msg.status = lines[i].substring(c1 + 1, lines[i].indexOf(',', c1 + 1)).toInt();
+
+        const char* p = lines[i + 1].c_str();
+
+        // SMSC
+        int smscLen = hexByte(p);
+        p += (1 + smscLen) * 2;
+
+        // first octet
+        uint8_t fo = hexByte(p);
+        p += 2;
+        bool udhi = fo & 0x40;
+
+        // sender
+        int oaLen = hexByte(p);
+        p += 2;
+        uint8_t oaType = hexByte(p);
+        p += 2;
+        int oaBytes       = (oaLen + 1) / 2;
+        msg.contact.phone = swapSemi(p, oaBytes * 2);
+        p += oaBytes * 2;
+
+        // PID + DCS
+        p += 2; // PID
+        uint8_t dcs = hexByte(p);
+        p += 2;
+
+        // --- timestamp ---
+        msg.longdate = swapSemi(p, 14);
+        msg.date     = msg.longdate.substring(0, 6);
+        p += 14;
+
+        // --- user data ---
+        int udl = hexByte(p);
+        p += 2;
+
+        int     udhLen    = 0;
+        int     skipBits  = 0;
+        uint8_t concatRef = 0, part = 1, total = 1;
+
+        if (udhi) {
+            udhLen = hexByte(p);
+            if (hexByte(p + 2) == 0x00) { // concat IEI
+                concatRef = hexByte(p + 6);
+                total     = hexByte(p + 8);
+                part      = hexByte(p + 10);
+            }
+            p += (udhLen + 1) * 2;
+            skipBits = ((udhLen + 1) * 8) % 7;
+        }
+
+        int     dataBytes = (udl * 7 + 7) / 8;
+        uint8_t buf[180];
+        for (int b = 0; b < dataBytes; b++) { buf[b] = hexByte(p + b * 2); }
+
+        if ((dcs & 0x0C) == 0x08) { msg.content = decodeUCS2(buf, dataBytes); }
+        else { msg.content = decode7bit(buf, udl, skipBits); }
+
+        msgs.push_back(msg);
+        i++; // skip PDU line
+    }
+    return msgs;
+}
+
 /*
  * Send AT command to Sim Card module
  * @param command AT command to send

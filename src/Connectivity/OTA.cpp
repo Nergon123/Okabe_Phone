@@ -22,7 +22,7 @@ void OTAactivity() {
     }
 
     tft.fillScreen(0);
-    ota.setDeviceInfo(String(FIRMVER), "OkabePhone");
+    ota.setDeviceInfo(String(FIRMVER), PRODUCTNAME);
     tft.setCursor(0, 50);
     tft.setTextColor(TFT_WHITE);
     changeFont(0);

@@ -1,5 +1,6 @@
 #pragma once
 #define HOSTNAME        "okabe_phone"
+#define PRODUCTNAME     "OkabePhone"
 #define FIRMVER         "0.2.0 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 

@@ -5,7 +5,7 @@
 #include "System/Generic.h"
 #include "System/TextManipulation.h"
 #include "UI/UIElements.h"
-
+std::vector<Message>  parseMessages();
 
 void    AT_test();
 NString sendATCommand(NString command, uint32_t timeout = 1000, bool background = false);

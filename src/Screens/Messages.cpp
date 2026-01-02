@@ -6,104 +6,15 @@
 #include "UI/UIElements.h"
 #include <Platform/Graphics/RGB565BufferRenderTarget.h>
 #include <algorithm>
-// Parse SMS messages from SIM Card
-// @param msgs Array of Message objects to store parsed messages
-// @param count Number of messages parsed
-void parseMessages(Message *&msgs, int &count) {
-
-    NString response     = sendATCommand("AT+CMGL=\"ALL\",1");
-    int     lastIndexOf  = 0;
-    int     messageCount = 0;
-
-    // Count the number of messages
-    while ((lastIndexOf = response.indexOf("+CMGL:", lastIndexOf)) != -1) {
-        messageCount++;
-        lastIndexOf += 6; // Move past "+CMGL:"
-    }
-
-    if (messageCount > 0) {
-        msgs        = new Message[messageCount];
-        lastIndexOf = 0;
-
-        for (int i = 0; i < messageCount; i++) {
-            lastIndexOf = response.indexOf("+CMGL: ", lastIndexOf);
-            if (lastIndexOf == -1) { break; }
-
-            int firstComma  = response.indexOf(",", lastIndexOf);
-            int secondComma = response.indexOf(",", firstComma + 1);
-            // int thirdComma  = response.indexOf(",", secondComma + 1);
-            // int fourthComma = response.indexOf(",", thirdComma + 1);
-
-            // Extract index
-            msgs[i].index = response.substring(lastIndexOf + 7, firstComma).toInt();
-
-            // Extract status
-            NString statusStr = response.substring(response.indexOf("\"", firstComma) + 1,
-                                                   response.indexOf("\"", secondComma));
-            if (statusStr.indexOf("UNREAD") != -1) { msgs[i].status = status::NEW; }
-            else if (statusStr.indexOf("READ") != -1) { msgs[i].status = status::READED; }
-            else {
-                msgs[i].status = status::NEW; // Default fallback
-            }
-
-            // Extract sender number
-            NString number = response.substring(
-                response.indexOf("\"", secondComma) + 1,
-                response.indexOf("\"", response.indexOf("\"", secondComma) + 1));
-
-            // Extract date
-            int dateStart = response.indexOf("/", lastIndexOf);
-            msgs[i].date  = response.substring(dateStart + 1, response.indexOf(",", dateStart));
-
-            NString checknumber;
-            if (number.indexOf('+') != -1) {
-                checknumber = number.substring(number.indexOf('+') + 3);
-            }
-            else { checknumber = number; }
-            Contact curContact;
-            curContact.phone = number;
-
-            // For some reason when some number from some newsletter or service like carrier.
-            // Will be recieved as number with letter p in it. (something like 543p2341)
-            // it cannot be replied back to that number so it will be "SERVICE NUMBER".
-            if (number.indexOf('p') != -1) { curContact.name = "SERVICE NUMBER"; }
-            else { curContact.name = number; }
-            curContact.index = -1;
-            for (size_t u = 0; u < contacts.size(); u++) {
-                if (contacts[u].phone.indexOf(checknumber) != -1) {
-                    curContact = contacts[u];
-                    break;
-                }
-            }
-            msgs[i].contact = curContact;
-            ESP_LOGD("MSG", "INDEX:   %d", msgs[i].index);
-            ESP_LOGD("MSG", "STATUS:  %d", (int)msgs[i].status); // Cast enum to int
-            ESP_LOGD("MSG", "DATE:    %s", msgs[i].date.c_str());
-            ESP_LOGD("MSG", "NUMBER:  %s", number.c_str());
-            ESP_LOGD("MSG", "CHKNMB:  %s", checknumber.c_str());
-            ESP_LOGD("MSG", "CONTACT: %s", msgs[i].contact.name.c_str());
-            lastIndexOf += 7; // Move past "+CMGL:"
-        }
-    }
-    count = messageCount;
-}
 
 // messages menu
 void messages() {
-
     res.DrawImage(R_MENU_BACKGROUND);
     res.DrawImage(R_MAIL_MENU_L_HEADER);
     res.DrawImage(R_MENU_L_HEADER);
     NString entries[] = {"Inbox", "Outbox"};
     int     ch        = choiceMenu(entries, ArraySize(entries), false);
-    inbox(ch);
-    // Maybe in future there will be more entries...
-    // switch (ch) {
-    // case 0: inbox(false); break;
-    // case 1: inbox(true); break;
-    // default: break;
-    //}
-
+    if (ch < 2 && ch >= 0) { inbox(ch); }
     currentScreen = SCREENS::MAINMENU;
 }
 
@@ -134,18 +45,15 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     // jump in pixels per one button press
     int y_jump = 22;
     // offset of screen in height
-    int           y_scr      = 0;
-    int           y_text     = 18;
-    int           min_y      = y_scr;
+    int y_scr  = 0;
+    int y_text = 18;
+    int min_y  = y_scr;
     tft.setCursor(30, 45);
     tft.setTextSize(1);
     changeFont(1);
     tft.setTextColor(0xffff);
-    
     tft.print("Outgoing Mail");
     tft.setTextColor(0);
-    //RenderTarget *mes_buffer = setupBufferRenderTarget(240, TLVP);
-    //tft.setRenderTarget(mes_buffer);
     currentRenderTarget->present();
     bool exit = false;
     while (!exit) {
@@ -182,10 +90,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
         int     u;
         tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20,
                      TFT_BLACK);
-        // Serial.println("CURX:" + NString(curx) + " CURY:" + NString(cury));
-        /////////tft.pushSprite(0, 51);
         currentRenderTarget->present();
-        //mes_buffer->CopyBufferToRT(0, 51, currentRenderTarget);
         while (input == -1) {
 
             if (y_scr < min_y) { min_y = y_scr; }
@@ -245,20 +150,13 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                 break;
             default:
                 if (input >= '0' && input <= '9') {
-
                     char l = textInput(input, 0, 0, 1);
-
-                    input = buttonsHelding();
+                    input  = buttonsHelding();
                     if (l != 0) {
-
-                        // ESP_LOGI("INFO","Y:" + NString(tft.getCursorY()));
-                        //  drawCutoutFromSd(SDImage(0x639365, 240, 269, 0, false), 0, 260, 120,
-                        //  20, 0, 240);
 
                         if (content.length() < limit) {
                             if (l != '\r') {
                                 if (l != '\b') {
-
                                     content = content.substring(0, text_pos) + l +
                                               content.substring(text_pos, content.length());
                                     text_pos++;
@@ -275,12 +173,10 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                             if (y_scr < min_y) { min_y = y_scr; }
                             input = BACK;
                         }
-
                         if (y_scr != min_y) {
                             y_scr = min_y;
                             input = BACK;
                         }
-                        // ESP_LOGI("INFO","MINIMUM:" + NString(y_scr));
                         changeFont(1);
                         findSplitPosition(content, text_pos, curx, cury);
                         input = BACK;
@@ -427,26 +323,21 @@ bool messageActivity(Message message) {
  * @param outbox Boolean indicating if the menu is for the outbox
  */
 void inbox(bool outbox) {
-    const char *title;
-    if (outbox) { title = "Outbox"; }
-    else { title = "Inbox"; }
-
-    int      count    = 0;
-    bool     exit     = false;
-    Message *messages = nullptr;
+    bool exit = false;
     while (!exit) {
         exit = true;
-
-        parseMessages(messages, count);
+        std::vector<Message> msgs;
+        msgs = parseMessages();
+        std::reverse(msgs.begin(), msgs.end());
         std::vector<mOption> messList;
-        for (int i = 0; i < count; i++) { messList.push_back(messages[i]); }
-
-        std::reverse(messList.begin(), messList.end());
-        int choice = -2;
-        while (choice != -1) {
-            choice = listMenu(messList, messList.size(), false, LM_MESSAGES, title).index;
+        for (int i = 0; i < msgs.size(); i++) { messList.push_back(msgs[i]); }
+        int choice = LISTMENU_NULL;
+        while (choice != LISTMENU_EXIT) {
+            choice = listMenu(messList, messList.size(), false, LM_MESSAGES,
+                              outbox ? "Outbox" : "Inbox")
+                         .index;
             if (choice >= 0) {
-                exit = !messageActivity(messages[count - choice - 1]);
+                exit = !messageActivity(msgs[choice]);
                 if (!exit) { choice = -1; }
             }
         }
