@@ -166,7 +166,7 @@ class DEV_ESP32 : public iHW {
         }
 
         if (answ.code > 0) { answ.response = http.getString().c_str(); }
-        else { answ.response = "Error: " + NString(http.errorToString(answ.code)); }
+        else { answ.response = "Error: " + NString(http.errorToString(answ.code).c_str()); }
         http.end();
         return answ;
     }

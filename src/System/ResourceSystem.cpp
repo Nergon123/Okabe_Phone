@@ -144,7 +144,7 @@ ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start
     buffer.freeNeeded = true;
     buffer.pointer    = (uint16_t *)malloc(size);
 
-    Files[type]->seek(img.offset + start);
+    Files[type]->seek(img.offset + start, SEEK_SET);
     Files[type]->read(reinterpret_cast<uint8_t *>(buffer.pointer), size);
 
     return buffer;
@@ -163,7 +163,7 @@ void ResourceSystem::CopyToRam(uint8_t type) {
 
 #endif
     {
-        Files[type]->seek(0);
+        Files[type]->seek(0, SEEK_SET);
         cache[type] = (uint8_t *)ps_malloc(Files[type]->size());
         if (cache[type]) {
             size_t readB =

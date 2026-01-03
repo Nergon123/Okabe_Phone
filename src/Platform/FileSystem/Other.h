@@ -32,8 +32,23 @@ class StdFile : public IFile {
         return len;
     }
     bool seek(size_t pos, int mode) override {
-        (void)mode;
-        file.seekg(pos, std::ios::beg);
+        std::ios::seekdir dir;
+        switch (mode) {
+        case 1:
+            dir = std::ios::cur;
+            break;
+        case 2:
+            dir = std::ios::end;
+            break;
+        case 0:
+            dir = std::ios::beg;
+            break;
+        default:
+            ESP_LOGE("FileSystem/Other", "Bad seek mode: %i", mode);
+            return false;
+        }
+
+        file.seekg(pos, dir);
         return file.good();
     }
 
