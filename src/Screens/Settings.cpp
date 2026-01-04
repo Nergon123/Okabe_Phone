@@ -254,7 +254,7 @@ void ringtoneSelector(bool isMail) {
 
     // int choice = 0;
     // while (choice != -1) {
-    //     choice = listMenu(opt, count, false, LM_SETTINGS, "Set ringtone", true, choice).index;
+    //     choice = listMenu(opt, count, false, LM_SETTINGS, "Set ringtone", true, choice);
     //     if (choice < 0) { return; }
     //     if (iconIndex >= 0) { opt[iconIndex].image = Image(); }
     //     // TODO DRAW NOTE ICON

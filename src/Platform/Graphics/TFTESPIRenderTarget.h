@@ -13,13 +13,12 @@ class TFTESPIRenderTarget : public RenderTarget {
     bool          _useBuffer = false;
     TFTESPIRenderTarget(int w, int h, bool useBuffer = false)
         : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr), _useBuffer(useBuffer) {
-        init();
-        if (_useBuffer && !bufferTargetToFlip) {
-            bufferTargetToFlip = setupBufferRenderTarget(240, 320);
-        }
     };
 
     void init() override {
+        if (_useBuffer && !bufferTargetToFlip) {
+            bufferTargetToFlip = setupBufferRenderTarget(240, 320);
+        }
         hw->setScreenBrightness(0);
         _tft.init();
         _tft.fillScreen(TFT_BLACK);
@@ -111,5 +110,4 @@ class TFTESPIRenderTarget : public RenderTarget {
     }
 };
 
-inline RenderTarget* setupTFTESPIRenderTarget() { return new TFTESPIRenderTarget(240, 320, true); }
 #endif

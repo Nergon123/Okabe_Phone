@@ -132,11 +132,4 @@ class SDL2RenderTarget : public RenderTarget {
     SDL_Texture*  texture;
     int           windowX, windowY, windowW, windowH;
 };
-
-// Factory function that matches the existing pattern
-inline RenderTarget* setupSDL2RenderTarget(int16_t width, int16_t height,
-                                           const char* title = "SDL Window") {
-    return new SDL2RenderTarget(width, height, title);
-}
-
 #endif // Platform check

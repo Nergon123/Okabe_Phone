@@ -70,7 +70,7 @@ void WiFiList() {
                     mOption(name.c_str(), Image(R_FILE_MANAGER_ICONS), LM_ICO_WIRELESS_0 + _RSSI));
             }
             if (list.empty()) { return; }
-            int ch = listMenu(list, count, false, LM_SETTINGS, "WI-FI").index;
+            int ch = listMenu(list, count, false, LM_SETTINGS, "WI-FI");
             if (ch == -1) { return; }
             else {
                 WifiPrompt(list.at(ch).label, enc[ch]);
@@ -111,7 +111,7 @@ void WiFiSettings() {
             WiFi.getAutoConnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
         options.at(1).icon_index =
             WiFi.getAutoReconnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi Settings").index;
+        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi Settings");
         switch (choice) {
         case 0: WiFi.setAutoConnect(!WiFi.getAutoConnect()); break;
         case 1: WiFi.setAutoReconnect(!WiFi.getAutoReconnect()); break;
@@ -157,7 +157,7 @@ void WiFiMenu() {
             wifimode & WIFI_BIT_AP ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
         options.at(0).icon_index =
             wifimode & WIFI_BIT_STA ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi", 1, choice).index;
+        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi", 1, choice);
         switch (choice) {
         case 0: // toggle Wi-Fi
             wifimode ^= WIFI_BIT_STA;

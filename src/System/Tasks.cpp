@@ -61,6 +61,11 @@ void initBackgroundTasks() {
     LaunchTask(setBrightnessTask, "setBrightness", nullptr, 1024, 1);
 };
 
+void DeleteTask(TASK task) {
+#ifdef INC_FREERTOS_H
+    vTaskDelete(task);
+#endif
+}
 TASK LaunchTask(void (*function)(void *parameters), const char *name, void *parameters,
                 int stackSize, int priority, int core) {
 #ifdef INC_FREERTOS_H

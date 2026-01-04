@@ -31,6 +31,7 @@ struct Contact {
 struct LM_RET_VALUE {
     int index;
     int button;
+        operator int() { return index; }
     LM_RET_VALUE(int index, int button = -1) : index(index), button(button) {};
 };
 
@@ -57,8 +58,9 @@ struct Message {
     NString content;
     NString date;
     NString longdate;
-
-    operator mOption() const {
+    int     part;
+    int     total;
+            operator mOption() const {
         return mOption(date + " " + contact.name, Image(R_LIST_MAIL_ICONS),
                        status == status::NEW ? (uint8_t)0 : (uint8_t)1);
     }
@@ -67,7 +69,8 @@ struct Message {
             NString _date = "00/00", NString _longdate = "00/00/00 00:00",
             bool _isOutgoing = false, unsigned char _status = status::NEW, int _index = -1)
         : index(_index), status(_status), isOutgoing(_isOutgoing), contact(_contact),
-          subject(_subject), content(_content), date(_date), longdate(_longdate) {}
+          subject(_subject), content(_content), date(_date), longdate(_longdate), part(0),
+          total(1) {}
 };
 struct STR_DIR {
     NString text;

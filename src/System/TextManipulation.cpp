@@ -184,23 +184,23 @@ void getCharacterPosition(NString str, int &x, int &y, int &index, int direction
     x = tft.textWidth(currentLine);
 }
 
-// Convert HEX to ASCII
-// @param hex The input hexadecimal string
-// @return The converted ASCII string
-NString HEXTOASCII(NString hex) {
-    hex.toUpperCase();
-    NString output;
+// // Convert HEX to ASCII
+// // @param hex The input hexadecimal string
+// // @return The converted ASCII string
+// NString HEXTOASCII(NString hex) {
+//     hex.toUpperCase();
+//     NString output;
 
-    for (size_t i = 0; i < hex.length(); i += 2) {
-        char h  = hex[i];
-        char l  = hex[i + 1];
-        int  hv = (h >= '0' && h <= '9') ? h - '0' : h - 'A' + 10;
-        int  lv = (l >= '0' && l <= '9') ? l - '0' : l - 'A' + 10;
-        char c  = (hv << 4) | lv;
-        output += c;
-    }
-    return output;
-}
+//     for (size_t i = 0; i < hex.length(); i += 2) {
+//         char h  = hex[i];
+//         char l  = hex[i + 1];
+//         int  hv = (h >= '0' && h <= '9') ? h - '0' : h - 'A' + 10;
+//         int  lv = (l >= '0' && l <= '9') ? l - '0' : l - 'A' + 10;
+//         char c  = (hv << 4) | lv;
+//         output += c;
+//     }
+//     return output;
+// }
 
 //  measures text height in pixels
 //  @param text The input string

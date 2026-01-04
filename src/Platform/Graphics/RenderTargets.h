@@ -114,7 +114,7 @@ class RenderTarget {
 };
 
 #ifdef PC
-RenderTarget *setupSDL2RenderTarget(int16_t width, int16_t height, const char *title);
+RenderTarget *setupSDL2RenderTarget();
 #else
 RenderTarget *setupTFTESPIRenderTarget();
 #endif

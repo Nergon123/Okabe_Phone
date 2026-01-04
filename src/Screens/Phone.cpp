@@ -30,7 +30,7 @@ void incomingCall(Contact contact) {
     tft.setCursor(90, 140);
     changeFont(4);
     tft.setTextSize(1);
-    tft.print("Recieving call"); 
+    tft.print("Recieving call");
     res.DrawImage(R_PHONE_ICON);
     writeCustomFont(55, 185, contact.phone, 1);
     res.DrawImage(R_PHONE_ICON_LIGHTNING, 0);
@@ -40,12 +40,16 @@ void incomingCall(Contact contact) {
         switch (button) {
         case ANSWER:
             if (sendATCommand("ATA").indexOf("NO CARRIER") == -1) { callActivity(contact); }
-            else { currentScreen = SCREENS::MAINSCREEN; }
+            else {
+                return;
+                currentScreen = SCREENS::MAINSCREEN;
+            }
             break;
         case DECLINE:
+            sendATCommand("ATH");
+            isCalling     = false;
             currentScreen = SCREENS::MAINSCREEN;
             return;
-            break;
 
         default: break;
         }
@@ -58,7 +62,12 @@ void makeCall(Contact contact) {
     sendATCommand("ATD" + contact.phone + ";");
     callActivity(contact);
 }
-
+void GetStateTask(void*) {
+    while (true) {
+        delay(1000);
+        stateCall = GetState();
+    }
+}
 void callActivity(Contact contact) {
     ongoingCall = true;
     // bool calling = true;
@@ -80,55 +89,58 @@ void callActivity(Contact contact) {
     tft.setTextSize(1);
     tft.setCursor(85, 95);
     tft.print("Calling...");
-    stateCall = GetState();
+    stateCall = DIALING;
+    TASK task = LaunchTask(GetStateTask, "GetStateTask", nullptr, 4096);
     hw->delay(50);
-    bool hang = false;
+    currentRenderTarget->present();
     while (stateCall == DIALING) {
         for (int i = 7; i >= 0; i--) {
             spinAnim(55, 60, 12, 6, i);
             hw->delay(40);
-            if (buttonsHelding() == DECLINE) {
-                hang = true;
-                // calling = false;
-                break;
+            int buttonsH = buttonsHelding();
+            if ((buttonsH >= '0' && buttonsH <= '9') || buttonsH == '*' || buttonsH == '#') {
+                // TODO show dtmf numbers
+                sendATCommand("AT+VTS=\"" + NString(buttonsH) + "\"");
             }
-            else if (buttonsHelding() == UP) {
-                // calling = false;
-                break;
+            if (buttonsH == DECLINE) {
+                ongoingCall = false;
+                sendATCommand("ATH");
+                DeleteTask(task);
+                return;
             }
         }
-    }
-    if (hang) {
-        // if hang up
-        
-        ongoingCall = false;
-
-        return;
     }
 
     tft.fillScreen(0);
     sBarChanged = true;
     drawStatusBar(true);
     res.DrawImage(R_VOICE_ONLY_LABEL);
+    currentRenderTarget->present();
     while (stateCall != DISCONNECT) {
-        if (buttonsHelding() == DECLINE) {
+        int buttonsH = buttonsHelding();
+        if ((buttonsH >= '0' && buttonsH <= '9') || buttonsH == '*' || buttonsH == '#') {
+            // TODO show dtmf numbers
+            sendATCommand("AT+VTS=\"" + NString(buttonsH) + "\"");
+        }
+        if (buttonsH == DECLINE) {
             sendATCommand("ATH");
             ongoingCall = false;
         }
-        stateCall = GetState();
     }
-    tft.fillScreen(0);
+    tft.fillRect(0, 26, 240, 294, TFT_BLACK);
     tft.setTextColor(TFT_WHITE);
     changeFont(2);
     const char* callEnded = "End of Call..";
     tft.setCursor(120 - tft.textWidth(callEnded) / 2, 150);
     tft.print(callEnded);
+    currentRenderTarget->present();
     hw->delay(1000);
     drawStatusBar(true);
     ongoingCall   = false;
     isAnswered    = false;
     millSleep     = hw->millis();
     currentScreen = MAINSCREEN;
+    DeleteTask(task);
 }
 
 /*

@@ -1,16 +1,14 @@
 #include "SIM.h"
 #ifndef PC
 #define SIM_BAUD_RATE 115200
-
-static uint8_t hexNibble(char c) {
+static const char* TAG = "SMS_PDU";
+static uint8_t     hexNibble(char c) {
     if (c >= '0' && c <= '9') { return c - '0'; }
     if (c >= 'A' && c <= 'F') { return c - 'A' + 10; }
     if (c >= 'a' && c <= 'f') { return c - 'a' + 10; }
     return 0;
 }
-
 static uint8_t hexByte(const char* s) { return (hexNibble(s[0]) << 4) | hexNibble(s[1]); }
-
 static NString swapSemi(const char* s, int len) {
     NString out;
     for (int i = 0; i < len; i += 2) {
@@ -18,27 +16,20 @@ static NString swapSemi(const char* s, int len) {
         if (s[i] != 'F') { out += s[i]; }
     }
     return out;
-}
-
-// GSM 7-bit unpack
+} // GSM 7-bit unpack
 static NString decode7bit(const uint8_t* data, int septets, int skipBits) {
     NString  out;
     uint16_t carry     = 0;
     int      carryBits = skipBits;
-
     for (int i = 0; i < septets; i++) {
-        int byteIndex = (i * 7 + skipBits) / 8;
-        int bitOffset = (i * 7 + skipBits) % 8;
-
-        uint16_t v = data[byteIndex] | (data[byteIndex + 1] << 8);
-        char     c = (v >> bitOffset) & 0x7F;
-
-        if (c == 0) { c = '@'; }
-        out += c;
+        int      byteIndex = (i * 7 + skipBits) / 8;
+        int      bitOffset = (i * 7 + skipBits) % 8;
+        uint16_t v         = data[byteIndex] | (data[byteIndex + 1] << 8);
+        char     c         = (v >> bitOffset) & 0x7F;
+        if (c != 0) { out += c; }
     }
     return out;
 }
-
 static NString decodeUCS2(const uint8_t* data, int len) {
     NString out;
     for (int i = 0; i < len; i += 2) {
@@ -48,14 +39,47 @@ static NString decodeUCS2(const uint8_t* data, int len) {
     }
     return out;
 }
+static void logHex(const char* label, const uint8_t* d, int len) {
+    char line[3 * 32 + 1];
+    int  pos = 0;
+    ESP_LOGD(TAG, "%s (%d bytes):", label, len);
+    for (int i = 0; i < len; i++) {
+        pos += snprintf(line + pos, sizeof(line) - pos, "%02X ", d[i]);
+        if ((i & 0x1F) == 0x1F || i == len - 1) {
+            ESP_LOGD(TAG, "%s", line);
+            pos = 0;
+        }
+    }
+}
+
+NString formatTimestamp(const NString& scts) {
+    if (scts.length() < 14) { return scts; }
+    int  year   = 2000 + atoi(scts.substring(0, 2).c_str());
+    int  month  = atoi(scts.substring(2, 4).c_str());
+    int  day    = atoi(scts.substring(4, 6).c_str());
+    int  hour   = atoi(scts.substring(6, 8).c_str());
+    int  minute = atoi(scts.substring(8, 10).c_str());
+    int  second = atoi(scts.substring(10, 12).c_str());
+    char buf[32];
+    snprintf(buf, 32, "%04d/%02d/%02d %02d:%02d:%02d", year, month, day, hour, minute, second);
+    return NString(buf);
+}
+
+NString formatShortDate(const NString& scts) {
+    if (scts.length() < 14) { return scts; }
+    int  month = atoi(scts.substring(2, 4).c_str());
+    int  day   = atoi(scts.substring(4, 6).c_str());
+    char buf[8];
+    snprintf(buf, 8, "%02d/%02d", month, day);
+    return NString(buf);
+}
 
 std::vector<Message> parseMessages() {
     std::vector<Message> msgs;
-    msgs.clear();
 
-    NString response = sendATCommand("AT+CMGL=4"); // list ALL in PDU mode
+    NString response = sendATCommand("AT+CMGL=4"); // PDU mode, all messages
 
-    // split into lines
+    // Split response into lines
     std::vector<NString> lines;
     int                  s = 0;
     while (true) {
@@ -73,68 +97,112 @@ std::vector<Message> parseMessages() {
         if (!lines[i].startsWith("+CMGL:")) { continue; }
 
         Message msg;
+        ESP_LOGI(TAG, "---- NEW MESSAGE ----");
 
-        // +CMGL: index,status,,len
         int c1     = lines[i].indexOf(',');
         msg.index  = lines[i].substring(7, c1).toInt();
         msg.status = lines[i].substring(c1 + 1, lines[i].indexOf(',', c1 + 1)).toInt();
 
         const char* p = lines[i + 1].c_str();
+        ESP_LOGI(TAG, "PDU: %s", p);
 
-        // SMSC
+        // --- SMSC ---
         int smscLen = hexByte(p);
         p += (1 + smscLen) * 2;
 
-        // first octet
-        uint8_t fo = hexByte(p);
+        // --- First octet ---
+        uint8_t fo   = hexByte(p);
+        bool    udhi = fo & 0x40;
         p += 2;
-        bool udhi = fo & 0x40;
+        ESP_LOGD(TAG, "FO=0x%02X UDHI=%d", fo, udhi);
 
-        // sender
+        // --- Originating address ---
         int oaLen = hexByte(p);
         p += 2;
         uint8_t oaType = hexByte(p);
         p += 2;
-        int oaBytes       = (oaLen + 1) / 2;
-        msg.contact.phone = swapSemi(p, oaBytes * 2);
+        int oaBytes = (oaLen + 1) / 2;
+
+        // Handle alphanumeric senders
+        if ((oaType & 0x70) == 0x50) { // alphanumeric
+            uint8_t buf[30] = {0};
+            for (int b = 0; b < oaBytes; b++) { buf[b] = hexByte(p + b * 2); }
+            msg.contact.phone = decode7bit(buf, oaLen, 0);
+        }
+        else { msg.contact.phone = swapSemi(p, oaBytes * 2); }
         p += oaBytes * 2;
+        bool foundContact = false;
+        for (Contact contact : contacts) {
+            if (msg.contact.phone.length() <= 4) { continue; }
+            if (contact.phone.indexOf(msg.contact.phone.substring(4)) != -1) {
+                msg.contact  = contact;
+                foundContact = true;
+            }
+        }
+        if (!foundContact) { msg.contact.name = msg.contact.phone; }
+        ESP_LOGI(TAG, "FROM: %s", msg.contact.phone.c_str());
 
         // PID + DCS
-        p += 2; // PID
+        p += 2;
         uint8_t dcs = hexByte(p);
         p += 2;
+        ESP_LOGD(TAG, "DCS=0x%02X", dcs);
 
-        // --- timestamp ---
-        msg.longdate = swapSemi(p, 14);
-        msg.date     = msg.longdate.substring(0, 6);
+        // --- Timestamp ---
+        NString timestamp = swapSemi(p, 14);
+        msg.longdate      = formatTimestamp(timestamp);
+        msg.date          = formatShortDate(timestamp);
         p += 14;
+        ESP_LOGI(TAG, "TIME: %s", msg.longdate.c_str());
+        ESP_LOGI(TAG, "DATE: %s", msg.date.c_str());
 
-        // --- user data ---
+        // --- User Data ---
         int udl = hexByte(p);
         p += 2;
-
-        int     udhLen    = 0;
         int     skipBits  = 0;
+        int     udhLen    = 0;
         uint8_t concatRef = 0, part = 1, total = 1;
 
         if (udhi) {
             udhLen = hexByte(p);
-            if (hexByte(p + 2) == 0x00) { // concat IEI
+            if (hexByte(p + 2) == 0x00) { // concatenation IEI
                 concatRef = hexByte(p + 6);
                 total     = hexByte(p + 8);
                 part      = hexByte(p + 10);
+                ESP_LOGI(TAG, "CONCAT ref=%d part=%d/%d", concatRef, part, total);
+                msg.part  = part;
+                msg.total = total;
             }
             p += (udhLen + 1) * 2;
             skipBits = ((udhLen + 1) * 8) % 7;
+            if (skipBits) { skipBits = 7 - skipBits; }
         }
 
-        int     dataBytes = (udl * 7 + 7) / 8;
-        uint8_t buf[180];
+        int     dataBytes = (dcs & 0x0C) == 0x08 ? udl : (udl * 7 + 7) / 8;
+        uint8_t buf[180]  = {0};
         for (int b = 0; b < dataBytes; b++) { buf[b] = hexByte(p + b * 2); }
 
-        if ((dcs & 0x0C) == 0x08) { msg.content = decodeUCS2(buf, dataBytes); }
+        if ((dcs & 0x0C) == 0x08) {
+            // UCS2 → UTF-8
+            NString out;
+            for (int j = 0; j + 1 < dataBytes; j += 2) {
+                uint16_t ch = (buf[j] << 8) | buf[j + 1];
+                if (ch < 0x80) { out += (char)ch; }
+                else if (ch < 0x800) {
+                    out += (char)(0xC0 | (ch >> 6));
+                    out += (char)(0x80 | (ch & 0x3F));
+                }
+                else {
+                    out += (char)(0xE0 | (ch >> 12));
+                    out += (char)(0x80 | ((ch >> 6) & 0x3F));
+                    out += (char)(0x80 | (ch & 0x3F));
+                }
+            }
+            msg.content = out;
+        }
         else { msg.content = decode7bit(buf, udl, skipBits); }
 
+        ESP_LOGI(TAG, "TEXT: %s", msg.content.c_str());
         msgs.push_back(msg);
         i++; // skip PDU line
     }
@@ -244,6 +312,7 @@ bool _checkSim() {
     else { return true; }
 }
 
+void simInterrupt() { ESP_LOGI("SIM", "INTERRUPT"); }
 // Check if someone calling (Function subject to change. I need to use interrupts for that)
 void checkVoiceCall() {
     if (isCalling && !ongoingCall) {
@@ -282,7 +351,7 @@ bool checkSim() {
 int GetState() {
     NString result = sendATCommand("AT+CLCC");
     ESP_LOGI("GET CALL STATE", "AT+CLCC Result:%s", result.c_str());
-    if (result.indexOf("+CLCC") == -1 && result.indexOf("OK") != -1) { return 6; }
+    if (result.indexOf("+CLCC") == -1 && result.indexOf("OK") != -1) { return stateCall; }
     int indexState = getIndexOfCount(2, result, ",", result.indexOf("+CLCC"));
     result         = result.substring(indexState, result.indexOf(",", indexState + 1));
     result.replace(",", "");
@@ -304,7 +373,7 @@ void initSim() {
     ESP_LOGI("BOOT/SIM", "%s",
              sendATCommand("AT+CSCS=\"GSM\"").c_str()); // Set character set to GSM
     ESP_LOGI("BOOT/SIM", "%s",
-             sendATCommand("AT+CMGF=1").c_str()); // Set SMS mode to text
+             sendATCommand("AT+CMGF=0").c_str()); // Set SMS mode to PDU
     simIsUsable = _checkSim();                    // Check if SIM card is usable
 }
 

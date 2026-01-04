@@ -1,5 +1,8 @@
 #pragma once
 #include "RenderTargets.h"
+#ifndef PC
+#include <Arduino.h>
+#endif
 #include <cstdint>
 #include <cstring>
 

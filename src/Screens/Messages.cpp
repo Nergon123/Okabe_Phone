@@ -4,7 +4,6 @@
 #include "System/TextManipulation.h"
 #include "UI/ListMenu.h"
 #include "UI/UIElements.h"
-#include <Platform/Graphics/RGB565BufferRenderTarget.h>
 #include <algorithm>
 
 // messages menu
@@ -209,24 +208,8 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
 bool messageActivity(Contact contact, NString date, NString subject, NString content, int index,
                      bool outcoming, bool sms) {
     tft.setTextWrap(true);
-    // returns if deleted
-    if (sms) {
-        NString response = sendATCommand("AT+CMGR=" + NString(index));
-        if (response.indexOf("OK") == -1) {
-            content = "======\nERROR LOADING FOLLOWING MESSAGE\n======";
-        }
-        int resIndex = 0;
-        for (int i = 0; i < 7; i++) { resIndex = response.indexOf('\"', ++resIndex); }
-        int endIndex = response.indexOf('\"', ++resIndex);
-        ESP_LOGD("SMS", "resIndex:%d\nendIndex:%d", resIndex, endIndex);
-        date = response.substring(resIndex, endIndex);
-        date.replace(',', ' ');
-        date = date.substring(0, date.lastIndexOf(':'));
-        ESP_LOGD("SMS", "%s", date.c_str());
-        content = response.substring(endIndex + 3, response.lastIndexOf("OK") - 2);
-    }
     content.trim();
-    const NString choices[4] = {"Reply", "Return", "Delete", "HEX to ASCII"};
+    const NString choices[] = {"Reply", "Delete"};
     drawStatusBar();
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_ICONS, 0);
@@ -276,13 +259,14 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
                 if (y_scr < 0) { y_scr += y_jump; }
                 else { r = -1; }
                 break;
-            case BACK:
+                case BACK:
+                exit = true;
+                break;
+            case SELECT:
                 ch = choiceMenu(choices, 4, true);
                 switch (ch) {
-                case -1: exit = true; break;
                 case 0: messageActivityOut(contact, "", "", true); break;
-
-                case 2:
+                case 1:
                     tft.resetViewport();
                     if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE?")) {
                         sendATCommand("AT+CMGD=" + NString(index), 5000);
@@ -290,7 +274,6 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
                     }
                     tft.setViewport(0, 51, 240, 269);
                     break;
-                case 3: content = HEXTOASCII(content); break;
                 }
                 break;
             default: r = -1; break;
@@ -312,7 +295,7 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
  * @return Boolean indicating if the message was deleted
  */
 bool messageActivity(Message message) {
-    return messageActivity(message.contact, message.date, message.subject, message.content,
+    return messageActivity(message.contact, message.longdate, message.subject, message.content,
                            message.index, false, true);
 }
 
@@ -326,15 +309,15 @@ void inbox(bool outbox) {
     bool exit = false;
     while (!exit) {
         exit = true;
-        std::vector<Message> msgs;
-        msgs = parseMessages();
+        InfoWindow("Loading messages...", "INFO", false, TFT_BLUE);
+        std::vector<Message> msgs = parseMessages();
         std::reverse(msgs.begin(), msgs.end());
         std::vector<mOption> messList;
         for (int i = 0; i < msgs.size(); i++) { messList.push_back(msgs[i]); }
         int choice = LISTMENU_NULL;
         while (choice != LISTMENU_EXIT) {
             choice = listMenu(messList, messList.size(), false, LM_MESSAGES,
-                              outbox ? "Outbox" : "Inbox")
+                              outbox ? "Outbox" : "Inbox", false, choice)
                          .index;
             if (choice >= 0) {
                 exit = !messageActivity(msgs[choice]);

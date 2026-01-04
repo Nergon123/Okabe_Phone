@@ -43,6 +43,7 @@ int start() {
         ESP_LOGE("INIT", "Error occurred when initializing screen (GetScreen returned nullptr)");
         return 2;
     }
+    currentRenderTarget->init();
     tft.setRenderTarget(currentRenderTarget);
     hw->postScreenInit();
     if (hw->isCharging()) { offlineCharging(); }
@@ -74,6 +75,7 @@ int start() {
     if (buttonsHelding(false) == '#') { AT_test(); }
     currentRenderTarget->setUseBuffer(true);
     millSleep = hw->millis();
+    ESP_LOGI("CHARSIZE","%u",sizeof(char));
     return 0;
 }
 

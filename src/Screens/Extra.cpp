@@ -72,7 +72,7 @@ void e() {
     int           wallpaperMode    = IMG_CENTERED;
     int           choice           = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
-        choice = listMenu(menu, ArraySize(menu), false, LM_SETTINGS, "Extra").index;
+        choice = listMenu(menu, ArraySize(menu), false, LM_SETTINGS, "Extra");
         switch (choice) {
         case 0: ESP_LOGI("E", "PATH: %s", fileBrowser().c_str()); break;
         case 1: OTAactivity(); break;

@@ -15,12 +15,13 @@
 #include <esp_debug_helpers.h>
 #include <esp_task_wdt.h>
 #include <esp_wifi.h>
-
+#include <Connectivity/SIM.h>
 #define FAST_SD_FREQ          20 * 1000 * 1000
 #define SAFE_SD_FREQ          1 * 1000 * 1000
 #define SERIAL_BAUD_RATE      115200
 #define FAST_SERIAL_BAUD_RATE 921600
 #define SIM_BAUD_RATE         115200
+#define SIM_INT_PIN           38
 
 #define MCP23017_ADDR 0x20
 
@@ -62,12 +63,11 @@ class DEV_ESP32 : public iHW {
 
         pinMode(TFT_BL, OUTPUT);
         setScreenBrightness(0);
-
+        attachInterrupt(SIM_INT_PIN, simInterrupt, RISING);
         keypad_exists = checkI2Cdevices(MCP23017_ADDR);
         if (keypad_exists) { ESP_LOGI("KEYPAD", "MCP23017 Initalized"); }
         else { ESP_LOGE("KEYPAD", "MCP23017 cannot be initalized"); }
         charger_exists = checkI2Cdevices(IP5306_ADDR);
-        delay(2000); // give some time for espressif hardware to initialize
     };
 
     void initStorage() override {
@@ -148,7 +148,7 @@ class DEV_ESP32 : public iHW {
 
     };
     RenderTarget* GetScreen() override { return setupTFTESPIRenderTarget(); }
-    HttpAnswer    httpSend(HttpMethod method, const NString &url, NString &payload,
+    HttpAnswer    httpSend(HttpMethod method, const NString& url, NString& payload,
                            const std::vector<HttpHeader>& headers, uint16_t timeout) override {
         HttpAnswer answ;
         http.setTimeout(timeout);
@@ -173,7 +173,8 @@ class DEV_ESP32 : public iHW {
 
   private:
     HTTPClient http;
-    void       showResetReason() {
+
+    void showResetReason() {
         return;
         const char* reason;
         switch (esp_reset_reason()) {

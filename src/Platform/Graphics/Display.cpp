@@ -207,7 +207,7 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
 
     // GFX font
     if (!currentFont.font) { return; }
-
+    if (c < currentFont.font->first || c > currentFont.font->last) { c = '?'; }
     c -= currentFont.font->first; // glyph index
     GFXglyph *glyph  = &currentFont.font->glyph[(int)c];
     uint8_t  *bitmap = currentFont.font->bitmap;
