@@ -136,12 +136,12 @@ void offlineCharging() {
  *@param message message to be displayed
  */
 void recovery(NString message) {
-    if (res.Files[RES_MAIN]) {
-        free(res.Files[RES_MAIN]);
-        delete res.Files[RES_MAIN];
+    if (res.Files) {
+        free(res.Files);
+        delete res.Files;
     }
-    res.Files[RES_MAIN] = nullptr;
-    while (!res.Files[RES_MAIN]) {
+    res.Files = nullptr;
+    while (!res.Files) {
         tft.setCursor(0, 40);
         tft.fillScreen(0);
         tft.setTextFont(1);
@@ -159,9 +159,9 @@ void recovery(NString message) {
             resPath             = TempResPath;
             NFile *nFile        = VFS.open(resPath);
             res.Init(nFile);
-            res.CopyToRam(RES_MAIN);
+            res.CopyToRam();
 
-            if (res.Files[RES_MAIN]) {
+            if (res.Files) {
                 preferences.begin("System");
                 preferences.putString("resPath", resPath.c_str());
                 preferences.end();

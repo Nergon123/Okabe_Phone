@@ -31,7 +31,7 @@ bool ApplyTheme(NFile* file) {
     tft.setCursor(0, 30);
     tft.print("wait...");
     res.Init(file);
-    res.CopyToRam(RES_MAIN);
+    res.CopyToRam();
     tft.fillScreen(0);
     drawStatusBar(true);
     return false;

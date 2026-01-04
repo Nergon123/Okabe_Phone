@@ -64,7 +64,7 @@ void makeCall(Contact contact) {
 }
 void GetStateTask(void*) {
     while (true) {
-        delay(1000);
+        hw->delay(1000);
         stateCall = GetState();
     }
 }

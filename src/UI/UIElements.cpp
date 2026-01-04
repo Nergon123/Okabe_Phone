@@ -348,7 +348,7 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     int       max_count     = (2 * size_x) + (2 * (size_y - 1));
     int       printed_count = 0;
     int       xt = 0, yt = 0;
-    bool      draw = true;
+    bool      draw      = true;
     bool      wasBuffer = currentRenderTarget->getUseBuffer();
     currentRenderTarget->setUseBuffer(false);
     while (printed_count < max_count) {
@@ -412,11 +412,9 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
     }
     lastpercentage = percentage;
     currentRenderTarget->present();
-
 }
 
 void bootText(NString text, int x, int y, int w, int h) {
-
 
     ESP_LOGI("BOOT", "%s", text.c_str());
     if (lastpercentage == 100) { return; }
@@ -431,7 +429,21 @@ void bootText(NString text, int x, int y, int w, int h) {
     tft.print(text.c_str());
     tft.resetViewport();
     currentRenderTarget->present();
+}
 
+void sysWarn(NString reason) {
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_YELLOW);
+    tft.setCursor(0, 0);
+    tft.setTextSize(3);
+    tft.println("WARNING");
+    tft.setTextColor(TFT_WHITE);
+    tft.setTextSize(1);
+    tft.println(reason);
+    tft.println("\nPress any key to continue");
+    currentRenderTarget->present();
+    while (buttonsHelding(false) == -1);
+    return;
 }
 
 // ## Critical system error

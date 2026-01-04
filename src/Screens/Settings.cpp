@@ -46,7 +46,7 @@ void advancedSettings() {
                     InfoWindow("Applying Theme...", "INFO", false, TFT_BLUE);
                     res.Init(resource);
                     res.CopyToRam();
-                    if (res.cache[RES_MAIN]) { res.Files[RES_MAIN]->close(); }
+                    if (res.cache) { res.Files->close(); }
                 }
             }
             break;

@@ -30,27 +30,6 @@ static NString decode7bit(const uint8_t* data, int septets, int skipBits) {
     }
     return out;
 }
-static NString decodeUCS2(const uint8_t* data, int len) {
-    NString out;
-    for (int i = 0; i < len; i += 2) {
-        uint16_t ch = (data[i] << 8) | data[i + 1];
-        if (ch < 0x80) { out += (char)ch; }
-        else { out += '?'; }
-    }
-    return out;
-}
-static void logHex(const char* label, const uint8_t* d, int len) {
-    char line[3 * 32 + 1];
-    int  pos = 0;
-    ESP_LOGD(TAG, "%s (%d bytes):", label, len);
-    for (int i = 0; i < len; i++) {
-        pos += snprintf(line + pos, sizeof(line) - pos, "%02X ", d[i]);
-        if ((i & 0x1F) == 0x1F || i == len - 1) {
-            ESP_LOGD(TAG, "%s", line);
-            pos = 0;
-        }
-    }
-}
 
 NString formatTimestamp(const NString& scts) {
     if (scts.length() < 14) { return scts; }
@@ -218,8 +197,10 @@ std::vector<Message> parseMessages() {
  */
 NString sendATCommand(NString command, uint32_t timeout, bool background) {
     if (SimSerial.baudRate() != SIM_BAUD_RATE) { SimSerial.updateBaudRate(SIM_BAUD_RATE); }
-    bool _simIsBusy = simIsBusy;
+    bool  _simIsBusy = simIsBusy;
+    ulong timer      = millis();
     while (_simIsBusy) {
+        if (millis() - timer > 10000) { break; }
         hw->delay(50);
         _simIsBusy = simIsBusy;
     }
@@ -501,6 +482,9 @@ NString getATvalue(NString command, bool background) {
     (void)background;
     return "PC";
 };
+std::vector<Message> parseMessages(){
+    return {};
+}
 bool checkSim() { return true; };
 bool _checkSim() { return true; };
 void initSim() {};

@@ -57,12 +57,11 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     bool exit = false;
     while (!exit) {
         position = 0;
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 0}, {0, 0}, RES_MAIN);
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {0, 0}, {0, 0}, {0, 0});
         // drawImage(0, 0, BACKGROUND_IMAGE_CUTTED, true);
         // tft.fillScreen(0xFFFF);
         // position += 24;
-        res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
-                      RES_MAIN);
+        res.DrawImage(R_IN_MSG_MAIL_ICONS, 2, {OP_UNDEF, position + y_scr});
         // drawImage(0, position + y_scr, in_mail[2], true);
         tft.setCursor(24, position + y_text + y_scr);
         changeFont(1);
@@ -74,8 +73,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
         content = SplitString(content);
         if (!subject.isEmpty() || !sms) {
             position += 24;
-            res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0},
-                          RES_MAIN);
+            res.DrawImage(R_IN_MSG_MAIL_ICONS, 3, {OP_UNDEF, position + y_scr}, {0, 0}, {0, 0});
             tft.setCursor(24, position + y_text + y_scr);
             changeFont(1);
             tft.println(subject);
@@ -263,7 +261,7 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
                 exit = true;
                 break;
             case SELECT:
-                ch = choiceMenu(choices, 4, true);
+                ch = choiceMenu(choices, ArraySize(choices), true);
                 switch (ch) {
                 case 0: messageActivityOut(contact, "", "", true); break;
                 case 1:

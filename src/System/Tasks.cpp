@@ -4,10 +4,10 @@ void suspendCore(bool suspend) { (void)suspend; };
 
 // Function to handle the idle task
 void TaskIdleHandler(void *) {
-
     uint32_t oldtime = hw->millis();
     time(&systemTime);
     if (sendATCommand("AT").indexOf("OK") != -1) {
+        
         ESP_LOGI("BOOT/SIM", "%s", "Setting up sim card please wait...");
         initSim();
 
@@ -61,11 +61,12 @@ void initBackgroundTasks() {
     LaunchTask(setBrightnessTask, "setBrightness", nullptr, 1024, 1);
 };
 
-void DeleteTask(TASK task) {
+void DeleteTask(TASK &task) {
 #ifdef INC_FREERTOS_H
     vTaskDelete(task);
 #endif
 }
+
 TASK LaunchTask(void (*function)(void *parameters), const char *name, void *parameters,
                 int stackSize, int priority, int core) {
 #ifdef INC_FREERTOS_H

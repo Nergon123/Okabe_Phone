@@ -1,5 +1,6 @@
 #include "Platform/Hardware/Hardware.h"
 #ifdef PC
+#include <Platform/FileSystem/FileSystem.h>
 #include <Platform/Graphics/SDL2RenderTarget.h>
 #include <SDL2/SDL.h>
 #include <algorithm>
@@ -10,9 +11,13 @@
 #include <string>
 #include <sys/utsname.h>
 #include <thread>
+#include <zlib.h>
 extern "C" {
 #include <curl/curl.h>
 }
+struct WriteContext {
+    FILE* file;
+};
 class DEV_LINUX : public iHW {
   public:
     void init() override {};
@@ -179,6 +184,44 @@ class DEV_LINUX : public iHW {
         return answ;
     }
 
+    void downloadFile(NString& url, IFile* fileToDownload,
+                      std::function<void(size_t, size_t)> progressCallback) {
+        if (!fileToDownload) { return; }
+
+        CURL* curl = curl_easy_init();
+        if (!curl) {
+            fprintf(stderr, "Failed to initialize CURL\n");
+            return;
+        }
+
+        // Set URL
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        // Write downloaded data into IFile
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fileToDownload);
+
+        // Follow redirects
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+        // Enable progress callback
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progressCallbackCurl);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &progressCallback);
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+
+        // Perform the download
+        CURLcode res = curl_easy_perform(curl);
+        if (res != CURLE_OK) {
+            fprintf(stderr, "CURL download failed: %s\n", curl_easy_strerror(res));
+        }
+
+        curl_easy_cleanup(curl);
+    }
+
+    uint32_t crc32(uint32_t crc, const uint8_t* buf, size_t len) override {
+        return ::crc32(crc, buf, len);
+    }
+
     bool isCharging() override {
         std::string path = getBatteryPath();
         if (path.empty()) { return false; }
@@ -188,6 +231,20 @@ class DEV_LINUX : public iHW {
     }
 
   private:
+    int progressCallbackCurl(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
+                             curl_off_t ultotal, curl_off_t ulnow) {
+        auto* userCallback = reinterpret_cast<std::function<void(size_t, size_t)>*>(clientp);
+        if (userCallback && *userCallback) {
+            (*userCallback)(static_cast<size_t>(dlnow), static_cast<size_t>(dltotal));
+        }
+        return 0; // return non-zero to abort transfer
+    }
+    static size_t writeCallback(void* ptr, size_t size, size_t nmemb, void* userdata) {
+        NFile* file    = reinterpret_cast<NFile*>(userdata);
+        size_t written = file->write(ptr, size * nmemb);
+        return written;
+    }
+
     struct utsname sys;
 
     std::string readFile(const std::string& path) {
@@ -203,7 +260,7 @@ class DEV_LINUX : public iHW {
         if (!batteryPath.empty()) { return batteryPath; }
 
         const std::string base = "/sys/class/power_supply/";
-        auto              opts = std::filesystem::directory_options::skip_permission_denied;    
+        auto              opts = std::filesystem::directory_options::skip_permission_denied;
         for (const auto& entry : std::filesystem::directory_iterator(base, opts)) {
             std::string type = readFile(entry.path().string() + "/type");
             if (type == "Battery") {
@@ -214,7 +271,7 @@ class DEV_LINUX : public iHW {
         return "";
     }
 
-    RenderTarget* GetScreen() override { return setupSDL2RenderTarget(240, 320, "Emulator"); }
+    RenderTarget* GetScreen() override { return setupSDL2RenderTarget(); }
 
   private:
 };

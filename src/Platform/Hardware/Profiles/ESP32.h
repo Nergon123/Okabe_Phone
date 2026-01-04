@@ -2,6 +2,7 @@
 #include "Platform/Hardware/Hardware.h"
 #ifndef PC
 #include "Platform/Hardware/Drivers/Battery/IP5306.h"
+#include <Connectivity/SIM.h>
 #include <Esp.h>
 #include <HTTPClient.h>
 #include <MCP23017.h>
@@ -12,10 +13,10 @@
 #include <SPI.h>
 #include <SPIFFS.h>
 #include <UI/UIElements.h>
+#include <esp_crc.h>
 #include <esp_debug_helpers.h>
 #include <esp_task_wdt.h>
 #include <esp_wifi.h>
-#include <Connectivity/SIM.h>
 #define FAST_SD_FREQ          20 * 1000 * 1000
 #define SAFE_SD_FREQ          1 * 1000 * 1000
 #define SERIAL_BAUD_RATE      115200
@@ -169,6 +170,37 @@ class DEV_ESP32 : public iHW {
         else { answ.response = "Error: " + NString(http.errorToString(answ.code).c_str()); }
         http.end();
         return answ;
+    }
+    void downloadFile(NString& url, IFile* fileToDownload,
+                      std::function<void(size_t, size_t)> progressCallback) {
+        HTTPClient http;
+        http.begin(url.c_str());
+        int    httpCode = http.GET();
+        size_t fileSize = http.getSize();
+        if (httpCode == HTTP_CODE_OK) {
+            WiFiClient* stream = http.getStreamPtr();
+
+            if (!fileToDownload->available()) {
+                InfoWindow("Failed to open file for writing");
+                return;
+            }
+
+            uint8_t buf[512];
+            size_t  downloaded = 0;
+            int     len        = 0;
+            while ((len = stream->readBytes(buf, sizeof(buf))) > 0) {
+                fileToDownload->write(buf, len);
+                downloaded += len;
+                if (progressCallback) { progressCallback(downloaded, fileSize); }
+            }
+            fileToDownload->close();
+            InfoWindow("File downloaded!");
+        }
+        else { InfoWindow(NString::format("HTTP error: %d\n", httpCode)); }
+        http.end();
+    }
+    uint32_t crc32(uint32_t crc, const uint8_t* buf, size_t len) override {
+        return esp_crc32_le(crc, buf, len);
     }
 
   private:

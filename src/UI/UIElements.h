@@ -1,8 +1,8 @@
 #pragma once
+#include "GlobalVariables.h"
 #include "Input/Input.h"
 #include "System/FontManagement.h"
 #include "System/ResourceSystem.h"
-#include "GlobalVariables.h"
 #include <UI/ListMenu.h>
 struct FIELD {
     const NString name;
@@ -25,3 +25,4 @@ void    progressBar(int val, int max, int y = 250, int h = 8, uint16_t color = T
                     bool log = true, bool fast = false);
 void    bootText(NString text, int x = -1, int y = 260, int w = 240, int h = 30);
 void    sysError(NString reason);
+void    sysWarn(NString reason);

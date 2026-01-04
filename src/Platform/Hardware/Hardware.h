@@ -1,7 +1,9 @@
 #pragma once
 #include "stdlib.h"
+#include <Platform/FileSystem/FileSystem.h>
 #include <Platform/Graphics/RenderTargets.h>
 #include <Platform/NString.h>
+#include <functional>
 #include <vector>
 enum CPU_SPEED { CPU_IDLE, CPU_DEFAULT, CPU_FAST };
 struct HttpAnswer {
@@ -33,7 +35,18 @@ class iHW {
     virtual const char* getDeviceName() { return "Unknown"; };
     virtual void        shutdown() {};
     virtual void        reboot() {};
-
+    virtual uint32_t    crc32(uint32_t crc, const uint8_t* buf, size_t len) {
+        (void)crc;
+        (void)buf;
+        (void)len;
+        return 0xFFFFFFFF;
+    };
+    virtual void downloadFile(NString& url, IFile* fileToDownload,
+                              std::function<void(size_t, size_t)> progressCallback = nullptr) {
+        (void)url;
+        (void)fileToDownload;
+        (void)progressCallback;
+    };
     virtual void       setScreenBrightness(int8_t value) { (void)value; };
     virtual char       getCharInput() { return 0; };
     virtual int        getKeyInput() { return 0; };

@@ -39,7 +39,6 @@ int start() {
     currentRenderTarget = hw->GetScreen();
     ESP_LOGI("INIT", "Main render target %p", currentRenderTarget);
     if (!currentRenderTarget) {
-
         ESP_LOGE("INIT", "Error occurred when initializing screen (GetScreen returned nullptr)");
         return 2;
     }
@@ -57,8 +56,8 @@ int start() {
     storageInit();
     if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
 
-    res.CopyToRam();
-    if (res.cache[RES_MAIN]) { res.Files[RES_MAIN]->close(); }
+    res.CopyToRam(true);
+    if (res.cache) { res.Files->close(); }
     res.DrawImage(R_BOOT_LOGO);
     bootText("Initializing RTOS tasks...");
     initBackgroundTasks();
@@ -75,7 +74,6 @@ int start() {
     if (buttonsHelding(false) == '#') { AT_test(); }
     currentRenderTarget->setUseBuffer(true);
     millSleep = hw->millis();
-    ESP_LOGI("CHARSIZE","%u",sizeof(char));
     return 0;
 }
 

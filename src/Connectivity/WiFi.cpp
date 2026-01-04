@@ -102,8 +102,8 @@ void setHostname(bool Ap) {
 }
 void WiFiSettings() {
     std::vector<mOption> options = {
-        mOption("Auto Connect", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
-        mOption("Auto Reconnect", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
+        mOption("Auto Connect", Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
+        mOption("Auto Reconnect", Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
         mOption("Set Hostname")};
     int choice = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
@@ -139,8 +139,8 @@ void HotspotSettings() {
 void WiFiMenu() {
 #ifdef WiFi_h
     std::vector<mOption> options = {
-        mOption("Wi-Fi", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
-        mOption("Wi-Fi Hotspot", Image(R_FILE_MANAGER_ICONS, LM_ICO_CHECK_UNCHECKED)),
+        mOption("Wi-Fi", Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
+        mOption("Wi-Fi Hotspot", Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
         mOption("Wi-Fi Settings"), mOption("Hotspot settings"), mOption("Scan WiFi networks")};
     int choice = 0;
     while (choice != LISTMENU_EXIT) {

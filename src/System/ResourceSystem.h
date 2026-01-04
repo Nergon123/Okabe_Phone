@@ -3,8 +3,10 @@
 #include "Platform/FileSystem/VFS.h"
 #include "Platform/Graphics/Display.h"
 #include <vector>
-#define OP_UNDEF 0xFFFF
+#define OP_UNDEF     0xFFFF
 #define FILE_VERSION 1
+class ResourceSystem;
+extern ResourceSystem res;
 
 // Removes that alignment of 4 bytes. So 8 bit variable next to 32 bit variable will not take 32
 // bits
@@ -76,7 +78,6 @@ extern Coords czero;
 extern Coords cnone;
 
 enum MainResID {
-
     R_DEFAULT_WALLPAPER      = 0,
     R_STATUSBAR_BACKGROUND   = 1,
     R_BATTERY_CHARGE         = 2,
@@ -107,7 +108,6 @@ enum MainResID {
     R_BOOT_LOGO              = 27,
     R_STATUSBAR_NETWORK      = 28,
     R_NULL_IMAGE             = 0xFFFF,
-
 };
 
 enum ResourceType {
@@ -117,21 +117,19 @@ enum ResourceType {
 
 enum ImageType { RES_RESFILE, RES_POINTER, RES_ADDRFILE, RES_NULLU8 = 0xFF };
 struct Image {
-    uint16_t *buffer;
-    uint32_t  id;
-    int       w, h;
-    int       sw, sh;
-    bool      resize;
-    uint8_t   resType;
-    uint8_t   type;
-    NFile    *source;
+    uint16_t       *buffer;
+    uint32_t        id;
+    int             w, h;
+    int             sw, sh;
+    bool            resize;
+    ResourceSystem *resource;
+    uint8_t         type;
+    NFile          *source;
 
-    Image() : id(R_NULL_IMAGE), type(RES_NULLU8){};
+    Image() : id(R_NULL_IMAGE), type(RES_NULLU8) {};
 
-    Image(uint16_t id, uint8_t type = RES_MAIN, NFile *source = nullptr, int w = 0, int h = 0,
-          bool resize = false)
-        : id((uint32_t)id), w(w), h(h), resize(resize), resType(type), type(RES_RESFILE),
-          source(source) {};
+    Image(uint16_t id, ResourceSystem *resource = &res, int w = 0, int h = 0, bool resize = false)
+        : id((uint32_t)id), w(w), h(h), resize(resize), resource(resource), type(RES_RESFILE) {};
 
     // be sure to free buffer after use...
     // @param sw Source width
@@ -149,29 +147,27 @@ struct Image {
 extern RenderTarget *currentRenderTarget;
 class ResourceSystem {
   public:
-    Header                 Headers[2];
-    std::vector<ImageData> Images[2];
-    NFile                 *Files[2];
-    uint8_t               *cache[2];
+    Header                 Headers;
+    std::vector<ImageData> Images;
+    NFile                 *Files;
+    uint8_t               *cache;
 
-    ImageData   GetImageDataByID(uint16_t id, uint8_t type = RES_MAIN);
+    ImageData   GetImageDataByID(uint16_t id);
     ImageData   GetImageDataByImage(Image image);
-    void        CopyToRam(uint8_t type = RES_MAIN);
-    void        Init(NFile *Main, NFile *Wallpapers = nullptr);
-    Coords      GetCoordsByID(uint16_t id, uint8_t type = RES_MAIN);
+    void        CopyToRam(bool checksum = false);
+    void        Init(NFile *Main, bool important = false);
+    Coords      GetCoordsByID(uint16_t id);
     bool        DrawImage(Image image, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF},
-                          Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN);
+                          Coords startpos = {0, 0}, Coords endpos = {0, 0});
     bool        DrawImage(Image image, uint8_t index);
     bool        DrawImage(uint16_t id, uint8_t index = 0, Coords xy = {OP_UNDEF, OP_UNDEF},
-                          Coords startpos = {0, 0}, Coords endpos = {0, 0}, uint8_t type = RES_MAIN);
-    ImageBuffer GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0,
-                          uint8_t type = RES_MAIN);
+                          Coords startpos = {0, 0}, Coords endpos = {0, 0});
+    ImageBuffer GetRGB565(ImageData img, size_t size = 0, uint32_t start = 0);
+    bool        important;
 
   private:
-    const char *names[3] = {"Main", "Wallpapers", "Fonts"};
+    const char *name;
     void        failure(const char *msg = "Unknown Error", bool important = false);
-    void        parseResourceFile(NFile *file, Header &header, uint8_t type = RES_MAIN,
-                                  bool important = false);
+    void        parseResourceFile(NFile *file, Header &header, bool important = false);
 };
-void                  drawWallpaper();
-extern ResourceSystem res;
+void drawWallpaper();

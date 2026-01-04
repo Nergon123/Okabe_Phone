@@ -3,26 +3,19 @@
 Coords czero = {0, 0};
 Coords cnone = {-1, -1};
 
-void ResourceSystem::Init(NFile *Main, NFile *Wallpapers) {
-    Files[RES_MAIN]       = Main;
-    Files[RES_WALLPAPERS] = Wallpapers;
+void ResourceSystem::Init(NFile *Main, bool _important) {
+    important = _important;
+    Files     = Main;
 
-    free(cache[RES_MAIN]);
-    cache[RES_MAIN] = nullptr;
-    free(cache[RES_WALLPAPERS]);
-    cache[RES_WALLPAPERS] = nullptr;
-    Images[RES_MAIN].clear();
-    Images[RES_WALLPAPERS].clear();
-    for (size_t i = 0; i < sizeof(Files) / sizeof(Files[0]); i++) {
-        if (!Files[i]) {
-            ESP_LOGW("RES", "%s resource file is not available. Using Built-in.", names[i]);
-        }
-        else { parseResourceFile(Files[i], Headers[i], i, i == RES_MAIN); }
-    }
+    free(cache);
+    cache = nullptr;
+    Images.clear();
+    if (!Files) { ESP_LOGW("RES", "resource file is not available. Using Built-in."); }
+    else { parseResourceFile(Files, Headers, important); }
 };
 
-void ResourceSystem::parseResourceFile(NFile *file, Header &header, uint8_t type, bool important) {
-    Images[type].clear();
+void ResourceSystem::parseResourceFile(NFile *file, Header &header, bool important) {
+    Images.clear();
     if (file->read(reinterpret_cast<uint8_t *>(&header), sizeof(Header)) != sizeof(Header)) {
         failure("Error when reading Main Header", important);
         return;
@@ -53,7 +46,7 @@ void ResourceSystem::parseResourceFile(NFile *file, Header &header, uint8_t type
                  "Parsed image %d: ID: %d, Count: %d, X: %d, Y: %d, Width: %d, Height: %d, "
                  "Offset: %d\n",
                  i, img.id, img.count, img.x, img.y, img.width, img.height, img.offset);
-        Images[type].push_back(img);
+        Images.push_back(img);
     }
 }
 
@@ -62,25 +55,28 @@ void ResourceSystem::failure(const char *msg, bool important) {
     if (important) { sysError(msg); }
 }
 
-ImageData ResourceSystem::GetImageDataByID(uint16_t id, uint8_t type) {
-    if (type > sizeof(Images) / sizeof(Images[0])) { return ImageData(R_NULL_IMAGE); }
-    for (ImageData img : Images[type]) {
+ImageData ResourceSystem::GetImageDataByID(uint16_t id) {
+    if(Images.empty()){return ImageData(R_NULL_IMAGE);}
+    for (ImageData &img : Images) {
         if (img.id == id) { return img; }
     }
     return ImageData(R_NULL_IMAGE);
 }
 
 ImageData ResourceSystem::GetImageDataByImage(Image image) {
-    if (image.resType >= ArraySize(Images)) { return ImageData(R_NULL_IMAGE); }
-    for (ImageData img : Images[image.resType]) {
+    if (Images.empty()) {
+        ESP_LOGE("RES", "Images are empty!!!!");
+        return R_NULL_IMAGE;
+    }
+    for (ImageData img : Images) {
         if (img.id == image.id) { return img; }
     }
     return ImageData(R_NULL_IMAGE);
 }
 
 bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords startpos,
-                               Coords endpos, uint8_t type) {
-    ImageData img = GetImageDataByID(id, type);
+                               Coords endpos) {
+    ImageData img = GetImageDataByID(id);
     if (img.id == R_NULL_IMAGE && id != R_NULL_IMAGE) {
         ESP_LOGE("RES", "Requested Sprite %d:%d not found", id, index);
         return false;
@@ -112,8 +108,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
 
         if (height - i < lines) { lines = height % lines; }
 
-        ImageBuffer imageBuffer =
-            GetRGB565(img, lines * img.width * 2, start + i * img.width * 2, type);
+        ImageBuffer imageBuffer = GetRGB565(img, lines * img.width * 2, start + i * img.width * 2);
         if (!imageBuffer.pointer) {
             sysError("\nDRAWIMAGE:Imagebuffer Pointer is null\nprobably something wrong with "
                      "SPIRAM/PSRAM");
@@ -128,15 +123,15 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
     return true;
 }
 bool ResourceSystem::DrawImage(Image image, uint8_t index, Coords pos, Coords startpos,
-                               Coords endpos, uint8_t type) {
-    return DrawImage(image.id, index, pos, startpos, endpos, type);
+                               Coords endpos) {
+    return DrawImage(image.id, index, pos, startpos, endpos);
 }
 
-ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start, uint8_t type) {
+ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start) {
 
     ImageBuffer buffer;
-    if (cache[type]) {
-        buffer.pointer    = reinterpret_cast<uint16_t *>(cache[type] + img.offset + start);
+    if (cache) {
+        buffer.pointer    = reinterpret_cast<uint16_t *>(cache + img.offset + start);
         buffer.freeNeeded = false;
         return buffer;
     }
@@ -144,40 +139,62 @@ ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start
     buffer.freeNeeded = true;
     buffer.pointer    = (uint16_t *)malloc(size);
 
-    Files[type]->seek(img.offset + start, SEEK_SET);
-    Files[type]->read(reinterpret_cast<uint8_t *>(buffer.pointer), size);
+    Files->seek(img.offset + start, SEEK_SET);
+    Files->read(reinterpret_cast<uint8_t *>(buffer.pointer), size);
 
     return buffer;
 }
 
-void ResourceSystem::CopyToRam(uint8_t type) {
+void ResourceSystem::CopyToRam(bool checksum) {
     bootText("Copying file to RAM...");
 
-    if (cache[type]) { free(cache[type]); }
-    cache[type] = nullptr;
+    if (cache) { free(cache); }
+    cache = nullptr;
 #ifndef PC
     ESP_LOGI("PSRAM", "Free %u bytes from %u required",
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT), Files[type]->size());
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT), Files->size());
     if (psramFound() &&
-        heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) > Files[type]->size())
+        heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) > Files->size())
 
 #endif
     {
-        Files[type]->seek(0, SEEK_SET);
-        cache[type] = (uint8_t *)ps_malloc(Files[type]->size());
-        if (cache[type]) {
-            size_t readB =
-                Files[type]->read(reinterpret_cast<uint8_t *>(cache[type]), Files[type]->size());
+        Files->seek(0, SEEK_SET);
+        cache = (uint8_t *)ps_malloc(Files->size());
+        if (cache) {
+            size_t readB = Files->read(reinterpret_cast<uint8_t *>(cache), Files->size());
 
-            if (readB != Files[type]->size()) {
-                ESP_LOGE("CopyToRam", "Size mismatch %u != %u", Files[type]->size(), readB);
+            if (readB != Files->size()) {
+                ESP_LOGE("CopyToRam", "Size mismatch %u != %u", Files->size(), readB);
                 bootText("copying to ram not successfull.");
 
                 // free(cache[type]);
                 // cache[type] = nullptr;
-
             }
-        
+            if (checksum) {
+                char crc32[7];
+                memcpy(crc32, (const uint8_t*)cache + Files->size() - 10, 6);
+                crc32[6] = 0;
+                ESP_LOGI("CRC32", "CRC STR: %s", crc32);
+                const char *expected = "CRC32:";
+                if (strcmp(crc32, expected)) {
+                    sysWarn(
+                        NString::format("Resource file probably doesn't have\nchecksum!\n\nCRC "
+                                        "anchor is \"%s\"\nbut expected  \"%s\"",
+                                        crc32, expected));
+                                        return;
+                }
+                const uint8_t *crc_bytes = cache + Files->size() - 4; // last 4 bytes
+                uint32_t       crc32_val;
+                uint32_t       crc32_calc = hw->crc32(0, cache, Files->size() - 10);
+                memcpy(&crc32_val, crc_bytes, sizeof(crc32_val));
+                ESP_LOGI("CRC32", "PARSED CRC32 is 0x%08X", crc32_val);
+                ESP_LOGI("CRC32", "CALCULATED CRC32 is 0x%08X", crc32_calc);
+                if (crc32_val != crc32_calc) {
+                    sysWarn(NString::format(
+                        "Checksum check failure:\n\nExpected   0x%08X\nCalculated 0x%08X", crc32_val,
+                        crc32_calc));
+                }
+            }
         }
     }
 }

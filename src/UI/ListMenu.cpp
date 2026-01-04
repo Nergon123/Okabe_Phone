@@ -1,6 +1,5 @@
 #include "ListMenu.h"
 
-
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "System/FontManagement.h"
 
@@ -11,8 +10,8 @@
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
 void listMenu_header(int type, NString title, int page, int pages, int y) {
-    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN);
-    res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y}, {0, 0}, {0, 0}, RES_MAIN);
+    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y});
+    res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y});
 
     changeFont(1);
 
@@ -44,13 +43,13 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 
     if (selected) { tft.fillRect(0, yy, 240, esize, color_active); }
     else if (unselected) {
-        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.x = 0, .y = yy}, {.x = 0, .y = yy},
-                      {.x = 0, .y = yy + esize}, RES_MAIN);
+            res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.x = 0, .y = yy},
+                                             {.x = 0, .y = yy}, {.x = 0, .y = yy + esize});
     }
     if (choice.image.id != R_NULL_IMAGE) {
         ImageData imgData = res.GetImageDataByImage(choice.image);
-        res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0},
-                      choice.image.type);
+            res.DrawImage(choice.image, choice.icon_index,
+                                             {x - imgData.width, yy}, {0, 0}, {0, 0});
     }
     if (lines) {
         tft.drawLine(0, yy, 240, yy, 0);

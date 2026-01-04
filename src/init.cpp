@@ -21,11 +21,11 @@ void storageInit() {
     ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
     bootText("Loading resource file...");
-    if (!res.Files[RES_MAIN]) {
+    if (!res.Files) {
         NFile* Resource = VFS.open(resPath);
-        res.Init(Resource);
+        res.Init(Resource, true);
     }
-    if (!res.Files[RES_MAIN]) { recovery("There was an error when loading resource file."); }
+    if (!res.Files) { recovery("There was an error when loading resource file."); }
 
     currentWallpaperPath = preferences.getString("wallpaper", "");
 

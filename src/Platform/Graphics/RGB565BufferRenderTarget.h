@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #endif
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 
 class RGB565BufferRenderTarget : public RenderTarget {
@@ -11,7 +12,7 @@ class RGB565BufferRenderTarget : public RenderTarget {
     RGB565BufferRenderTarget(int16_t w, int16_t h)
         : RenderTarget(RENDER_TARGET_TYPE_BUFFER, w, h, nullptr) {
         bufferSize = static_cast<size_t>(w) * static_cast<size_t>(h);
-        buffer    = (bufferSize > 0) ? (uint16_t *)ps_malloc(bufferSize * sizeof(uint16_t)) : nullptr;
+        buffer = (bufferSize > 0) ? (uint16_t *)ps_malloc(bufferSize * sizeof(uint16_t)) : nullptr;
         if (buffer) { std::memset(buffer, 0, bufferSize * sizeof(uint16_t)); }
 
         vp = {0, 0, w, h};
@@ -57,15 +58,15 @@ class RGB565BufferRenderTarget : public RenderTarget {
             if ((px < vp.x || py < vp.y || px >= vp.x + vp.w || py >= vp.y + vp.h)) { continue; }
 
             if (px < 0 || py < 0 || px >= width || py >= height) { continue; }
-            uint32_t position = py*width+px;
-            if(position>=bufferSize)return;
+            uint32_t position = py * width + px;
+            if (position >= bufferSize) { return; }
             buffer[py * width + px] = color;
         }
     }
     void drawPixel(int16_t x, int16_t y, uint16_t color) override {
         if (!buffer) { return; }
-        x+=vp.x;
-        y+=vp.y;
+        x += vp.x;
+        y += vp.y;
         if (x < vp.x || y < vp.y || x >= vp.x + vp.w || y >= vp.y + vp.h) { return; }
         buffer[y * width + x] = color;
     }
@@ -73,8 +74,9 @@ class RGB565BufferRenderTarget : public RenderTarget {
     void pushBuffer(int16_t x, int16_t y, int16_t w, int16_t h, const uint16_t *data,
                     bool transparent, uint16_t transpColor) override {
         if (!buffer || !data) { return; }
-		x+=vp.x;
-		y+=vp.y;
+        x += vp.x;
+        y += vp.y;
+        transpColor = (transpColor >> 8) | (transpColor << 8);
         for (int ry = 0; ry < h; ++ry) {
             int16_t dstY = y + ry;
             if (dstY < vp.y || dstY >= vp.y + vp.h) { continue; }
@@ -99,7 +101,7 @@ class RGB565BufferRenderTarget : public RenderTarget {
   private:
     int16_t  windowX = 0, windowY = 0, windowW = 0, windowH = 0;
     Viewport vp;
-    size_t bufferSize;
+    size_t   bufferSize;
 };
 
 // Setup rgb565 BufferRenderTarget.

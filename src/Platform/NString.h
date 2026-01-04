@@ -3,8 +3,11 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <cstdarg>
+#include <cstdio>
 #include <cstring>
 #include <stdint.h>
+#include <vector>
 #include <string>
 
 namespace Platform {
@@ -49,6 +52,27 @@ class NString {
     // length and emptiness
     unsigned long length() const { return (unsigned long)s_.size(); }
     bool          isEmpty() const { return s_.empty(); }
+
+    static NString format(const char* fmt, ...) {
+        va_list args;
+
+        va_start(args, fmt);
+        int size = std::vsnprintf(nullptr, 0, fmt, args);
+        va_end(args);
+
+        if (size < 0) {
+            return NString(); // formatting error
+        }
+
+        std::vector<char> buffer(size + 1);
+
+        va_start(args, fmt);
+        std::vsnprintf(buffer.data(), buffer.size(), fmt, args);
+        va_end(args);
+
+        // Step 4: construct NString from null-terminated buffer
+        return NString(buffer.data());
+    }
 
     // substring
     NString substring(unsigned long from, unsigned long to) const {
