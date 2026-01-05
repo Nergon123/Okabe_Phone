@@ -231,7 +231,7 @@ class DEV_LINUX : public iHW {
     }
 
   private:
-    int progressCallbackCurl(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
+    static int progressCallbackCurl(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
                              curl_off_t ultotal, curl_off_t ulnow) {
         auto* userCallback = reinterpret_cast<std::function<void(size_t, size_t)>*>(clientp);
         if (userCallback && *userCallback) {
