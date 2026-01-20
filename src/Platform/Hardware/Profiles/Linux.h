@@ -189,8 +189,8 @@ class DEV_LINUX : public iHW {
 
   private:
     struct utsname sys;
-
-    std::string readFile(const std::string& path) {
+    bool           AudioAvailable = false;
+    std::string    readFile(const std::string& path) {
         std::ifstream file(path);
         std::string   value;
         if (file.is_open()) { std::getline(file, value); }
@@ -203,7 +203,7 @@ class DEV_LINUX : public iHW {
         if (!batteryPath.empty()) { return batteryPath; }
 
         const std::string base = "/sys/class/power_supply/";
-        auto              opts = std::filesystem::directory_options::skip_permission_denied;    
+        auto              opts = std::filesystem::directory_options::skip_permission_denied;
         for (const auto& entry : std::filesystem::directory_iterator(base, opts)) {
             std::string type = readFile(entry.path().string() + "/type");
             if (type == "Battery") {

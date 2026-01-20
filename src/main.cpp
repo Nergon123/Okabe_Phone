@@ -7,6 +7,8 @@
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
+#include <Platform/Audio/AudioGen.h>
+
 
 
 #ifdef IDF_VER
@@ -25,6 +27,7 @@ extern "C" void app_main(void) {
     vTaskDelete(NULL);
 }
 #endif
+
 
 int start() {
 #ifdef __LINUX__
@@ -70,7 +73,6 @@ int start() {
     ESP_LOGI("DEVICE", "%s", hw->getDeviceName());
 
     progressBar(100, 100, 250);
-
     if (buttonsHelding(false) == '#') { AT_test(); }
     currentRenderTarget->setUseBuffer(true);
     millSleep = hw->millis();
