@@ -246,8 +246,8 @@ class DEV_LINUX : public iHW {
     }
 
     struct utsname sys;
-
-    std::string readFile(const std::string& path) {
+    bool           AudioAvailable = false;
+    std::string    readFile(const std::string& path) {
         std::ifstream file(path);
         std::string   value;
         if (file.is_open()) { std::getline(file, value); }
