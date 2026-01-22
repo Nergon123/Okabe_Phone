@@ -72,10 +72,10 @@ class DEV_ESP32 : public iHW {
     };
 
     void initStorage() override {
-        SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+
         ESP_LOGI("SD", "SPI started");
         bootText("Initializing SDCard...");
-        sdcard_exists       = false; // initSDcard(true);
+        sdcard_exists       = initSDcard(true);
         IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
         IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
         if (sdcard_exists) { VFS.mount("/sd", sdcard); }
@@ -245,25 +245,20 @@ class DEV_ESP32 : public iHW {
     }
 
     bool initSDcard(bool fast) {
-        uint32_t freq  = fast ? FAST_SD_FREQ : SAFE_SD_FREQ;
-        int      tries = 0;
-
-        if (!SD.begin(SD_CS, SPI, SAFE_SD_FREQ)) { return false; }
-
-        while (tries < 5) {
-            if (freq >= getCpuFrequencyMhz() * 1000000) { freq /= 4; }
-            ESP_LOGI("SD", "TRYING %u Hz", freq);
-
-            if (SD.begin(SD_CS, SPI, freq)) {
-                IFileSystem* sd = new Esp32FileSystem(&SD, FS_EXTERNAL);
-                VFS.mount("/sd", sd);
-                return true;
-            }
-            freq /= 2;
-            tries++;
+        static bool attempted = false;
+        if (attempted) { return false; }
+        attempted = true;
+        ESP_LOGI("SD", "Initializing SD card...");
+        uint32_t freq = fast ? FAST_SD_FREQ : SAFE_SD_FREQ;
+        SDSPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+        SD.end();
+        if (!SD.begin(SD_CS, SDSPI, freq)) {
+            ESP_LOGW("SD", "SD unavailable");
+            return false;
         }
-        return false; // failed to init
+        return true;
     }
+    SPIClass SDSPI = SPIClass(HSPI);
     bool sdcard_exists  = false;
     bool keypad_exists  = false;
     bool charger_exists = false;

@@ -58,7 +58,7 @@ void TaskIdleHandler(void *) {
 
 void initBackgroundTasks() {
     LaunchTask(TaskIdleHandler, "Idle Task", nullptr, 4096, 3);
-    LaunchTask(setBrightnessTask, "setBrightness", nullptr, 1024, 1);
+    LaunchTask(setBrightnessTask, "setBrightness", nullptr, 2048, 1);
 };
 
 void DeleteTask(TASK &task) {
