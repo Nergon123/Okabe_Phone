@@ -146,6 +146,7 @@ void TFT_STUB::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t
 
 void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2,
                             uint16_t color) {
+    color = (color >> 8) | (color << 8); // swap byte order
     // Sort vertices by y-coordinate ascending (y0 <= y1 <= y2)
     if (y0 > y1) {
         std::swap(y0, y1);
