@@ -16,10 +16,10 @@ size_t multi_callback(void* user, void* out, size_t bytes) {
 }
 
 void sample() {
+
     MultiOscillator synth(48000, 2);
 
-   Voice* v = synth.addVoice(WAVE_TRIANGLE, 100.0f, 0.3f);   // 100 Hz square
-
+    Voice* v = synth.addVoice(WAVE_TRIANGLE, 100.0f, 0.3f); // 100 Hz square
 
     AudioStream stream{.callback   = multi_callback,
                        .user       = &synth,
@@ -27,13 +27,17 @@ void sample() {
                        .channels   = 2,
                        .format     = AUDIOFMT_S16,
                        .state      = AUDIO_STOPPED};
-    SDLAudio audio;
-    audio.init();
-    audio.play(&stream);
-    for(;;){
+#ifdef SDL
+    Audio* audio = new SDLAudio();
+#else
+    Audio* audio = new NullAudio();
+#endif
+    audio->init();
+    audio->play(&stream);
+    for (;;) {
         v->amplitude = 1;
-        for(int i = 0;i<10;i++){
-            v->frequency = (sinf(i%3)*300)+300;
+        for (int i = 0; i < 10; i++) {
+            v->frequency = (sinf(i % 3) * 300) + 300;
             hw->delay(100);
         }
         v->amplitude = 0;

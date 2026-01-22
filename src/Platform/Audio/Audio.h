@@ -37,3 +37,11 @@ class Audio {
     virtual void stop()                    = 0;
     virtual void setVolume(float volume)   = 0; // 0.0–1.0
 };
+
+class NullAudio : public Audio {
+  public:
+    void init() override {}
+    void play(AudioStream* stream) override {}
+    void stop() override {}
+    void setVolume(float volume) override {}
+};
