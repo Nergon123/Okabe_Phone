@@ -7,7 +7,7 @@ void TaskIdleHandler(void *) {
     uint32_t oldtime = hw->millis();
     time(&systemTime);
     if (sendATCommand("AT").indexOf("OK") != -1) {
-        
+
         ESP_LOGI("BOOT/SIM", "%s", "Setting up sim card please wait...");
         initSim();
 

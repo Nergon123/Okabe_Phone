@@ -21,8 +21,10 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
 NString InputField(NString title, NString content, int ypos, bool onlydraw, bool selected,
                    bool used, int *direction = nullptr, bool onlynumbers = false);
 void    spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing = 10);
+void    ramProgressBar(int x, int y, int w, int h, uint16_t color, size_t used, size_t total);
 void    progressBar(int val, int max, int y = 250, int h = 8, uint16_t color = TFT_WHITE,
                     bool log = true, bool fast = false);
 void    bootText(NString text, int x = -1, int y = 260, int w = 240, int h = 30);
 void    sysError(NString reason);
 void    sysWarn(NString reason);
+void    drawHeader(NString title, int icon = LM_SETTINGS, NString subtitle = "");

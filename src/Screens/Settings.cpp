@@ -159,13 +159,9 @@ int gallery() {
 // @param time Pointer to the time_t variable
 void setTime(time_t *time) {
     res.DrawImage(R_LIST_MENU_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_ICONS, 2);
+    drawHeader("Set Date & Time", LM_SETTINGS);
     changeFont(1);
-    tft.setCursor(30, 44);
-    tft.setTextColor(0xFFFF);
     tft.setTextSize(1);
-    tft.print("Date/Time Settings");
     tft.setTextColor(0);
     tft.setCursor(90, 77);
     tft.print("DATE");

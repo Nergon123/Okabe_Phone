@@ -10,20 +10,8 @@
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
 void listMenu_header(int type, NString title, int page, int pages, int y) {
-    res.DrawImage(R_LIST_HEADER_BACKGROUND, 0, {OP_UNDEF, y});
-    res.DrawImage(R_LIST_HEADER_ICONS, type, {OP_UNDEF, y});
-
-    changeFont(1);
-
-    tft.setTextColor(0xFFFF);
-    tft.setCursor(28, y + 19);
-    tft.print(title);
-
-    if (pages > 1) {
-        changeFont(0);
-        tft.setCursor(210, y + 15);
-        tft.printf("%d/%d", page + 1, pages);
-    }
+    drawHeader(title, type, pages > 1 ? NString::format("%d/%d", page + 1, pages)
+                                      : NString(""));
 }
 
 /// Function to display a single entry in the list menu

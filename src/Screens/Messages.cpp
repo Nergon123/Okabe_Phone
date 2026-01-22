@@ -39,8 +39,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     int text_pos = 0;
     int position = 0;
     drawStatusBar();
-    res.DrawImage(R_LIST_HEADER_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_ICONS, 0);
+    drawHeader("Outgoing Mail", LM_MESSAGES);
     // jump in pixels per one button press
     int y_jump = 22;
     // offset of screen in height
@@ -50,8 +49,6 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     tft.setCursor(30, 45);
     tft.setTextSize(1);
     changeFont(1);
-    tft.setTextColor(0xffff);
-    tft.print("Outgoing Mail");
     tft.setTextColor(0);
     currentRenderTarget->present();
     bool exit = false;
@@ -209,18 +206,13 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
     content.trim();
     const NString choices[] = {"Reply", "Delete"};
     drawStatusBar();
-    res.DrawImage(R_LIST_HEADER_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_ICONS, 0);
+    drawHeader("Recieve Mail", LM_MESSAGES);
     int y_jump = 22;
     int y_scr  = 0;
     changeFont(1);
-    int y_text = 18;
-
-    tft.setCursor(30, 45);
-    tft.setTextSize(1);
-    tft.setTextColor(0xffff);
+    int  y_text  = 18;
     bool deleted = false;
-    tft.print("Recieve Mail");
+    tft.setTextSize(1);
     tft.setTextColor(0);
     tft.setViewport(0, 51, 240, 269);
     bool exit = false;
@@ -257,9 +249,7 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
                 if (y_scr < 0) { y_scr += y_jump; }
                 else { r = -1; }
                 break;
-                case BACK:
-                exit = true;
-                break;
+            case BACK: exit = true; break;
             case SELECT:
                 ch = choiceMenu(choices, ArraySize(choices), true);
                 switch (ch) {

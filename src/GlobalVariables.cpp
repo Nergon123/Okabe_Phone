@@ -5,6 +5,8 @@ Preferences preferences;
 int8_t _signal = 0;
 int8_t charge  = 0;
 
+bool enableRAMMonitor = false;
+
 // pointer to the graphic resources in PSRAM
 uint8_t* resources;
 

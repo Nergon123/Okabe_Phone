@@ -485,9 +485,6 @@ NString getATvalue(NString command, bool background) {
     (void)background;
     return "PC";
 };
-std::vector<Message> parseMessages(){
-    return {};
-}
 bool checkSim() { return true; };
 bool _checkSim() { return true; };
 void initSim() {};

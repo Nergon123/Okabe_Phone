@@ -7,20 +7,7 @@ void redrawStatus(float zoom) {
     tft.resetViewport();
     int zoompercentage = zoom * 100;
     res.DrawImage(R_LIST_MENU_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_BACKGROUND);
-    res.DrawImage(R_LIST_HEADER_ICONS, LM_SETTINGS);
-    tft.setTextSize(1);
-    changeFont(1);
-
-    tft.setTextColor(0xFFFF);
-    tft.setCursor(28, 45);
-    tft.print("Image Viewer");
-
-    if (zoompercentage != 100) {
-        changeFont(0);
-        tft.setCursor(210, 41);
-        tft.printf("%d%%", zoompercentage);
-    }
+    drawHeader("Image Viewer", LM_SETTINGS, NString::format("%d%%", zoompercentage));
     tft.setViewport(vp);
 }
 
@@ -107,13 +94,13 @@ void ImageViewer(const NString path) {
     tft.resetViewport();
 }
 
-void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w , int h ) {
+void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h) {
     if (path.isEmpty()) { return; }
     if (w <= 0 || h <= 0) {
         InfoWindow("Invalid image dimensions");
         return;
     }
-    image_data activeImage = displayPNG(path); //metadata only
+    image_data activeImage = displayPNG(path); // metadata only
     if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) {
         InfoWindow("Failed to open Image!");
         return;

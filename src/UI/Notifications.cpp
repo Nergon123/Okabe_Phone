@@ -1,8 +1,8 @@
 #include "Notifications.h"
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "Platform/Graphics/RenderTargets.h"
+#include "System/Memory.h"
 #include "System/ResourceSystem.h"
-
 // ## Draw status bar
 // This function draws the status bar on the screen
 // @param force: If true, force redraw of the status bar if false only redraw if time has changed
@@ -14,6 +14,9 @@ void drawStatusBar(bool force) {
     if (sbtime.tm_min != systemTimeInfo.tm_min) {
         // Serial.printf("\nSBTIME MIN %d , STI MIN %d\n", sbtime.tm_min, systemTimeInfo.tm_min);
         SaveTime(systemTime);
+        sBarChanged = true;
+    }
+    if (enableRAMMonitor && sbtime.tm_sec % 10 == 0) {
         sBarChanged = true;
     }
 
@@ -49,6 +52,17 @@ void drawStatusBar(bool force) {
             tft.setTextColor(TFT_WHITE);
             tft.print("KEYBOARD IS LOCKED HOLD * TO UNLOCK");
         }
+        if (enableRAMMonitor) {
+
+            ramProgressBar(150, 4, 25, 6, TFT_GREEN,
+                           getTotalDefaultMemory() - getFreeDefaultMemory(),
+                           getTotalDefaultMemory());
+            ramProgressBar(150 , 10, 25, 6, TFT_RED,
+                           getTotalExternalMemory() - getFreeExternalMemory(),
+                           getTotalExternalMemory());
+            ramProgressBar(150 , 16, 25, 6, TFT_BLUE,
+                           getTotalHighMemory() - getFreeHighMemory(), getTotalHighMemory());
+        }
         tft.setRenderTarget(before);
         currentRenderTarget->pushBuffer(0, 0, buf->getWidth(), buf->getHeight(), buf->getBuffer(),
                                         0, 0);
@@ -57,6 +71,7 @@ void drawStatusBar(bool force) {
         tft.setTextSize(textSize);
         tft.textcolor   = ccolor;
         tft.currentFont = _currentFont;
+        delete buf;
     }
 }
 // Function to show a confirmation window

@@ -9,15 +9,14 @@
 #include <TFT_eSPI.h>
 #endif
 #include "Platform/FileSystem/VFS.h"
+#include "Platform/Graphics/ImageProcessor.h"
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/NString.h"
 #include "Platform/Preferences.h"
-#include "Platform/Graphics/ImageProcessor.h"
 
 #include <vector>
 // hmm....
 #include "System/ResourceSystem.h"
-
 struct Contact {
     int     index;
     NString phone;
@@ -123,6 +122,7 @@ extern uint8_t              brightness;
 extern uint32_t             wallpaperIndex;
 extern ulong                millSleep;
 extern volatile int         stateCall;
+extern bool                 enableRAMMonitor;
 extern bool                 sBarChanged;
 extern bool                 isAbleToCall;
 extern bool                 isCalling;

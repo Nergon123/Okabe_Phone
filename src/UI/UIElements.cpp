@@ -96,7 +96,6 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
         tft.drawRect(0, 0, w, h, selected ? clr_selected : clr_normal);
         tft.fillRect(1, 1, w - 2, h - 2, clr_background);
         tft.print(text);
-        currentRenderTarget->present();
     };
     DrawBox();
     bool exit = false;
@@ -374,6 +373,15 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     currentRenderTarget->setUseBuffer(wasBuffer);
 }
 
+void ramProgressBar(int x, int y, int w, int h, uint16_t color, size_t used, size_t total) {
+    float percentage = (float)used / (float)total;
+    int   fillWidth  = (int)(w * percentage);
+
+    tft.drawRect(x, y, w, h, color);
+    tft.fillRect(x + 1, y + 1, fillWidth - 2, h - 2, color);
+    
+}
+
 int lastpercentage;
 // progress bar that used on boot screen
 // @param val: Current value
@@ -472,4 +480,21 @@ void sysError(NString reason) {
     ESP.restart();
 #endif
     for (;;);
+}
+
+void drawHeader(NString title, int icon, NString subtitle) {
+    Viewport vp = tft.getViewport();
+    tft.resetViewport();
+    res.DrawImage(R_LIST_HEADER_BACKGROUND);
+    res.DrawImage(R_LIST_HEADER_ICONS, icon);
+    drawStatusBar();
+    tft.setCursor(30, 45);
+    tft.setTextSize(1);
+    changeFont(1);
+    tft.setTextColor(0xffff);
+    tft.print(title);
+    changeFont(0);
+    tft.setCursor(210, 41);
+    tft.print(subtitle);
+    tft.setViewport(vp);
 }
