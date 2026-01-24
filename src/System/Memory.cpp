@@ -25,11 +25,11 @@ void freedef(void* ptr) {
 }
 
 #ifndef ESP32_MEMORY
-void* pcmalloc(size_t n, size_t size, const char* name, uint8_t type, bool calloc, bool realloc) {
+void* pcmalloc(size_t n, size_t size, const char* name, uint8_t type, bool _calloc, bool _realloc) {
     int   id  = allocations.size();
     void* ptr = nullptr;
-    if (calloc) { ptr = calloc(n, size); }
-    else if (realloc) { ptr = realloc(ptr, size); }
+    if (_calloc) { ptr = calloc(n, size); }
+    else if (_realloc) { ptr = realloc(ptr, size); }
     else { ptr = malloc(size); }
     if (ptr == nullptr) {
         ESP_LOGE("MEMORY", "Failed to allocate %d bytes for %s (id %d)", size, name, id);
@@ -37,7 +37,7 @@ void* pcmalloc(size_t n, size_t size, const char* name, uint8_t type, bool callo
     else { allocations.push_back({size, name, id, ptr, 0, hw->millis(), type}); }
 }
 #endif
-void* defmalloc(size_t n, size_t size, const char* name, bool calloc, bool realloc) {
+void* defmalloc(size_t n, size_t size, const char* name, bool _calloc, bool _realloc) {
     (void)name;
     int   id  = allocations.size();
     void* ptr = nullptr;
@@ -49,7 +49,7 @@ void* defmalloc(size_t n, size_t size, const char* name, bool calloc, bool reall
     }
     else { ESP_LOGE("MEMORY", "Failed to allocate %d bytes for %s (id %d)", size, name, id); }
 #else
-    ptr = pcmalloc(n, size, name, ALLOC_TYPE_DEFAULT, calloc, realloc);
+    ptr = pcmalloc(n, size, name, ALLOC_TYPE_DEFAULT, _calloc, _realloc);
 #endif
     return ptr;
 }
@@ -57,7 +57,7 @@ void* defmalloc(size_t n, size_t size, const char* name, bool calloc, bool reall
 // SPIRAM allocations can be freed using normal free()
 void freeext(void* ptr) { freedef(ptr); }
 // for external memory allocations
-void* extmalloc(size_t size, const char* name, bool calloc, bool realloc, size_t n) {
+void* extmalloc(size_t size, const char* name, bool _calloc, bool _realloc, size_t n) {
     (void)name;
     int   id  = allocations.size();
     void* ptr = nullptr;
@@ -97,7 +97,7 @@ void highfree(highalloc_t* handle) {
 #define HIGHALLOC_BLOCK_SIZE (32 * 1024)
 // extmalloc only allows to allocate first 4MB in PSRAM on ESP32, so for higher allocations use
 // highmalloc, be aware that it allocates memory in 32KB blocks
-highalloc_t* _highmalloc(size_t size, const char* name, bool calloc, bool realloc) {
+highalloc_t* _highmalloc(size_t size, const char* name, bool _calloc, bool _realloc) {
     (void)name;
     int          id  = allocations.size();
     highalloc_t* ptr = new highalloc_t{0, nullptr};

@@ -33,5 +33,5 @@ void SaveTime(time_t time) {
     systemTimeInfo      = *gmtime(&time);
     // Serial.printf("\nSTI %d:%d, TIME: %d:%d\n", systemTimeInfo.tm_hour, systemTimeInfo.tm_min,
     // tm_time.tm_hour, tm_time.tm_min);
-   settimeofday(&data, nullptr);
+    // settimeofday(&data, nullptr);
 }
