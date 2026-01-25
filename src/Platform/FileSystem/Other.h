@@ -1,6 +1,7 @@
 #pragma once
 #ifdef PC
 #include "FileSystem.h"
+#include <Defines.h>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -21,10 +22,8 @@ class StdFile : public IFile {
         file.open(path, m);
     }
     size_t read(void* buf, size_t len) override {
-        if (!file.read(reinterpret_cast<char*>(buf), len)) {
-            return static_cast<size_t>(file.gcount());
-        }
-        return len;
+        file.read(reinterpret_cast<char*>(buf), len);
+        return static_cast<size_t>(file.gcount());
     }
 
     size_t write(const void* buf, size_t len) override {
@@ -34,18 +33,10 @@ class StdFile : public IFile {
     bool seek(size_t pos, int mode) override {
         std::ios::seekdir dir;
         switch (mode) {
-        case 1:
-            dir = std::ios::cur;
-            break;
-        case 2:
-            dir = std::ios::end;
-            break;
-        case 0:
-            dir = std::ios::beg;
-            break;
-        default:
-            ESP_LOGE("FileSystem/Other", "Bad seek mode: %i", mode);
-            return false;
+        case 1: dir = std::ios::cur; break;
+        case 2: dir = std::ios::end; break;
+        case 0: dir = std::ios::beg; break;
+        default: ESP_LOGE("FileSystem/Other", "Bad seek mode: %i", mode); return false;
         }
 
         file.seekg(pos, dir);
@@ -62,7 +53,7 @@ class StdFile : public IFile {
     }
     bool   isDirectory() override { return fs::is_directory(filePath); }
     bool   available() override { return file.good() && !file.eof(); }
-    size_t position() override {return file.tellg();};
+    size_t position() override { return file.tellg(); };
 
     void printf(const char* format, ...) override {
         char    buffer[1024];

@@ -7,10 +7,6 @@
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
-#include <Platform/Audio/AudioGen.h>
-
-
-
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
 
@@ -27,7 +23,6 @@ extern "C" void app_main(void) {
     vTaskDelete(NULL);
 }
 #endif
-
 
 int start() {
 #ifdef __LINUX__

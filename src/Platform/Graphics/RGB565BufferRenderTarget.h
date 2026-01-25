@@ -19,8 +19,10 @@ class RGB565BufferRenderTarget : public RenderTarget {
     }
 
     virtual ~RGB565BufferRenderTarget() {
-        delete[] buffer;
-        buffer = nullptr;
+        if (buffer) {
+            free(buffer);
+            buffer = nullptr;
+        }
     }
 
     void setViewport(Viewport newVp) override {

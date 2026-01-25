@@ -23,34 +23,33 @@ void ListTasks() {
     InfoWindow("Task listing not available.");
 }
 
-void ListAllocations() {
-    drawHeader("Memory Allocations", LM_SETTINGS);
-    std::vector<mOption> allocationList;
-    const char*          sizeSuffixes[3] = {"B", "KB", "MB"};
-    for (const auto& alloc : allocations) {
-        const char* suffix = alloc.size < 1024          ? sizeSuffixes[0]
-                             : alloc.size < 1024 * 1024 ? sizeSuffixes[1]
-                                                        : sizeSuffixes[2];
-        mOption     option = mOption("");
+// void ListAllocations() {
+//     drawHeader("Memory Allocations", LM_SETTINGS);
+//     std::vector<mOption> allocationList;
+//     const char*          sizeSuffixes[3] = {"B", "KB", "MB"};
+//     for (const auto& alloc : allocations) {
+//         const char* suffix = alloc.size < 1024          ? sizeSuffixes[0]
+//                              : alloc.size < 1024 * 1024 ? sizeSuffixes[1]
+//                                                         : sizeSuffixes[2];
+//         mOption     option = mOption("");
 
-        option.label = NString::format("%d:/s:%d%s/%s", alloc.id, alloc.size, suffix, alloc.name);
-        allocationList.push_back(option);
-    }
-    listMenu(allocationList, allocationList.size(), true, LM_SETTINGS, "Allocations", false, 0);
-}
+//         option.label = NString::format("%d:/s:%d%s/%s", alloc.id, alloc.size, suffix,
+//         alloc.name); allocationList.push_back(option);
+//     }
+//     listMenu(allocationList, allocationList.size(), true, LM_SETTINGS, "Allocations", false, 0);
+// }
 
 void TaskManager() {
     drawHeader("Task Manager", LM_SETTINGS);
-    NString options[3] = {"Allocations", "Tasks", "Enable RAM Monitor"};
+    NString options[3] = {"Tasks", "Enable RAM Monitor"};
     int     selection  = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
         options[2] = enableRAMMonitor ? "Disable RAM Monitor" : "Enable RAM Monitor";
-        selection =
-            listMenu(options, ArraySize(options), false, LM_SETTINGS, "Task Manager", false, selection);
+        selection  = listMenu(options, ArraySize(options), false, LM_SETTINGS, "Task Manager",
+                              false, selection);
         switch (selection) {
-        case 0: ListAllocations(); break;
-        case 1: ListTasks(); break;
-        case 2: enableRAMMonitor = !enableRAMMonitor; break;
+        case 0: ListTasks(); break;
+        case 1: enableRAMMonitor = !enableRAMMonitor; break;
         default: break;
         }
     }

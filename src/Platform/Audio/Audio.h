@@ -18,15 +18,14 @@ enum AudioFormat : uint8_t {
 
 struct AudioStream {
     AudioCallback callback;
-    void* user;
+    void*         user;
 
-    uint32_t sampleRate;
-    uint8_t  channels;
+    uint32_t    sampleRate;
+    uint8_t     channels;
     AudioFormat format;
 
     volatile AudioState state;
 };
-
 
 class Audio {
   public:
@@ -41,7 +40,7 @@ class Audio {
 class NullAudio : public Audio {
   public:
     void init() override {}
-    void play(AudioStream* stream) override {}
+    void play(AudioStream* stream) override { (void)stream; }
     void stop() override {}
-    void setVolume(float volume) override {}
+    void setVolume(float volume) override { (void)volume; }
 };
