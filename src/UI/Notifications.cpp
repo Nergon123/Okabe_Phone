@@ -12,7 +12,6 @@ void drawStatusBar(bool force) {
 
     tm sbtime = *gmtime(&systemTime);
     if (sbtime.tm_min != systemTimeInfo.tm_min) {
-        // Serial.printf("\nSBTIME MIN %d , STI MIN %d\n", sbtime.tm_min, systemTimeInfo.tm_min);
         SaveTime(systemTime);
         sBarChanged = true;
     }
@@ -74,6 +73,7 @@ void drawStatusBar(bool force) {
         delete buf;
     }
 }
+
 // Function to show a confirmation window
 // This function is called when the user wants to confirm an action
 // @param reason The reason for the confirmation
@@ -108,7 +108,6 @@ bool confirmation(NString reason, NString yes, NString no) {
 // @param WaitForButton wait for any button or show message like loading screen
 // @param titleColor RGB565 color for title
 void InfoWindow(NString reason, NString title, bool WaitForButton, uint16_t titlecolor) {
-
     int xpos = 0;
     drawWallpaper();
     res.DrawImage(R_FULL_NOTIFICATION);
@@ -119,9 +118,28 @@ void InfoWindow(NString reason, NString title, bool WaitForButton, uint16_t titl
     tft.setTextColor(titlecolor);
     tft.println(title);
     tft.setTextColor(0);
-    if (tft.textWidth(reason) < 240) { xpos = (240 - tft.textWidth(reason)) / 2; }
-    tft.setCursor(xpos, 150);
-    tft.print(SplitString(reason));
+    NString formatted = SplitString(reason);
+    // print each line centered
+    int y = 150;
+    int lineHeight = tft.fontHeight();
+    size_t start = 0;
+    while (start < formatted.length()) {
+        int nl = formatted.indexOf('\n', start);
+        NString line;
+        if (nl == -1) {
+            line = formatted.substring(start);
+            start = formatted.length();
+        } else {
+            line = formatted.substring(start, nl);
+            start = nl + 1;
+        }
+        int w = tft.textWidth(line);
+        int lx = 0;
+        if (w < 240) { lx = (240 - w) / 2; }
+        tft.setCursor(lx, y);
+        tft.println(line);
+        y += lineHeight;
+    }
     currentRenderTarget->present();
     if (WaitForButton) { while (buttonsHelding() == -1); }
 }

@@ -2,10 +2,9 @@
 
 const int lastImage = 42;
 
-void debugMenu() {}
+void debugMenu() { InfoWindow("Nope.", "INFO", true, TFT_BLUE); }
 
 void connectivityMenu() {
-
     NString options[] = {
         "Wi-Fi",
     };
@@ -19,6 +18,61 @@ void connectivityMenu() {
         }
     }
 }
+
+void systemSettings() {
+    NString options[] = {
+        "Set Date & Time",
+    };
+    int selection = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+        selection = choiceMenu(options, ArraySize(options), false);
+        switch (selection) {
+        case 0: setTime(&systemTime); break;
+        }
+    }
+}
+
+void lookAndFeelSettings() {
+    NString options[] = {
+        "Change Theme",
+    };
+    int selection = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+        selection = choiceMenu(options, ArraySize(options), false);
+        switch (selection) {
+        case 0:
+            NString filepath = fileBrowser("/", ".nph");
+            if (VFS.exists(filepath)) {
+                NFile *resource = VFS.open(filepath);
+                InfoWindow("Applying Theme...", "INFO", false, TFT_BLUE);
+                res.Init(resource);
+                res.CopyToRam();
+                if (res.cache) { res.Files->close(); }
+            }
+            break;
+        }
+    }
+}
+
+void experimentalSettings() {
+    NString options[] = {
+        "Debug Menu",
+    };
+    int selection = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+        selection = choiceMenu(options, ArraySize(options), false);
+        switch (selection) {
+        case 0: debugMenu(); break;
+        }
+    }
+}
+
 void advancedSettings() {
     NString options[] = {
         "System",
@@ -26,34 +80,27 @@ void advancedSettings() {
         "Look and feel",
         "Experimental",
     };
-    int     lookAndFeel   = LISTMENU_NULL;
-    int     menuSelection = LISTMENU_NULL;
-    NString laf_opts[]    = {"Change Theme"};
-
+    int menuSelection = LISTMENU_NULL;
     while (menuSelection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
-
         menuSelection = choiceMenu(options, ArraySize(options), false);
         switch (menuSelection) {
+        case 0: systemSettings(); break;
         case 1: connectivityMenu(); break;
-        case 2:
-            lookAndFeel = choiceMenu(laf_opts, ArraySize(laf_opts), false);
-            if (lookAndFeel == 0) {
-                NString filepath = fileBrowser("/", ".nph");
-                if (VFS.exists(filepath)) {
-                    NFile *resource = VFS.open(filepath);
-                    InfoWindow("Applying Theme...", "INFO", false, TFT_BLUE);
-                    res.Init(resource);
-                    res.CopyToRam();
-                    if (res.cache) { res.Files->close(); }
-                }
-            }
-            break;
-
+        case 2: lookAndFeelSettings(); break;
+        case 3: experimentalSettings(); break;
         default: return;
         }
     }
+}
+
+void changeWallpaper() {
+    int previewSizeHeight = 30;
+    int previewSizeWidth  = 20;
+    NString path = fileBrowser("/WALLPAPERS", ".PNG");
+    if (path.isEmpty()) { return; }
+
 }
 
 // Function to show the settings menu
@@ -66,93 +113,18 @@ void settings() {
     while (menuSelection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
-        menuSelection        = choiceMenu(settingsOptions, ArraySize(settingsOptions), false);
-        int pictureIndex     = -1;
-        int confPictureIndex = -2;
-
+        menuSelection = choiceMenu(settingsOptions, ArraySize(settingsOptions), false);
         switch (menuSelection) {
-        case -1: currentScreen = SCREENS::MAINMENU; return;
-
-        case 0:
-            pictureIndex = gallery();
-
-            if (pictureIndex == -1) {
-                currentScreen = SCREENS::MAINMENU;
-                return;
-            }
-            break;
+        case 0: changeWallpaper(); break;
         case 1: ringtoneSelector(false); break;
         case 2: ringtoneSelector(true); break;
         case 3: advancedSettings(); break;
-        default:
-            currentScreen = SCREENS::MAINMENU;
-            return;
-            break;
-        }
-        NString GalleryChoice[] = {"Preview", "Confirm"};
-        if (pictureIndex != -1 && pictureIndex != lastImage) {
-
-            confPictureIndex = choiceMenu(GalleryChoice, 2, true);
-            switch (confPictureIndex) {
-            case 0:
-                // drawImage(WALLPAPER_IMAGES_BASE.address + WALLPAPER_IMAGES_MULTIPLIER *
-                // pictureIndex, 0, 26, WALLPAPER_IMAGES_BASE.w, WALLPAPER_IMAGES_BASE.h, "/" +
-                // resPath, 0, 0);
-                tft.fillScreen(0);
-                tft.setTextColor(TFT_RED);
-                tft.print("wallpapers are gone...");
-                while (buttonsHelding() != BACK);
-                break;
-            case 1:
-                preferences.begin("settings", false);
-                preferences.putInt("wallpaperIndex", pictureIndex);
-                preferences.putString("wallpaper", "");
-                preferences.end();
-                wallpaperIndex = pictureIndex;
-                // TODO WALLPAPER
-                currentWallpaperPath = "";
-                currentScreen        = SCREENS::MAINSCREEN;
-                return;
-                break;
-            default: break;
-            }
-        }
-        else if (pictureIndex == lastImage) {
-            NString path = fileBrowser("/", ".png");
-            if (VFS.exists(path)) { confPictureIndex = choiceMenu(GalleryChoice, 2, true); }
-            else { break; }
-            switch (confPictureIndex) {
-            case 0: break;
-            case 1:
-                preferences.begin("settings", false);
-                preferences.putInt("wallpaperIndex", -1);
-                preferences.putString("wallpaper", path.c_str());
-                preferences.end();
-                // TODO WALLPAPER
-                currentWallpaperPath = path;
-                currentScreen        = SCREENS::MAINSCREEN;
-                return;
-                break;
-            default: break;
-            }
+        default: return;
         }
     }
     currentScreen = SCREENS::MAINMENU;
 }
 
-// Function to show the gallery menu
-//
-// This function is called when the user wants to change the wallpaper
-//
-// If "Pick wallpaper..." is selected, it allows the user to select a custom wallpaper
-// @return The index of the selected wallpaper
-int gallery() {
-    if (!VFS.exists("/sd" + resPath)) { return lastImage; }
-    std::vector<mOption> wallpaperOptions = {mOption("Pick wallpaper...", Image())};
-    return listMenu(wallpaperOptions, wallpaperOptions.size(), true, LM_SETTINGS,
-                    "Change wallpaper")
-        .index;
-}
 
 // Set time screen
 // This function is called when the user wants to set the time

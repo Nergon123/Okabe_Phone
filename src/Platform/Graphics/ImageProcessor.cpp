@@ -11,6 +11,53 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb_image_resize2.h"
 
+// That's a lot of memory stuff, heavy for ESP32, even with PSRAM...
+// works, but need to replace stb image lib with something lighter later
+
+uint16_t* resizeRGB565buffer(uint16_t *buffer,int inputW, int inputH, int targetW, int targetH) {
+    if (targetW == inputW && targetH == inputH) {
+        return buffer; // no resize needed
+    }
+
+    uint8_t* tempRGB = (uint8_t*)ps_malloc(inputW * inputH * 3);
+    for (int j = 0; j < inputH; j++) {
+        for (int i = 0; i < inputW; i++) {
+            int      idx    = (j * inputW + i);
+            uint16_t pixel  = buffer[idx];
+            uint8_t  r      = ((pixel >> 11) & 0x1F) << 3;
+            uint8_t  g      = ((pixel >> 5) & 0x3F) << 2;
+            uint8_t  b      = (pixel & 0x1F) << 3;
+            int      rgbIdx = idx * 3;
+            tempRGB[rgbIdx]     = r;
+            tempRGB[rgbIdx + 1] = g;
+            tempRGB[rgbIdx + 2] = b;
+        }
+    }
+
+    uint8_t* resizedRGB = stbir_resize_uint8_srgb(tempRGB, inputW, inputH, 0, NULL, targetW, targetH,
+                                                  0, (stbir_pixel_layout)3);
+    free(tempRGB);
+    if (!resizedRGB) {
+        free(buffer);
+        return nullptr;
+    }
+
+    uint16_t* resizedRGB565 = (uint16_t*)ps_malloc(targetW * targetH * sizeof(uint16_t));
+    for (int j = 0; j < targetH; j++) {
+        for (int i = 0; i < targetW; i++) {
+            int      idx           = (j * targetW + i);
+            int      rgbIdx        = idx * 3;
+            uint8_t  r             = resizedRGB[rgbIdx];
+            uint8_t  g             = resizedRGB[rgbIdx + 1];
+            uint8_t  b             = resizedRGB[rgbIdx + 2];
+            resizedRGB565[idx] = tft.color565(r, g, b);
+        }
+    }
+    free(resizedRGB);
+    free(buffer);
+    return resizedRGB565;
+}
+
 uint8_t* resizePNG(uint8_t* img, int width, int height, int targetW, int targetH) {
     if (targetW == width && targetH == height) {
         return img; // no resize needed
