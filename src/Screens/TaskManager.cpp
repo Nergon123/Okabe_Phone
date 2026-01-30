@@ -41,15 +41,18 @@ void ListTasks() {
 
 void TaskManager() {
     drawHeader("Task Manager", LM_SETTINGS);
-    NString options[3] = {"Tasks", "Enable RAM Monitor"};
+    NString options[2] = {"Tasks", "Enable RAM Monitor"};
     int     selection  = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
-        options[2] = enableRAMMonitor ? "Disable RAM Monitor" : "Enable RAM Monitor";
+        options[1] = enableRAMMonitor ? "Disable RAM Monitor" : "Enable RAM Monitor";
         selection  = listMenu(options, ArraySize(options), false, LM_SETTINGS, "Task Manager",
                               false, selection);
         switch (selection) {
         case 0: ListTasks(); break;
-        case 1: enableRAMMonitor = !enableRAMMonitor; break;
+        case 1:
+            enableRAMMonitor = !enableRAMMonitor;
+            drawStatusBar(true);
+            break;
         default: break;
         }
     }

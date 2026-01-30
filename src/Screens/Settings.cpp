@@ -96,10 +96,6 @@ void advancedSettings() {
 }
 
 void changeWallpaper() {
-    int previewSizeHeight = 30;
-    int previewSizeWidth  = 20;
-    NString path = fileBrowser("/WALLPAPERS", ".PNG");
-    if (path.isEmpty()) { return; }
 
 }
 
@@ -119,12 +115,11 @@ void settings() {
         case 1: ringtoneSelector(false); break;
         case 2: ringtoneSelector(true); break;
         case 3: advancedSettings(); break;
-        default: return;
+        default: break;
         }
     }
     currentScreen = SCREENS::MAINMENU;
 }
-
 
 // Set time screen
 // This function is called when the user wants to set the time
@@ -188,45 +183,10 @@ void setTime(time_t *time) {
 }
 
 /*Ringtone selector
- * not fully implemented yet
+ * not implemented yet
  * @param isMail true if the ringtone is for mail, false if it is for call
  */
 void ringtoneSelector(bool isMail) {
 #warning ringtoneSelector not implemented
     (void)isMail;
-    // NFile* dir = VFS.open("/sd/AUDIO");
-    // if (!dir) {
-    //     InfoWindow("NO /AUDIO");
-    //     return;
-    // }
-
-    // File entry;
-
-    // mOption opt[count];
-    // int     iconIndex = -1;
-
-    // NString *compareRingtone = isMail ? &currentMailRingtonePath : &currentRingtonePath;
-
-    // count = 0;
-    // while (entry = dir.openNextFile()) {
-    //     if (!entry.isDirectory() && NString(entry.name()).endsWith(".SGAUDIO")) {
-    //         pathes[count]    = entry.path();
-    //         opt[count].label = entry.name();
-    //         opt[count].label.replace(".SGAUDIO", "");
-
-    //         // TODO DRAW NOTE ICON
-    //         if (pathes[count].equals(*compareRingtone)) { iconIndex = count; }
-    //         count++;
-    //     }
-    // }
-
-    // int choice = 0;
-    // while (choice != -1) {
-    //     choice = listMenu(opt, count, false, LM_SETTINGS, "Set ringtone", true, choice);
-    //     if (choice < 0) { return; }
-    //     if (iconIndex >= 0) { opt[iconIndex].image = Image(); }
-    //     // TODO DRAW NOTE ICON
-    //     iconIndex        = choice;
-    //     *compareRingtone = pathes[choice];
-    // }
 }

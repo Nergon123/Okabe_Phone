@@ -99,7 +99,7 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
     };
     DrawBox();
     bool exit = false;
-
+    if (selected) { currentRenderTarget->present(); }
     while (!exit && selected) {
         *direction = buttonsHelding();
         switch (*direction) {
@@ -107,11 +107,13 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
             val--;
             if (val < min) { val = max; }
             DrawBox();
+            currentRenderTarget->present();
             break;
         case UP:
             val++;
             if (val > max) { val = min; }
             DrawBox();
+            currentRenderTarget->present();
             break;
         case LEFT: exit = true; break;
         case RIGHT: exit = true; break;
@@ -379,7 +381,6 @@ void ramProgressBar(int x, int y, int w, int h, uint16_t color, size_t used, siz
 
     tft.drawRect(x, y, w, h, color);
     tft.fillRect(x + 1, y + 1, fillWidth - 2, h - 2, color);
-    
 }
 
 int lastpercentage;
