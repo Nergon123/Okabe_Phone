@@ -3,4 +3,6 @@
 
 #include <System/Pkg/StaticPackage.h>
 
+DECLARE_SPKG(PkgMgr)
+
 #endif

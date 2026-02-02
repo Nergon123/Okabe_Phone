@@ -2,6 +2,7 @@
 #include <Screens/ImageViewer.h>
 #include <Screens/TaskManager.h>
 #include "Settings.h"
+#include <BuiltinPackages.h>
 
 /*
  * ## Executes application from sdcard
@@ -68,7 +69,7 @@ void execute_application() {
 // Additional features screen
 void e() {
     const NString menu[] = {"FileBrowser", "OTA web update", "Boot application", "View Image",
-                            "Wallpaper Modes","Set Time", "Task Manager"};
+                            "Wallpaper Modes","Set Time", "Task Manager", "Package Manager"};
 
     const NString wallpaperModes[] = {"CENTERED",  "TILED",           "FILLED",
                                       "STRETCHED", "FIT_HORIZONTALY", "FIT_VERTICALY"};
@@ -92,6 +93,7 @@ void e() {
         }
             case 5:  setTime(&systemTime); break;
             case 6:  TaskManager(); break;
+            case 7:  pm.runPackage(SPKG_ID(PkgMgr)); break;
         }
     };
     currentScreen = SCREENS::MAINMENU;

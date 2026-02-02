@@ -68,6 +68,9 @@ int start() {
 
     ESP_LOGI("DEVICE", "%s", hw->getDeviceName());
 
+    // register static packages
+    pm.registerPackage(&SPKG(PkgMgr));
+    
     // register package from fs
     PS.init();
 
