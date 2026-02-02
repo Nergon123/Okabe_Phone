@@ -67,6 +67,8 @@ NString lastSIMerror            = "";
 
 iHW* hw;
 
+PackageManager pm;
+PackageStorage PS;
 
 #ifdef TASK
 std::vector<TASK> tasks;

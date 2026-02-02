@@ -6,6 +6,7 @@
 #include "System/ResourceSystem.h"
 #include "System/Tasks.h"
 #include "System/Time.h"
+#include "BuiltinPackages.h"
 #include "init.h"
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
@@ -66,6 +67,9 @@ int start() {
              resPath.c_str());
 
     ESP_LOGI("DEVICE", "%s", hw->getDeviceName());
+
+    // register package from fs
+    PS.init();
 
     progressBar(100, 100, 250);
     if (buttonsHelding(false) == '#') { AT_test(); }
