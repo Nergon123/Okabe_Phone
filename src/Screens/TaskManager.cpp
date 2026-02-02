@@ -20,7 +20,7 @@ void ListTasks() {
     }
     listMenu(taskList, taskList.size(), true, LM_SETTINGS, "Tasks", false, 0);
 #endif
-    InfoWindow("Task listing not available.");
+    InfoWindow("Task listing is not available.");
 }
 
 // void ListAllocations() {

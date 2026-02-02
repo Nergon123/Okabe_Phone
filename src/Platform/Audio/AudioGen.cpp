@@ -27,7 +27,7 @@ void sample() {
                        .channels   = 2,
                        .format     = AUDIOFMT_S16,
                        .state      = AUDIO_STOPPED};
-#ifdef SDL
+#ifdef SDL_h_
     Audio* audio = new SDLAudio();
 #else
     Audio* audio = new NullAudio();
