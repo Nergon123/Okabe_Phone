@@ -16,9 +16,9 @@
 
 #include <vector>
 // hmm....
-#include "System/ResourceSystem.h"
 #include "System/Pkg/PackageManager.h"
 #include "System/Pkg/PackageStorage.h"
+#include "System/ResourceSystem.h"
 
 struct Contact {
     int     index;
@@ -157,7 +157,7 @@ extern iHW* hw;
 extern uint8_t* resources;
 
 extern PackageManager pm;
-extern PackageStorage PS;
+extern PackageStorage PaStor;
 
 // Function to get the size of an array ... bruh
 template <typename T, size_t N> size_t ArraySize(T (&)[N]) { return N; }

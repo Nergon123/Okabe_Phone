@@ -72,7 +72,7 @@ int start() {
     pm.registerPackage(&SPKG(PkgMgr));
     
     // register package from fs
-    PS.init();
+    PaStor.init();
 
     progressBar(100, 100, 250);
     if (buttonsHelding(false) == '#') { AT_test(); }

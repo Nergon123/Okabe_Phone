@@ -1,35 +1,34 @@
 // Misc api exported to lua (for example to replace os lib)
 // c-side declaration in "lokabelib.h"
 
-#include <GlobalVariables.h>
 #include "lua/lua.hpp"
+#include <GlobalVariables.h>
 
 typedef struct LoadNF {
-    int extraline;
+    int    extraline;
     IFile *f;
-    char buff[LUAL_BUFFERSIZE];
+    char   buff[LUAL_BUFFERSIZE];
 } LoadNF;
 
-static const char *getNF (lua_State *L, void *ud, size_t *size)
-{
+static const char *getNF(lua_State *L, void *ud, size_t *size) {
     LoadNF *lf = (LoadNF *)ud;
     (void)L;
     if (lf->extraline) {
-     lf->extraline = 0;
-     *size = 1;
-     return "\n";
+        lf->extraline = 0;
+        *size         = 1;
+        return "\n";
     }
-    if (!lf->f->available()) return NULL;
+    if (!lf->f->available()) { return NULL; }
     *size = lf->f->read(lf->buff, sizeof(lf->buff));
     return (*size > 0) ? lf->buff : NULL;
 }
 
-int lua_okabe_loadfile (lua_State *L, IFile *file) {
+int lua_okabe_loadfile(lua_State *L, IFile *file) {
     LoadNF lf;
-    int status, readstatus;
-    int c;
-    int fnameindex = lua_gettop(L) + 1;  /* index of filename on the stack */
-    lf.extraline = 0;
+    int    status, readstatus;
+    int    c;
+    int    fnameindex = lua_gettop(L) + 1; /* index of filename on the stack */
+    lf.extraline      = 0;
 
     lua_pushfstring(L, "@%s", file->name().c_str());
     lf.f = file;
@@ -51,8 +50,8 @@ int lua_okabe_loadfile (lua_State *L, IFile *file) {
     //  }
     //  ungetc(c, lf.f);
     status = lua_load(L, getNF, &lf, lua_tostring(L, -1));
-    //readstatus = ferror(lf.f);
-    lf.f->close();  /* close file (even in case of errors) */
+    // readstatus = ferror(lf.f);
+    lf.f->close(); /* close file (even in case of errors) */
     //  if (readstatus) {
     //    lua_settop(L, fnameindex);  /* ignore results from `lua_load' */
     //    return errfile(L, "read", fnameindex);
@@ -61,47 +60,43 @@ int lua_okabe_loadfile (lua_State *L, IFile *file) {
     return status;
 }
 
-
 extern "C" {
-	int lua_okabe_print (lua_State *L) {
-	  int n = lua_gettop(L);  /* number of arguments */
-	  int i;
-	  lua_getglobal(L, "tostring");
-	  for (i=1; i<=n; i++) {
-	    const char *s;
-	    lua_pushvalue(L, -1);  /* function to be called */
-	    lua_pushvalue(L, i);   /* value to print */
-	    lua_call(L, 1, 1);
-	    s = lua_tostring(L, -1);  /* get result */
-	    if (s == NULL)
-	      return luaL_error(L, LUA_QL("tostring") " must return a string to "
-	                           LUA_QL("print"));
-	    if (i>1) ESP_LOGI("LuaVM", "\t");
-	    ESP_LOGI("LuaVM", "%s", s);
-	    lua_pop(L, 1);  /* pop result */
-	  }
-	  ESP_LOGI("LuaVM", "\n");
-	  return 0;
-	}
-		
-    int lua_okabe_loadpath (lua_State *L, const char *filename)
-    {
-     //    if (filename == NULL) {
-	    //     return LUA_ERRFILE;
-	    // }
-	    IFile *f = VFS.open(NString(filename), "r");
-	    if (f == NULL) {
-	        return LUA_ERRFILE;
-	    }
-	    lua_okabe_loadfile(L, f);
-	    delete f;
+int lua_okabe_print(lua_State *L) {
+    int n = lua_gettop(L); /* number of arguments */
+    int i;
+    lua_getglobal(L, "tostring");
+    for (i = 1; i <= n; i++) {
+        const char *s;
+        lua_pushvalue(L, -1); /* function to be called */
+        lua_pushvalue(L, i);  /* value to print */
+        lua_call(L, 1, 1);
+        s = lua_tostring(L, -1); /* get result */
+        if (s == NULL) {
+            return luaL_error(L, LUA_QL("tostring") " must return a string to " LUA_QL("print"));
+        }
+        if (i > 1) { ESP_LOGI("LuaVM", "\t"); }
+        ESP_LOGI("LuaVM", "%s", s);
+        lua_pop(L, 1); /* pop result */
     }
+    ESP_LOGI("LuaVM", "\n");
+    return 0;
+}
 
-	int lua_okabe_readable(const char *filename)
-	{
-		NFile* f = VFS.open(NString(filename), "r");
-		if(f == NULL) return 0;
-		f->close();
-		return 1;		
-	}
+int lua_okabe_loadpath(lua_State *L, const char *filename) {
+    //    if (filename == NULL) {
+    //     return LUA_ERRFILE;
+    // }
+    IFile *f = VFS.open(NString(filename), "r");
+    if (f == NULL) { return LUA_ERRFILE; }
+    lua_okabe_loadfile(L, f);
+    delete f;
+    return 0;
+}
+
+int lua_okabe_readable(const char *filename) {
+    NFile *f = VFS.open(NString(filename), "r");
+    if (f == NULL) { return 0; }
+    f->close();
+    return 1;
+}
 }

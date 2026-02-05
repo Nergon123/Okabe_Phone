@@ -470,11 +470,9 @@ void populateContacts() {
 }
 #else
 
-std::vector<Message> parseMessages(){
-    return std::vector<Message>{};
-}
-void    AT_test() {};
-NString sendATCommand(NString command, uint32_t timeout, bool background) {
+std::vector<Message> parseMessages() { return std::vector<Message>{}; }
+void                 AT_test() {};
+NString              sendATCommand(NString command, uint32_t timeout, bool background) {
     (void)command;
     (void)timeout;
     (void)background;
