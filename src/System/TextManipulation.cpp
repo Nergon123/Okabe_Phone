@@ -1,6 +1,5 @@
 #include "TextManipulation.h"
 
-
 // Function to get the index of the nth occurrence of a substring in a string
 // @param count The occurrence number to find
 // @param input The input string
@@ -18,10 +17,10 @@ unsigned int getIndexOfCount(int count, NString input, NString str, unsigned int
 // @param posX The x-coordinate of the split position
 // @param posY The y-coordinate of the split position
 void findSplitPosition(NString text, size_t charIndex, int &posX, int &posY) {
-    int lastNewLine  = 0;
+    int    lastNewLine  = 0;
     size_t curPosInText = 0;
-    posX             = 0;
-    posY             = 0;
+    posX                = 0;
+    posY                = 0;
     for (; curPosInText < charIndex; curPosInText++) {
         posX = tft.textWidth(text.substring(lastNewLine, curPosInText + 1).c_str());
         if (posX >= 240 || text[curPosInText] == '\n') {
@@ -39,12 +38,12 @@ void findSplitPosition(NString text, size_t charIndex, int &posX, int &posY) {
 // @param direction The direction to search (UP or DOWN)
 // @return The new character index after moving in the specified direction
 int findCharPosX(NString text, int &charIndex, int direction) {
-    int prevNL       = 0;
-    int lastNewLine  = 0;
-    int nextNL       = text.length();
+    int   prevNL       = 0;
+    int   lastNewLine  = 0;
+    int   nextNL       = text.length();
     ulong curPosInText = 0;
-    int posX         = 0;
-    int targetX      = 0;
+    int   posX         = 0;
+    int   targetX      = 0;
     for (; curPosInText <= (ulong)charIndex && curPosInText < text.length(); curPosInText++) {
         posX = tft.textWidth(text.substring(lastNewLine, curPosInText).c_str());
         if (posX >= 240 || text[curPosInText] == '\n') {
@@ -94,10 +93,10 @@ int findCharPosX(NString text, int &charIndex, int direction) {
 // @return The formatted string with line breaks
 NString SplitString(NString text) {
     NString result           = "";
-    int    wordStart        = 0;
-    int    wordEnd          = 0;
-    int    textLen          = text.length();
-    int    currentLineWidth = 0;
+    int     wordStart        = 0;
+    int     wordEnd          = 0;
+    int     textLen          = text.length();
+    int     currentLineWidth = 0;
     while (wordStart < textLen) {
         int newlinePos = text.indexOf('\n', wordStart);
         if (newlinePos != -1 &&
@@ -109,7 +108,7 @@ NString SplitString(NString text) {
         }
         wordEnd = text.indexOf(' ', wordStart);
         if (wordEnd == -1) { wordEnd = textLen; }
-        NString   word    = text.substring(wordStart, wordEnd);
+        NString  word    = text.substring(wordStart, wordEnd);
         uint16_t wordLen = tft.textWidth(word);
         if (currentLineWidth + wordLen > tft.width() && currentLineWidth > 0) {
             result += "\n";
@@ -138,7 +137,7 @@ void getCharacterPosition(NString str, int &x, int &y, int &index, int direction
     x                            = 0;
     y                            = 0;
     int              charCount   = 0;
-    NString           currentLine = "";
+    NString          currentLine = "";
     std::vector<int> lineStarts;
     for (size_t i = 0; i < str.length(); i++) {
         char currentChar = str[i];
@@ -149,7 +148,7 @@ void getCharacterPosition(NString str, int &x, int &y, int &index, int direction
         }
         else {
             NString tempLine  = currentLine + currentChar;
-            int    lineWidth = tft.textWidth(tempLine);
+            int     lineWidth = tft.textWidth(tempLine);
             if (lineWidth > screenWidth) {
                 y += tft.fontHeight();
                 lineStarts.push_back(i);
@@ -170,7 +169,7 @@ void getCharacterPosition(NString str, int &x, int &y, int &index, int direction
             }
         }
         if (charCount == index) {
-            size_t    b             = 0;
+            size_t  b             = 0;
             NString lineSubstring = currentLine;
             while (b < lineSubstring.length() &&
                    tft.textWidth(lineSubstring.substring(0, b)) <= screenWidth) {

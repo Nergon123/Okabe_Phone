@@ -4,32 +4,26 @@
 #include "BasePackage.h"
 #include <Platform/NString.h>
 
-#define CREATE_SPKG(name, id, main_fn) \
-        extern const char spkgClass_##name##_id[] = id; \
-        StaticPackage spkgClass_##name(#name, spkgClass_##name##_id, main_fn);
+#define CREATE_SPKG(name, id, main_fn)                                                            \
+    extern const char spkgClass_##name##_id[] = id;                                               \
+    StaticPackage     spkgClass_##name(#name, spkgClass_##name##_id, main_fn);
 
-#define DECLARE_SPKG(name) \
-        extern const char spkgClass_##name##_id[]; \
-        extern StaticPackage spkgClass_##name;
+#define DECLARE_SPKG(name)                                                                        \
+    extern const char    spkgClass_##name##_id[];                                                 \
+    extern StaticPackage spkgClass_##name;
 
-#define SPKG(name) \
-        spkgClass_##name
+#define SPKG(name) spkgClass_##name
 
-#define SPKG_ID(name) \
-        spkgClass_##name##_id
+#define SPKG_ID(name) spkgClass_##name##_id
 
 typedef int (*SPkgMainFn)();
 
-
-class StaticPackage: public BasePackage
-{
-public:
-    
-    StaticPackage(const std::string& name, const std::string& id, SPkgMainFn fn)
-    {
+class StaticPackage : public BasePackage {
+  public:
+    StaticPackage(const std::string& name, const std::string& id, SPkgMainFn fn) {
         BasePackageInfo i;
-        i.name = name;
-        i.id = id;
+        i.name    = name;
+        i.id      = id;
         i.version = "builtin";
 
         m_info = i;
@@ -38,16 +32,12 @@ public:
     };
     virtual ~StaticPackage() = default;
 
-    int exec() override
-    {
-        if (m_fn) {
-            return m_fn();
-        } else {
-            return PKG_ERR;
-        }
+    int exec() override {
+        if (m_fn) { return m_fn(); }
+        else { return PKG_ERR; }
     };
 
-protected:
+  protected:
     SPkgMainFn m_fn;
 };
 

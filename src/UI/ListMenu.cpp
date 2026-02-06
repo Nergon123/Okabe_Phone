@@ -10,8 +10,7 @@
 // @param pages Total number of pages
 // @param y Y-coordinate for the header
 void listMenu_header(int type, NString title, int page, int pages, int y) {
-    drawHeader(title, type, pages > 1 ? NString::format("%d/%d", page + 1, pages)
-                                      : NString(""));
+    drawHeader(title, type, pages > 1 ? NString::format("%d/%d", page + 1, pages) : NString(""));
 }
 
 /// Function to display a single entry in the list menu
@@ -31,13 +30,12 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
 
     if (selected) { tft.fillRect(0, yy, 240, esize, color_active); }
     else if (unselected) {
-            res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.x = 0, .y = yy},
-                                             {.x = 0, .y = yy}, {.x = 0, .y = yy + esize});
+        res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.x = 0, .y = yy}, {.x = 0, .y = yy},
+                      {.x = 0, .y = yy + esize});
     }
     if (choice.image.id != R_NULL_IMAGE) {
         ImageData imgData = res.GetImageDataByImage(choice.image);
-            res.DrawImage(choice.image, choice.icon_index,
-                                             {x - imgData.width, yy}, {0, 0}, {0, 0});
+        res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0});
     }
     if (lines) {
         tft.drawLine(0, yy, 240, yy, 0);

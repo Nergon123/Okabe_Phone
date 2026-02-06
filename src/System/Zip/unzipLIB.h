@@ -12,11 +12,12 @@
 
 #ifndef __UNZIPLIB__
 #define __UNZIPLIB__
-#if defined( PICO_BUILD ) || defined( __MACH__ ) || defined( __LINUX__ ) || defined( __MCUXPRESSO ) || defined(PC)
-#include <stdio.h>
+#if defined(PICO_BUILD) || defined(__MACH__) || defined(__LINUX__) || defined(__MCUXPRESSO) ||    \
+    defined(PC)
 #include <stdint.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define memcpy_P memcpy
 #define PROGMEM
 #else
@@ -27,7 +28,7 @@
 // Written by Larry Bank
 // Copyright (c) 2021 BitBank Software, Inc.
 // bitbank@pobox.com
-// 
+//
 // An embedded-friendly unzip library
 // which needs only 41K of RAM
 //
@@ -37,14 +38,15 @@
 //
 // The UNZIP class wraps portable C code which does the actual work
 //
-class UNZIP
-{
+class UNZIP {
   public:
     UNZIP();
     ~UNZIP();
-    
+
     int openZIP(uint8_t *pData, uint32_t iDataSize);
-    int openZIP(const char *szFilename, void *ud, ZIP_OPEN_CALLBACK *pfnOpen, ZIP_CLOSE_CALLBACK *pfnClose, ZIP_READ_CALLBACK *pfnRead, ZIP_SEEK_CALLBACK *pfnSeek);
+    int openZIP(const char *szFilename, void *ud, ZIP_OPEN_CALLBACK *pfnOpen,
+                ZIP_CLOSE_CALLBACK *pfnClose, ZIP_READ_CALLBACK *pfnRead,
+                ZIP_SEEK_CALLBACK *pfnSeek);
     int closeZIP();
     int openCurrentFile();
     int closeCurrentFile();
@@ -53,7 +55,9 @@ class UNZIP
     int gotoFirstFile();
     int gotoNextFile();
     int locateFile(const char *szFilename);
-    int getFileInfo(unz_file_info *pFileInfo, char *szFileName, int iFilenameBufferSize, void *extraField, int iExtraFieldBufferSize, char *szComment, int iCommentBufferSize); // get info about the current file
+    int getFileInfo(unz_file_info *pFileInfo, char *szFileName, int iFilenameBufferSize,
+                    void *extraField, int iExtraFieldBufferSize, char *szComment,
+                    int iCommentBufferSize); // get info about the current file
     int getLastError();
     int getGlobalComment(char *destBuffer, int iBufferSize);
 

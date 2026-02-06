@@ -59,8 +59,8 @@ typedef unsigned long ulong;
 #define SIM_INT_PIN 34
 #define HAVE_AMPL
 #else
-//#define SIM_INT_PIN 36
-#define VIBRO_PIN   34
+// #define SIM_INT_PIN 36
+#define VIBRO_PIN 34
 #endif
 
 #define AMPL_BCLK  12

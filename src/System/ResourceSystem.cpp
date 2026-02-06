@@ -56,7 +56,7 @@ void ResourceSystem::failure(const char *msg, bool important) {
 }
 
 ImageData ResourceSystem::GetImageDataByID(uint16_t id) {
-    if(Images.empty()){return ImageData(R_NULL_IMAGE);}
+    if (Images.empty()) { return ImageData(R_NULL_IMAGE); }
     for (ImageData &img : Images) {
         if (img.id == id) { return img; }
     }
@@ -172,7 +172,7 @@ void ResourceSystem::CopyToRam(bool checksum) {
             }
             if (checksum) {
                 char crc32[7];
-                memcpy(crc32, (const uint8_t*)cache + Files->size() - 10, 6);
+                memcpy(crc32, (const uint8_t *)cache + Files->size() - 10, 6);
                 crc32[6] = 0;
                 ESP_LOGI("CRC32", "CRC STR: %s", crc32);
                 const char *expected = "CRC32:";
@@ -181,7 +181,7 @@ void ResourceSystem::CopyToRam(bool checksum) {
                         NString::format("Resource file probably doesn't have\nchecksum!\n\nCRC "
                                         "anchor is \"%s\"\nbut expected  \"%s\"",
                                         crc32, expected));
-                                        return;
+                    return;
                 }
                 const uint8_t *crc_bytes = cache + Files->size() - 4; // last 4 bytes
                 uint32_t       crc32_val;
@@ -191,8 +191,8 @@ void ResourceSystem::CopyToRam(bool checksum) {
                 ESP_LOGI("CRC32", "CALCULATED CRC32 is 0x%08X", crc32_calc);
                 if (crc32_val != crc32_calc) {
                     sysWarn(NString::format(
-                        "Checksum check failure:\n\nExpected   0x%08X\nCalculated 0x%08X", crc32_val,
-                        crc32_calc));
+                        "Checksum check failure:\n\nExpected   0x%08X\nCalculated 0x%08X",
+                        crc32_val, crc32_calc));
                 }
             }
         }

@@ -2,7 +2,7 @@
 const char* FTAG = "FileFunc";
 
 #warning FileFunctions not implemented
-bool        FileOpen(NFile* file) {
+bool FileOpen(NFile* file) {
     (void)file;
     return false;
 }

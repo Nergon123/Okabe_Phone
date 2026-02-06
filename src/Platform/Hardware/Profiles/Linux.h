@@ -38,7 +38,11 @@ class DEV_LINUX : public iHW {
     ulong millis() override { return micros() / 1000; };
     void  delay(ulong ms) override { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
     void  setCPUSpeed(CPU_SPEED speed) override { (void)speed; };
-
+    void  timeSet(time_t t) override {
+        time_t now = time(nullptr);
+        timeOffset = t - now;
+    }
+    time_t    timeGet() override { return time(nullptr) + timeOffset; }
     CPU_SPEED getCPUSpeed() override {
 #ifndef EMU
 #endif
@@ -231,8 +235,9 @@ class DEV_LINUX : public iHW {
     }
 
   private:
+    time_t     timeOffset = 0;
     static int progressCallbackCurl(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
-                             curl_off_t ultotal, curl_off_t ulnow) {
+                                    curl_off_t ultotal, curl_off_t ulnow) {
         auto* userCallback = reinterpret_cast<std::function<void(size_t, size_t)>*>(clientp);
         if (userCallback && *userCallback) {
             (*userCallback)(static_cast<size_t>(dlnow), static_cast<size_t>(dltotal));

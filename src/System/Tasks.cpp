@@ -5,7 +5,9 @@ void suspendCore(bool suspend) { (void)suspend; };
 // Function to handle the idle task
 void TaskIdleHandler(void *) {
     uint32_t oldtime = hw->millis();
-    time(&systemTime);
+    time_t   _time;
+    time(&_time);
+    hw->timeSet(_time);
     if (sendATCommand("AT").indexOf("OK") != -1) {
 
         ESP_LOGI("BOOT/SIM", "%s", "Setting up sim card please wait...");
@@ -23,7 +25,8 @@ void TaskIdleHandler(void *) {
     }
 
     while (true) {
-        time(&systemTime);
+        time(&_time);
+        hw->timeSet(_time);
         while (!simIsBusy && simIsUsable) {
             backgroundBusy = true;
             if (getSignalLevel() != _signal || getChargeLevel() != charge) {

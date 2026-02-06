@@ -29,7 +29,7 @@ void systemSettings() {
         res.DrawImage(R_SETTING_MENU_L_HEADER);
         selection = choiceMenu(options, ArraySize(options), false);
         switch (selection) {
-        case 0: setTime(&systemTime); break;
+        case 0: setTime(); break;
         }
     }
 }
@@ -95,9 +95,7 @@ void advancedSettings() {
     }
 }
 
-void changeWallpaper() {
-
-}
+void changeWallpaper() {}
 
 // Function to show the settings menu
 // This function is called when the user wants to change settings
@@ -124,7 +122,7 @@ void settings() {
 // Set time screen
 // This function is called when the user wants to set the time
 // @param time Pointer to the time_t variable
-void setTime(time_t *time) {
+void setTime() {
     res.DrawImage(R_LIST_MENU_BACKGROUND);
     drawHeader("Set Date & Time", LM_SETTINGS);
     changeFont(1);
@@ -141,9 +139,11 @@ void setTime(time_t *time) {
     tft.setCursor(111, 187);
     tft.print(":");
     currentRenderTarget->present();
-    tm  tm_time   = *gmtime(time);
-    int temp_year = 1900 + tm_time.tm_year;
-
+    time_t currentTime = hw->timeGet();
+    tm     tm_time     = *gmtime(&currentTime);
+    int    temp_year   = 1900 + tm_time.tm_year;
+    // tm struct uses 0-11 for months, but we want to display 1-12...
+    tm_time.tm_mon++;
     int  choice    = 0;
     bool exit      = false;
     bool renderall = true;
@@ -174,6 +174,7 @@ void setTime(time_t *time) {
 
         if (confirm) {
             tm_time.tm_year = temp_year - 1900;
+            tm_time.tm_mon--;
             ESP_LOGI("TIME", "Local time updated!");
             SaveTime(mktime(&tm_time));
             exit = true;

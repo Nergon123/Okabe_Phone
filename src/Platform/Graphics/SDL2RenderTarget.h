@@ -1,9 +1,9 @@
 #pragma once
 #ifdef PC
 #include "RenderTargets.h"
+#include <GlobalVariables.h>
 #include <SDL2/SDL.h>
 #include <memory>
-#include <GlobalVariables.h>
 
 class SDL2RenderTarget : public RenderTarget {
   public:

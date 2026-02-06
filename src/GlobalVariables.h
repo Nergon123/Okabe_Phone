@@ -162,9 +162,6 @@ extern PackageStorage PaStor;
 // Function to get the size of an array ... bruh
 template <typename T, size_t N> size_t ArraySize(T (&)[N]) { return N; }
 
-extern time_t systemTime;
-extern tm     systemTimeInfo;
-
 #ifdef PC
 #define TASK std::thread
 #elif defined(INC_FREERTOS_H)

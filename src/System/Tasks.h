@@ -9,6 +9,5 @@ extern TaskHandle_t TaskHCommand;
 void initBackgroundTasks();
 void suspendCore(bool suspend);
 void DeleteTask(TASK &task);
-TASK LaunchTask(void (*function)(void *parameters),const char *name = "New Task", void *parameters = nullptr,
-                int stackSize = 1024,  int priority = 1,
-                int core = 1);
+TASK LaunchTask(void (*function)(void *parameters), const char *name = "New Task",
+                void *parameters = nullptr, int stackSize = 1024, int priority = 1, int core = 1);

@@ -1,7 +1,7 @@
 #pragma once
-#include "Input/Input.h"
-#include "GlobalVariables.h"
 #include "Connectivity/SIM.h"
+#include "GlobalVariables.h"
+#include "Input/Input.h"
 #include "System/FontManagement.h"
 
 struct Contact;

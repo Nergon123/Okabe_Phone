@@ -15,7 +15,7 @@ class Esp32File : public IFile {
         return file.write((const uint8_t*)buf, len);
     }
     bool        seek(size_t pos, int mode) override { return file.seek(pos, (fs::SeekMode)mode); }
-    size_t      position() override {return file.position();}
+    size_t      position() override { return file.position(); }
     void        close() override { file.close(); }
     size_t      size() override { return file.size(); }
     bool        isDirectory() override { return file.isDirectory(); }

@@ -19,7 +19,6 @@ void changeFont(int ch) {
             tft.currentFont.font  = nullptr;
         }
     }
-
 }
 
 // ## Write custom font
