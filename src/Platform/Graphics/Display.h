@@ -6,10 +6,12 @@
 #include "Platform/NString.h"
 #include "RenderTargets.h"
 #include <stdarg.h>
-
 struct font_t {
-    bool           isGFX;
-    const GFXfont *font;
+    bool            isGFX : 1;
+    bool            isGFXFontSet : 1;
+    const GFXfont  *font;
+    const GFXfont **font_set;
+    uint8_t         font_set_count;
 };
 // color definitions
 #define TFT_BLACK       0x0000                     /*   0,   0,   0 */
@@ -46,7 +48,7 @@ class TFT_STUB {
 
     // Font rendering
     font_t   currentFont;
-    void     renderGlyph(char c, int16_t x, int16_t y);
+    void     renderGlyph(uint32_t c, int16_t x, int16_t y);
     uint16_t textcolor = TFT_WHITE; // Text foreground color
     uint8_t  textsize  = 1;         // Font size multiplier
 
@@ -85,8 +87,8 @@ class TFT_STUB {
     void print(const char *str);
     void println(const char *str);
 
-    void print(char c);
-    void println(char c);
+    void print(uint32_t c);
+    void println(uint32_t c);
     void print(const NString &s);
     void println(const NString &s);
 
@@ -114,6 +116,10 @@ class TFT_STUB {
 
     // attribute/settings hooks
     void setAttribute(int attr, bool value);
+
+  private:
+    uint8_t     utf8_char_len(uint8_t b);
+    const char *utf8_decode(const char *s, uint32_t *out);
 
   protected:
     int16_t  _init_w, _init_h;

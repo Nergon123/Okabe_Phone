@@ -178,19 +178,18 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
     }
 }
 
-void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
+void TFT_STUB::renderGlyph(uint32_t c, int16_t x, int16_t y) {
     if (!activeRenderTarget) { return; }
 
     // Classic 5x7 font
     if (!currentFont.isGFX) {
-        unsigned char uc = static_cast<unsigned char>(c);
-        if (uc > 127) { return; }
+        if (c > 127) { c = '?'; }
 
         // Draw opaque background if enabled
         if (_textbgopaque) { fillRect(x, y, 6 * textsize, 8 * textsize, _textbgcolor); }
 
         for (int col = 0; col < 5; col++) {
-            uint8_t line = font[uc * 5 + col];
+            uint8_t line = font[c * 5 + col];
             for (int row = 0; row < 8; row++) {
                 if (line & (1 << row)) {
                     for (int sx = 0; sx < textsize; sx++) {
@@ -207,15 +206,49 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
     }
 
     // GFX font
-    if (!currentFont.font) { return; }
-    if (c < currentFont.font->first || c > currentFont.font->last) { c = '?'; }
-    c -= currentFont.font->first; // glyph index
-    GFXglyph *glyph  = &currentFont.font->glyph[(int)c];
-    uint8_t  *bitmap = currentFont.font->bitmap;
-    uint32_t  bo     = glyph->bitmapOffset;
-    uint8_t   w = glyph->width, h = glyph->height;
-    int8_t    xo = glyph->xOffset, yo = glyph->yOffset;
-    int16_t   xo16 = xo, yo16 = yo; // scaled offsets
+    if (!currentFont.font && !currentFont.font_set) { return; }
+    const GFXfont *fnt = nullptr;
+
+    // Pick font from font set first
+    if (currentFont.isGFXFontSet && currentFont.font_set && currentFont.font_set_count) {
+        for (int i = 0; i < currentFont.font_set_count; i++) {
+            const GFXfont *f = currentFont.font_set[i];
+            if (!f) { continue; }
+            if (c >= f->first && c <= f->last) {
+                fnt = f;
+
+                break;
+            }
+        }
+    }
+
+    // Fallback to main font
+    if (!fnt && currentFont.font) { fnt = currentFont.font; }
+
+    // Still nothing? bail
+    if (!fnt) {
+        ESP_LOGW("DISPLAY", "No font for char 0x%X", c);
+        return;
+    }
+
+    // Clamp c to font range
+    if (c < fnt->first || c > fnt->last) {
+        ESP_LOGW("FONT", "UNKNOWN CHAR 0x%04X (%c) (%04X-%04X)", c, c,fnt->first,fnt->last);
+        c = '?';
+    }
+    c -= fnt->first;
+
+    // Safe glyph/bitmap check
+    GFXglyph *glyph  = &fnt->glyph[(int)c];
+    uint8_t  *bitmap = fnt->bitmap;
+    if (!glyph || !bitmap) {
+        ESP_LOGW("DISPLAY", "Invalid glyph or bitmap for char 0x%X", c);
+        return;
+    }
+    uint32_t bo = glyph->bitmapOffset;
+    uint8_t  w = glyph->width, h = glyph->height;
+    int8_t   xo = glyph->xOffset, yo = glyph->yOffset;
+    int16_t  xo16 = xo, yo16 = yo; // scaled offsets
 
     if (textsize > 1) {
         xo16 = xo;
@@ -225,7 +258,7 @@ void TFT_STUB::renderGlyph(char c, int16_t x, int16_t y) {
     // Draw opaque background if enabled
     if (_textbgopaque) {
         uint16_t cellW = glyph->xAdvance * textsize;
-        uint16_t cellH = currentFont.font->yAdvance * textsize;
+        uint16_t cellH = fnt->yAdvance * textsize;
         fillRect(x, y - cellH, cellW, cellH, _textbgcolor);
     }
 
@@ -322,31 +355,41 @@ void TFT_STUB::printf(const char *fmt, ...) {
     print(buf);
 }
 
+const char *TFT_STUB::utf8_decode(const char *s, uint32_t *out) {
+    uint8_t b0 = (uint8_t)s[0];
+
+    if (b0 < 0x80) {
+        *out = b0;
+        return s + 1;
+    }
+    if ((b0 & 0xE0) == 0xC0) {
+        *out = ((b0 & 0x1F) << 6) | ((uint8_t)s[1] & 0x3F);
+        return s + 2;
+    }
+    if ((b0 & 0xF0) == 0xE0) {
+        *out = ((b0 & 0x0F) << 12) | (((uint8_t)s[1] & 0x3F) << 6) | ((uint8_t)s[2] & 0x3F);
+        return s + 3;
+    }
+    if ((b0 & 0xF8) == 0xF0) {
+        *out = ((b0 & 0x07) << 18) | (((uint8_t)s[1] & 0x3F) << 12) |
+               (((uint8_t)s[2] & 0x3F) << 6) | ((uint8_t)s[3] & 0x3F);
+        return s + 4;
+    }
+
+    *out = 0xFFFD; // replacement char
+    return s + 1;
+}
+
 void TFT_STUB::print(const char *str) {
     if (!str) { return; }
-    while (*str) {
-        if (*str == '\n') {
-            _cursor_x = 0;
-            _cursor_y += fontHeight();
-        }
-        else if (*str == '\r') { _cursor_x = 0; }
-        else {
-            if (textwrap && (_cursor_x >= width())) {
-                _cursor_x = 0;
-                _cursor_y += fontHeight();
-            }
-            renderGlyph(*str, _cursor_x, _cursor_y);
-        }
-        str++;
+    const char *p = str;
+    while (*p) {
+        uint32_t uc;
+        p = utf8_decode(p, &uc);
+        print(uc);
     }
 }
-
-void TFT_STUB::println(const char *str) {
-    print(str);
-    print("\n");
-}
-
-void TFT_STUB::print(char c) {
+void TFT_STUB::print(uint32_t c) {
     if (c == '\n') {
         _cursor_x = 0;
         _cursor_y += fontHeight();
@@ -361,12 +404,17 @@ void TFT_STUB::print(char c) {
     }
 }
 
-void TFT_STUB::println(char c) {
-    print(c);
-    print("\n");
+void TFT_STUB::println(const char *str) {
+    print(str);
+    print('\n');
 }
 
-void TFT_STUB::print(const NString &s) { this->print(s.c_str()); }
+void TFT_STUB::println(uint32_t c) {
+    print(c);
+    print('\n');
+}
+
+void TFT_STUB::print(const NString &s) { print(s.c_str()); }
 
 void TFT_STUB::println(const NString &s) {
     print(s);

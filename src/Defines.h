@@ -112,7 +112,7 @@ enum buttons {
 
 // FONTS
 #define FONT0 1
-#define FONT1 FreeSans9pt7b
-#define FONT2 FreeSansBold9pt7b
-#define FONT3 FreeMono9pt7b
-#define FONT4 FreeSans12pt7b
+
+
+
+
