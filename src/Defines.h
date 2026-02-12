@@ -1,13 +1,14 @@
 #pragma once
-#define HOSTNAME        "okabe_phone"
-#define PRODUCTNAME     "OkabePhone"
-#define FIRMVER         "0.2.0 ALPHA"
+#define HOSTNAME         "okabe_phone"
+#define PRODUCTNAME      "OkabePhone"
+#define FIRMVER          "0.2.0 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 
 #define LISTMENU_CALL    -4
 #define LISTMENU_NULL    -3
 #define LISTMENU_OPTIONS -2
 #define LISTMENU_EXIT    -1
+#define LISTMENU_TOHOME  -5
 #define LISTMENU_BUFFER  true
 
 #ifdef PC
@@ -68,7 +69,7 @@ typedef unsigned long ulong;
 #define AMPL_DIN   19
 
 // DELAY TO CONFIRM CHARACTER
-#define DIB_MS 500
+#define DIB_MS 1500
 
 // INPUT OF inputText() WINDOW
 #define INPUT_LOCATION_Y 240
@@ -90,15 +91,29 @@ enum callStates {
 
 // buttonsHelding() returns:
 enum buttons {
-    BACK    = 0,
+    DECLINE = 0,
     SELECT  = 1,
     UP      = 2,
     DOWN    = 3,
     LEFT    = 4,
     RIGHT   = 5,
     ANSWER  = 6,
-    DECLINE = BACK,
+    LEFTFN  = ANSWER,
+    RIGHTFN = DECLINE,
+    BACK    = DECLINE,
+    HOMESCR = DECLINE
 };
+
+// Text input charsets
+enum charsets {
+    SMALL_LATIN = 0,
+    CAPS_LATIN  = 1,
+    NUMBERS     = 2,
+    HIRAGANA    = 3,
+    KATAKANA    = 4,
+    AUTO_CAPS   = 5
+};
+
 // ENABLE DEVELOPER MODE//
 #define DEVMODE //
 
@@ -112,7 +127,4 @@ enum buttons {
 
 // FONTS
 #define FONT0 1
-
-
-
 

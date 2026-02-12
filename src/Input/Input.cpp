@@ -144,17 +144,25 @@ void showText(const char *text, int pos) {
  * @param nonl disable new line
  * @return selected character
  */
-char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *retButton) {
+NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int *retButton) {
     if (input == -1) { return 0; }
     currentRenderTarget->setUseBuffer(false);
-    char buttons[12][12] = {" \b0+@\n", "1,.?!()",   "2ABCabc", "3DEFdef",   "4GHIghi", "5JKLjkl",
-                            "6MNOmno",  "7PQRSpqrs", "8TUVtuv", "9WXYZwxyz", "*",       "#"};
+    char buttons[5][10][32] = {
+        {" 0+\n",          ".,?'\"1-()@/:_",       "abcà2",          "defèé3",       "ghiì4",
+         "jkl5",           "mnoò6",                "pqrs7",          "tuvù8",        "wxyz9"},
+        {" 0+\n",          ".,?'\"1-()@/:_",       "ABCÀ2",          "DEFÈÉ3",       "GHIÌ4",
+         "JKL5",           "MNOÒ6",                "PQRS7",          "TUVÙ8",        "WXYZ9"},
+        {'0',              '1',                    '2',              '3',            '4',   
+         '5',              '6',                    '7',              '8',            '9'},
+        {"わをんー～　\n", "あいうえおぁぃぅぇぉ", "かきくけこ",     "さしすせそ",   "たちつてとっ",
+         "なにぬねの",     "はひふへほ",           "まみむめも",     "やゆよゃゅょ", "らりるれろ"},
+        {"ワヲンー～　\n", "アイウエオァィゥェォ", "カキクケコ",     "サシスセソ",   "タチツテトッ",
+         "ナニヌネノ",     "ハヒフヘホ",           "マミムメモ",     "ヤユヨャュョ", "ラリルレロ"}
+    };
+                                 // * = ﾞﾟ 
 
-    if (nonl) { buttons[0][5] = '\0'; }
-    if (onlynumbers) {
-        buttons[0][2] = '\0';
-        for (int i = 1; i < 12; i++) { buttons[i][1] = '\0'; }
-    }
+    if (nonl) {buttons[SMALL_LATIN][0][3] = '\0'; buttons[CAPS_LATIN][0][3] = '\0'; buttons[HIRAGANA][0][12] = '\0'; buttons[KATAKANA][0][12] = '\0';}
+    
     bool first = true;
     // int  sizes[12];
     char result       = 0;
@@ -186,18 +194,18 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         int c = buttonsHelding();
 
         if (c == input || first) {
-            if (pos < (int)(strchr(buttons[currentIndex], '\0') - buttons[currentIndex])) {
+            if (pos < (int)(strchr(buttons[useCharset][currentIndex], '\0') - buttons[useCharset][currentIndex])) {
                 mil = hw->millis();
                 pos++;
-                result = buttons[currentIndex][pos];
-                showText(buttons[currentIndex], pos);
+                result = buttons[useCharset][currentIndex][pos];
+                showText(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury);
             }
             else {
                 mil    = hw->millis();
                 pos    = 0;
-                result = buttons[currentIndex][pos];
-                showText(buttons[currentIndex], pos);
+                result = buttons[useCharset][currentIndex][pos];
+                showText(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury);
             }
         }
@@ -317,19 +325,22 @@ int buttonsHelding(bool _idle) {
         }
     }
     switch (result) {
+    //case 1: return LEFTFN;
     case 2: return UP;
-    case 4: return LEFT;
-    case 5: return SELECT;
-    case 6: return RIGHT;
-    case 7: return ANSWER;
-    case 8: return DOWN;
-    case 9: return DECLINE;
-    case 19: return '*';
-    case 20: return '0';
-    case 21: return '#';
+    //case 3: return RIGHTFN;
+    // Don't mind how the values below are increased by 3, I'm unable to use 4, 5 and 6. I'll change this back before the PR
+    case 7: return LEFT;
+    case 8: return SELECT;
+    case 9: return RIGHT;
+    case 10: return ANSWER;
+    case 11: return DOWN;
+    case 12: return DECLINE;
+    case 22: return '*';
+    case 23: return '0';
+    case 24: return '#';
     default:
-        if (result >= 10 && result <= 18) {
-            return char('1' + (result - 10));
+        if (result >= 13 && result <= 21) {
+            return char('1' + (result - 13));
             break;
         }
 

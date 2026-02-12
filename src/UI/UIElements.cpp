@@ -199,15 +199,29 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     bool    dirty       = true; // force one draw
     int     lastCursor  = cursorPos;
     NString lastContent = content;
+    uint8_t selectedCharset = AUTO_CAPS;
+    bool    canChangeCharset = true;
+    uint8_t useCharset = CAPS_LATIN;
+    if(onlynumbers) {useCharset = NUMBERS; canChangeCharset = false;}
 
     while (!exit) {
 
         int c = buttonsHelding();
         if (c == -1) { continue; }
-
+        else {
+            if (selectedCharset == AUTO_CAPS) {
+                if(cursorPos == 0 ||
+                   (cursorPos >= 2 && content[cursorPos-2] == '.' && content[cursorPos-1] == ' ') || // Check if the two chars before the cursor are ". "
+                   (cursorPos >= 1 && content[cursorPos-1] == '\n')                                  // Check if it's the first char in the line
+                ) { useCharset = CAPS_LATIN; }
+                else { useCharset = SMALL_LATIN; }
+            }
+            else { useCharset = selectedCharset; }
+        }
+        
         // Handle number input
         if (c >= '0' && c <= '9') {
-            char TI = textInput(c, onlynumbers, true);
+            NString TI = textInput(c, useCharset, true);
             if (TI != '\0' && TI != '\n') {
                 if (TI == '\b') {
                     if (cursorPos > 0) {
@@ -238,6 +252,12 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
             case DOWN:
                 if (direction) { *direction = DOWN; }
                 exit = true;
+                break;
+            case '#':
+                if(canChangeCharset) {
+                    selectedCharset++;
+                    selectedCharset %= 6;
+                }
                 break;
             default:
                 if (direction) { *direction = BACK; }

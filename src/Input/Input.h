@@ -7,10 +7,10 @@
 #include "Screens/Main.h"
 #include "System/Generic.h"
 
-char textInput(int input, bool onlynumbers = false, bool nonl = false, bool dontRedraw = false,
+NString textInput(int input, uint8_t useCharset, bool nonl = false, bool dontRedraw = false,
                int *retButton = nullptr);
-int  checkButton();
-void numberInput(char first);
-void showText(const char *text, int pos);
-int  buttonsHelding(bool _idle = true);
-void idle();
+int      checkButton();
+void     numberInput(char first);
+void     showText(const char *text, int pos);
+int      buttonsHelding(bool _idle = true);
+void     idle();
