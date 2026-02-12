@@ -29,4 +29,5 @@ typedef struct {           // Data stored for FONT AS A WHOLE:
 #include "FreeSans9pt8bCyr.h"
 #include "FreeSansBold9pt7b.h"
 #include "FreeSansBold9pt8bCyr.h"
+#include "JP.h"
 #endif // _GFXFONT_H_
