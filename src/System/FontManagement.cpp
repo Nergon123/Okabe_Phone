@@ -1,8 +1,8 @@
 #include "FontManagement.h"
-static const GFXfont*  FONT1[]        = {&FreeSans9pt7b, &FreeSans9pt8bCYR};
-static const GFXfont*  FONT2[]        = {&FreeSansBold9pt7b, &FreeSansBold9pt8bCYR};
-static const GFXfont*  FONT3[]        = {&FreeMono9pt7b, &FreeMono9pt8bCYR};
-static const GFXfont*  FONT4[]        = {&FreeSans12pt7b, &FreeSans12pt8bCYR};
+static const GFXfont*  FONT1[]        = {&FreeSans9pt7b, &FreeSans9pt8bCYR,&JP_P1,&JP_P2,&JP_P3};
+static const GFXfont*  FONT2[]        = {&FreeSansBold9pt7b, &FreeSansBold9pt8bCYR,&JP_P1,&JP_P2,&JP_P3};
+static const GFXfont*  FONT3[]        = {&FreeMono9pt7b, &FreeMono9pt8bCYR,&JP_P1,&JP_P2,&JP_P3};
+static const GFXfont*  FONT4[]        = {&FreeSans12pt7b, &FreeSans12pt8bCYR,&JP_P1,&JP_P2,&JP_P3};
 static const GFXfont** fonts[]        = {FONT1, FONT2, FONT3, FONT4};
 static const size_t    fonts_counts[] = {
     sizeof(FONT1) / sizeof(FONT1[0]), sizeof(FONT2) / sizeof(FONT2[0]),

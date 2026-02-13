@@ -115,23 +115,25 @@ void showText(const char *text, int pos) {
 
     int pfont     = currentFont;
     int textColor = tft.textcolor;
-    int textSize  = tft.textsize;
 
-    changeFont(0);
-    tft.setTextSize(2);
+    changeFont(1);
     tft.setCursor(0, INPUT_LOCATION_Y);
 
-    for (int i = 0; text[i] != 0; i++) {
+    for (int i = 1; text[i] != 0; i += 2) {
         if (i != pos) { tft.setTextColor(0xFFFF, 0, true); }
         else { tft.setTextColor(0xFFFF, 0x001F, true); }
         if (text[i] == '\n') { tft.print("NL"); }
         else if (text[i] == '\b') { tft.print("<-"); }
-        else { tft.print(text[i]); }
+        else {
+            NString printText;
+            if(text[i] > 0x7E) { printText = text[i-1] + text[i]; }
+            else               { printText = text[i]; }
+            tft.print(printText);
+        }
     }
 
     tft.setTextColor(textColor);
     changeFont(pfont);
-    tft.setTextSize(textSize);
     if (viewport) { tft.setViewport(vp); }
     tft.setRenderTarget(before);
     currentRenderTarget->present();
@@ -147,30 +149,34 @@ void showText(const char *text, int pos) {
 NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int *retButton) {
     if (input == -1) { return 0; }
     currentRenderTarget->setUseBuffer(false);
-    char buttons[5][10][32] = {
-        {" 0+\n",          ".,?'\"1-()@/:_",       "abcà2",          "defèé3",       "ghiì4",
-         "jkl5",           "mnoò6",                "pqrs7",          "tuvù8",        "wxyz9"},
-        {" 0+\n",          ".,?'\"1-()@/:_",       "ABCÀ2",          "DEFÈÉ3",       "GHIÌ4",
-         "JKL5",           "MNOÒ6",                "PQRS7",          "TUVÙ8",        "WXYZ9"},
-        {'0',              '1',                    '2',              '3',            '4',   
-         '5',              '6',                    '7',              '8',            '9'},
-        {"わをんー～　\n", "あいうえおぁぃぅぇぉ", "かきくけこ",     "さしすせそ",   "たちつてとっ",
-         "なにぬねの",     "はひふへほ",           "まみむめも",     "やゆよゃゅょ", "らりるれろ"},
-        {"ワヲンー～　\n", "アイウエオァィゥェォ", "カキクケコ",     "サシスセソ",   "タチツテトッ",
-         "ナニヌネノ",     "ハヒフヘホ",           "マミムメモ",     "ヤユヨャュョ", "ラリルレロ"}
+    char buttons[5][10][34] = {
+        {"   0 + \n",         " . , ? ' \" 1 - ( ) @ / : _",       " a b c à2",          " d e f èé3",       " g h i ì4",
+         " j k l 5",          " m n o ò6",                         " p q r s 7",         " t u v ù8",        " w x y z 9"},
+
+        {"   0 + \n",         " . , ? ' \" 1 - ( ) @ / : _",       " A B C À2",          " D E F ÈÉ3",       " G H I Ì4",
+         " J K L 5",          " M N O Ò6",                         " P Q R S 7",         " T U V Ù8",        " W X Y Z 9"},
+
+        {" 0",                    " 1",                                    " 2",                     " 3",                   " 4",   
+         " 5",                    " 6",                                    " 7",                     " 8",                   " 9"},
+
+        {"わをんー～　\n\0\0",    "あいうえおぁぃぅぇぉ\0\0",              "かきくけこ\0\0",         "さしすせそ\0\0",       "たちつてとっ\0\0",
+         "なにぬねの\0\0",        "はひふへほ\0\0",                        "まみむめも\0\0",         "やゆよゃゅょ\0\0",     "らりるれろ\0\0"},
+
+        {"ワヲンー～　\n\0\0",     "アイウエオァィゥェォ\0\0",              "カキクケコ\0\0",         "サシスセソ\0\0",       "タチツテトッ\0\0",
+         "ナニヌネノ\0\0",         "ハヒフヘホ\0\0",                        "マミムメモ\0\0",         "ヤユヨャュョ\0\0",     "ラリルレロ\0\0"}
     };
                                  // * = ﾞﾟ 
 
-    if (nonl) {buttons[SMALL_LATIN][0][3] = '\0'; buttons[CAPS_LATIN][0][3] = '\0'; buttons[HIRAGANA][0][12] = '\0'; buttons[KATAKANA][0][12] = '\0';}
+    if (nonl) {buttons[SMALL_LATIN][0][6] = '\0'; buttons[CAPS_LATIN][0][6] = '\0'; buttons[HIRAGANA][0][12] = '\0'; buttons[KATAKANA][0][12] = '\0';}
     
     bool first = true;
     // int  sizes[12];
-    char result       = 0;
-    int  pos          = 0;
-    int  currentIndex = input >= '0' && input <= '9' ? input - 48
-                        : input == '*'               ? 10
-                        : input == '#'               ? 11
-                                                     : -1;
+    NString result       = "\0";
+    int      pos          = -1;
+    int      currentIndex = input >= '0' && input <= '9' ? input - 48
+                            : input == '*'               ? 10
+                            : input == '#'               ? 11
+                                                         : -1;
 
     if (currentIndex == -1) {
         ESP_LOGI(ITAG, "UNKNOWN BUTTON:%d", input);
@@ -196,15 +202,18 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
         if (c == input || first) {
             if (pos < (int)(strchr(buttons[useCharset][currentIndex], '\0') - buttons[useCharset][currentIndex])) {
                 mil = hw->millis();
-                pos++;
-                result = buttons[useCharset][currentIndex][pos];
+                pos += 2;
+                if(buttons[useCharset][currentIndex][pos] > 0x7E) { result = buttons[useCharset][currentIndex][pos] + buttons[useCharset][currentIndex][pos-1]; }
+                else                                              { result = buttons[useCharset][currentIndex][pos]; }
                 showText(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury);
+                if(useCharset == NUMBERS) { mil = DIB_MS + 1; }
             }
             else {
                 mil    = hw->millis();
-                pos    = 0;
-                result = buttons[useCharset][currentIndex][pos];
+                pos    = 1;
+                if(buttons[useCharset][currentIndex][pos] > 0x7E) { result = buttons[useCharset][currentIndex][pos-1] + buttons[useCharset][currentIndex][pos]; }
+                else                                              { result = buttons[useCharset][currentIndex][pos]; }
                 showText(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury);
             }
@@ -328,19 +337,18 @@ int buttonsHelding(bool _idle) {
     //case 1: return LEFTFN;
     case 2: return UP;
     //case 3: return RIGHTFN;
-    // Don't mind how the values below are increased by 3, I'm unable to use 4, 5 and 6. I'll change this back before the PR
-    case 7: return LEFT;
-    case 8: return SELECT;
-    case 9: return RIGHT;
-    case 10: return ANSWER;
-    case 11: return DOWN;
-    case 12: return DECLINE;
-    case 22: return '*';
-    case 23: return '0';
-    case 24: return '#';
+    case 4: return LEFT;
+    case 5: return SELECT;
+    case 6: return RIGHT;
+    case 7: return ANSWER;
+    case 8: return DOWN;
+    case 9: return DECLINE;
+    case 19: return '*';
+    case 20: return '0';
+    case 21: return '#';
     default:
-        if (result >= 13 && result <= 21) {
-            return char('1' + (result - 13));
+        if (result >= 10 && result <= 18) {
+            return char('1' + (result - 10));
             break;
         }
 

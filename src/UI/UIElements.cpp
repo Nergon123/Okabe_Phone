@@ -202,7 +202,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     uint8_t selectedCharset = AUTO_CAPS;
     bool    canChangeCharset = true;
     uint8_t useCharset = CAPS_LATIN;
-    if(onlynumbers) {useCharset = NUMBERS; canChangeCharset = false;}
+    if(onlynumbers) {selectedCharset = NUMBERS; canChangeCharset = false;}
 
     while (!exit) {
 
@@ -224,16 +224,17 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
             NString TI = textInput(c, useCharset, true);
             if (TI != '\0' && TI != '\n') {
                 if (TI == '\b') {
+                    uint8_t deletedCharLength = content[cursorPos-1] > 0x7E ? 2 : 1;
                     if (cursorPos > 0) {
-                        content = content.substring(0, cursorPos - 1) +
+                        content = content.substring(0, cursorPos - deletedCharLength) +
                                   content.substring(cursorPos, content.length());
-                        cursorPos--;
+                        cursorPos -= deletedCharLength;
                     }
                 }
                 else {
                     content = content.substring(0, cursorPos) + TI +
                               content.substring(cursorPos, content.length());
-                    cursorPos++;
+                    cursorPos += TI.length();
                 }
             }
         }
