@@ -117,7 +117,7 @@ void showText(const char *text, int pos) {
     int textColor = tft.textcolor;
 
     changeFont(1);
-    tft.setCursor(0, INPUT_LOCATION_Y);
+    tft.setCursor(0, INPUT_LOCATION_Y-6);
 
     for (int i = 1; text[i] != 0; i += 2) {
         if (i != pos) { tft.setTextColor(0xFFFF, 0, true); }
@@ -126,7 +126,7 @@ void showText(const char *text, int pos) {
         else if (text[i] == '\b') { tft.print("<-"); }
         else {
             NString printText;
-            if(text[i] > 0x7E) { printText = text[i-1] + text[i]; }
+            if(text[i] > 0x7E) { printText = text[i]; printText += text[i+1]; }
             else               { printText = text[i]; }
             tft.print(printText);
         }
