@@ -69,7 +69,7 @@ typedef unsigned long ulong;
 #define AMPL_DIN   19
 
 // DELAY TO CONFIRM CHARACTER
-#define DIB_MS 2500
+#define DIB_MS 2000
 
 // INPUT OF inputText() WINDOW
 #define INPUT_LOCATION_Y 240

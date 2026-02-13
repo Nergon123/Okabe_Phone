@@ -159,11 +159,11 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
         {" 0",                    " 1",                                    " 2",                     " 3",                   " 4",   
          " 5",                    " 6",                                    " 7",                     " 8",                   " 9"},
 
-        {"わをんー～　\n\0\0",    "あいうえおぁぃぅぇぉ\0\0",              "かきくけこ\0\0",         "さしすせそ\0\0",       "たちつてとっ\0\0",
-         "なにぬねの\0\0",        "はひふへほ\0\0",                        "まみむめも\0\0",         "やゆよゃゅょ\0\0",     "らりるれろ\0\0"},
+        {"わをんー～　\n",    "あいうえおぁぃぅぇぉ",              "かきくけこ",         "さしすせそ",       "たちつてとっ",
+         "なにぬねの",        "はひふへほ",                        "まみむめも",         "やゆよゃゅょ",     "らりるれろ"},
 
-        {"ワヲンー～　\n\0\0",     "アイウエオァィゥェォ\0\0",              "カキクケコ\0\0",         "サシスセソ\0\0",       "タチツテトッ\0\0",
-         "ナニヌネノ\0\0",         "ハヒフヘホ\0\0",                        "マミムメモ\0\0",         "ヤユヨャュョ\0\0",     "ラリルレロ\0\0"}
+        {"ワヲンー～　\n",     "アイウエオァィゥェォ",              "カキクケコ",         "サシスセソ",       "タチツテトッ",
+         "ナニヌネノ",         "ハヒフヘホ",                        "マミムメモ",         "ヤユヨャュョ",     "ラリルレロ"}
     };
                                  // * = ﾞﾟ 
 
@@ -200,7 +200,7 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
         int c = buttonsHelding();
 
         if (c == input || first) {
-            if (pos < (int)(strchr(buttons[useCharset][currentIndex], '\0') - buttons[useCharset][currentIndex])) {
+            if (pos < (int)(strchr(buttons[useCharset][currentIndex], '\0') - buttons[useCharset][currentIndex] - 2)) {
                 mil = hw->millis();
                 pos += 2;
                 if(buttons[useCharset][currentIndex][pos] > 0x7E) { result = buttons[useCharset][currentIndex][pos] + buttons[useCharset][currentIndex][pos-1]; }
