@@ -138,6 +138,31 @@ void showText(const char *text, const char * pos) {
     currentRenderTarget->present();
 }
 
+char* utf8_encode(uint32_t cp, char* out) {
+    if (cp <= 0x7F) {
+        out[0] = cp;
+        return out + 1;
+    }
+    else if (cp <= 0x7FF) {
+        out[0] = 0xC0 | (cp >> 6);
+        out[1] = 0x80 | (cp & 0x3F);
+        return out + 2;
+    }
+    else if (cp <= 0xFFFF) {
+        out[0] = 0xE0 | (cp >> 12);
+        out[1] = 0x80 | ((cp >> 6) & 0x3F);
+        out[2] = 0x80 | (cp & 0x3F);
+        return out + 3;
+    }
+    else {
+        out[0] = 0xF0 | (cp >> 18);
+        out[1] = 0x80 | ((cp >> 12) & 0x3F);
+        out[2] = 0x80 | ((cp >> 6) & 0x3F);
+        out[3] = 0x80 | (cp & 0x3F);
+        return out + 4;
+    }
+}
+
 /*
  * Character selection
  * @param input pressed button
@@ -172,10 +197,10 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
     // int  sizes[12];
     uint32_t  result;
     const char *pos          = 0;
-    int        currentIndex = input >= '0' && input <= '9' ? input - 48
-                              : input == '*'               ? 10
-                              : input == '#'               ? 11
-                                                          : -1;
+    int         currentIndex = input >= '0' && input <= '9' ? input - 48
+                               : input == '*'               ? 10
+                               : input == '#'               ? 11
+                                                            : -1;
 
     if (currentIndex == -1) {
         ESP_LOGI(ITAG, "UNKNOWN BUTTON:%d", input);
@@ -208,8 +233,9 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
             }
             else {
                 mil    = hw->millis();
-                pos = tft.utf8_decode(buttons[useCharset][currentIndex], &result);
+                pos = buttons[useCharset][currentIndex];
                 showText(buttons[useCharset][currentIndex], pos);
+                pos = tft.utf8_decode(pos, &result);
                 tft.setCursor(curx, cury);
             }
         }
@@ -233,8 +259,9 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
     if (result == '\r') { return 0; }
 
     char selectedChar[5];
-    memcpy(selectedChar, &result, 4);
-    return selectedChar;
+    char* end = utf8_encode(result, selectedChar);
+    *end = '\0';
+    return NString(selectedChar);
     (void)dontRedraw;
 }
 
