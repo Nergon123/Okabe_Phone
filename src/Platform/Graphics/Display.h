@@ -117,7 +117,6 @@ class TFT_STUB {
     // attribute/settings hooks
     void setAttribute(int attr, bool value);
 
-  private:
     uint8_t     utf8_char_len(uint8_t b);
     const char *utf8_decode(const char *s, uint32_t *out);
 

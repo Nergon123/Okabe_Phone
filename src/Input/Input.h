@@ -11,6 +11,6 @@ NString textInput(int input, uint8_t useCharset, bool nonl = false, bool dontRed
                int *retButton = nullptr);
 int      checkButton();
 void     numberInput(char first);
-void     showText(const char *text, int pos);
+void     showText(const char *text, const char *pos);
 int      buttonsHelding(bool _idle = true);
 void     idle();

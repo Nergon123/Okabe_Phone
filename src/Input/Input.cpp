@@ -103,7 +103,7 @@ void numberInput(char first) {
  * @param text text to be displayed
  * @param pos selected character position
  */
-void showText(const char *text, int pos) {
+void showText(const char *text, const char * pos) {
     Viewport      vp       = tft.getViewport();
     bool          viewport = false;
     RenderTarget *before   = tft.activeRenderTarget;
@@ -117,18 +117,17 @@ void showText(const char *text, int pos) {
     int textColor = tft.textcolor;
 
     changeFont(1);
-    tft.setCursor(0, INPUT_LOCATION_Y-6);
-
-    for (int i = 1; text[i] != 0; i += 2) {
-        if (i != pos) { tft.setTextColor(0xFFFF, 0, true); }
+    tft.setCursor(0, INPUT_LOCATION_Y);
+    const char *str = text;
+    while (*str) {
+        if (str != pos) { tft.setTextColor(0xFFFF, 0, true); }
         else { tft.setTextColor(0xFFFF, 0x001F, true); }
-        if (text[i] == '\n') { tft.print("NL"); }
-        else if (text[i] == '\b') { tft.print("<-"); }
+        if (str[0] == '\n') { tft.print("NL"); }
+        else if (str[0] == '\b') { tft.print("<-"); }
         else {
-            NString printText;
-            if(text[i] > 0x7E) { printText = text[i]; printText += text[i+1]; }
-            else               { printText = text[i]; }
-            tft.print(printText);
+            uint32_t charcode;
+            str = tft.utf8_decode(str, &charcode);
+            tft.print(charcode);
         }
     }
 
@@ -149,21 +148,21 @@ void showText(const char *text, int pos) {
 NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int *retButton) {
     if (input == -1) { return 0; }
     currentRenderTarget->setUseBuffer(false);
-    char buttons[5][10][34] = {
-        {"   0 + \n",         " . , ? ' \" 1 - ( ) @ / : _",       " a b c à2",          " d e f èé3",       " g h i ì4",
-         " j k l 5",          " m n o ò6",                         " p q r s 7",         " t u v ù8",        " w x y z 9"},
+    char buttons[5][10][32] = {
+        {" 0+\n",             ".,?'\"1-()@/:_",        "abcà2",          "defèé3",       "ghiì4",
+         "jkl5",              "mnoò6",                 "pqrs7",          "tuvù8",        "wxyz9"},
 
-        {"   0 + \n",         " . , ? ' \" 1 - ( ) @ / : _",       " A B C À2",          " D E F ÈÉ3",       " G H I Ì4",
-         " J K L 5",          " M N O Ò6",                         " P Q R S 7",         " T U V Ù8",        " W X Y Z 9"},
+        {" 0+\n",             ".,?'\"1-()@/:_",        "ABCÀ2",          "DEFÈÉ3",       "GHIÌ4",
+         "JKL5",              "MNOÒ6",                 "PQRS7",          "TUVÙ8",        "WXYZ9"},
 
-        {" 0",                    " 1",                                    " 2",                     " 3",                   " 4",   
-         " 5",                    " 6",                                    " 7",                     " 8",                   " 9"},
+        {"0",                 "1",                     "2",              "3",            "4",   
+         "5",                 "6",                     "7",              "8",            "9"},
 
-        {"わをんー～　\n",    "あいうえおぁぃぅぇぉ",              "かきくけこ",         "さしすせそ",       "たちつてとっ",
-         "なにぬねの",        "はひふへほ",                        "まみむめも",         "やゆよゃゅょ",     "らりるれろ"},
+        {"わをんー～　\n",    "あいうえおぁぃぅぇぉ",  "かきくけこ",    "さしすせそ",    "たちつてとっ",
+         "なにぬねの",        "はひふへほ",            "まみむめも",    "やゆよゃゅょ",  "らりるれろ"},
 
-        {"ワヲンー～　\n",     "アイウエオァィゥェォ",              "カキクケコ",         "サシスセソ",       "タチツテトッ",
-         "ナニヌネノ",         "ハヒフヘホ",                        "マミムメモ",         "ヤユヨャュョ",     "ラリルレロ"}
+        {"ワヲンー～　\n",     "アイウエオァィゥェォ", "カキクケコ",    "サシスセソ",    "タチツテトッ",
+         "ナニヌネノ",         "ハヒフヘホ",           "マミムメモ",    "ヤユヨャュョ",  "ラリルレロ"}
     };
                                  // * = ﾞﾟ 
 
@@ -171,12 +170,12 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
     
     bool first = true;
     // int  sizes[12];
-    NString result       = "\0";
-    int      pos          = -1;
-    int      currentIndex = input >= '0' && input <= '9' ? input - 48
-                            : input == '*'               ? 10
-                            : input == '#'               ? 11
-                                                         : -1;
+    uint32_t  result;
+    const char *pos          = 0;
+    int        currentIndex = input >= '0' && input <= '9' ? input - 48
+                              : input == '*'               ? 10
+                              : input == '#'               ? 11
+                                                          : -1;
 
     if (currentIndex == -1) {
         ESP_LOGI(ITAG, "UNKNOWN BUTTON:%d", input);
@@ -191,7 +190,7 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
     //     b = 0;
     // }
     ulong mil = hw->millis();
-    pos       = -1;
+    pos       = buttons[useCharset][currentIndex];
     int curx  = tft.getCursorX();
     int cury  = tft.getCursorY();
     while (hw->millis() - mil < DIB_MS) {
@@ -200,20 +199,16 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
         int c = buttonsHelding();
 
         if (c == input || first) {
-            if (pos < (int)(strchr(buttons[useCharset][currentIndex], '\0') - buttons[useCharset][currentIndex] - 2)) {
+            if (pos < strchr(buttons[useCharset][currentIndex], '\0')) {
                 mil = hw->millis();
-                pos += 2;
-                if(buttons[useCharset][currentIndex][pos] > 0x7E) { result = buttons[useCharset][currentIndex][pos] + buttons[useCharset][currentIndex][pos-1]; }
-                else                                              { result = buttons[useCharset][currentIndex][pos]; }
                 showText(buttons[useCharset][currentIndex], pos);
+                pos = tft.utf8_decode(pos, &result);
                 tft.setCursor(curx, cury);
                 if(useCharset == NUMBERS) { mil = DIB_MS + 1; }
             }
             else {
                 mil    = hw->millis();
-                pos    = 1;
-                if(buttons[useCharset][currentIndex][pos] > 0x7E) { result = buttons[useCharset][currentIndex][pos-1] + buttons[useCharset][currentIndex][pos]; }
-                else                                              { result = buttons[useCharset][currentIndex][pos]; }
+                pos = tft.utf8_decode(buttons[useCharset][currentIndex], &result);
                 showText(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury);
             }
@@ -237,7 +232,9 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
     currentRenderTarget->present();
     if (result == '\r') { return 0; }
 
-    return result;
+    char selectedChar[5];
+    memcpy(selectedChar, &result, 4);
+    return selectedChar;
     (void)dontRedraw;
 }
 
