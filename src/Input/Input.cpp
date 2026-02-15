@@ -138,6 +138,47 @@ void showText(const char *text, const char * pos) {
     currentRenderTarget->present();
 }
 
+void showTextPreview(const char *text, const char * pos) {
+    Viewport      vp       = tft.getViewport();
+    bool          viewport = false;
+    RenderTarget *before   = tft.activeRenderTarget;
+    tft.setRenderTarget(currentRenderTarget);
+    if (vp.h < 320) {
+        tft.resetViewport();
+        viewport = true;
+    }
+
+    int pfont     = currentFont;
+    int textColor = tft.textcolor;
+
+    changeFont(3);
+    const char *str = text;
+    while (*str) {
+        if (str == pos) {
+            tft.setTextColor(0xFFFF, 0x001F, true);
+            if (str[0] == '\n') { tft.print("NL"); }
+            else if (str[0] == '\b') { tft.print("<-"); }
+            else {
+                uint32_t charcode;
+                str = tft.utf8_decode(str, &charcode);
+                tft.print(charcode);
+            }
+            break;
+        }
+        else {
+            uint32_t charcode;
+            str = tft.utf8_decode(str, &charcode);
+        }
+    }
+
+    tft.setTextColor(textColor);
+    changeFont(pfont);
+    if (viewport) { tft.setViewport(vp); }
+    tft.setRenderTarget(before);
+    currentRenderTarget->present();
+}
+
+
 char* utf8_encode(uint32_t cp, char* out) {
     if (cp <= 0x7F) {
         out[0] = cp;
@@ -170,7 +211,7 @@ char* utf8_encode(uint32_t cp, char* out) {
  * @param nonl disable new line
  * @return selected character
  */
-NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int *retButton) {
+NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, bool dontRedraw, int *retButton) {
     if (input == -1) { return 0; }
     currentRenderTarget->setUseBuffer(false);
     char buttons[5][10][32] = {
@@ -191,7 +232,7 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
     };
                                  // * = ﾞﾟ 
 
-    if (nonl) {buttons[SMALL_LATIN][0][6] = '\0'; buttons[CAPS_LATIN][0][6] = '\0'; buttons[HIRAGANA][0][12] = '\0'; buttons[KATAKANA][0][12] = '\0';}
+    if (nonl) {buttons[SMALL_LATIN][0][3] = '\0'; buttons[CAPS_LATIN][0][3] = '\0'; buttons[HIRAGANA][0][12] = '\0'; buttons[KATAKANA][0][12] = '\0';}
     
     bool first = true;
     // int  sizes[12];
@@ -227,16 +268,20 @@ NString textInput(int input, uint8_t useCharset, bool nonl, bool dontRedraw, int
             if (pos < strchr(buttons[useCharset][currentIndex], '\0')) {
                 mil = hw->millis();
                 showText(buttons[useCharset][currentIndex], pos);
+                tft.setCursor(curX, curY); // Coordinates based on screen's origin
+                showTextPreview(buttons[useCharset][currentIndex], pos);
+                tft.setCursor(curx, cury); // Coordinates based on viewport's origin
                 pos = tft.utf8_decode(pos, &result);
-                tft.setCursor(curx, cury);
                 if(useCharset == NUMBERS) { mil = DIB_MS + 1; }
             }
             else {
                 mil    = hw->millis();
                 pos = buttons[useCharset][currentIndex];
                 showText(buttons[useCharset][currentIndex], pos);
+                tft.setCursor(curX, curY); // Coordinates based on screen's origin
+                showTextPreview(buttons[useCharset][currentIndex], pos);
+                tft.setCursor(curx, cury); // Coordinates based on viewport's origin
                 pos = tft.utf8_decode(pos, &result);
-                tft.setCursor(curx, cury);
             }
         }
         if (c != input && c != -1) {

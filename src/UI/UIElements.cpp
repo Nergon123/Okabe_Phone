@@ -204,7 +204,6 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     bool    canChangeCharset = true;
     uint8_t useCharset = CAPS_LATIN;
     if(onlynumbers) {selectedCharset = NUMBERS; canChangeCharset = false;}
-    char charsetLabel[6][7] = {"abc", "ABC", "123", "ひら", "カタ", "Abc"};
     res.DrawImage(R_TEXTINPUT_CHARSETS_BG, selectedCharset, {boxWidth-44, 0});
 
     while (!exit) {
@@ -224,7 +223,10 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
         
         // Handle number input
         if (c >= '0' && c <= '9') {
-            NString TI = textInput(c, useCharset, true);
+            int pixelLen = tft.textWidth(content.substring(0, cursorPos)) + 15;
+            c_offset     = (pixelLen > boxWidth) ? (boxWidth - pixelLen) : 0;
+            int cx = tft.textWidth(content.substring(0, cursorPos)) + 5 + c_offset;
+            NString TI = textInput(c, useCharset, cx+boxX, (yoff/2)+viewY+ypos-3, true);
             if (TI != '\0' && TI != '\n') {
                 if (TI == '\b') {
                     uint8_t deletedCharLength = content[cursorPos-1] > 0x7E ? 2 : 1;
