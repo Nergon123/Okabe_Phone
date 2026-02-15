@@ -157,14 +157,14 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     int boxWidth  = 235 - boxX;
     int boxHeight = 25;
     int viewX     = 0;
-    int viewY     = 0;
+    int viewY     = 14;
     int yoff      = tft.fontHeight();
     int c_offset  = 0;
 
     // Viewport for the input line
 
     auto redrawField = [&](bool drawCursor) {
-        tft.setViewport(boxX, ypos, boxWidth, boxHeight);
+        tft.setViewport(boxX, ypos-viewY, boxWidth, boxHeight+viewY);
         tft.fillRect(viewX, viewY, boxWidth, boxHeight, clr_background);
         tft.drawRect(viewX, viewY, boxWidth, boxHeight, selected ? clr_selected : clr_normal);
 
@@ -172,13 +172,13 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
         changeFont(3);
         int pixelLen = tft.textWidth(content.substring(0, cursorPos)) + 15;
         c_offset     = (pixelLen > boxWidth) ? (boxWidth - pixelLen) : 0;
-        tft.setCursor(5 + c_offset, yoff);
+        tft.setCursor(5 + c_offset, yoff+viewY);
         tft.setTextColor(clr_normal);
         tft.print(content);
 
         if (selected && drawCursor) {
             int cx = tft.textWidth(content.substring(0, cursorPos)) + 5 + c_offset;
-            tft.fillRect(cx, 3, CWIDTH, boxHeight - 6, clr_normal);
+            tft.fillRect(cx, 3 + viewY, CWIDTH, boxHeight - 6, clr_normal);
         }
         currentRenderTarget->present();
     };
@@ -195,14 +195,17 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     //      EDIT MODE
     // ===========================
 
-    bool    exit        = false;
-    bool    dirty       = true; // force one draw
-    int     lastCursor  = cursorPos;
+    bool     exit        = false;
+    bool     dirty       = true; // force one draw
+    int      lastCursor  = cursorPos;
     NString lastContent = content;
+
     uint8_t selectedCharset = AUTO_CAPS;
     bool    canChangeCharset = true;
     uint8_t useCharset = CAPS_LATIN;
     if(onlynumbers) {selectedCharset = NUMBERS; canChangeCharset = false;}
+    char charsetLabel[6][7] = {"abc", "ABC", "123", "ひら", "カタ", "Abc"};
+    res.DrawImage(R_TEXTINPUT_CHARSETS_BG, selectedCharset, {boxWidth-44, 0});
 
     while (!exit) {
 
@@ -241,7 +244,9 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
         else {
             switch (c) {
             case LEFT:
-                if (cursorPos > 0) { cursorPos--; }
+                if (cursorPos > 0) { 
+                    cursorPos--;
+                }
                 break;
             case RIGHT:
                 if (cursorPos < (int)content.length()) { cursorPos++; }
@@ -258,6 +263,8 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                 if(canChangeCharset) {
                     selectedCharset++;
                     selectedCharset %= 6;
+                    res.DrawImage(R_TEXTINPUT_CHARSETS_BG, selectedCharset, {boxWidth-44, 0});
+                    dirty = true;
                 }
                 break;
             default:
@@ -279,7 +286,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     }
     selected = false;
     redrawField(false);
-
+    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {boxWidth-44, 0}, {boxX+boxWidth-44, ypos}, {boxX+boxWidth, ypos+14});
     tft.resetViewport();
     tft.setCursor(5, ypos - 5);
     changeFont(1);
@@ -293,7 +300,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
 
 // ## Dynamic Input Field Screen
 bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selected,
-                 NString confirmbtn, NString cancelbtn) {
+                  NString confirmbtn, NString cancelbtn) {
     res.DrawImage(R_LIST_MENU_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_ICONS, LM_SETTINGS);

@@ -107,6 +107,7 @@ enum MainResID {
     R_OUTGOING_CALL_FONT     = 26,
     R_BOOT_LOGO              = 27,
     R_STATUSBAR_NETWORK      = 28,
+    R_TEXTINPUT_CHARSETS_BG  = 29,
     R_NULL_IMAGE             = 0xFFFF,
 };
 
