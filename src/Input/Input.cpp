@@ -269,7 +269,7 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
                 mil = hw->millis();
                 showText(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curX, curY); // Coordinates based on screen's origin
-                showTextPreview(buttons[useCharset][currentIndex], pos);
+                // showTextPreview(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury); // Coordinates based on viewport's origin
                 pos = tft.utf8_decode(pos, &result);
                 if(useCharset == NUMBERS) { mil = DIB_MS + 1; }
@@ -279,7 +279,7 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
                 pos = buttons[useCharset][currentIndex];
                 showText(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curX, curY); // Coordinates based on screen's origin
-                showTextPreview(buttons[useCharset][currentIndex], pos);
+                // showTextPreview(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury); // Coordinates based on viewport's origin
                 pos = tft.utf8_decode(pos, &result);
             }

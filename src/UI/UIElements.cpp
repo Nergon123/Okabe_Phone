@@ -272,11 +272,23 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
             switch (c) {
             case LEFT:
                 if (cursorPos > 0) { 
-                    cursorPos--;
+                         if(content.charAt(cursorPos-1) <= 0x7F)  { cursorPos -= 1; }
+                    else if(content.charAt(cursorPos-2) <= 0x07)  { cursorPos -= 2; }
+                    else if(content.charAt(cursorPos-2) <= 0xFF)  { cursorPos -= 3; }
+                    Serial.println(cursorPos);
                 }
                 break;
             case RIGHT:
-                if (cursorPos < (int)content.length()) { cursorPos++; }
+                if (cursorPos < (int)content.length())
+                {
+                    char buf[content.length()+1];
+                    content.toCharArray(buf, content.length()+1);
+                    uint32_t character;
+                    const char * temp  = buf + cursorPos;
+                    const char * temp2 = tft.utf8_decode(temp, &character);
+                    cursorPos += temp2 - temp;
+                }
+                Serial.println(cursorPos);
                 break;
             case UP:
                 if (direction) { *direction = UP; }
@@ -296,7 +308,6 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                     int charAt = -1;
                     for(int i = 0; i < 45; i++) // Find the character in the array
                     {
-                        Serial.printf("%s -> %s\n", buffer, dakuonModifier[selectedCharset-3][i]);
                         if(buffer[0] == dakuonModifier[selectedCharset-3][i][0]
                            && buffer[1] == dakuonModifier[selectedCharset-3][i][1]
                            && buffer[2] == dakuonModifier[selectedCharset-3][i][2])
@@ -305,7 +316,6 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                             break;
                         }
                     }
-                    ESP_LOGI("DKON", "%d", charAt);
                     switch(charAt)
                     {
                     case 0 ... 19:
