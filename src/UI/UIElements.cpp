@@ -206,6 +206,31 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     if(onlynumbers) {selectedCharset = NUMBERS; canChangeCharset = false;}
     res.DrawImage(R_TEXTINPUT_CHARSETS_BG, selectedCharset, {boxWidth-44, 0});
 
+    char dakuonModifier[2][45][4] {
+        {
+            "か","き","く","け","こ",
+            "さ","し","す","せ","そ",
+            "た","ち","つ","て","と",
+            "は","ひ","ふ","へ","ほ",
+            "が","ぎ","ぐ","げ","ご",
+            "ざ","じ","ず","ぜ","ぞ",
+            "だ","ぢ","づ","で","ど",
+            "ば","び","ぶ","べ","ぼ",
+            "ぱ","ぴ","ぷ","ぺ","ぽ"
+        },
+        {
+            "カ","キ","ク","ケ","コ",
+            "サ","シ","ス","セ","ソ",
+            "タ","チ","ツ","テ","ト",
+            "ハ","ヒ","フ","ヘ","ホ",
+            "ガ","ギ","グ","ゲ","ゴ",
+            "ザ","ジ","ズ","ゼ","ゾ",
+            "タ","チ","ツ","テ","ト",
+            "バ","ビ","ブ","ベ","ボ",
+            "パ","ピ","プ","ペ","ポ"
+        }
+    };
+
     while (!exit) {
 
         int c = buttonsHelding();
@@ -260,6 +285,47 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
             case DOWN:
                 if (direction) { *direction = DOWN; }
                 exit = true;
+                break;
+            case '*':
+                if(selectedCharset == HIRAGANA || selectedCharset == KATAKANA)
+                {
+                    NString previousKana = content.substring(cursorPos-3, cursorPos);
+                    char buffer[4] = "   ";
+                    previousKana.toCharArray(buffer, 4);
+                    
+                    int charAt = -1;
+                    for(int i = 0; i < 45; i++) // Find the character in the array
+                    {
+                        Serial.printf("%s -> %s\n", buffer, dakuonModifier[selectedCharset-3][i]);
+                        if(buffer[0] == dakuonModifier[selectedCharset-3][i][0]
+                           && buffer[1] == dakuonModifier[selectedCharset-3][i][1]
+                           && buffer[2] == dakuonModifier[selectedCharset-3][i][2])
+                        {
+                            charAt = i;
+                            break;
+                        }
+                    }
+                    ESP_LOGI("DKON", "%d", charAt);
+                    switch(charAt)
+                    {
+                    case 0 ... 19:
+                        content = content.substring(0, cursorPos-3) + dakuonModifier[selectedCharset-3][charAt + 20] + content.substring(cursorPos, content.length());
+                        break;
+                    
+                    case 20 ... 34:
+                        content = content.substring(0, cursorPos-3) + dakuonModifier[selectedCharset-3][charAt - 20] + content.substring(cursorPos, content.length());
+                        break;
+                    
+                    case 35 ... 39:
+                        content = content.substring(0, cursorPos-3) + dakuonModifier[selectedCharset-3][charAt + 5] + content.substring(cursorPos, content.length());
+                        break;
+                    
+                    case 40 ... 44:
+                        content = content.substring(0, cursorPos-3) + dakuonModifier[selectedCharset-3][charAt - 25] + content.substring(cursorPos, content.length());
+                        break;
+                    }
+                }
+                dirty = true;
                 break;
             case '#':
                 if(canChangeCharset) {
