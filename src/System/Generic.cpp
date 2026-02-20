@@ -42,6 +42,4 @@ void setBrightnessTask(void *) {
     }
 }
 
-void setBrightness(uint8_t percentage) {
-    targetBrightness = constrain(percentage, 0, 100);
-}
+void setBrightness(uint8_t percentage) { targetBrightness = constrain(percentage, 0, 100); }

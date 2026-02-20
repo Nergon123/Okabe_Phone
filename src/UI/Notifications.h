@@ -22,6 +22,7 @@ enum NetworkStatusBarIcons {
     NSB_BT_CONNECTED = 11
 };
 
-void InfoWindow(NString reason,NString title = "ERROR",bool WaitForButton = true,uint16_t titlecolor = TFT_RED); 
+void InfoWindow(NString reason, NString title = "ERROR", bool WaitForButton = true,
+                uint16_t titlecolor = TFT_RED);
 bool confirmation(NString reason, NString yes = "Yes", NString no = "No");
 void drawStatusBar(bool force = false);

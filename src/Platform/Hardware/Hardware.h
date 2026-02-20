@@ -47,6 +47,8 @@ class iHW {
         (void)fileToDownload;
         (void)progressCallback;
     };
+    virtual void       timeSet(time_t t) { (void)t; };
+    virtual time_t     timeGet() { return 0; };
     virtual void       setScreenBrightness(int8_t value) { (void)value; };
     virtual char       getCharInput() { return 0; };
     virtual int        getKeyInput() { return 0; };

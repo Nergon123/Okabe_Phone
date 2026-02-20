@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 
 class SDLAudio : public Audio {
-public:
+  public:
     SDLAudio();
     ~SDLAudio() override;
 
@@ -13,11 +13,11 @@ public:
     void stop() override;
     void setVolume(float volume) override;
 
-private:
+  private:
     static void sdl_callback(void* userdata, Uint8* stream, int len);
 
-    SDL_AudioDeviceID device = 0;
-    AudioStream* current = nullptr;
-    float volume = 1.0f;
+    SDL_AudioDeviceID device  = 0;
+    AudioStream*      current = nullptr;
+    float             volume  = 1.0f;
 };
 #endif

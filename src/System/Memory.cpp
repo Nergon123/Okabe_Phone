@@ -2,8 +2,8 @@
 #include "Memory.h"
 
 #ifdef IDF_VER
-#include <esp_heap_caps.h>
 #include <esp32/himem.h>
+#include <esp_heap_caps.h>
 #define ESP32_MEMORY
 #endif
 #ifndef PC

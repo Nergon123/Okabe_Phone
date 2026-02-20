@@ -15,7 +15,7 @@
 #include "Platform/Preferences.h"
 
 #include <vector>
-// hmm....
+
 #include "System/Pkg/PackageManager.h"
 #include "System/Pkg/PackageStorage.h"
 #include "System/ResourceSystem.h"
@@ -161,9 +161,6 @@ extern PackageStorage PaStor;
 
 // Function to get the size of an array ... bruh
 template <typename T, size_t N> size_t ArraySize(T (&)[N]) { return N; }
-
-extern time_t systemTime;
-extern tm     systemTimeInfo;
 
 #ifdef PC
 #define TASK std::thread

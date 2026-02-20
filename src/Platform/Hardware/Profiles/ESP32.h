@@ -70,8 +70,12 @@ class DEV_ESP32 : public iHW {
         else { ESP_LOGE("KEYPAD", "MCP23017 cannot be initalized"); }
         charger_exists = checkI2Cdevices(IP5306_ADDR);
     };
-
-    void initStorage() override {
+    void timeSet(time_t t) override {
+        struct timeval now = {t, 0};
+        settimeofday(&now, nullptr);
+    }
+    time_t timeGet() override { return time(nullptr); }
+    void   initStorage() override {
 
         ESP_LOGI("SD", "SPI started");
         bootText("Initializing SDCard...");
@@ -258,11 +262,11 @@ class DEV_ESP32 : public iHW {
         }
         return true;
     }
-    SPIClass SDSPI = SPIClass(HSPI);
-    bool sdcard_exists  = false;
-    bool keypad_exists  = false;
-    bool charger_exists = false;
-    bool checkI2Cdevices(byte device) {
+    SPIClass SDSPI          = SPIClass(HSPI);
+    bool     sdcard_exists  = false;
+    bool     keypad_exists  = false;
+    bool     charger_exists = false;
+    bool     checkI2Cdevices(byte device) {
         Wire.beginTransmission(device);
         bool error = Wire.endTransmission() != 0;
         return !error;

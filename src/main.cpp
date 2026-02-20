@@ -1,4 +1,5 @@
 #include "Screens/Main.h"
+#include "BuiltinPackages.h"
 #include "GlobalVariables.h"
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/Hardware/Profiles/ESP32.h"
@@ -6,7 +7,6 @@
 #include "System/ResourceSystem.h"
 #include "System/Tasks.h"
 #include "System/Time.h"
-#include "BuiltinPackages.h"
 #include "init.h"
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
@@ -70,7 +70,7 @@ int start() {
 
     // register static packages
     pm.registerPackage(&SPKG(PkgMgr));
-    
+
     // register package from fs
     PaStor.init();
 

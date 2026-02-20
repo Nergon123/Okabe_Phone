@@ -29,10 +29,6 @@ uint32_t wallpaperIndex = 0;
 // index of currentFont used for changeFont()
 int currentFont = 0;
 
-// clock
-time_t systemTime;
-tm     systemTimeInfo;
-
 // is Screen Locked????
 volatile bool isScreenLocked = false;
 

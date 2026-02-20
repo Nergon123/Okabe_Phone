@@ -14,7 +14,7 @@
 // That's a lot of memory stuff, heavy for ESP32, even with PSRAM...
 // works, but need to replace stb image lib with something lighter later
 
-uint16_t* resizeRGB565buffer(uint16_t *buffer,int inputW, int inputH, int targetW, int targetH) {
+uint16_t* resizeRGB565buffer(uint16_t* buffer, int inputW, int inputH, int targetW, int targetH) {
     if (targetW == inputW && targetH == inputH) {
         return buffer; // no resize needed
     }
@@ -22,20 +22,20 @@ uint16_t* resizeRGB565buffer(uint16_t *buffer,int inputW, int inputH, int target
     uint8_t* tempRGB = (uint8_t*)ps_malloc(inputW * inputH * 3);
     for (int j = 0; j < inputH; j++) {
         for (int i = 0; i < inputW; i++) {
-            int      idx    = (j * inputW + i);
-            uint16_t pixel  = buffer[idx];
-            uint8_t  r      = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t  g      = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t  b      = (pixel & 0x1F) << 3;
-            int      rgbIdx = idx * 3;
+            int      idx        = (j * inputW + i);
+            uint16_t pixel      = buffer[idx];
+            uint8_t  r          = ((pixel >> 11) & 0x1F) << 3;
+            uint8_t  g          = ((pixel >> 5) & 0x3F) << 2;
+            uint8_t  b          = (pixel & 0x1F) << 3;
+            int      rgbIdx     = idx * 3;
             tempRGB[rgbIdx]     = r;
             tempRGB[rgbIdx + 1] = g;
             tempRGB[rgbIdx + 2] = b;
         }
     }
 
-    uint8_t* resizedRGB = stbir_resize_uint8_srgb(tempRGB, inputW, inputH, 0, NULL, targetW, targetH,
-                                                  0, (stbir_pixel_layout)3);
+    uint8_t* resizedRGB = stbir_resize_uint8_srgb(tempRGB, inputW, inputH, 0, NULL, targetW,
+                                                  targetH, 0, (stbir_pixel_layout)3);
     free(tempRGB);
     if (!resizedRGB) {
         free(buffer);
@@ -45,11 +45,11 @@ uint16_t* resizeRGB565buffer(uint16_t *buffer,int inputW, int inputH, int target
     uint16_t* resizedRGB565 = (uint16_t*)ps_malloc(targetW * targetH * sizeof(uint16_t));
     for (int j = 0; j < targetH; j++) {
         for (int i = 0; i < targetW; i++) {
-            int      idx           = (j * targetW + i);
-            int      rgbIdx        = idx * 3;
-            uint8_t  r             = resizedRGB[rgbIdx];
-            uint8_t  g             = resizedRGB[rgbIdx + 1];
-            uint8_t  b             = resizedRGB[rgbIdx + 2];
+            int     idx        = (j * targetW + i);
+            int     rgbIdx     = idx * 3;
+            uint8_t r          = resizedRGB[rgbIdx];
+            uint8_t g          = resizedRGB[rgbIdx + 1];
+            uint8_t b          = resizedRGB[rgbIdx + 2];
             resizedRGB565[idx] = tft.color565(r, g, b);
         }
     }
@@ -91,12 +91,12 @@ uint16_t* convertRGBToRGB565(uint8_t* img, int w, int h) {
     return rgb565;
 }
 
-image_data displayPNG(const NString path, int w, int h,bool onlyParams) {
+image_data displayPNG(const NString path, int w, int h, bool onlyParams) {
 
     IFile* f = VFS.open(path, "r");
     if (!f) {
         ESP_LOGE("IMG", "Failed to open %s", path.c_str());
-        return {-1, -1, "Failed to open file",nullptr};
+        return {-1, -1, "Failed to open file", nullptr};
     }
 
     int            width, height, channels;
@@ -108,16 +108,16 @@ image_data displayPNG(const NString path, int w, int h,bool onlyParams) {
         if (stbi_failure_reason()) { ESP_LOGE("IMG", "Reason: %s", stbi_failure_reason()); }
         else { ESP_LOGE("IMG", "Reason: unknown error"); }
         return {-1, -1, stbi_failure_reason(), nullptr};
-    }    
-    if(onlyParams){
+    }
+    if (onlyParams) {
         stbi_image_free(img);
-        return {width,height,nullptr,nullptr};
+        return {width, height, nullptr, nullptr};
     }
 
     int            targetW = (w > 0) ? w : width;
     int            targetH = (h > 0) ? h : height;
     unsigned char* resized = resizePNG(img, width, height, targetW, targetH);
-    if (!resized) { return {-1, -1, "Failed to resize image",nullptr}; }
+    if (!resized) { return {-1, -1, "Failed to resize image", nullptr}; }
     uint16_t* data = convertRGBToRGB565(resized, targetW, targetH);
 
     return {width, height, nullptr, data};

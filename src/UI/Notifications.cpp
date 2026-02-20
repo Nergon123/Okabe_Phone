@@ -3,21 +3,23 @@
 #include "Platform/Graphics/RenderTargets.h"
 #include "System/Memory.h"
 #include "System/ResourceSystem.h"
+int last_minute = 0;
 // ## Draw status bar
 // This function draws the status bar on the screen
 // @param force: If true, force redraw of the status bar if false only redraw if time has changed
 void drawStatusBar(bool force) {
 
     sBarChanged += force;
-
-    tm sbtime = *gmtime(&systemTime);
-    if (sbtime.tm_min != systemTimeInfo.tm_min) {
-        SaveTime(systemTime);
+    time_t currentTime = hw->timeGet();
+    tm     sbtime      = *gmtime(&currentTime);
+    if (sbtime.tm_min != last_minute) {
+        last_minute = sbtime.tm_min;
+// ehhhh.....? trying to get write cycles dry out lmao
+#warning Maybe consider changing this...
+        SaveTime(currentTime);
         sBarChanged = true;
     }
-    if (enableRAMMonitor && sbtime.tm_sec % 10 == 0) {
-        sBarChanged = true;
-    }
+    if (enableRAMMonitor && sbtime.tm_sec % 10 == 0) { sBarChanged = true; }
 
     if (sBarChanged) {
         font_t   _currentFont = tft.currentFont;
@@ -56,11 +58,11 @@ void drawStatusBar(bool force) {
             ramProgressBar(150, 4, 25, 6, TFT_GREEN,
                            getTotalDefaultMemory() - getFreeDefaultMemory(),
                            getTotalDefaultMemory());
-            ramProgressBar(150 , 10, 25, 6, TFT_RED,
+            ramProgressBar(150, 10, 25, 6, TFT_RED,
                            getTotalExternalMemory() - getFreeExternalMemory(),
                            getTotalExternalMemory());
-            ramProgressBar(150 , 16, 25, 6, TFT_BLUE,
-                           getTotalHighMemory() - getFreeHighMemory(), getTotalHighMemory());
+            ramProgressBar(150, 16, 25, 6, TFT_BLUE, getTotalHighMemory() - getFreeHighMemory(),
+                           getTotalHighMemory());
         }
         tft.setRenderTarget(before);
         currentRenderTarget->pushBuffer(0, 0, buf->getWidth(), buf->getHeight(), buf->getBuffer(),
@@ -120,20 +122,21 @@ void InfoWindow(NString reason, NString title, bool WaitForButton, uint16_t titl
     tft.setTextColor(0);
     NString formatted = SplitString(reason);
     // print each line centered
-    int y = 150;
-    int lineHeight = tft.fontHeight();
-    size_t start = 0;
+    int    y          = 150;
+    int    lineHeight = tft.fontHeight();
+    size_t start      = 0;
     while (start < formatted.length()) {
-        int nl = formatted.indexOf('\n', start);
+        int     nl = formatted.indexOf('\n', start);
         NString line;
         if (nl == -1) {
-            line = formatted.substring(start);
+            line  = formatted.substring(start);
             start = formatted.length();
-        } else {
-            line = formatted.substring(start, nl);
+        }
+        else {
+            line  = formatted.substring(start, nl);
             start = nl + 1;
         }
-        int w = tft.textWidth(line);
+        int w  = tft.textWidth(line);
         int lx = 0;
         if (w < 240) { lx = (240 - w) / 2; }
         tft.setCursor(lx, y);

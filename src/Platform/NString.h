@@ -2,13 +2,13 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <stdint.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace Platform {
 

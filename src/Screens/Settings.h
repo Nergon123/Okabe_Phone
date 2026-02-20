@@ -1,14 +1,14 @@
 #pragma once
 #include "GlobalVariables.h"
 
+#include "Input/Input.h"
 #include "System/Files.h"
 #include "System/FontManagement.h"
-#include "UI/ListMenu.h"
-#include "UI/UIElements.h"
-#include "UI/Notifications.h"
-#include "Input/Input.h"
 #include "System/Time.h"
+#include "UI/ListMenu.h"
+#include "UI/Notifications.h"
+#include "UI/UIElements.h"
 void settings();
-void setTime(time_t *time);
+void setTime();
 int  gallery();
 void ringtoneSelector(bool isMail);

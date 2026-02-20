@@ -12,8 +12,7 @@ class TFTESPIRenderTarget : public RenderTarget {
     RenderTarget* bufferTargetToFlip;
     bool          _useBuffer = false;
     TFTESPIRenderTarget(int w, int h, bool useBuffer = false)
-        : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr), _useBuffer(useBuffer) {
-    };
+        : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr), _useBuffer(useBuffer) {};
 
     void init() override {
         if (_useBuffer && !bufferTargetToFlip) {

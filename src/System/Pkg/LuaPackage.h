@@ -4,20 +4,19 @@
 #include "ZipPackage.h"
 #include <System/LuaVM/LuaVM.h>
 
-class LuaPackage: public ZipPackage
-{
-public:
+class LuaPackage : public ZipPackage {
+  public:
     LuaPackage() = default;
     virtual ~LuaPackage();
 
     int setFile(IFile *file);
     int setFile(NString *path);
-    
+
     int load();
     int exec();
     int unload();
 
-private:
+  private:
     LuaVM *m_vm = NULL;
 };
 
