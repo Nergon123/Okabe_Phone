@@ -8,8 +8,8 @@
 #include "System/Generic.h"
 
 char     *utf8_encode(uint32_t cp, char* out);
-NString  textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl = false, bool dontRedraw = false,
-                int *retButton = nullptr);
+NString  textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl = false,
+                     int *retButton = nullptr, bool dontRedraw = false);
 int       checkButton();
 void      numberInput(char first);
 void      showText(const char *text, const char *pos);

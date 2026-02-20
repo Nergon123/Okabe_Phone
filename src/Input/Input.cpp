@@ -211,7 +211,7 @@ char* utf8_encode(uint32_t cp, char* out) {
  * @param nonl disable new line
  * @return selected character
  */
-NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, bool dontRedraw, int *retButton) {
+NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, int *retButton, bool dontRedraw) {
     if (input == -1) { return 0; }
     currentRenderTarget->setUseBuffer(false);
     char buttons[5][10][32] = {
@@ -286,7 +286,7 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
         }
         if (c != input && c != -1) {
             mil = DIB_MS + 1;
-            if (!retButton) { retButton = new int(c); }
+            if (retButton) { *retButton = c; }
         }
         first = false;
     }

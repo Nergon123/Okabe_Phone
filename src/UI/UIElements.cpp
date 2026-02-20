@@ -231,9 +231,14 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
         }
     };
 
-    while (!exit) {
+    int ct = -1;
 
-        int c = buttonsHelding();
+    while (!exit) {
+        int c;
+        if (ct == -1) { c = buttonsHelding(); }
+        else { c = ct; }
+        ct = -1;
+
         if (c == -1) { continue; }
         else {
             if (selectedCharset == AUTO_CAPS) {
@@ -251,7 +256,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
             int pixelLen = tft.textWidth(content.substring(0, cursorPos)) + 15;
             c_offset     = (pixelLen > boxWidth) ? (boxWidth - pixelLen) : 0;
             int cx = tft.textWidth(content.substring(0, cursorPos)) + 5 + c_offset;
-            NString TI = textInput(c, useCharset, cx+boxX, (yoff/2)+viewY+ypos-3, true);
+            NString TI = textInput(c, useCharset, cx+boxX, (yoff/2)+viewY+ypos-3, true, &ct);
             if (TI != '\0' && TI != '\n') {
                 if (TI == '\b') {
                     uint8_t deletedCharLength = content[cursorPos-1] > 0x7E ? 2 : 1;
