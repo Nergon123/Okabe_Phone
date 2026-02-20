@@ -137,7 +137,7 @@ class DEV_ESP32 : public iHW {
 
         if (ar != 0xFF && br != 0xFF) {
             uint8_t res = ar == 0 && br == 0 ? 0 : 21 - (ar * 3) + br;
-            return res >= 4 ? res-3 : res;
+            return res;
         }
         return 0;
     };

@@ -215,10 +215,10 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
     if (input == -1) { return 0; }
     currentRenderTarget->setUseBuffer(false);
     char buttons[5][10][32] = {
-        {" 0+\n",             ".,?'\"1-()@/:_",        "abcà2",          "defèé3",       "ghiì4",
+        {" 0+\n",             ".,?!'\"1-()@/:_",        "abcà2",          "defèé3",       "ghiì4",
          "jkl5",              "mnoò6",                 "pqrs7",          "tuvù8",        "wxyz9"},
 
-        {" 0+\n",             ".,?'\"1-()@/:_",        "ABCÀ2",          "DEFÈÉ3",       "GHIÌ4",
+        {" 0+\n",             ".,?!'\"1-()@/:_",        "ABCÀ2",          "DEFÈÉ3",       "GHIÌ4",
          "JKL5",              "MNOÒ6",                 "PQRS7",          "TUVÙ8",        "WXYZ9"},
 
         {"0",                 "1",                     "2",              "3",            "4",   
@@ -232,7 +232,7 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
     };
                                  // * = ﾞﾟ 
 
-    if (nonl) {buttons[SMALL_LATIN][0][3] = '\0'; buttons[CAPS_LATIN][0][3] = '\0'; buttons[HIRAGANA][0][12] = '\0'; buttons[KATAKANA][0][12] = '\0';}
+    if (nonl) {buttons[SMALL_LATIN][0][3] = '\0'; buttons[CAPS_LATIN][0][3] = '\0'; buttons[HIRAGANA][0][18] = '\0'; buttons[KATAKANA][0][18] = '\0';}
     
     bool first = true;
     // int  sizes[12];
