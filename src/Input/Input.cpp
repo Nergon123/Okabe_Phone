@@ -41,31 +41,39 @@ void idle() {
  */
 
 void numberInput(char first) {
-    tft.fillRect(0, 300, 240, 20, 0);
+    tft.fillRect(0, 26, 240, 294, 0);
     sBarChanged = true;
     drawStatusBar();
 
-    const uint8_t max_length = 13;
+    const uint8_t max_length = 17;
     NString       number;
     number += first;
 
     int c = 127;
+    int spinOffset = 0;
+    int spinTimer = 20;
 
     tft.setTextColor(TFT_WHITE);
-    changeFont(0);
-    tft.setTextSize(3);
+    changeFont(1);
+    tft.setCursor(18, 200);
+    tft.print("Dialing...");
 
-    auto redraw = [&]() {
-        tft.fillRect(0, 300, 240, 20, 0);
-        tft.setCursor(0, 300);
-        tft.print(number);
+    auto redraw = [&]() {    
+        tft.fillRect(0, 218, 240, 60, 0);
+        for(int i = 0; i < number.length(); i++) {
+            if(number[i] >= '0' && number[i] <= '9') { res.DrawImage(R_OUTGOING_CALL_FONT, (int)(number[i]-'0'), {(i%10)*22, 220 + (28*(i/10))}); }
+            else if(number[i] == '*') { res.DrawImage(R_OUTGOING_CALL_FONT, 11, {(i%10)*22, 220 + (28*(i/10))}); }
+            else if(number[i] == '#') { res.DrawImage(R_OUTGOING_CALL_FONT, 10, {(i%10)*22, 220 + (28*(i/10))}); }
+        }
         currentRenderTarget->present();
     };
 
     redraw();
 
     while (true) {
-        while (c == 127 || c == -1) { c = buttonsHelding(); }
+        while (c == 127 || c == -1) { 
+            c = buttonsHelding();
+        }
 
         switch (c) {
 

@@ -45,7 +45,7 @@ void lookAndFeelSettings() {
         selection = choiceMenu(options, ArraySize(options), false);
         switch (selection) {
         case 0:
-            NString filepath = fileBrowser("/", ".nph");
+            NString filepath = fileBrowser("/", "|.nph|.NPH|");
             if (VFS.exists(filepath)) {
                 NFile *resource = VFS.open(filepath);
                 InfoWindow("Applying Theme...", "INFO", false, TFT_BLUE);

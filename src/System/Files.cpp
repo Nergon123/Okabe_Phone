@@ -2,24 +2,26 @@
 
 struct iconFormat {
     uint8_t     icon;
-    const char* format;
+    NString     format;
 };
 
 const iconFormat fileFormats[] = {
-    {LM_ICO_IMAGE, "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|"},
-    {LM_ICO_AUDIO, "|.wav|.mp3|.m4a|.flac|"},
-    {LM_ICO_THEME, "|.nph|"},
-    {LM_ICO_TEXT, "|.md|.txt|"},
+    {LM_ICO_IMAGE, "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|"},
+    {LM_ICO_AUDIO, "|.wav|.mp3|.m4a|.flac|.WAV|.MP3|.M4A|.FLAC|"},
+    {LM_ICO_THEME, "|.nph|.NPH|"},
+    {LM_ICO_TEXT, "|.md|.txt|.MD|.TXT|"},
+    {LM_ICO_PACKAGE, "|.lpkg|.LPKG|"},
     {0, ""},
 };
 
 uint8_t getIconByFormat(NString name) {
-    NString format = name.substring(name.lastIndexOf('.'), name.length() - 1);
+    NString format = name.substring(name.lastIndexOf('.'), name.length());
+    char formatCA[6];
+    format.toCharArray(formatCA, 5);
     for (size_t i = 0; i < sizeof(fileFormats) / sizeof(fileFormats[0]); i++) {
-        if (format.indexOf("|" + NString(fileFormats[i].format) + "|") != -1) {
+        if (fileFormats[i].format.indexOf("|" + NString(format) + "|") != -1) {
             return fileFormats[i].icon;
         }
-        return 0;
     }
     return 0;
 }

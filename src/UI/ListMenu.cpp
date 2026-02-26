@@ -35,7 +35,7 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
     }
     if (choice.image.id != R_NULL_IMAGE) {
         ImageData imgData = res.GetImageDataByImage(choice.image);
-        res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0});
+        res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy+2}, {0, 0}, {0, 0});
     }
     if (lines) {
         tft.drawLine(0, yy, 240, yy, 0);
