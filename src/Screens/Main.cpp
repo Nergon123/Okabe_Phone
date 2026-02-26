@@ -86,13 +86,48 @@ void MainMenu() {
     }
 }
 
+char weekday[7][6] = {"(MON)", "(TUE)", "(WED)", "(THU)", "(FRI)", "(SAT)", "(SUN)"};
+
 // Function to show the main screen, root screen
 void MainScreen() {
     drawWallpaper();
-    changeFont(0);
+    changeFont(1);
     drawStatusBar(true);
+
+    tft.drawRect(20, 40, 200, 52, TFT_WHITE);
+    tft.fillRect(21, 41, 198, 50, TFT_DARKGREY);
+    time_t currentTime = hw->timeGet();
+    tm     sbtime      = *gmtime(&currentTime);
+    int    lastMinute = sbtime.tm_min;
+    tft.setCursor(24, 56);
+    tft.setTextColor(TFT_WHITE);
+    tft.printf("%02d/%02d %s", sbtime.tm_mday, sbtime.tm_mon, weekday[sbtime.tm_wday-1]);
+    res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_hour/10, {24, 62}); // First digit of the hours
+    res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_hour%10, {46, 62}); // Second digit of the hours
+    res.DrawImage(R_OUTGOING_CALL_FONT, 14, {68, 62}); // :
+    res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_min/10, {90, 62}); // First digit of the minutes
+    res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_min%10, {112, 62}); // Second digit of the minutes
+
     currentRenderTarget->present();
     while (1) {
+        currentTime = hw->timeGet();
+        sbtime      = *gmtime(&currentTime);
+        if(sbtime.tm_min != lastMinute) {
+            tft.fillRect(21, 41, 198, 50, TFT_DARKGREY);
+            time_t currentTime = hw->timeGet();
+            tm     sbtime      = *gmtime(&currentTime);
+            int    lastMinute = sbtime.tm_min;
+            tft.setCursor(24, 56);
+            tft.setTextColor(TFT_WHITE);
+            tft.printf("%02d/%02d %s", sbtime.tm_mday, sbtime.tm_mon, weekday[sbtime.tm_wday-1]);
+            res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_hour/10, {24, 62}); // First digit of the hours
+            res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_hour%10, {46, 62}); // Second digit of the hours
+            res.DrawImage(R_OUTGOING_CALL_FONT, 14, {68, 62}); // :
+            res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_min/10, {90, 62}); // First digit of the minutes
+            res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_min%10, {112, 62}); // Second digit of the minutes
+            lastMinute = sbtime.tm_min;
+        }
+
         int button = buttonsHelding();
         if ((button >= '0' && button <= '9') || button == '*' || button == '#') {
             numberInput(button);
