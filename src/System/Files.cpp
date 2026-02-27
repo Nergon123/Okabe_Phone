@@ -113,6 +113,7 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
         path += chosen;
 
         if (path.endsWith("/")) {
+            path = path.substring(0,path.length()-1);
             if (!VFS.exists(path)) { return path; }
             IFile* ftest = VFS.open(path);
             if (!ftest || !ftest->isDirectory()) {
