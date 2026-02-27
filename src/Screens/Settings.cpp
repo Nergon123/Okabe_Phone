@@ -1,4 +1,5 @@
 #include "Settings.h"
+#include <Screens/ImageViewer.h>
 
 const int lastImage = 42;
 
@@ -95,7 +96,52 @@ void advancedSettings() {
     }
 }
 
-void changeWallpaper() {}
+void changeWallpaper() {
+    NString wallpaperOptions[] = {"Default Wallpaper", "Select From File"};
+    int menuSelection = LISTMENU_NULL;
+    while (menuSelection != LISTMENU_EXIT) {
+        menuSelection = choiceMenu(wallpaperOptions, ArraySize(wallpaperOptions), true);
+        switch(menuSelection) {
+            case 0:
+                preferences.begin("settings");
+                preferences.putString("BG", "DEFAULT");
+                preferences.end();
+                break;
+            case 1:
+                const NString wallpaperModes[] = {"CENTERED", "TILED", "FILLED", "STRETCHED", "FIT_HORIZONTALY", "FIT_VERTICALY"};
+                NString chosenWallpaper = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|", true, "Select a wallpaper");
+                int wallpaperMode = LISTMENU_NULL;
+                while (wallpaperMode != LISTMENU_EXIT) {
+                    wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
+                    drawImageWithMode(chosenWallpaper, (ImageMode)wallpaperMode, 0, 26);
+                    int c = -1;
+                    while (c == -1) {
+                        c = buttonsHelding();
+                        switch(c) {
+                        case DECLINE:
+                            wallpaperMode = LISTMENU_EXIT;
+                            menuSelection = LISTMENU_EXIT;
+                            break;
+
+                        case SELECT:
+                            bool confirmSelection = confirmation("Do you want to set this wallpaper?");
+                            if (confirmSelection) 
+                            {
+                                preferences.begin("settings");
+                                preferences.putString("BG", chosenWallpaper.c_str());
+                                preferences.putInt("BGmode", wallpaperMode);
+                                preferences.end();
+                            }
+                            wallpaperMode = LISTMENU_EXIT;
+                            menuSelection = LISTMENU_EXIT;
+                            break;
+                        }
+                    }
+                }
+                break;
+        }
+    }
+}
 
 // Function to show the settings menu
 // This function is called when the user wants to change settings

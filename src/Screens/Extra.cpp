@@ -87,7 +87,7 @@ void e() {
             NString path = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|");
             while (wallpaperMode != LISTMENU_EXIT) {
                 wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
-                drawImageWithMode(path, (ImageMode)wallpaperMode, 0, 26);
+                { drawImageWithMode(path, (ImageMode)wallpaperMode, 0, 26); }
                 while (buttonsHelding() == -1);
             }
             break;

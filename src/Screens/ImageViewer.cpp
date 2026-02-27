@@ -94,8 +94,9 @@ void ImageViewer(const NString path) {
     tft.resetViewport();
 }
 
-void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h) {
-    if (path.isEmpty()) { return; }
+void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h, bool * fail) {
+    if (fail) { *fail = false; }
+    if (path.isEmpty()) { if (fail) { *fail = true; } return; }
     if (w <= 0 || h <= 0) {
         InfoWindow("Invalid image dimensions");
         return;
@@ -103,6 +104,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
     image_data activeImage = displayPNG(path); // metadata only
     if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) {
         InfoWindow("Failed to open Image!");
+        if (fail) { *fail = true; }
         return;
     }
     int imageW = activeImage.srcwidth;
@@ -116,7 +118,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
                           activeImage.buffer);
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); }
+        else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
         return;
     }
 
@@ -131,7 +133,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             }
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); }
+        else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
 
         return;
     }
@@ -149,7 +151,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
 
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); }
+        else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
         return;
     }
     case IMG_STRETCHED: {
@@ -158,7 +160,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             tft.pushImage(0, 0, w, h, activeImage.buffer);
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); }
+        else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
         return;
     }
     case IMG_FIT_HORIZONTALY:
@@ -176,9 +178,9 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
 
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); }
+        else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
         return;
     }
-    default: InfoWindow("Invalid image Mode (" + NString((int)mode) + ")"); break;
+    default: if (fail) { *fail = true; } InfoWindow("Invalid image Mode (" + NString((int)mode) + ")"); break;
     }
 }

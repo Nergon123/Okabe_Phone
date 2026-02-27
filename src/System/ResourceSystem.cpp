@@ -1,5 +1,6 @@
 #include "ResourceSystem.h"
 #include "Generic.h"
+#include "Screens/ImageViewer.h"
 Coords czero = {0, 0};
 Coords cnone = {-1, -1};
 
@@ -201,4 +202,12 @@ void ResourceSystem::CopyToRam(bool checksum) {
 
 ResourceSystem res;
 
-void drawWallpaper() { res.DrawImage(R_DEFAULT_WALLPAPER); }
+void drawWallpaper() { 
+    preferences.begin("settings", true);
+    NString wpImage = preferences.getString("BG", "DEFAULT");
+    ImageMode wpMode = (ImageMode)preferences.getInt("BGmode");
+    if(wpImage == "DEFAULT")
+        res.DrawImage(R_DEFAULT_WALLPAPER);
+    else
+        drawImageWithMode(wpImage, wpMode, 0, 26);
+}
