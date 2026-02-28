@@ -86,7 +86,7 @@ void MainMenu() {
     }
 }
 
-char weekday[7][6] = {"(MON)", "(TUE)", "(WED)", "(THU)", "(FRI)", "(SAT)", "(SUN)"};
+char weekday[7][6] = {"(SUN)", "(TUE)", "(WED)", "(THU)", "(FRI)", "(SAT)", "(MON)"};
 
 // Function to show the main screen, root screen
 void MainScreen() {
@@ -101,7 +101,7 @@ void MainScreen() {
     int    lastMinute = sbtime.tm_min;
     tft.setCursor(24, 56);
     tft.setTextColor(TFT_WHITE);
-    tft.printf("%02d/%02d %s", sbtime.tm_mday, sbtime.tm_mon, weekday[sbtime.tm_wday-1]);
+    tft.printf("%02d/%02d %s", sbtime.tm_mday, sbtime.tm_mon, weekday[sbtime.tm_wday]);
     res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_hour/10, {24, 62}); // First digit of the hours
     res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_hour%10, {46, 62}); // Second digit of the hours
     res.DrawImage(R_OUTGOING_CALL_FONT, 14, {68, 62}); // :
@@ -119,7 +119,7 @@ void MainScreen() {
             int    lastMinute = sbtime.tm_min;
             tft.setCursor(24, 56);
             tft.setTextColor(TFT_WHITE);
-            tft.printf("%02d/%02d %s", sbtime.tm_mday, sbtime.tm_mon, weekday[sbtime.tm_wday-1]);
+            tft.printf("%02d/%02d %s", sbtime.tm_mday, sbtime.tm_mon, weekday[sbtime.tm_wday]);
             res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_hour/10, {24, 62}); // First digit of the hours
             res.DrawImage(R_OUTGOING_CALL_FONT, sbtime.tm_hour%10, {46, 62}); // Second digit of the hours
             res.DrawImage(R_OUTGOING_CALL_FONT, 14, {68, 62}); // :

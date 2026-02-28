@@ -196,8 +196,10 @@ void setTime() {
     bool renderall = true;
     int  direction = LEFT;
     while (!exit) {
+        int dayMax = (tm_time.tm_mon == 2)?((!tm_time.tm_year % 4)?29:28):((tm_time.tm_mon < 8)?30+(tm_time.tm_mon % 2):31-(tm_time.tm_mon % 2));
+        if (tm_time.tm_mday > dayMax) { tm_time.tm_mday = dayMax; }
 
-        sNumberChange(57, 90, 25, 25, tm_time.tm_mday, 1, 31, choice == 0 && !renderall,
+        sNumberChange(57, 90, 25, 25, tm_time.tm_mday, 1, dayMax, choice == 0 && !renderall,
                       &direction);
         sNumberChange(93, 90, 25, 25, tm_time.tm_mon, 1, 12, choice == 1 && !renderall,
                       &direction);
