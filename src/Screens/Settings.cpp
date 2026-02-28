@@ -106,6 +106,7 @@ void changeWallpaper() {
                 preferences.begin("settings");
                 preferences.putString("BG", "DEFAULT");
                 preferences.end();
+                menuSelection = LISTMENU_EXIT;
                 break;
             case 1:
                 const NString wallpaperModes[] = {"CENTERED", "TILED", "FILLED", "STRETCHED", "FIT_HORIZONTALY", "FIT_VERTICALY"};

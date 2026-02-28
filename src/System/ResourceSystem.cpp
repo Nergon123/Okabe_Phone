@@ -208,6 +208,8 @@ void drawWallpaper() {
     ImageMode wpMode = (ImageMode)preferences.getInt("BGmode");
     if(wpImage == "DEFAULT")
         res.DrawImage(R_DEFAULT_WALLPAPER);
-    else
+    else {
         drawImageWithMode(wpImage, wpMode, 0, 26);
+        tft.resetViewport();
+    }
 }
