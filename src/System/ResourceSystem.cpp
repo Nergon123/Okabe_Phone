@@ -210,6 +210,5 @@ void drawWallpaper() {
         res.DrawImage(R_DEFAULT_WALLPAPER);
     else {
         drawImageWithMode(wpImage, wpMode, 0, 26);
-        tft.resetViewport();
     }
 }

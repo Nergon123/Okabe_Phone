@@ -119,6 +119,8 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h,
             free(activeImage.buffer);
         }
         else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
+
+        tft.resetViewport();
         return;
     }
 
@@ -135,6 +137,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h,
         }
         else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
 
+        tft.resetViewport();
         return;
     }
     case IMG_FILLED: {
@@ -152,6 +155,8 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h,
             free(activeImage.buffer);
         }
         else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
+        
+        tft.resetViewport();
         return;
     }
     case IMG_STRETCHED: {
@@ -161,6 +166,8 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h,
             free(activeImage.buffer);
         }
         else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
+        
+        tft.resetViewport();
         return;
     }
     case IMG_FIT_HORIZONTALY:
@@ -179,8 +186,11 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h,
             free(activeImage.buffer);
         }
         else { if (fail) { *fail = true; } InfoWindow("Error when opening file."); }
+        
+        tft.resetViewport();
         return;
     }
     default: if (fail) { *fail = true; } InfoWindow("Invalid image Mode (" + NString((int)mode) + ")"); break;
     }
+    tft.resetViewport();
 }
