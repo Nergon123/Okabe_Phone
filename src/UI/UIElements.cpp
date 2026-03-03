@@ -280,7 +280,6 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                          if(content.charAt(cursorPos-1) <= 0x7F)  { cursorPos -= 1; }
                     else if(content.charAt(cursorPos-2) <= 0x07)  { cursorPos -= 2; }
                     else if(content.charAt(cursorPos-2) <= 0xFF)  { cursorPos -= 3; }
-                    Serial.println(cursorPos);
                 }
                 break;
             case RIGHT:
@@ -293,7 +292,6 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                     const char * temp2 = tft.utf8_decode(temp, &character);
                     cursorPos += temp2 - temp;
                 }
-                Serial.println(cursorPos);
                 break;
             case UP:
                 if (direction) { *direction = UP; }
