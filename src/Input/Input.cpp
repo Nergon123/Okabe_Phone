@@ -103,7 +103,7 @@ void numberInput(char first) {
  * @param text text to be displayed
  * @param pos selected character position
  */
-void showText(const char *text, int pos) {
+void showText(const char *text, const char * pos) {
     Viewport      vp       = tft.getViewport();
     bool          viewport = false;
     RenderTarget *before   = tft.activeRenderTarget;
@@ -115,26 +115,93 @@ void showText(const char *text, int pos) {
 
     int pfont     = currentFont;
     int textColor = tft.textcolor;
-    int textSize  = tft.textsize;
 
-    changeFont(0);
-    tft.setTextSize(2);
+    changeFont(1);
     tft.setCursor(0, INPUT_LOCATION_Y);
-
-    for (int i = 0; text[i] != 0; i++) {
-        if (i != pos) { tft.setTextColor(0xFFFF, 0, true); }
+    const char *str = text;
+    while (*str) {
+        if (str != pos) { tft.setTextColor(0xFFFF, 0, true); }
         else { tft.setTextColor(0xFFFF, 0x001F, true); }
-        if (text[i] == '\n') { tft.print("NL"); }
-        else if (text[i] == '\b') { tft.print("<-"); }
-        else { tft.print(text[i]); }
+        if (str[0] == '\n') { tft.print("NL"); }
+        else if (str[0] == '\b') { tft.print("<-"); }
+        else {
+            uint32_t charcode;
+            str = tft.utf8_decode(str, &charcode);
+            tft.print(charcode);
+        }
     }
 
     tft.setTextColor(textColor);
     changeFont(pfont);
-    tft.setTextSize(textSize);
     if (viewport) { tft.setViewport(vp); }
     tft.setRenderTarget(before);
     currentRenderTarget->present();
+}
+
+void showTextPreview(const char *text, const char * pos) {
+    Viewport      vp       = tft.getViewport();
+    bool          viewport = false;
+    RenderTarget *before   = tft.activeRenderTarget;
+    tft.setRenderTarget(currentRenderTarget);
+    if (vp.h < 320) {
+        tft.resetViewport();
+        viewport = true;
+    }
+
+    int pfont     = currentFont;
+    int textColor = tft.textcolor;
+
+    changeFont(3);
+    const char *str = text;
+    while (*str) {
+        if (str == pos) {
+            tft.setTextColor(0xFFFF, 0x001F, true);
+            if (str[0] == '\n') { tft.print("NL"); }
+            else if (str[0] == '\b') { tft.print("<-"); }
+            else {
+                uint32_t charcode;
+                str = tft.utf8_decode(str, &charcode);
+                tft.print(charcode);
+            }
+            break;
+        }
+        else {
+            uint32_t charcode;
+            str = tft.utf8_decode(str, &charcode);
+        }
+    }
+
+    tft.setTextColor(textColor);
+    changeFont(pfont);
+    if (viewport) { tft.setViewport(vp); }
+    tft.setRenderTarget(before);
+    currentRenderTarget->present();
+}
+
+
+char* utf8_encode(uint32_t cp, char* out) {
+    if (cp <= 0x7F) {
+        out[0] = cp;
+        return out + 1;
+    }
+    else if (cp <= 0x7FF) {
+        out[0] = 0xC0 | (cp >> 6);
+        out[1] = 0x80 | (cp & 0x3F);
+        return out + 2;
+    }
+    else if (cp <= 0xFFFF) {
+        out[0] = 0xE0 | (cp >> 12);
+        out[1] = 0x80 | ((cp >> 6) & 0x3F);
+        out[2] = 0x80 | (cp & 0x3F);
+        return out + 3;
+    }
+    else {
+        out[0] = 0xF0 | (cp >> 18);
+        out[1] = 0x80 | ((cp >> 12) & 0x3F);
+        out[2] = 0x80 | ((cp >> 6) & 0x3F);
+        out[3] = 0x80 | (cp & 0x3F);
+        return out + 4;
+    }
 }
 
 /*
@@ -144,25 +211,37 @@ void showText(const char *text, int pos) {
  * @param nonl disable new line
  * @return selected character
  */
-char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *retButton) {
+NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, int *retButton, bool dontRedraw) {
     if (input == -1) { return 0; }
     currentRenderTarget->setUseBuffer(false);
-    char buttons[12][12] = {" \b0+@\n", "1,.?!()",   "2ABCabc", "3DEFdef",   "4GHIghi", "5JKLjkl",
-                            "6MNOmno",  "7PQRSpqrs", "8TUVtuv", "9WXYZwxyz", "*",       "#"};
+    char buttons[5][10][32] = {
+        {" 0+\n",             ".,?!'\"1-()@/:_",        "abcà2",          "defèé3",       "ghiì4",
+         "jkl5",              "mnoò6",                 "pqrs7",          "tuvù8",        "wxyz9"},
 
-    if (nonl) { buttons[0][5] = '\0'; }
-    if (onlynumbers) {
-        buttons[0][2] = '\0';
-        for (int i = 1; i < 12; i++) { buttons[i][1] = '\0'; }
-    }
+        {" 0+\n",             ".,?!'\"1-()@/:_",        "ABCÀ2",          "DEFÈÉ3",       "GHIÌ4",
+         "JKL5",              "MNOÒ6",                 "PQRS7",          "TUVÙ8",        "WXYZ9"},
+
+        {"0",                 "1",                     "2",              "3",            "4",   
+         "5",                 "6",                     "7",              "8",            "9"},
+
+        {"わをんー～　\n",    "あいうえおぁぃぅぇぉ",  "かきくけこ",    "さしすせそ",    "たちつてとっ",
+         "なにぬねの",        "はひふへほ",            "まみむめも",    "やゆよゃゅょ",  "らりるれろ"},
+
+        {"ワヲンー～　\n",     "アイウエオァィゥェォ", "カキクケコ",    "サシスセソ",    "タチツテトッ",
+         "ナニヌネノ",         "ハヒフヘホ",           "マミムメモ",    "ヤユヨャュョ",  "ラリルレロ"}
+    };
+                                 // * = ﾞﾟ 
+
+    if (nonl) {buttons[SMALL_LATIN][0][3] = '\0'; buttons[CAPS_LATIN][0][3] = '\0'; buttons[HIRAGANA][0][18] = '\0'; buttons[KATAKANA][0][18] = '\0';}
+    
     bool first = true;
     // int  sizes[12];
-    char result       = 0;
-    int  pos          = 0;
-    int  currentIndex = input >= '0' && input <= '9' ? input - 48
-                        : input == '*'               ? 10
-                        : input == '#'               ? 11
-                                                     : -1;
+    uint32_t  result;
+    const char *pos          = 0;
+    int         currentIndex = input >= '0' && input <= '9' ? input - 48
+                               : input == '*'               ? 10
+                               : input == '#'               ? 11
+                                                            : -1;
 
     if (currentIndex == -1) {
         ESP_LOGI(ITAG, "UNKNOWN BUTTON:%d", input);
@@ -177,7 +256,7 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     //     b = 0;
     // }
     ulong mil = hw->millis();
-    pos       = -1;
+    pos       = buttons[useCharset][currentIndex];
     int curx  = tft.getCursorX();
     int cury  = tft.getCursorY();
     while (hw->millis() - mil < DIB_MS) {
@@ -186,24 +265,28 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
         int c = buttonsHelding();
 
         if (c == input || first) {
-            if (pos < (int)(strchr(buttons[currentIndex], '\0') - buttons[currentIndex])) {
+            if (pos < strchr(buttons[useCharset][currentIndex], '\0')) {
                 mil = hw->millis();
-                pos++;
-                result = buttons[currentIndex][pos];
-                showText(buttons[currentIndex], pos);
-                tft.setCursor(curx, cury);
+                showText(buttons[useCharset][currentIndex], pos);
+                tft.setCursor(curX, curY); // Coordinates based on screen's origin
+                // showTextPreview(buttons[useCharset][currentIndex], pos);
+                tft.setCursor(curx, cury); // Coordinates based on viewport's origin
+                pos = tft.utf8_decode(pos, &result);
+                if(useCharset == NUMBERS) { mil = DIB_MS + 1; }
             }
             else {
                 mil    = hw->millis();
-                pos    = 0;
-                result = buttons[currentIndex][pos];
-                showText(buttons[currentIndex], pos);
-                tft.setCursor(curx, cury);
+                pos = buttons[useCharset][currentIndex];
+                showText(buttons[useCharset][currentIndex], pos);
+                tft.setCursor(curX, curY); // Coordinates based on screen's origin
+                // showTextPreview(buttons[useCharset][currentIndex], pos);
+                tft.setCursor(curx, cury); // Coordinates based on viewport's origin
+                pos = tft.utf8_decode(pos, &result);
             }
         }
         if (c != input && c != -1) {
             mil = DIB_MS + 1;
-            if (!retButton) { retButton = new int(c); }
+            if (retButton) { *retButton = c; }
         }
         first = false;
     }
@@ -220,7 +303,10 @@ char textInput(int input, bool onlynumbers, bool nonl, bool dontRedraw, int *ret
     currentRenderTarget->present();
     if (result == '\r') { return 0; }
 
-    return result;
+    char selectedChar[5];
+    char* end = utf8_encode(result, selectedChar);
+    *end = '\0';
+    return NString(selectedChar);
     (void)dontRedraw;
 }
 
@@ -317,7 +403,9 @@ int buttonsHelding(bool _idle) {
         }
     }
     switch (result) {
+    //case 1: return LEFTFN;
     case 2: return UP;
+    //case 3: return RIGHTFN;
     case 4: return LEFT;
     case 5: return SELECT;
     case 6: return RIGHT;

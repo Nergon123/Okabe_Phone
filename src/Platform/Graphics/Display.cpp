@@ -178,6 +178,17 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
     }
 }
 
+const GFXfont *TFT_STUB::getFont(uint32_t c, font_t font_) const {
+    if (font_.isGFXFontSet && font_.font_set && font_.font_set_count) {
+        for (int i = 0; i < font_.font_set_count; i++) {
+            const GFXfont *f = font_.font_set[i];
+            if (!f) { continue; }
+            if (c >= f->first && c <= f->last) { return f; }
+        }
+    }
+    return nullptr;
+}
+
 void TFT_STUB::renderGlyph(uint32_t c, int16_t x, int16_t y) {
     if (!activeRenderTarget) { return; }
 
@@ -210,17 +221,7 @@ void TFT_STUB::renderGlyph(uint32_t c, int16_t x, int16_t y) {
     const GFXfont *fnt = nullptr;
 
     // Pick font from font set first
-    if (currentFont.isGFXFontSet && currentFont.font_set && currentFont.font_set_count) {
-        for (int i = 0; i < currentFont.font_set_count; i++) {
-            const GFXfont *f = currentFont.font_set[i];
-            if (!f) { continue; }
-            if (c >= f->first && c <= f->last) {
-                fnt = f;
-
-                break;
-            }
-        }
-    }
+    fnt = getFont(c, currentFont);
 
     // Fallback to main font
     if (!fnt && currentFont.font) { fnt = currentFont.font; }
@@ -233,7 +234,7 @@ void TFT_STUB::renderGlyph(uint32_t c, int16_t x, int16_t y) {
 
     // Clamp c to font range
     if (c < fnt->first || c > fnt->last) {
-        ESP_LOGW("FONT", "UNKNOWN CHAR 0x%04X (%c) (%04X-%04X)", c, c,fnt->first,fnt->last);
+        ESP_LOGW("FONT", "UNKNOWN CHAR 0x%04X (%c) (%04X-%04X)", c, c, fnt->first, fnt->last);
         c = '?';
     }
     c -= fnt->first;
@@ -299,24 +300,28 @@ void TFT_STUB::renderGlyph(uint32_t c, int16_t x, int16_t y) {
 
 int TFT_STUB::textWidth(const std::string &s) const {
     if (!currentFont.isGFX || !currentFont.font) {
-        // Classic 5x7 font
-        return static_cast<int>(s.length() * 6 * textsize); // 5 pixels + 1 spacing
+        return static_cast<int>(s.length() * 6 * textsize);
     }
-    else {
-        // GFX font
-        int            w   = 0;
-        const GFXfont *gfx = currentFont.font;
-        for (char c : s) {
-            if (c < gfx->first || c > gfx->last) {
-                continue; // skip missing chars
-            }
-            GFXglyph *glyph = &gfx->glyph[c - gfx->first];
-            w += glyph->xAdvance * textsize;
-        }
-        return w;
-    }
-}
 
+    int w = 0;
+
+    const char *p = s.c_str();
+    uint32_t    cp;
+
+    while (*p) {
+        const char    *next = utf8_decode(p, &cp);
+        const GFXfont *gfx  = getFont(cp, currentFont);
+        if (gfx) {
+            if (cp >= gfx->first && cp <= gfx->last) {
+                GFXglyph *glyph = &gfx->glyph[cp - gfx->first];
+                w += glyph->xAdvance * textsize;
+            }
+        }
+        p = next;
+    }
+
+    return w;
+}
 int TFT_STUB::fontHeight() const {
     if (!currentFont.isGFX || !currentFont.font) {
         // Classic 5x7 font
@@ -355,7 +360,7 @@ void TFT_STUB::printf(const char *fmt, ...) {
     print(buf);
 }
 
-const char *TFT_STUB::utf8_decode(const char *s, uint32_t *out) {
+const char *TFT_STUB::utf8_decode(const char *s, uint32_t *out) const {
     uint8_t b0 = (uint8_t)s[0];
 
     if (b0 < 0x80) {
