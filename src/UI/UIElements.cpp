@@ -1,9 +1,19 @@
 #include "UIElements.h"
 #include <functional>
-const uint16_t clr_selected   = TFT_RED;
-const uint16_t clr_normal     = TFT_BLACK;
-const uint16_t clr_disabled   = TFT_LIGHTGREY;
-const uint16_t clr_background = TFT_WHITE;
+const uint16_t clr_selected    = TFT_RED;
+const uint16_t clr_normal      = TFT_BLACK;
+const uint16_t clr_disabled    = TFT_LIGHTGREY;
+const uint16_t clr_background  = TFT_LIGHTGREY;
+const uint16_t clr_border_up   = 0xDEDB;
+const uint16_t clr_border_down = TFT_DARKGREY;
+
+#define BORDER_WIDTH 2
+void drawBorders(int x, int y, int w, int h, uint16_t upcolor, uint16_t downcolor) {
+    tft.fillRect(x, y, w, BORDER_WIDTH, upcolor);                      // Top border
+    tft.fillRect(x, y + h - BORDER_WIDTH, w, BORDER_WIDTH, downcolor); // Bottom border
+    tft.fillRect(x, y, BORDER_WIDTH, h, upcolor);                      // Left border
+    tft.fillRect(x + w - BORDER_WIDTH, y, BORDER_WIDTH, h, downcolor); // Right border
+}
 
 // ## UI Button
 //  Part of local "UI Kit"
@@ -23,6 +33,7 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
         tft.setTextColor(clr_selected);
         tft.drawRect(xpos, ypos, w, h, clr_selected);
     }
+    drawBorders(xpos, ypos, w, h, clr_border_down, clr_border_up);
 
     int x = (w - tft.textWidth(title.c_str())) / 2;
     int y = h - (h - tft.fontHeight()) - 3;
@@ -42,6 +53,8 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
     tft.setTextColor(clr_normal);
     tft.fillRect(xpos, ypos, w, h, clr_background);
     tft.drawRect(xpos, ypos, w, h, clr_normal);
+    drawBorders(xpos, ypos, w, h, clr_border_up, clr_border_down);
+
     tft.setCursor(xpos + x, ypos + y);
     changeFont(1);
     tft.print(title);
@@ -95,6 +108,7 @@ void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool 
         tft.setCursor(w / 2 - width / 2, h / 2 + height / 4);
         tft.drawRect(0, 0, w, h, selected ? clr_selected : clr_normal);
         tft.fillRect(1, 1, w - 2, h - 2, clr_background);
+        drawBorders(0, 0, w, h, clr_border_down, clr_border_up);
         tft.print(text);
     };
     DrawBox();
@@ -164,7 +178,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     // Viewport for the input line
 
     auto redrawField = [&](bool drawCursor) {
-        tft.setViewport(boxX, ypos-viewY, boxWidth, boxHeight+viewY);
+        tft.setViewport(boxX, ypos - viewY, boxWidth, boxHeight + viewY);
         tft.fillRect(viewX, viewY, boxWidth, boxHeight, clr_background);
         tft.drawRect(viewX, viewY, boxWidth, boxHeight, selected ? clr_selected : clr_normal);
 
@@ -172,8 +186,9 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
         changeFont(3);
         int pixelLen = tft.textWidth(content.substring(0, cursorPos)) + 15;
         c_offset     = (pixelLen > boxWidth) ? (boxWidth - pixelLen) : 0;
-        tft.setCursor(5 + c_offset, yoff+viewY);
+        tft.setCursor(5 + c_offset, yoff + viewY);
         tft.setTextColor(clr_normal);
+        drawBorders(viewX, viewY, boxWidth, boxHeight, clr_border_down, clr_border_up);
         tft.print(content);
 
         if (selected && drawCursor) {
@@ -195,41 +210,28 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     //      EDIT MODE
     // ===========================
 
-    bool     exit        = false;
-    bool     dirty       = true; // force one draw
-    int      lastCursor  = cursorPos;
+    bool    exit        = false;
+    bool    dirty       = true; // force one draw
+    int     lastCursor  = cursorPos;
     NString lastContent = content;
 
-    uint8_t selectedCharset = AUTO_CAPS;
+    uint8_t selectedCharset  = AUTO_CAPS;
     bool    canChangeCharset = true;
-    uint8_t useCharset = CAPS_LATIN;
-    if(onlynumbers) {selectedCharset = NUMBERS; canChangeCharset = false;}
-    res.DrawImage(R_TEXTINPUT_CHARSETS_BG, selectedCharset, {boxWidth-44, 0});
+    uint8_t useCharset       = CAPS_LATIN;
+    if (onlynumbers) {
+        selectedCharset  = NUMBERS;
+        canChangeCharset = false;
+    }
+    res.DrawImage(R_TEXTINPUT_CHARSETS_BG, selectedCharset, {boxWidth - 44, 0});
 
-    char dakuonModifier[2][45][4] {
-        {
-            "か","き","く","け","こ",
-            "さ","し","す","せ","そ",
-            "た","ち","つ","て","と",
-            "は","ひ","ふ","へ","ほ",
-            "が","ぎ","ぐ","げ","ご",
-            "ざ","じ","ず","ぜ","ぞ",
-            "だ","ぢ","づ","で","ど",
-            "ば","び","ぶ","べ","ぼ",
-            "ぱ","ぴ","ぷ","ぺ","ぽ"
-        },
-        {
-            "カ","キ","ク","ケ","コ",
-            "サ","シ","ス","セ","ソ",
-            "タ","チ","ツ","テ","ト",
-            "ハ","ヒ","フ","ヘ","ホ",
-            "ガ","ギ","グ","ゲ","ゴ",
-            "ザ","ジ","ズ","ゼ","ゾ",
-            "タ","チ","ツ","テ","ト",
-            "バ","ビ","ブ","ベ","ボ",
-            "パ","ピ","プ","ペ","ポ"
-        }
-    };
+    char dakuonModifier[2][45][4]{
+        {"か", "き", "く", "け", "こ", "さ", "し", "す", "せ", "そ", "た", "ち", "つ", "て", "と",
+         "は", "ひ", "ふ", "へ", "ほ", "が", "ぎ", "ぐ", "げ", "ご", "ざ", "じ", "ず", "ぜ", "ぞ",
+         "だ", "ぢ", "づ", "で", "ど", "ば", "び", "ぶ", "べ", "ぼ", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"},
+        {"カ", "キ", "ク", "ケ", "コ", "サ", "シ", "ス", "セ", "ソ", "タ", "チ",
+         "ツ", "テ", "ト", "ハ", "ヒ", "フ", "ヘ", "ホ", "ガ", "ギ", "グ", "ゲ",
+         "ゴ", "ザ", "ジ", "ズ", "ゼ", "ゾ", "タ", "チ", "ツ", "テ", "ト", "バ",
+         "ビ", "ブ", "ベ", "ボ", "パ", "ピ", "プ", "ペ", "ポ"}};
 
     int ct = -1;
 
@@ -242,24 +244,30 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
         if (c == -1) { continue; }
         else {
             if (selectedCharset == AUTO_CAPS) {
-                if(cursorPos == 0 ||
-                   (cursorPos >= 2 && content[cursorPos-2] == '.' && content[cursorPos-1] == ' ') || // Check if the two chars before the cursor are ". "
-                   (cursorPos >= 1 && content[cursorPos-1] == '\n')                                  // Check if it's the first char in the line
-                ) { useCharset = CAPS_LATIN; }
+                if (cursorPos == 0 ||
+                    (cursorPos >= 2 && content[cursorPos - 2] == '.' &&
+                     content[cursorPos - 1] ==
+                         ' ') || // Check if the two chars before the cursor are ". "
+                    (cursorPos >= 1 &&
+                     content[cursorPos - 1] == '\n') // Check if it's the first char in the line
+                ) {
+                    useCharset = CAPS_LATIN;
+                }
                 else { useCharset = SMALL_LATIN; }
             }
             else { useCharset = selectedCharset; }
         }
-        
+
         // Handle number input
         if (c >= '0' && c <= '9') {
             int pixelLen = tft.textWidth(content.substring(0, cursorPos)) + 15;
             c_offset     = (pixelLen > boxWidth) ? (boxWidth - pixelLen) : 0;
-            int cx = tft.textWidth(content.substring(0, cursorPos)) + 5 + c_offset;
-            NString TI = textInput(c, useCharset, cx+boxX, (yoff/2)+viewY+ypos-3, true, &ct);
+            int     cx   = tft.textWidth(content.substring(0, cursorPos)) + 5 + c_offset;
+            NString TI =
+                textInput(c, useCharset, cx + boxX, (yoff / 2) + viewY + ypos - 3, true, &ct);
             if (TI != '\0' && TI != '\n') {
                 if (TI == '\b') {
-                    uint8_t deletedCharLength = content[cursorPos-1] > 0x7E ? 2 : 1;
+                    uint8_t deletedCharLength = content[cursorPos - 1] > 0x7E ? 2 : 1;
                     if (cursorPos > 0) {
                         content = content.substring(0, cursorPos - deletedCharLength) +
                                   content.substring(cursorPos, content.length());
@@ -276,20 +284,19 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
         else {
             switch (c) {
             case LEFT:
-                if (cursorPos > 0) { 
-                         if(content.charAt(cursorPos-1) <= 0x7F)  { cursorPos -= 1; }
-                    else if(content.charAt(cursorPos-2) <= 0x07)  { cursorPos -= 2; }
-                    else if(content.charAt(cursorPos-2) <= 0xFF)  { cursorPos -= 3; }
+                if (cursorPos > 0) {
+                    if (content.charAt(cursorPos - 1) <= 0x7F) { cursorPos -= 1; }
+                    else if (content.charAt(cursorPos - 2) <= 0x07) { cursorPos -= 2; }
+                    else if (content.charAt(cursorPos - 2) <= 0xFF) { cursorPos -= 3; }
                 }
                 break;
             case RIGHT:
-                if (cursorPos < (int)content.length())
-                {
-                    char buf[content.length()+1];
-                    content.toCharArray(buf, content.length()+1);
-                    uint32_t character;
-                    const char * temp  = buf + cursorPos;
-                    const char * temp2 = tft.utf8_decode(temp, &character);
+                if (cursorPos < (int)content.length()) {
+                    char buf[content.length() + 1];
+                    content.toCharArray(buf, content.length() + 1);
+                    uint32_t    character;
+                    const char *temp  = buf + cursorPos;
+                    const char *temp2 = tft.utf8_decode(temp, &character);
                     cursorPos += temp2 - temp;
                 }
                 break;
@@ -302,49 +309,54 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                 exit = true;
                 break;
             case '*':
-                if(selectedCharset == HIRAGANA || selectedCharset == KATAKANA)
-                {
-                    NString previousKana = content.substring(cursorPos-3, cursorPos);
-                    char buffer[4] = "   ";
+                if (selectedCharset == HIRAGANA || selectedCharset == KATAKANA) {
+                    NString previousKana = content.substring(cursorPos - 3, cursorPos);
+                    char    buffer[4]    = "   ";
                     previousKana.toCharArray(buffer, 4);
-                    
+
                     int charAt = -1;
-                    for(int i = 0; i < 45; i++) // Find the character in the array
+                    for (int i = 0; i < 45; i++) // Find the character in the array
                     {
-                        if(buffer[0] == dakuonModifier[selectedCharset-3][i][0]
-                           && buffer[1] == dakuonModifier[selectedCharset-3][i][1]
-                           && buffer[2] == dakuonModifier[selectedCharset-3][i][2])
-                        {
+                        if (buffer[0] == dakuonModifier[selectedCharset - 3][i][0] &&
+                            buffer[1] == dakuonModifier[selectedCharset - 3][i][1] &&
+                            buffer[2] == dakuonModifier[selectedCharset - 3][i][2]) {
                             charAt = i;
                             break;
                         }
                     }
-                    switch(charAt)
-                    {
+                    switch (charAt) {
                     case 0 ... 19:
-                        content = content.substring(0, cursorPos-3) + dakuonModifier[selectedCharset-3][charAt + 20] + content.substring(cursorPos, content.length());
+                        content = content.substring(0, cursorPos - 3) +
+                                  dakuonModifier[selectedCharset - 3][charAt + 20] +
+                                  content.substring(cursorPos, content.length());
                         break;
-                    
+
                     case 20 ... 34:
-                        content = content.substring(0, cursorPos-3) + dakuonModifier[selectedCharset-3][charAt - 20] + content.substring(cursorPos, content.length());
+                        content = content.substring(0, cursorPos - 3) +
+                                  dakuonModifier[selectedCharset - 3][charAt - 20] +
+                                  content.substring(cursorPos, content.length());
                         break;
-                    
+
                     case 35 ... 39:
-                        content = content.substring(0, cursorPos-3) + dakuonModifier[selectedCharset-3][charAt + 5] + content.substring(cursorPos, content.length());
+                        content = content.substring(0, cursorPos - 3) +
+                                  dakuonModifier[selectedCharset - 3][charAt + 5] +
+                                  content.substring(cursorPos, content.length());
                         break;
-                    
+
                     case 40 ... 44:
-                        content = content.substring(0, cursorPos-3) + dakuonModifier[selectedCharset-3][charAt - 25] + content.substring(cursorPos, content.length());
+                        content = content.substring(0, cursorPos - 3) +
+                                  dakuonModifier[selectedCharset - 3][charAt - 25] +
+                                  content.substring(cursorPos, content.length());
                         break;
                     }
                 }
                 dirty = true;
                 break;
             case '#':
-                if(canChangeCharset) {
+                if (canChangeCharset) {
                     selectedCharset++;
                     selectedCharset %= 6;
-                    res.DrawImage(R_TEXTINPUT_CHARSETS_BG, selectedCharset, {boxWidth-44, 0});
+                    res.DrawImage(R_TEXTINPUT_CHARSETS_BG, selectedCharset, {boxWidth - 44, 0});
                     dirty = true;
                 }
                 break;
@@ -367,7 +379,8 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
     }
     selected = false;
     redrawField(false);
-    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {boxWidth-44, 0}, {boxX+boxWidth-44, ypos}, {boxX+boxWidth, ypos+14});
+    res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {boxWidth - 44, 0}, {boxX + boxWidth - 44, ypos},
+                  {boxX + boxWidth, ypos + 14});
     tft.resetViewport();
     tft.setCursor(5, ypos - 5);
     changeFont(1);
@@ -381,7 +394,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
 
 // ## Dynamic Input Field Screen
 bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selected,
-                  NString confirmbtn, NString cancelbtn) {
+                 NString confirmbtn, NString cancelbtn) {
     res.DrawImage(R_LIST_MENU_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_BACKGROUND);
     res.DrawImage(R_LIST_HEADER_ICONS, LM_SETTINGS);
