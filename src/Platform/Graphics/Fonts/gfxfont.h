@@ -1,7 +1,6 @@
 // Adopted by Bodmer to support TFT_eSPI library.
 
-// Font structures for newer Adafruit_GFX (1.1 and later).
-// Example fonts are included in 'Fonts' directory.
+
 #include <Defines.h>
 #include <stdint.h>
 #ifndef _GFXFONT_H_
