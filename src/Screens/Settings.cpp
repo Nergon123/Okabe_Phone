@@ -19,9 +19,51 @@ void connectivityMenu() {
     }
 }
 
+void inputLayouts() {
+    std::vector<mOption> options;
+    for (KeypadLayout keylayout : keypadLayouts) {
+        options.push_back(
+            mOption(keylayout.FullName, Image(R_FILE_MANAGER_ICONS),
+                    keylayout.enabled ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED, nullptr,
+                    keylayout.id));
+    }
+
+    int selection = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        selection =
+            listMenu(options, options.size(), false, LM_SETTINGS, "Layouts", false, selection);
+        if (selection >= 0) {
+            if (options[selection].data == keypadLayouts[selection].id) {
+                keypadLayouts[selection].enabled = !keypadLayouts[selection].enabled;
+                options[selection].icon_index    = keypadLayouts[selection].enabled
+                                                       ? LM_ICO_CHECK_CHECKED
+                                                       : LM_ICO_CHECK_UNCHECKED;
+            }
+        }
+    }
+}
+void inputTimings() {}
+
+void inputSettings() {
+    NString options[] = {
+        "Layouts",
+        "Timings",
+    };
+    int selection = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+        selection = choiceMenu(options, ArraySize(options), false);
+        switch (selection) {
+        case 0: inputLayouts(); break;
+        case 1: inputTimings(); break;
+        }
+    }
+}
 void systemSettings() {
     NString options[] = {
         "Set Date & Time",
+        "Input Settings",
     };
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
@@ -30,6 +72,7 @@ void systemSettings() {
         selection = choiceMenu(options, ArraySize(options), false);
         switch (selection) {
         case 0: setTime(); break;
+        case 1: inputSettings(); break;
         }
     }
 }

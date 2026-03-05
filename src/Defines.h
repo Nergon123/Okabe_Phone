@@ -1,7 +1,7 @@
 #pragma once
-#define HOSTNAME         "okabe_phone"
-#define PRODUCTNAME      "OkabePhone"
-#define FIRMVER          "0.2.0 ALPHA"
+#define HOSTNAME        "okabe_phone"
+#define PRODUCTNAME     "OkabePhone"
+#define FIRMVER         "0.2.0 ALPHA"
 #define REPOSITORY_LINK "https://github.com/Nergon123/Okabe_Phone"
 
 #define LISTMENU_CALL    -4
@@ -111,7 +111,11 @@ enum charsets {
     NUMBERS     = 2,
     HIRAGANA    = 3,
     KATAKANA    = 4,
-    AUTO_CAPS   = 5
+    SMALL_UA    = 5,
+    CAPS_UA     = 6,
+    SMALL_RU    = 7,
+    CAPS_RU     = 8,
+    AUTO_CAPS 
 };
 
 // ENABLE DEVELOPER MODE//
@@ -127,4 +131,3 @@ enum charsets {
 
 // FONTS
 #define FONT0 1
-

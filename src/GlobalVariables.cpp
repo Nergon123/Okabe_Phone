@@ -61,6 +61,23 @@ NString resPath                 = "/spiffs/MAIN.nph";
 NString SPIFFSresPath           = "/MAIN.nph";
 NString lastSIMerror            = "";
 
+// NString keypadLayouts[][3] = {
+//     {"Latin","ABC","Abc"},
+//     {"ひらがな","ひら",""},
+//     {"カタカナ","カタ",""},
+//     {"Українська","УКР","Укр"},
+//     {"Русский","РУС","Рус"},
+// };
+
+std::vector<KeypadLayout> keypadLayouts = {KeypadLayout(SMALL_LATIN,
+                                             {" 0+\n", ".,?!'\"1-()@/:_", "abcà2", "defèé3",
+                                              "ghiì4", "jkl5", "mnoò6", "pqrs7", "tuvù8", "wxyz9"},
+                                             "Lowercase latin", "abc", nullptr, true),
+                                KeypadLayout(CAPS_LATIN,
+                                             {" 0+\n", ".,?!'\"1-()@/:_", "ABCÀ2", "DEFÈÉ3",
+                                              "GHIÌ4", "JKL5", "MNOÒ6", "PQRS7", "TUVÙ8", "WXYZ9"},
+                                             "Uppercase latin", "ABC", nullptr, true)};
+
 iHW* hw;
 
 PackageManager pm;

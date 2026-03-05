@@ -43,9 +43,23 @@ struct mOption {
     Image   image;
     uint8_t icon_index;
     void (*_function)();
+    int data;
     mOption(NString label, Image image = Image(), uint8_t icon_index = 0,
-            void (*_function)() = nullptr)
-        : label(label), image(image), icon_index(icon_index), _function(_function) {};
+            void (*_function)() = nullptr,int data = 0)
+        : label(label), image(image), icon_index(icon_index), _function(_function),data(data){};
+};
+
+struct KeypadLayout {
+    int                  id;
+    std::vector<NString> Layout;
+    NString              FullName;
+    NString              ShortName;
+    KeypadLayout*        linkedLayout;
+    bool                 enabled;
+    KeypadLayout(int id, std::vector<NString> layout, NString FullName, NString ShortName,
+                 KeypadLayout* linkedLayout = NULL, bool enabled = false)
+        : id(id), Layout(layout), FullName(FullName), ShortName(ShortName),
+          linkedLayout(linkedLayout) {};
 };
 
 // SMS status
@@ -140,6 +154,8 @@ extern std::vector<Contact> contacts;
 extern bool                 mcpexists;
 extern bool                 ip5306exists;
 extern Contact              examplecontact;
+
+extern std::vector<KeypadLayout> keypadLayouts;
 
 extern NString lastSIMerror;
 extern NString currentNumber;
