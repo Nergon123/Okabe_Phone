@@ -202,6 +202,9 @@ void ResourceSystem::CopyToRam(bool checksum) {
 
 ResourceSystem res;
 
+// TO-DO: Store wallpaper in RAM for faster drawing
+// uint16_t wallpaper[294][240];
+
 void drawWallpaper() { 
     preferences.begin("settings", true);
     NString wpImage = preferences.getString("BG", "DEFAULT");
