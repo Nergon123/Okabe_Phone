@@ -56,10 +56,11 @@ struct KeypadLayout {
     NString              ShortName;
     KeypadLayout*        linkedLayout;
     bool                 enabled;
+    bool available;
     KeypadLayout(int id, std::vector<NString> layout, NString FullName, NString ShortName,
-                 KeypadLayout* linkedLayout = NULL, bool enabled = false)
+                 KeypadLayout* linkedLayout = NULL, bool enabled = false,bool available = true)
         : id(id), Layout(layout), FullName(FullName), ShortName(ShortName),
-          linkedLayout(linkedLayout) {};
+          linkedLayout(linkedLayout),available(available) {};
 };
 
 // SMS status

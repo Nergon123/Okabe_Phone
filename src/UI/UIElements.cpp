@@ -1,4 +1,5 @@
 #include "UIElements.h"
+#include <System/UTF.h>
 #include <functional>
 const uint16_t clr_selected    = TFT_RED;
 const uint16_t clr_normal      = TFT_BLACK;
@@ -296,7 +297,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                     content.toCharArray(buf, content.length() + 1);
                     uint32_t    character;
                     const char *temp  = buf + cursorPos;
-                    const char *temp2 = tft.utf8_decode(temp, &character);
+                    const char *temp2 = utf8_decode(temp, &character);
                     cursorPos += temp2 - temp;
                 }
                 break;

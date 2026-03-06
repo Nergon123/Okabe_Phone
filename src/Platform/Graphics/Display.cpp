@@ -3,6 +3,7 @@
 // on desktop/tooling environments. Replace these with platform-specific
 // implementations when porting to embedded hardware.
 #include "Display.h"
+#include <System/UTF.h>
 
 TFT_STUB::TFT_STUB(int16_t w, int16_t h)
     : _init_w(w), _init_h(h), _w(w), _h(h), _rotation(0), _cursor_x(0), _cursor_y(0),
@@ -360,30 +361,6 @@ void TFT_STUB::printf(const char *fmt, ...) {
     print(buf);
 }
 
-const char *TFT_STUB::utf8_decode(const char *s, uint32_t *out) const {
-    uint8_t b0 = (uint8_t)s[0];
-
-    if (b0 < 0x80) {
-        *out = b0;
-        return s + 1;
-    }
-    if ((b0 & 0xE0) == 0xC0) {
-        *out = ((b0 & 0x1F) << 6) | ((uint8_t)s[1] & 0x3F);
-        return s + 2;
-    }
-    if ((b0 & 0xF0) == 0xE0) {
-        *out = ((b0 & 0x0F) << 12) | (((uint8_t)s[1] & 0x3F) << 6) | ((uint8_t)s[2] & 0x3F);
-        return s + 3;
-    }
-    if ((b0 & 0xF8) == 0xF0) {
-        *out = ((b0 & 0x07) << 18) | (((uint8_t)s[1] & 0x3F) << 12) |
-               (((uint8_t)s[2] & 0x3F) << 6) | ((uint8_t)s[3] & 0x3F);
-        return s + 4;
-    }
-
-    *out = 0xFFFD; // replacement char
-    return s + 1;
-}
 
 void TFT_STUB::print(const char *str) {
     if (!str) { return; }
