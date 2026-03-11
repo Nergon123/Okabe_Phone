@@ -178,31 +178,6 @@ void showTextPreview(const char *text, const char *pos) {
     currentRenderTarget->present();
 }
 
-char *utf8_encode(uint32_t cp, char *out) {
-    if (cp <= 0x7F) {
-        out[0] = cp;
-        return out + 1;
-    }
-    else if (cp <= 0x7FF) {
-        out[0] = 0xC0 | (cp >> 6);
-        out[1] = 0x80 | (cp & 0x3F);
-        return out + 2;
-    }
-    else if (cp <= 0xFFFF) {
-        out[0] = 0xE0 | (cp >> 12);
-        out[1] = 0x80 | ((cp >> 6) & 0x3F);
-        out[2] = 0x80 | (cp & 0x3F);
-        return out + 3;
-    }
-    else {
-        out[0] = 0xF0 | (cp >> 18);
-        out[1] = 0x80 | ((cp >> 12) & 0x3F);
-        out[2] = 0x80 | ((cp >> 6) & 0x3F);
-        out[3] = 0x80 | (cp & 0x3F);
-        return out + 4;
-    }
-}
-
 /*
  * Character selection
  * @param input pressed button
