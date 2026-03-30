@@ -3,8 +3,8 @@
 // on desktop/tooling environments. Replace these with platform-specific
 // implementations when porting to embedded hardware.
 #include "Display.h"
+#include <Platform/Graphics/Fonts/FontLoader.h>
 #include <System/UTF.h>
-
 TFT_STUB::TFT_STUB(int16_t w, int16_t h)
     : _init_w(w), _init_h(h), _w(w), _h(h), _rotation(0), _cursor_x(0), _cursor_y(0),
       _textcolor(0xFFFF) {}
@@ -179,25 +179,80 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
     }
 }
 
-const GFXfont *TFT_STUB::getFont(uint32_t c, font_t font_) const {
+fontFile_t TFT_STUB::getFont(uint32_t c, font_t font_) const {
     if (font_.isGFXFontSet && font_.font_set && font_.font_set_count) {
         for (int i = 0; i < font_.font_set_count; i++) {
-            const GFXfont *f = font_.font_set[i];
-            if (!f) { continue; }
-            if (c >= f->first && c <= f->last) { return f; }
+            FontHolder *fh = getFontHolder(font_.font_set[i].path);
+            if (!fh) { continue; }
+            for (int j = 0; j < fh->font.size(); j++) {
+                const GFXfontPacked &fnt = fh->font[j];
+
+                if (c >= fnt.first && c <= fnt.last) {
+                    ESP_LOGI("DISPLAY", "Found glyph 0x%X in font %s", c,
+                             font_.font_set[i].path.c_str());
+                    return font_.font_set[i];
+                }
+            }
         }
     }
-    return nullptr;
+    return {0, 0, NString()};
+}
+
+void TFT_STUB::drawGlyphCore(uint8_t *bitmap, uint32_t bo, uint8_t w, uint8_t h, int16_t xo,
+                             int16_t yo, uint16_t xAdvance, uint16_t yAdvance, int16_t x,
+                             int16_t y) {
+    if (_textbgopaque) {
+        uint16_t cellW = xAdvance * textsize;
+        uint16_t cellH = yAdvance * textsize;
+        fillRect(x, y - cellH, cellW, cellH, _textbgcolor);
+    }
+
+    uint16_t hpc  = 0;
+    uint8_t  bits = 0, bit = 0;
+
+    for (uint8_t yy = 0; yy < h; yy++) {
+        for (uint8_t xx = 0; xx < w; xx++) {
+
+            if (bit == 0) {
+                bits = bitmap[bo++];
+                bit  = 0x80;
+            }
+
+            if (bits & bit) { hpc++; }
+            else if (hpc) {
+                int drawX = x + (xo + xx - hpc);
+                int drawY = y + (yo + yy);
+
+                if (textsize == 1) { drawFastHLine(drawX, drawY, hpc, textcolor); }
+                else { fillRect(drawX, drawY, hpc * textsize, textsize, textcolor); }
+
+                hpc = 0;
+            }
+
+            bit >>= 1;
+        }
+
+        if (hpc) {
+            int drawX = x + (xo + w - hpc);
+            int drawY = y + (yo + yy);
+
+            if (textsize == 1) { drawFastHLine(drawX, drawY, hpc, textcolor); }
+            else { fillRect(drawX, drawY, hpc * textsize, textsize, textcolor); }
+
+            hpc = 0;
+        }
+    }
+
+    _cursor_x += xAdvance * textsize;
 }
 
 void TFT_STUB::renderGlyph(uint32_t c, int16_t x, int16_t y) {
     if (!activeRenderTarget) { return; }
 
     // Classic 5x7 font
-    if (!currentFont.isGFX) {
+    if (!currentFont.isGFX && !currentFont.font_file.isFile) {
         if (c > 127) { c = '?'; }
 
-        // Draw opaque background if enabled
         if (_textbgopaque) { fillRect(x, y, 6 * textsize, 8 * textsize, _textbgcolor); }
 
         for (int col = 0; col < 5; col++) {
@@ -217,90 +272,47 @@ void TFT_STUB::renderGlyph(uint32_t c, int16_t x, int16_t y) {
         return;
     }
 
-    // GFX font
-    if (!currentFont.font && !currentFont.font_set) { return; }
-    const GFXfont *fnt = nullptr;
+    fontFile_t fnt = getFont(c, currentFont);
+    if (!fnt.path.isEmpty()) {
+        ESP_LOGI("DISPLAY", "Rendering glyph 0x%X from file %s", c, fnt.path.c_str());
+        LoadedGlyph *lg = getGlyphData(fnt.path, c);
+        if (!lg) {
+            ESP_LOGW("DISPLAY", "Failed glyph 0x%X", c);
+            return;
+        }
 
-    // Pick font from font set first
-    fnt = getFont(c, currentFont);
+        const GFXglyphPacked &g = lg->glyphData;
 
-    // Fallback to main font
-    if (!fnt && currentFont.font) { fnt = currentFont.font; }
+        uint16_t yAdvance = lg->fontHolder->font[0].yAdvance;
 
-    // Still nothing? bail
-    if (!fnt) {
-        ESP_LOGW("DISPLAY", "No font for char 0x%X", c);
+        drawGlyphCore(lg->bitmapData, 0, g.width, g.height, g.xOffset, g.yOffset, g.xAdvance,
+                      yAdvance, x, y);
         return;
     }
 
-    // Clamp c to font range
-    if (c < fnt->first || c > fnt->last) {
-        ESP_LOGW("FONT", "UNKNOWN CHAR 0x%04X (%c) (%04X-%04X)", c, c, fnt->first, fnt->last);
+    if (!currentFont.font_file.gfont && !currentFont.font_set) { return; }
+
+    if (currentFont.font_file.gfont) { fnt = currentFont.font_file; }
+
+    if (!fnt.gfont) { return; }
+    if (c < fnt.gfont->first || c > fnt.gfont->last) {
+        ESP_LOGW("FONT", "UNKNOWN CHAR 0x%04X", c);
         c = '?';
     }
-    c -= fnt->first;
 
-    // Safe glyph/bitmap check
-    GFXglyph *glyph  = &fnt->glyph[(int)c];
-    uint8_t  *bitmap = fnt->bitmap;
-    if (!glyph || !bitmap) {
-        ESP_LOGW("DISPLAY", "Invalid glyph or bitmap for char 0x%X", c);
-        return;
-    }
-    uint32_t bo = glyph->bitmapOffset;
-    uint8_t  w = glyph->width, h = glyph->height;
-    int8_t   xo = glyph->xOffset, yo = glyph->yOffset;
-    int16_t  xo16 = xo, yo16 = yo; // scaled offsets
+    uint16_t ci = c - fnt.gfont->first;
 
-    if (textsize > 1) {
-        xo16 = xo;
-        yo16 = yo;
-    }
+    GFXglyph *glyph  = &fnt.gfont->glyph[ci];
+    uint8_t  *bitmap = fnt.gfont->bitmap;
 
-    // Draw opaque background if enabled
-    if (_textbgopaque) {
-        uint16_t cellW = glyph->xAdvance * textsize;
-        uint16_t cellH = fnt->yAdvance * textsize;
-        fillRect(x, y - cellH, cellW, cellH, _textbgcolor);
-    }
+    if (!glyph || !bitmap) { return; }
 
-    uint16_t hpc  = 0; // horizontal pixel count
-    uint8_t  bits = 0, bit = 0;
-    for (uint8_t yy = 0; yy < h; yy++) {
-        for (uint8_t xx = 0; xx < w; xx++) {
-            if (bit == 0) {
-                bits = bitmap[bo++];
-                bit  = 0x80;
-            }
-
-            if (bits & bit) { hpc++; }
-            else if (hpc) {
-                // Draw accumulated horizontal pixels
-                int drawX = x + (xo16 + xx - hpc);
-                int drawY = y + (yo16 + yy);
-                if (textsize == 1) { drawFastHLine(drawX, drawY, hpc, textcolor); }
-                else { fillRect(drawX, drawY, hpc * textsize, textsize, textcolor); }
-                hpc = 0;
-            }
-
-            bit >>= 1;
-        }
-
-        // Draw any remaining pixels at end of line
-        if (hpc) {
-            int drawX = x + (xo16 + w - hpc);
-            int drawY = y + (yo16 + yy);
-            if (textsize == 1) { drawFastHLine(drawX, drawY, hpc, textcolor); }
-            else { fillRect(drawX, drawY, hpc * textsize, textsize, textcolor); }
-            hpc = 0;
-        }
-    }
-
-    _cursor_x += glyph->xAdvance * textsize;
+    drawGlyphCore(bitmap, glyph->bitmapOffset, glyph->width, glyph->height, glyph->xOffset,
+                  glyph->yOffset, glyph->xAdvance, fnt.gfont->yAdvance, x, y);
 }
 
 int TFT_STUB::textWidth(const std::string &s) const {
-    if (!currentFont.isGFX || !currentFont.font) {
+    if (!currentFont.isGFX || !currentFont.font_file.gfont) {
         return static_cast<int>(s.length() * 6 * textsize);
     }
 
@@ -310,12 +322,21 @@ int TFT_STUB::textWidth(const std::string &s) const {
     uint32_t    cp;
 
     while (*p) {
-        const char    *next = utf8_decode(p, &cp);
-        const GFXfont *gfx  = getFont(cp, currentFont);
-        if (gfx) {
-            if (cp >= gfx->first && cp <= gfx->last) {
-                GFXglyph *glyph = &gfx->glyph[cp - gfx->first];
-                w += glyph->xAdvance * textsize;
+        const char      *next = utf8_decode(p, &cp);
+        const fontFile_t ff   = getFont(cp, currentFont);
+        if (!ff.gfont && !ff.isFile) {
+            return w + 6 * textsize; // fallback to single char width if font lookup fails
+        }
+        if (ff.isFile) {
+            LoadedGlyph *lg = getGlyphData(ff.path, cp);
+            if (lg && lg->fontHolder) {
+                GFXglyphPacked &g = lg->glyphData;
+                w += g.xAdvance * textsize;
+            }
+        }
+        else if (ff.gfont) {
+            if (cp >= ff.gfont->first && cp <= ff.gfont->last) {
+                w += ff.gfont->glyph[cp - ff.gfont->first].xAdvance * textsize;
             }
         }
         p = next;
@@ -324,14 +345,27 @@ int TFT_STUB::textWidth(const std::string &s) const {
     return w;
 }
 int TFT_STUB::fontHeight() const {
-    if (!currentFont.isGFX || !currentFont.font) {
+    if (!currentFont.isGFX || !currentFont.font_file.gfont) {
         // Classic 5x7 font
         return 8 * textsize;
     }
-    else {
+    else if (currentFont.isGFX) {
         // GFX font
-        return currentFont.font->yAdvance * textsize;
+        return currentFont.font_file.gfont->yAdvance * textsize;
     }
+    else if (currentFont.font_set) {
+        // GFX font set - use max yAdvance among fonts in set
+        int maxYAdvance = 0;
+        for (int i = 0; i < currentFont.font_set_count; i++) {
+            const GFXfont *fnt = currentFont.font_set[i].gfont;
+            if (fnt && fnt->yAdvance > maxYAdvance) { maxYAdvance = fnt->yAdvance; }
+        }
+        return maxYAdvance * textsize;
+    }
+    else if (currentFont.font_file.isFile) {
+        return getFontYAdvance(currentFont.font_file.path) * textsize;
+    }
+    return 0; // unknown font type
 }
 
 void TFT_STUB::setAttribute(int /*attr*/, bool /*value*/) { /* no-op */ }
@@ -360,7 +394,6 @@ void TFT_STUB::printf(const char *fmt, ...) {
     va_end(args);
     print(buf);
 }
-
 
 void TFT_STUB::print(const char *str) {
     if (!str) { return; }

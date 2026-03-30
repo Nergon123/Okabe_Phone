@@ -6,38 +6,43 @@
 #include "Platform/NString.h"
 #include "RenderTargets.h"
 #include <stdarg.h>
-struct font_t {
-    bool            isGFX : 1;
-    bool            isGFXFontSet : 1;
-    const GFXfont  *font;
-    const GFXfont **font_set;
-    uint8_t         font_set_count;
+struct fontFile_t {
+    const GFXfont *gfont;
+    bool           isFile;
+    NString        path;
 };
-// color definitions
-#define TFT_BLACK       0x0000                     /*   0,   0,   0 */
-#define TFT_NAVY        0x000F                     /*   0,   0, 128 */
-#define TFT_DARKGREEN   0x03E0                     /*   0, 128,   0 */
-#define TFT_DARKCYAN    0x03EF                     /*   0, 128, 128 */
-#define TFT_MAROON      0x7800                     /* 128,   0,   0 */
-#define TFT_PURPLE      0x780F                     /* 128,   0, 128 */
-#define TFT_OLIVE       0x7BE0                     /* 128, 128,   0 */
-#define TFT_LIGHTGREY   0xD69A                     /* 211, 211, 211 */
-#define TFT_DARKGREY    0x7BEF                     /* 128, 128, 128 */
-#define TFT_BLUE        0x001F                     /*   0,   0, 255 */
-#define TFT_GREEN       0x07E0                     /*   0, 255,   0 */
-#define TFT_CYAN        0x07FF                     /*   0, 255, 255 */
-#define TFT_RED         0xF800                     /* 255,   0,   0 */
-#define TFT_MAGENTA     0xF81F                     /* 255,   0, 255 */
-#define TFT_YELLOW      0xFFE0                     /* 255, 255,   0 */
-#define TFT_WHITE       0xFFFF                     /* 255, 255, 255 */
-#define TFT_ORANGE      0xFDA0                     /* 255, 180,   0 */
-#define TFT_GREENYELLOW 0xB7E0                     /* 180, 255,   0 */
-#define TFT_PINK        0xFE19 /* 255, 192, 203 */ // Lighter pink, was 0xFC9F
-#define TFT_BROWN       0x9A60                     /* 150,  75,   0 */
-#define TFT_GOLD        0xFEA0                     /* 255, 215,   0 */
-#define TFT_SILVER      0xC618                     /* 192, 192, 192 */
-#define TFT_SKYBLUE     0x867D                     /* 135, 206, 235 */
-#define TFT_VIOLET      0x915C                     /* 180,  46, 226 */
+struct font_t {
+    bool        isGFXFontSet;
+    bool        isGFX;
+    fontFile_t  font_file;
+    fontFile_t *font_set;
+    uint8_t     font_set_count;
+};
+// color definitions           /*   R,   G,   B */
+#define TFT_BLACK       0x0000 /*   0,   0,   0 */
+#define TFT_NAVY        0x000F /*   0,   0, 128 */
+#define TFT_DARKGREEN   0x03E0 /*   0, 128,   0 */
+#define TFT_DARKCYAN    0x03EF /*   0, 128, 128 */
+#define TFT_MAROON      0x7800 /* 128,   0,   0 */
+#define TFT_PURPLE      0x780F /* 128,   0, 128 */
+#define TFT_OLIVE       0x7BE0 /* 128, 128,   0 */
+#define TFT_LIGHTGREY   0xD69A /* 211, 211, 211 */
+#define TFT_DARKGREY    0x7BEF /* 128, 128, 128 */
+#define TFT_BLUE        0x001F /*   0,   0, 255 */
+#define TFT_GREEN       0x07E0 /*   0, 255,   0 */
+#define TFT_CYAN        0x07FF /*   0, 255, 255 */
+#define TFT_RED         0xF800 /* 255,   0,   0 */
+#define TFT_MAGENTA     0xF81F /* 255,   0, 255 */
+#define TFT_YELLOW      0xFFE0 /* 255, 255,   0 */
+#define TFT_WHITE       0xFFFF /* 255, 255, 255 */
+#define TFT_ORANGE      0xFDA0 /* 255, 180,   0 */
+#define TFT_GREENYELLOW 0xB7E0 /* 180, 255,   0 */
+#define TFT_PINK        0xFE19 /* 255, 192, 203 */
+#define TFT_BROWN       0x9A60 /* 150,  75,   0 */
+#define TFT_GOLD        0xFEA0 /* 255, 215,   0 */
+#define TFT_SILVER      0xC618 /* 192, 192, 192 */
+#define TFT_SKYBLUE     0x867D /* 135, 206, 235 */
+#define TFT_VIOLET      0x915C /* 180,  46, 226 */
 
 class TFT_STUB {
   public:
@@ -118,7 +123,9 @@ class TFT_STUB {
     void setAttribute(int attr, bool value);
 
   private:
-    const GFXfont *getFont(uint32_t c, font_t font_) const;
+    fontFile_t getFont(uint32_t c, font_t font_) const;
+    void drawGlyphCore(uint8_t *bitmap, uint32_t bo, uint8_t w, uint8_t h, int16_t xo, int16_t yo,
+                       uint16_t xAdvance, uint16_t yAdvance, int16_t x, int16_t y);
 
   protected:
     int16_t  _init_w, _init_h;

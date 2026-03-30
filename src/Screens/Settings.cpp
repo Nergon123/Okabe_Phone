@@ -42,7 +42,30 @@ void inputLayouts() {
         }
     }
 }
-void inputTimings() {}
+void inputTimings() {
+    NString confirmDelay = NString("Confirm Delay: ") + NString(DIB_MS) + "ms";
+    NString options[]    = {confirmDelay};
+    int     selection    = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+        LM_RET_VALUE ret =
+            listMenu(options, ArraySize(options), false, LM_SETTINGS, "Timings", false, selection);
+        selection = ret.index;
+        switch (selection) {
+        case 0:
+            if (ret.button == ANSWER) { DIB_MS -= 100; }
+            else { DIB_MS += 100; }
+            if (DIB_MS > 5000) { DIB_MS = 100; }
+            if (DIB_MS < 100) { DIB_MS = 5000; }
+            options[0] = NString("Confirm Delay: ") + NString(DIB_MS) + "ms";
+            break;
+        }
+    }
+    preferences.begin("System");
+    preferences.putInt("DIB_MS", DIB_MS);
+    preferences.end();
+}
 
 void inputSettings() {
     NString options[] = {

@@ -17,7 +17,8 @@ bool InputFieldS(NString title, std::vector<FIELD> fields, int type = LM_SETTING
 bool button(NString title, int xpos, int ypos, int w, int h, bool selected = false,
             int *direction = nullptr);
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected = false,
-                   int *direction = nullptr, const char *format = "%02d");
+                   int *direction = nullptr, const char *format = "%02d",
+                   bool isHorizontal = false);
 NString InputField(NString title, NString content, int ypos, bool onlydraw, bool selected,
                    bool used, int *direction = nullptr, bool onlynumbers = false);
 void    spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing = 10);

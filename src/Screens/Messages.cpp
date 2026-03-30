@@ -145,7 +145,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
             default:
                 if (input >= '0' && input <= '9') {
                     NString l = textInput(input, 0, 0, 1);
-                    input  = buttonsHelding();
+                    input     = buttonsHelding();
                     if (l != 0) {
 
                         if (content.length() < limit) {
@@ -156,7 +156,8 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                                     text_pos += l[0] > 0x7F ? 2 : 1;
                                 }
                                 else {
-                                    uint8_t deletedCharLength = content[text_pos-1] >= 0x7F ? 2 : 1;
+                                    uint8_t deletedCharLength =
+                                        content[text_pos - 1] >= 0x7F ? 2 : 1;
                                     content = content.substring(0, text_pos - deletedCharLength) +
                                               content.substring(text_pos, content.length());
                                     input = BACK;

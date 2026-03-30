@@ -33,6 +33,7 @@ void storageInit() {
         wallpaperIndex = preferences.getInt("wallpaperIndex", 0);
     }
 
+    DIB_MS = preferences.getInt("DIB_MS", DIB_MS);
     preferences.end();
     progressBar(70, 100, 250);
 }

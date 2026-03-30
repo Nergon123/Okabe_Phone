@@ -47,6 +47,8 @@ std::vector<Contact> contacts;
 
 VirtualFileSystem VFS;
 
+ulong DIB_MS = 500;
+
 // forbid to change fastMode
 bool          lockFastMode         = false;
 RenderTarget* currentRenderTarget  = nullptr;
@@ -72,8 +74,7 @@ std::vector<KeypadLayout> keypadLayouts = {
                  "Uppercase latin", "ABC", nullptr, true),
 
     KeypadLayout(NUMBERS, {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, "Numbers", "123",
-                 nullptr, true)
-};
+                 nullptr, true)};
 
 iHW* hw;
 

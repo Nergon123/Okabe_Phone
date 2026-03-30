@@ -68,9 +68,6 @@ typedef unsigned long ulong;
 #define AMPL_LRCLK 25
 #define AMPL_DIN   19
 
-// DELAY TO CONFIRM CHARACTER
-#define DIB_MS 2000
-
 // INPUT OF inputText() WINDOW
 #define INPUT_LOCATION_Y 240
 
@@ -115,11 +112,11 @@ enum charsets {
     CAPS_UA     = 6,
     SMALL_RU    = 7,
     CAPS_RU     = 8,
-    AUTO_CAPS 
+    AUTO_CAPS
 };
 
 // ENABLE DEVELOPER MODE//
-#define DEVMODE //
+#define DEVMODE
 
 // #define SIMDEBUG//
 

@@ -45,8 +45,8 @@ struct mOption {
     void (*_function)();
     int data;
     mOption(NString label, Image image = Image(), uint8_t icon_index = 0,
-            void (*_function)() = nullptr,int data = 0)
-        : label(label), image(image), icon_index(icon_index), _function(_function),data(data){};
+            void (*_function)() = nullptr, int data = 0)
+        : label(label), image(image), icon_index(icon_index), _function(_function), data(data) {};
 };
 
 struct KeypadLayout {
@@ -56,11 +56,11 @@ struct KeypadLayout {
     NString              ShortName;
     KeypadLayout*        linkedLayout;
     bool                 enabled;
-    bool available;
+    bool                 available;
     KeypadLayout(int id, std::vector<NString> layout, NString FullName, NString ShortName,
-                 KeypadLayout* linkedLayout = NULL, bool enabled = false,bool available = true)
+                 KeypadLayout* linkedLayout = NULL, bool enabled = false, bool available = true)
         : id(id), Layout(layout), FullName(FullName), ShortName(ShortName),
-          linkedLayout(linkedLayout),available(available) {};
+          linkedLayout(linkedLayout), enabled(enabled), available(available) {};
 };
 
 // SMS status
@@ -130,6 +130,7 @@ extern TFT_STUB tft;
 
 // extern Preferences preferences;
 
+extern ulong                DIB_MS;
 extern int                  currentScreen;
 extern int                  currentFont;
 extern int                  delayBeforeSleep;

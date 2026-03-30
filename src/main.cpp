@@ -1,6 +1,7 @@
 #include "Screens/Main.h"
 #include "BuiltinPackages.h"
 #include "GlobalVariables.h"
+#include "Platform/Graphics/Fonts/FontLoader.h"
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/Hardware/Profiles/ESP32.h"
 #include "Platform/Hardware/Profiles/Linux.h"
@@ -53,6 +54,20 @@ int start() {
 
     // Chance to change resource file to custom one
     storageInit();
+    loadFont("/spiffs/output.nfnt");
+    LoadedGlyph *glyph =
+        getGlyphData("/spiffs/output.nfnt", 0x4E02); // Preload a font glyph to ensure font file is
+                                                     // read and cached before we draw anything
+    ESP_LOGI("INFO", "Preloaded glyph for char code 0x4E02: %p/%p/%p", glyph,
+             glyph ? glyph->bitmapData : nullptr, glyph ? glyph->fontHolder : nullptr);
+    if (glyph && glyph->fontHolder) {
+        ESP_LOGI("INFO",
+                 "Glyph info: \npointer=%p, charCode=0x%04X, width=%d, height=%d\nbitmapData=%p, "
+                 "fontHolderPath=%s yAdvance=%d\n",
+                 glyph, glyph->charCode, glyph->glyphData.width, glyph->glyphData.height,
+                 glyph->bitmapData, glyph->fontHolder->path.c_str(),
+                 glyph->fontHolder->font[0].yAdvance);
+    }
     if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
 
     res.CopyToRam(true);

@@ -77,7 +77,7 @@ LM_RET_VALUE listMenu(std::vector<mOption> choices, int icount, bool lines, int 
         changeFont(1);
         tft.setTextColor(0);
         tft.setCursor(75, 45);
-        tft.print("< Empty >");
+        tft.print("< 空の >");
 
         currentRenderTarget->present();
 

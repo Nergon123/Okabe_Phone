@@ -6,10 +6,10 @@
 #define STBI_REALLOC(p, newsz) ps_realloc(p, newsz)
 #define STBI_FREE(p)           free(p)
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <ExternalLibraries/stb_image.h>
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include "stb_image_resize2.h"
+#include <ExternalLibraries/stb_image_resize2.h>
 
 // That's a lot of memory stuff, heavy for ESP32, even with PSRAM...
 // works, but need to replace stb image lib with something lighter later
