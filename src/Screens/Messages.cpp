@@ -40,7 +40,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     int text_pos = 0;
     int position = 0;
     drawStatusBar();
-    drawHeader("Outgoing Mail", LM_MESSAGES);
+    drawHeader(getTranslation(TextKey::MSGS_OUTGOING), LM_MESSAGES);
     // jump in pixels per one button press
     int y_jump = 22;
     // offset of screen in height
@@ -81,7 +81,10 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
         changeFont(1);
         tft.print(content);
         int     input = -1;
-        NString a[]   = {"Continue", "Send Message", "Delete", "Save To Drafts"};
+        NString a[]   = {getTranslation(TextKey::MSGS_OUT_MENU_CONTINUE),
+                         getTranslation(TextKey::MSGS_OUT_MENU_SEND),
+                         getTranslation(TextKey::MSGS_OUT_MENU_DELETE),
+                         getTranslation(TextKey::MSGS_OUT_MENU_SAVE)};
         int     u;
         tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20,
                      TFT_BLACK);
@@ -137,8 +140,14 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                     }
                     return;
                     break;
-                case 2: ESP_LOGI("INFO", "DELETE"); break;
-                case 3: ESP_LOGI("INFO", "Save to Drafts"); break;
+                case 2: ESP_LOGI("INFO", "DELETE");
+#warning Delete Message not implemented
+                    break;
+                case 3:
+                    ESP_LOGI("INFO", "Save to Drafts")
+#warning Save to Drafts not implemented
+                        ;
+                    break;
 
                 default: break;
                 }
@@ -207,9 +216,9 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
                      bool outcoming, bool sms) {
     tft.setTextWrap(true);
     content.trim();
-    const NString choices[] = {"Reply", "Delete"};
+    const NString choices[] = {getTranslation(TextKey::MSGS_INC_MENU_REPLY), getTranslation(TextKey::MSGS_INC_MENU_DELETE)};
     drawStatusBar();
-    drawHeader("Recieve Mail", LM_MESSAGES);
+    drawHeader(getTranslation(TextKey::MSGS_INCOMING) ,LM_MESSAGES);
     int y_jump = 22;
     int y_scr  = 0;
     changeFont(1);
@@ -259,7 +268,7 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
                 case 0: messageActivityOut(contact, "", "", true); break;
                 case 1:
                     tft.resetViewport();
-                    if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE?")) {
+                    if (confirmation(getTranslation(TextKey::MSGS_INC_MENU_DELETE_CONFIRM))) {
                         sendATCommand("AT+CMGD=" + NString(index), 5000);
                         return true;
                     }

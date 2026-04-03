@@ -30,7 +30,7 @@ void incomingCall(Contact contact) {
     tft.setCursor(90, 140);
     changeFont(4);
     tft.setTextSize(1);
-    tft.print("Recieving call");
+    tft.print(getTranslation(TextKey::TEL_RECIEVING_CALL));
     res.DrawImage(R_PHONE_ICON);
     writeCustomFont(55, 185, contact.phone, 1);
     res.DrawImage(R_PHONE_ICON_LIGHTNING, 0);
@@ -88,7 +88,7 @@ void callActivity(Contact contact) {
 
     tft.setTextSize(1);
     tft.setCursor(85, 95);
-    tft.print("Calling...");
+    tft.print(getTranslation(TextKey::TEL_CALLING));
     stateCall = DIALING;
     TASK task = LaunchTask(GetStateTask, "GetStateTask", nullptr, 4096);
     hw->delay(50);
@@ -130,7 +130,7 @@ void callActivity(Contact contact) {
     tft.fillRect(0, 26, 240, 294, TFT_BLACK);
     tft.setTextColor(TFT_WHITE);
     changeFont(2);
-    NString callEnded = "End of Call..";
+    NString callEnded = getTranslation(TextKey::TEL_END_OF_CALL);
     tft.setCursor(120 - tft.textWidth(callEnded) / 2, 150);
     tft.print(callEnded);
     currentRenderTarget->present();
@@ -151,16 +151,20 @@ void contactss() {
     //     currentScreen = SCREENS::MAINMENU;
     //     return;
     // }
-    const NString contactMenuItems[] = {"Call", "Outgoing", "Edit", "Create", "Delete"};
+    const NString contactMenuItems[] = {getTranslation(TextKey::TEL_CONTACTS_OPT_CALL),
+                                        getTranslation(TextKey::TEL_CONTACTS_OPT_OUTGOING),
+                                        getTranslation(TextKey::TEL_CONTACTS_OPT_EDIT),
+                                        getTranslation(TextKey::TEL_CONTACTS_OPT_CREATE),
+                                        getTranslation(TextKey::TEL_CONTACTS_OPT_DELETE)};
 
     bool exit = false;
     while (!exit) {
 
         NString contactNames[contacts.size()];
         for (size_t i = 0; i < contacts.size(); ++i) { contactNames[i] = contacts[i].name; }
-        LM_RET_VALUE choice =
-            listMenu(contactNames, contacts.size(), false, LM_CONTACTS, getTranslation(TextKey::LM_ADDRESS_BOOK));
-        int selectedContactIndex = choice.index;
+        LM_RET_VALUE choice = listMenu(contactNames, contacts.size(), false, LM_CONTACTS,
+                                       getTranslation(TextKey::LM_ADDRESS_BOOK));
+        int          selectedContactIndex = choice.index;
 
         if (selectedContactIndex != LISTMENU_EXIT && contacts.size() > 0) {
             int contextMenuSelection = -1;
@@ -195,7 +199,7 @@ void contactss() {
             }
         }
         else if (selectedContactIndex == LISTMENU_OPTIONS) {
-            const NString choice[1] = {"Create"};
+            const NString choice[1] = {getTranslation(TextKey::TEL_CONTACTS_OPT_CREATE)};
             int           CMS       = choiceMenu({choice}, 1, true);
             if (!CMS) { editContact(Contact("", "", "", contacts.size())); }
             else { exit = true; }
@@ -210,15 +214,15 @@ void contactss() {
  * @param contact Contact object containing contact information
  */
 void editContact(Contact contact) {
-    std::vector<FIELD> fields = {FIELD("Name", contact.name, false),
-                                 FIELD("Number", contact.phone, true)};
-    if (!InputFieldS("Edit Contact", fields, LM_CONTACTS, 0, "Save", "Cancel")) { return; }
+    std::vector<FIELD> fields = {FIELD(getTranslation(TextKey::TEL_CONTACTS_NAME), contact.name, false),
+                                 FIELD(getTranslation(TextKey::TEL_CONTACTS_NUMBER), contact.phone, true)};
+    if (!InputFieldS(getTranslation(TextKey::TEL_CONTACTS_EDIT), fields, LM_CONTACTS, 0, getTranslation(TextKey::SAVE_BUTTON), getTranslation(TextKey::CANCEL_BUTTON))) { return; }
     if (contact.phone.isEmpty()) { return; }
     if (contact.name.isEmpty()) { contact.name = contact.phone; }
     sendATCommand("AT+CPBS=\"SM\"");
     NString request = "AT+CPBW=" + NString(contact.index) + ",\"" + contact.phone + "\"," +
                       NString(contact.phone.indexOf("+") == 0 ? 145 : 129) + ",\"" + contact.name +
                       "\"";
-    NString result = sendATCommand(request);
+    NString result  = sendATCommand(request);
     populateContacts();
 }

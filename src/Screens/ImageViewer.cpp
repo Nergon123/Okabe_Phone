@@ -9,7 +9,7 @@ void redrawStatus(float zoom) {
     tft.resetViewport();
     int zoompercentage = zoom * 100;
     res.DrawImage(R_LIST_MENU_BACKGROUND);
-    drawHeader("Image Viewer", LM_SETTINGS, NString::format("%d%%", zoompercentage));
+    drawHeader(getTranslation(TextKey::IMAGE_VIEWER), LM_SETTINGS, NString::format("%d%%", zoompercentage));
     tft.setViewport(vp);
 }
 

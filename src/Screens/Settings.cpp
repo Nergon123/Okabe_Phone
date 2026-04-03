@@ -6,7 +6,7 @@ void debugMenu() { InfoWindow("Nope.", "INFO", true, TFT_BLUE); }
 
 void connectivityMenu() {
     NString options[] = {
-        "Wi-Fi",
+        getTranslation(TextKey::LM_WIFI),
     };
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
@@ -30,8 +30,8 @@ void inputLayouts() {
 
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
-        selection =
-            listMenu(options, options.size(), false, LM_SETTINGS, "Layouts", false, selection);
+        selection = listMenu(options, options.size(), false, LM_SETTINGS,
+                             getTranslation(TextKey::LM_INP_LAYOUTS), false, selection);
         if (selection >= 0) {
             if (options[selection].data == keypadLayouts[selection].id) {
                 keypadLayouts[selection].enabled = !keypadLayouts[selection].enabled;
@@ -43,22 +43,24 @@ void inputLayouts() {
     }
 }
 void inputTimings() {
-    NString confirmDelay = NString("Confirm Delay: ") + NString(DIB_MS) + "ms";
-    NString options[]    = {confirmDelay};
-    int     selection    = LISTMENU_NULL;
+    NString confirmDelay =
+        NString::format(getTranslation(TextKey::LM_INP_TIME_CONFIRM_DELAY).c_str(), DIB_MS);
+    NString options[] = {confirmDelay};
+    int     selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
-        LM_RET_VALUE ret =
-            listMenu(options, ArraySize(options), false, LM_SETTINGS, "Timings", false, selection);
-        selection = ret.index;
+        LM_RET_VALUE ret = listMenu(options, ArraySize(options), false, LM_SETTINGS,
+                                    getTranslation(TextKey::LM_INP_TIMINGS), false, selection);
+        selection        = ret.index;
         switch (selection) {
         case 0:
             if (ret.button == ANSWER) { DIB_MS -= 100; }
             else { DIB_MS += 100; }
             if (DIB_MS > 5000) { DIB_MS = 100; }
             if (DIB_MS < 100) { DIB_MS = 5000; }
-            options[0] = NString("Confirm Delay: ") + NString(DIB_MS) + "ms";
+            options[0] = NString::format(
+                getTranslation(TextKey::LM_INP_TIME_CONFIRM_DELAY).c_str(), DIB_MS);
             break;
         }
     }
@@ -68,11 +70,11 @@ void inputTimings() {
 }
 
 void inputSettings() {
-    NString options[] = {
-        "Layouts",
-        "Timings",
+    NString options[] = {getTranslation(TextKey::LM_INP_LAYOUTS),
+                         getTranslation(TextKey::LM_INP_TIMINGS)
+
     };
-    int selection = LISTMENU_NULL;
+    int     selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
@@ -85,8 +87,8 @@ void inputSettings() {
 }
 void systemSettings() {
     NString options[] = {
-        "Set Date & Time",
-        "Input Settings",
+        getTranslation(TextKey::LM_SYS_DATE_TIME),
+        getTranslation(TextKey::LM_SYS_INPUT),
     };
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
@@ -102,7 +104,7 @@ void systemSettings() {
 
 void lookAndFeelSettings() {
     NString options[] = {
-        "Change Theme",
+        getTranslation(TextKey::LM_LAF_CHANGE_THEME),
     };
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
@@ -114,7 +116,8 @@ void lookAndFeelSettings() {
             NString filepath = fileBrowser("/", ".nph");
             if (VFS.exists(filepath)) {
                 NFile *resource = VFS.open(filepath);
-                InfoWindow(getTranslation(TextKey::IW_APPLYING_THEME), "INFO", false, TFT_BLUE);
+                InfoWindow(getTranslation(TextKey::IW_APPLYING_THEME),
+                           getTranslation(TextKey::IW_TITLE_INFO), false, TFT_BLUE);
                 res.Init(resource);
                 res.CopyToRam();
                 if (res.cache) { res.Files->close(); }
@@ -126,7 +129,7 @@ void lookAndFeelSettings() {
 
 void experimentalSettings() {
     NString options[] = {
-        "Debug Menu",
+        getTranslation(TextKey::LM_EXP_DEBUG_MENU),
     };
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
@@ -141,10 +144,10 @@ void experimentalSettings() {
 
 void advancedSettings() {
     NString options[] = {
-        "System",
-        "Connectivity",
-        "Look and feel",
-        "Experimental",
+        getTranslation(TextKey::LM_A_SET_SYSTEM),
+        getTranslation(TextKey::LM_A_SET_CONNECTIVITY),
+        getTranslation(TextKey::LM_A_SET_LOOK_AND_FEEL),
+        getTranslation(TextKey::LM_A_SET_EXPERIMENTAL),
     };
     int menuSelection = LISTMENU_NULL;
     while (menuSelection != LISTMENU_EXIT) {
@@ -167,8 +170,10 @@ void changeWallpaper() {}
 // This function is called when the user wants to change settings
 // It allows the user to change the wallpaper, ringtones, etc.
 void settings() {
-    NString settingsOptions[] = {"Change Wallpaper", "Set call ringtone", "Set mail ringtone",
-                                 "Advanced Settings"};
+    NString settingsOptions[] = {getTranslation(TextKey::LM_SET_CHNG_WALLPAPER),
+                                 getTranslation(TextKey::LM_SET_CALL_RINGTONE),
+                                 getTranslation(TextKey::LM_SET_MAIL_RINGTONE),
+                                 getTranslation(TextKey::LM_SET_ADVANCED_SET)};
     int     menuSelection     = LISTMENU_NULL;
     while (menuSelection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
@@ -190,18 +195,18 @@ void settings() {
 // @param time Pointer to the time_t variable
 void setTime() {
     res.DrawImage(R_LIST_MENU_BACKGROUND);
-    drawHeader("Set Date & Time", LM_SETTINGS);
+    drawHeader(getTranslation(TextKey::LM_SYS_DATE_TIME), LM_SETTINGS);
     changeFont(1);
     tft.setTextSize(1);
     tft.setTextColor(0);
     tft.setCursor(90, 77);
-    tft.print("DATE");
+    tft.print(getTranslation(TextKey::MENU_DATE));
     tft.setCursor(57 + 28, 109);
     tft.print("/");
     tft.setCursor(93 + 28, 109);
     tft.print("/");
     tft.setCursor(90, 155);
-    tft.print("TIME");
+    tft.print(getTranslation(TextKey::MENU_TIME));
     tft.setCursor(111, 187);
     tft.print(":");
     currentRenderTarget->present();
@@ -226,8 +231,10 @@ void setTime() {
                       &direction);
         sNumberChange(117, 170, 25, 25, tm_time.tm_min, 0, 59, choice == 4 && !renderall,
                       &direction);
-        bool confirm = button("CONFIRM", 10, 280, 100, 30, choice == 5 && !renderall, &direction);
-        bool cancel  = button("CANCEL", 130, 280, 100, 30, choice == 6 && !renderall, &direction);
+        bool confirm = button(getTranslation(TextKey::CONFIRM_BUTTON), 10, 280, 100, 30,
+                              choice == 5 && !renderall, &direction);
+        bool cancel  = button(getTranslation(TextKey::CANCEL_BUTTON), 130, 280, 100, 30,
+                              choice == 6 && !renderall, &direction);
 
         if (!renderall) {
             if (direction == RIGHT) { choice++; }

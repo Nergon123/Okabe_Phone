@@ -6,19 +6,19 @@ static const char TAG[] = "PkgManagerApp";
 
 static void removePopup(std::string &id) {
     int  res = -1;
-    bool yes = confirmation(NString("Remove package?"));
+    bool yes = confirmation(getTranslation(TextKey::PKGS_CONF_REMOVE));
     if (yes) {
         res = PaStor.removePackage(id);
         if (res == 0) {
-            InfoWindow(NString("Package removed!"), NString("Info"), true, TFT_GREEN);
+            InfoWindow(getTranslation(TextKey::PKGS_CONF_REMOVED),getTranslation(TextKey::IW_TITLE_INFO), true, TFT_GREEN);
         }
-        else { InfoWindow(NString("Failed to remove the package")); }
+        else { InfoWindow(getTranslation(TextKey::PKGS_ERR_FAIL_REMOVE)); }
     }
 }
 
 static void actionPopup(int index) {
     int           choise       = LISTMENU_NULL;
-    const NString actionMenu[] = {"Run package", "Info", "Remove", "(DEBUG) Unregister"};
+    const NString actionMenu[] = {getTranslation(TextKey::PKGS_ACT_OPT_RUN), getTranslation(TextKey::PKGS_ACT_OPT_INFO), getTranslation(TextKey::PKGS_ACT_OPT_REMOVE), getTranslation(TextKey::PKGS_ACT_OPT_UNREGISTER)};
 
     BasePackage     *pkg;
     BasePackageInfo *pkgInfo;
@@ -35,9 +35,9 @@ static void actionPopup(int index) {
     switch (choise) {
     case 0: pm.runPackage(pkgInfo->id); break;
     case 1:
-        InfoWindow(SplitString(NString("Name: ") + pkgInfo->name + NString("\nID: ") +
-                               pkgInfo->id + NString("\nVersion: ") + pkgInfo->version),
-                   NString("Info"), true, TFT_BLACK);
+        InfoWindow(SplitString(NString::format(getTranslation(TextKey::PKGS_INFOWINDOW).c_str(),
+                                               pkgInfo->name.c_str(), pkgInfo->id.c_str(), pkgInfo->version.c_str())),
+                   getTranslation(TextKey::IW_TITLE_INFO), true, TFT_BLACK);
         break;
     case 2: removePopup(pkgInfo->id); break;
     case 3: pm.unregisterPackage(pkgInfo->id); break;
@@ -61,7 +61,7 @@ static void manageMenu() {
         // ESP_LOGD(TAG, "pkgList size: %i",pkgList.size());
 
         choice =
-            listMenu(pkgList.data(), pkgList.size(), false, LM_SETTINGS, "Manage packages").index;
+            listMenu(pkgList.data(), pkgList.size(), false, LM_SETTINGS, getTranslation(TextKey::PKGMGR_MANAGE)).index;
         if (choice >= 0) { actionPopup(choice); }
     }
 }
@@ -78,14 +78,14 @@ static void loadMenu() {
     res    = p->setFile(&path);
     ESP_LOGD(TAG, "setFile: \"%s\", %i", path.c_str(), res);
     if (res < 0) {
-        InfoWindow(NString("Package load error!"));
+        InfoWindow(getTranslation(TextKey::PKGS_LOAD_ERR));
         return;
     }
 
     res = pm.registerPackage(p);
-    if (res == 0) { InfoWindow(NString("Package loaded!"), NString("Info"), true, TFT_BLACK); }
+    if (res == 0) { InfoWindow(getTranslation(TextKey::PKGS_LOADED), getTranslation(TextKey::IW_TITLE_INFO), true, TFT_BLACK); }
     else {
-        InfoWindow(NString(SplitString("ID already exist.\nPackage not loaded!")), NString("Info"),
+        InfoWindow(getTranslation(TextKey::PKGS_ID_EXIST), getTranslation(TextKey::IW_TITLE_INFO),
                    true, TFT_BLACK);
     }
 }
@@ -94,10 +94,10 @@ int PkgMgr() {
     ESP_LOGD(TAG, "Start...");
 
     int           choice     = LISTMENU_NULL;
-    const NString mainMenu[] = {"Manage packages", "Add new package"};
+    const NString mainMenu[] = {getTranslation(TextKey::PKGMGR_MANAGE), getTranslation(TextKey::PKGMGR_ADD)};
 
     while (choice != LISTMENU_EXIT) {
-        choice = listMenu(mainMenu, ArraySize(mainMenu), false, LM_SETTINGS, "PkgMgr").index;
+        choice = listMenu(mainMenu, ArraySize(mainMenu), false, LM_SETTINGS, getTranslation(TextKey::PKGMGR)).index;
         switch (choice) {
         case 0: manageMenu(); break;
         case 1: loadMenu(); break;

@@ -69,15 +69,24 @@ void execute_application() {
 
 // Additional features screen
 void e() {
-    const NString menu[] = {"FileBrowser", "View Image",   "Wallpaper Modes",
-                            "Set Time",    "Task Manager", "Package Manager"};
+    const NString menu[] = {getTranslation(TextKey::LM_EXTRA_FILE_BROWSER),
+                            getTranslation(TextKey::LM_EXTRA_VIEW_IMAGE),
+                            getTranslation(TextKey::LM_EXTRA_WALLPAPER_TEST),
+                            getTranslation(TextKey::LM_EXTRA_SET_TIME),
+                            getTranslation(TextKey::LM_EXTRA_TASK_MANAGER),
+                            getTranslation(TextKey::LM_EXTRA_PKG_MANAGER)};
 
-    const NString wallpaperModes[] = {"CENTERED",  "TILED",           "FILLED",
-                                      "STRETCHED", "FIT_HORIZONTALY", "FIT_VERTICALY"};
+    const NString wallpaperModes[] = {getTranslation(TextKey::WALLPAPER_CENTERED),
+                                      getTranslation(TextKey::WALLPAPER_TILED),
+                                      getTranslation(TextKey::WALLPAPER_FILLED),
+                                      getTranslation(TextKey::WALLPAPER_STRETCHED),
+                                      getTranslation(TextKey::WALLPAPER_FIT_HOR),
+                                      getTranslation(TextKey::WALLPAPER_FIT_VER)};
     int           wallpaperMode    = IMG_CENTERED;
     int           choice           = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
-        choice = listMenu(menu, ArraySize(menu), false, LM_SETTINGS, "Extra");
+        choice =
+            listMenu(menu, ArraySize(menu), false, LM_SETTINGS, getTranslation(TextKey::LM_EXTRA));
         switch (choice) {
         case 0: ESP_LOGI("E", "PATH: %s", fileBrowser().c_str()); break;
         case 1: ImageViewer(fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|")); break;
