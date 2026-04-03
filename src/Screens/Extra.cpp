@@ -3,7 +3,7 @@
 #include <BuiltinPackages.h>
 #include <Screens/ImageViewer.h>
 #include <Screens/TaskManager.h>
-
+#include <System/LanguageSystem.h>
 /*
  * ## Executes application from sdcard
  *
@@ -12,6 +12,7 @@
  *
  */
 void execute_application() {
+    return; // TODO
 #ifndef PC
     NString file_path = fileBrowser("/", "bin");
     if (file_path.isEmpty()) { return; }

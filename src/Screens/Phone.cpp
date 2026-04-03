@@ -1,5 +1,5 @@
 #include "Phone.h"
-
+#include <System/LanguageSystem.h>
 // Check if SIM card can make calls
 bool isAbleToCall = false;
 // Check if someone answered our call
@@ -130,7 +130,7 @@ void callActivity(Contact contact) {
     tft.fillRect(0, 26, 240, 294, TFT_BLACK);
     tft.setTextColor(TFT_WHITE);
     changeFont(2);
-    const char* callEnded = "End of Call..";
+    NString callEnded = "End of Call..";
     tft.setCursor(120 - tft.textWidth(callEnded) / 2, 150);
     tft.print(callEnded);
     currentRenderTarget->present();
@@ -159,7 +159,7 @@ void contactss() {
         NString contactNames[contacts.size()];
         for (size_t i = 0; i < contacts.size(); ++i) { contactNames[i] = contacts[i].name; }
         LM_RET_VALUE choice =
-            listMenu(contactNames, contacts.size(), false, LM_CONTACTS, "Address Book");
+            listMenu(contactNames, contacts.size(), false, LM_CONTACTS, getTranslation(TextKey::LM_ADDRESS_BOOK));
         int selectedContactIndex = choice.index;
 
         if (selectedContactIndex != LISTMENU_EXIT && contacts.size() > 0) {

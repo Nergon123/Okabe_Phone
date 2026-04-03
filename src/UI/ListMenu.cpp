@@ -2,7 +2,7 @@
 
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "System/FontManagement.h"
-
+#include <System/LanguageSystem.h>
 // Header for the list menu
 // @param type Type of menu
 // @param title Title of the menu
@@ -77,7 +77,7 @@ LM_RET_VALUE listMenu(std::vector<mOption> choices, int icount, bool lines, int 
         changeFont(1);
         tft.setTextColor(0);
         tft.setCursor(75, 45);
-        tft.print("< 空の >");
+        tft.print(getTranslation(TextKey::LM_EMPTY));
 
         currentRenderTarget->present();
 

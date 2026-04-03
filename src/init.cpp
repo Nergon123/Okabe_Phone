@@ -5,7 +5,7 @@
 #else
 #include "Platform/Graphics/TFTESPIRenderTarget.h"
 #endif
-
+#include <System/LanguageSystem.h>
 // Function to initialize the storage
 void storageInit() {
     hw->initStorage();
@@ -14,18 +14,17 @@ void storageInit() {
     resPath = preferences.getString("resPath", resPath.c_str());
 
     if (!VFS.exists(resPath)) {
-        recovery(SplitString("Seems that you flashed your device wrongly.Refer to the "
-                             "instructions for more information."));
+        recovery(SplitString(getTranslation(TextKey::RECOVERY_FAIL_NO_RES)));
     }
 
     ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
     progressBar(10, 100, 250);
-    bootText("Loading resource file...");
+    bootText(getTranslation(TextKey::BOOT_LOAD_RES));
     if (!res.Files) {
         NFile* Resource = VFS.open(resPath);
         res.Init(Resource, true);
     }
-    if (!res.Files) { recovery("There was an error when loading resource file."); }
+    if (!res.Files) { recovery(getTranslation(TextKey::RECOVERY_FAIL_FAIL_RES)); }
 
     currentWallpaperPath = preferences.getString("wallpaper", "");
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform/Hardware/Hardware.h"
 #ifndef PC
+#include <System/LanguageSystem.h>
 #include "Platform/Hardware/Drivers/Battery/IP5306.h"
 #include <Connectivity/SIM.h>
 #include <Esp.h>
@@ -12,6 +13,7 @@
 #include <SD.h>
 #include <SPI.h>
 #include <SPIFFS.h>
+#include <System/LanguageSystem.h>
 #include <UI/UIElements.h>
 #include <esp_crc.h>
 #include <esp_debug_helpers.h>
@@ -78,12 +80,12 @@ class DEV_ESP32 : public iHW {
     void   initStorage() override {
 
         ESP_LOGI("SD", "SPI started");
-        bootText("Initializing SDCard...");
+        bootText(getTranslation(TextKey::BOOT_INIT_SDCARD));
         sdcard_exists       = initSDcard(true);
         IFileSystem* spiffs = new Esp32FileSystem(&SPIFFS, FS_INTERNAL);
         IFileSystem* sdcard = new Esp32FileSystem(&SD, FS_EXTERNAL);
         if (sdcard_exists) { VFS.mount("/sd", sdcard); }
-        bootText("Initializing SPIFFS...");
+        bootText(getTranslation(TextKey::BOOT_INIT_SPIFFS));
         if (SPIFFS.begin()) { VFS.mount("/spiffs", spiffs); }
     }
     void  postScreenInit() override { showResetReason(); }
@@ -185,7 +187,7 @@ class DEV_ESP32 : public iHW {
             WiFiClient* stream = http.getStreamPtr();
 
             if (!fileToDownload->available()) {
-                InfoWindow("Failed to open file for writing");
+                InfoWindow(getTranslation(TextKey::IW_FILE_OPEN_FAILED));
                 return;
             }
 
@@ -198,7 +200,7 @@ class DEV_ESP32 : public iHW {
                 if (progressCallback) { progressCallback(downloaded, fileSize); }
             }
             fileToDownload->close();
-            InfoWindow("File downloaded!");
+            InfoWindow(getTranslation(TextKey::IW_FILE_DOWNLOADED));
         }
         else { InfoWindow(NString::format("HTTP error: %d\n", httpCode)); }
         http.end();

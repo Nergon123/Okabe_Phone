@@ -1,5 +1,6 @@
 #include "ResourceSystem.h"
 #include "Generic.h"
+#include <System/LanguageSystem.h>
 Coords czero = {0, 0};
 Coords cnone = {-1, -1};
 
@@ -17,21 +18,21 @@ void ResourceSystem::Init(NFile *Main, bool _important) {
 void ResourceSystem::parseResourceFile(NFile *file, Header &header, bool important) {
     Images.clear();
     if (file->read(reinterpret_cast<uint8_t *>(&header), sizeof(Header)) != sizeof(Header)) {
-        failure("Error when reading Main Header", important);
+        failure(getTranslation(TextKey::RES_FAIL_FILE_HEADER), important);
         return;
     };
     if (strcmp(header.MAGIC, "NerPh") != 0) {
-        failure("Header Mismatch (Wrong file?)", important);
+        failure(getTranslation(TextKey::RES_FAIL_MAGIC_MISMATCH), important);
         file = nullptr;
         return;
     }
     if (header.version != FILE_VERSION) {
-        failure("File version mismatch.", important);
+        failure(getTranslation(TextKey::RES_FAIL_VERSION_MISMATCH), important);
         file = nullptr;
         return;
     }
     if (header.imageCount == 0) {
-        failure("There is no Images...", important);
+        failure(getTranslation(TextKey::RES_FAIL_NO_IMAGES), important);
         file = nullptr;
         return;
     }
@@ -39,7 +40,7 @@ void ResourceSystem::parseResourceFile(NFile *file, Header &header, bool importa
         ImageData img;
         if (file->read(reinterpret_cast<uint8_t *>(&img), sizeof(ImageData)) !=
             sizeof(ImageData)) {
-            failure("Error reading ImageData", important);
+            failure(getTranslation(TextKey::RES_FAIL_IMGDATA), important);
             return;
         }
         ESP_LOGV("RES",
@@ -50,8 +51,8 @@ void ResourceSystem::parseResourceFile(NFile *file, Header &header, bool importa
     }
 }
 
-void ResourceSystem::failure(const char *msg, bool important) {
-    ESP_LOGE("RES", "%s", msg);
+void ResourceSystem::failure(NString msg, bool important) {
+    ESP_LOGE("RES", "%s", msg.c_str());
     if (important) { sysError(msg); }
 }
 
@@ -110,8 +111,7 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
 
         ImageBuffer imageBuffer = GetRGB565(img, lines * img.width * 2, start + i * img.width * 2);
         if (!imageBuffer.pointer) {
-            sysError("\nDRAWIMAGE:Imagebuffer Pointer is null\nprobably something wrong with "
-                     "SPIRAM/PSRAM");
+            sysError(getTranslation(TextKey::RES_FAIL_NULL_IMGBUFFER));
             return false;
         }
         if (img.flags & 1 /*if transparent*/) {
@@ -146,7 +146,7 @@ ImageBuffer ResourceSystem::GetRGB565(ImageData img, size_t size, uint32_t start
 }
 
 void ResourceSystem::CopyToRam(bool checksum) {
-    bootText("Copying file to RAM...");
+    bootText(getTranslation(TextKey::BOOT_CP_FILE_RAM));
 
     if (cache) { free(cache); }
     cache = nullptr;
@@ -165,7 +165,6 @@ void ResourceSystem::CopyToRam(bool checksum) {
 
             if (readB != Files->size()) {
                 ESP_LOGE("CopyToRam", "Size mismatch %u != %u", Files->size(), readB);
-                bootText("copying to ram not successfull.");
 
                 // free(cache[type]);
                 // cache[type] = nullptr;
@@ -178,8 +177,7 @@ void ResourceSystem::CopyToRam(bool checksum) {
                 const char *expected = "CRC32:";
                 if (strcmp(crc32, expected)) {
                     sysWarn(
-                        NString::format("Resource file probably doesn't have\nchecksum!\n\nCRC "
-                                        "anchor is \"%s\"\nbut expected  \"%s\"",
+                        NString::format(getTranslation(TextKey::RES_WARN_NO_CHECKSUM).c_str(),
                                         crc32, expected));
                     return;
                 }
@@ -191,7 +189,7 @@ void ResourceSystem::CopyToRam(bool checksum) {
                 ESP_LOGI("CRC32", "CALCULATED CRC32 is 0x%08X", crc32_calc);
                 if (crc32_val != crc32_calc) {
                     sysWarn(NString::format(
-                        "Checksum check failure:\n\nExpected   0x%08X\nCalculated 0x%08X",
+                        getTranslation(TextKey::RES_WARN_CHECKSUM_FAILURE).c_str(),
                         crc32_val, crc32_calc));
                 }
             }

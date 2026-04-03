@@ -4,14 +4,15 @@
 #include "System/TextManipulation.h"
 #include "UI/ListMenu.h"
 #include "UI/UIElements.h"
+#include <System/LanguageSystem.h>
 #include <algorithm>
-
 // messages menu
 void messages() {
     res.DrawImage(R_MENU_BACKGROUND);
     res.DrawImage(R_MAIL_MENU_L_HEADER);
     res.DrawImage(R_MENU_L_HEADER);
-    NString entries[] = {"Inbox", "Outbox"};
+    NString entries[] = {getTranslation(TextKey::MSGS_INBOX),
+                         getTranslation(TextKey::MSGS_OUTBOX)};
     int     ch        = choiceMenu(entries, ArraySize(entries), false);
     if (ch < 2 && ch >= 0) { inbox(ch); }
     currentScreen = SCREENS::MAINMENU;
@@ -160,7 +161,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                                         content[text_pos - 1] >= 0x7F ? 2 : 1;
                                     content = content.substring(0, text_pos - deletedCharLength) +
                                               content.substring(text_pos, content.length());
-                                    input = BACK;
+                                    input   = BACK;
                                 }
                             }
                         }
@@ -299,7 +300,8 @@ void inbox(bool outbox) {
     bool exit = false;
     while (!exit) {
         exit = true;
-        InfoWindow("Loading messages...", "INFO", false, TFT_BLUE);
+        InfoWindow(getTranslation(TextKey::IW_INBOX_LOAD_MSGS),
+                   getTranslation(TextKey::IW_TITLE_INFO), false, TFT_BLUE);
         std::vector<Message> msgs = parseMessages();
         std::reverse(msgs.begin(), msgs.end());
         std::vector<mOption> messList;
@@ -307,7 +309,9 @@ void inbox(bool outbox) {
         int choice = LISTMENU_NULL;
         while (choice != LISTMENU_EXIT) {
             choice = listMenu(messList, messList.size(), false, LM_MESSAGES,
-                              outbox ? "Outbox" : "Inbox", false, choice)
+                              outbox ? getTranslation(TextKey::MSGS_OUTBOX)
+                                     : getTranslation(TextKey::MSGS_INBOX),
+                              false, choice)
                          .index;
             if (choice >= 0) {
                 exit = !messageActivity(msgs[choice]);

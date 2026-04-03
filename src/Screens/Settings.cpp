@@ -1,5 +1,5 @@
 #include "Settings.h"
-
+#include <System/LanguageSystem.h>
 const int lastImage = 42;
 
 void debugMenu() { InfoWindow("Nope.", "INFO", true, TFT_BLUE); }
@@ -114,7 +114,7 @@ void lookAndFeelSettings() {
             NString filepath = fileBrowser("/", ".nph");
             if (VFS.exists(filepath)) {
                 NFile *resource = VFS.open(filepath);
-                InfoWindow("Applying Theme...", "INFO", false, TFT_BLUE);
+                InfoWindow(getTranslation(TextKey::IW_APPLYING_THEME), "INFO", false, TFT_BLUE);
                 res.Init(resource);
                 res.CopyToRam();
                 if (res.cache) { res.Files->close(); }

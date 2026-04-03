@@ -9,6 +9,7 @@
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
+#include <System/LanguageSystem.h>
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
 
@@ -54,26 +55,12 @@ int start() {
 
     // Chance to change resource file to custom one
     storageInit();
-    loadFont("/spiffs/output.nfnt");
-    LoadedGlyph *glyph =
-        getGlyphData("/spiffs/output.nfnt", 0x4E02); // Preload a font glyph to ensure font file is
-                                                     // read and cached before we draw anything
-    ESP_LOGI("INFO", "Preloaded glyph for char code 0x4E02: %p/%p/%p", glyph,
-             glyph ? glyph->bitmapData : nullptr, glyph ? glyph->fontHolder : nullptr);
-    if (glyph && glyph->fontHolder) {
-        ESP_LOGI("INFO",
-                 "Glyph info: \npointer=%p, charCode=0x%04X, width=%d, height=%d\nbitmapData=%p, "
-                 "fontHolderPath=%s yAdvance=%d\n",
-                 glyph, glyph->charCode, glyph->glyphData.width, glyph->glyphData.height,
-                 glyph->bitmapData, glyph->fontHolder->path.c_str(),
-                 glyph->fontHolder->font[0].yAdvance);
-    }
-    if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
+    if (buttonsHelding(false) == '*') { recovery(getTranslation(TextKey::RECOVERY_MANUAL)); }
 
     res.CopyToRam(true);
     if (res.cache) { res.Files->close(); }
     res.DrawImage(R_BOOT_LOGO);
-    bootText("Initializing RTOS tasks...");
+    bootText(getTranslation(TextKey::BOOT_INIT_RTOS));
     initBackgroundTasks();
 
     ESP_LOGI("DEVICE",
