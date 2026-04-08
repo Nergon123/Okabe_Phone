@@ -136,7 +136,7 @@ INI_API int ini_parse_string_length(const char* string, size_t length, ini_handl
 /* Maximum line length for any line in INI file (stack or heap). Note that
    this must be 3 more than the longest line (due to '\r', '\n', and '\0'). */
 #ifndef INI_MAX_LINE
-#define INI_MAX_LINE 200
+#define INI_MAX_LINE 400
 #endif
 
 /* Nonzero to allow heap line buffer to grow via realloc(), zero for a
@@ -149,7 +149,7 @@ INI_API int ini_parse_string_length(const char* string, size_t length, ini_handl
 /* Initial size in bytes for heap line buffer. Only applies if INI_USE_STACK
    is zero. */
 #ifndef INI_INITIAL_ALLOC
-#define INI_INITIAL_ALLOC 200
+#define INI_INITIAL_ALLOC 400
 #endif
 
 /* Stop parsing on first error (default is to keep parsing). */

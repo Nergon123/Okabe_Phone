@@ -182,14 +182,23 @@ void TFT_STUB::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
 fontFile_t TFT_STUB::getFont(uint32_t c, font_t font_) const {
     if (font_.isGFXFontSet && font_.font_set && font_.font_set_count) {
         for (int i = 0; i < font_.font_set_count; i++) {
-            FontHolder *fh = getFontHolder(font_.font_set[i].path);
-            if (!fh) { continue; }
-            for (int j = 0; j < fh->font.size(); j++) {
-                const GFXfontPacked &fnt = fh->font[j];
+            if (font_.font_set[i].isFile) {
+                FontHolder *fh = getFontHolder(font_.font_set[i].path);
+                if (!fh) { continue; }
+                for (int j = 0; j < fh->font.size(); j++) {
+                    const GFXfontPacked &fnt = fh->font[j];
 
-                if (c >= fnt.first && c <= fnt.last) {
-                    ESP_LOGI("DISPLAY", "Found glyph 0x%X in font %s", c,
-                             font_.font_set[i].path.c_str());
+                    if (c >= fnt.first && c <= fnt.last) {
+                //        ESP_LOGI("DISPLAY", "Found glyph 0x%X in font %s", c,
+                //                 font_.font_set[i].path.c_str());
+                        return font_.font_set[i];
+                    }
+                }
+            }
+            else if (font_.font_set[i].gfont) {
+                const GFXfont *fnt = font_.font_set[i].gfont;
+                if (c >= fnt->first && c <= fnt->last) {
+                   // ESP_LOGI("DISPLAY", "Found glyph 0x%X in font", c);
                     return font_.font_set[i];
                 }
             }
@@ -292,11 +301,12 @@ void TFT_STUB::renderGlyph(uint32_t c, int16_t x, int16_t y) {
 
     if (!currentFont.font_file.gfont && !currentFont.font_set) { return; }
 
-    if (currentFont.font_file.gfont) { fnt = currentFont.font_file; }
+    //if (currentFont.font_file.gfont) { fnt = currentFont.font_file; }
 
     if (!fnt.gfont) { return; }
     if (c < fnt.gfont->first || c > fnt.gfont->last) {
-        ESP_LOGW("FONT", "UNKNOWN CHAR 0x%04X", c);
+        ESP_LOGW("FONT", "UNKNOWN CHAR 0x%04X; f: 0x%04X l: 0x%04X", c, fnt.gfont->first,
+                 fnt.gfont->last);
         c = '?';
     }
 

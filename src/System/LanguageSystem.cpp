@@ -1,6 +1,9 @@
 #include "LanguageSystem.h"
 #include <Defines.h>
+#include <Platform/FileSystem/VFS.h>
+#include <System/Ini/INIReader.h>
 #include <unordered_map>
+const char                          *LTAG              = "Lang";
 std::unordered_map<TextKey, NString> text_placeholders = {
     {TextKey::UNKNOWN_STRING, "UNKNOWN_STRING"},
     {TextKey::RECOVERY_FAIL_NO_RES, "RECOVERY_FAIL_NO_RES"},
@@ -290,23 +293,93 @@ NString getTranslation(TextKey id) {
     try {
         translation = text_placeholders.at(id);
     } catch (std::exception &e3) {
-        ESP_LOGE("Lang", "NO PLACEHOLDER(%s) | ID: %d", e3.what(), (int)id);
+        ESP_LOGE(LTAG, "NO PLACEHOLDER(%s) | ID: %d", e3.what(), (int)id);
     }
     try {
         translation = custom.at(id);
 
     } catch (std::exception &e1) {
         if (custom.size() > 0) {
-            ESP_LOGE("Lang", "TRY 1:%s | ID: %d | ", e1.what(), (int)id, translation.c_str());
+            ESP_LOGE(LTAG, "TRY 1:%s | ID: %d | %s", e1.what(), (int)id, translation.c_str());
         }
         try {
             translation = english.at(id);
-        } catch (std::exception &e2) {
-            ESP_LOGE("Lang", " TRY 2:%s | ID: %d", e2.what(), (int)id);
-        }
+        } catch (std::exception &e2) { ESP_LOGE(LTAG, "TRY 2:%s | ID: %d", e2.what(), (int)id); }
     }
 
     return translation;
 }
+NString workSTR(const NString &str) {
+    NString output;
+    int     length = str.length();
 
-bool setLanguage(NString path) {}
+    if (length == 0) { return output; }
+    output.reserve(length);
+    int start = 0;
+    int end   = length;
+
+    if (length >= 2 && str[0] == '"' && str[length - 1] == '"') {
+        start = 1;
+        end   = length - 1;
+    }
+
+    for (int i = start; i < end; i++) {
+        char ch = str[i];
+
+        if (ch == '\\' && i + 1 < end) {
+            char next = str[i + 1];
+
+            switch (next) {
+            case 'n': output += '\n'; break;
+            case 't': output += '\t'; break;
+            case '\\': output += '\\'; break;
+            case '"': output += '"'; break;
+            case 'r': output += '\r'; break;
+            default: output += next; break;
+            }
+
+            i++;
+        }
+        else { output += ch; }
+    }
+
+    return output;
+}
+bool setLanguage(NString path) {
+    NFile *file     = VFS.open(path);
+    size_t filesize = file->size();
+    char  *text     = (char *)ps_malloc(filesize);
+    size_t read     = file->read(text, filesize);
+    file->close();
+    if (filesize != read) {
+        ESP_LOGE(LTAG, "ERROR when reading file!");
+        return false;
+    }
+    INIReader reader(text, filesize);
+    if (reader.ParseError()) {
+        ESP_LOGE(LTAG, "%s", reader.ParseErrorMessage().c_str());
+        return false;
+    };
+
+    for (int i = 0; i < (int)TextKey::LAST; i++) {
+        NString text =
+            reader.GetString("translation", text_placeholders.at((TextKey)i), "__NULLL__");
+        text = workSTR(text);
+        if (text == "__NULLL__") {
+            ESP_LOGW(LTAG, "Missing translation entry for %s", text_placeholders.at((TextKey)i));
+            continue;
+        }
+
+        try {
+            custom.erase((TextKey)i);
+        } catch (std::exception &ex) {};
+
+        try {
+            custom.insert({(TextKey)i, text});
+        } catch (std::exception &ex) {
+            ESP_LOGE(LTAG, "Failed to replace TextKey %d, %s", i, ex.what());
+        }
+    }
+    free(text);
+    return true;
+}

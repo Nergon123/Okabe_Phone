@@ -186,5 +186,12 @@ enum class TextKey {
     PKGMGR_MANAGE, // "Manage packages"
     PKGMGR_ADD, // "Add new package"
     PKGMGR, // "PkgMgr"
+
+    
+    
+    
+    
+    LAST
 };
 NString getTranslation(TextKey id);
+bool setLanguage(NString path);
