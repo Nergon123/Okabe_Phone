@@ -353,7 +353,9 @@ NString workSTR(const NString &str) {
 
 void    resetLanguage() { custom.clear(); }
 NString setLanguage(NString path) {
+    if(path.isEmpty())return "No path";
     NFile *file     = VFS.open(path);
+    if(!file) return "No file";
     size_t filesize = file->size();
     char  *text     = (char *)ps_malloc(filesize);
     size_t read     = file->read(text, filesize);
