@@ -373,7 +373,7 @@ NString setLanguage(NString path) {
             reader.GetString("translation", text_placeholders.at((TextKey)i), "__NULLL__");
         text = workSTR(text);
         if (text == "__NULLL__") {
-            ESP_LOGW(LTAG, "Missing translation entry for %s", text_placeholders.at((TextKey)i));
+            ESP_LOGW(LTAG, "Missing translation entry for %s", text_placeholders.at((TextKey)i).c_str());
             continue;
         }
 

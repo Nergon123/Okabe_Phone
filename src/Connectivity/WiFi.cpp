@@ -59,7 +59,7 @@ void WiFiList() {
     if (WiFi.getMode() == WIFI_MODE_STA || WiFi.getMode() == WIFI_MODE_APSTA) {
         while (true) {
             InfoWindow(getTranslation(TextKey::IW_WIFI_SCANNING),
-                       getTranslation(TextKey::IW_TITLE_INFO), false);
+                       IW_TITLE::INFO);
             int count = WiFi.scanNetworks();
             if (count == 0) { return; }
             uint8_t              enc[count];
