@@ -310,7 +310,7 @@ void inbox(bool outbox) {
     while (!exit) {
         exit = true;
         InfoWindow(getTranslation(TextKey::IW_INBOX_LOAD_MSGS),
-                   getTranslation(TextKey::IW_TITLE_INFO), false, TFT_BLUE);
+                   IW_TITLE::INFO,false);
         std::vector<Message> msgs = parseMessages();
         std::reverse(msgs.begin(), msgs.end());
         std::vector<mOption> messList;

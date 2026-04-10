@@ -2,7 +2,7 @@
 #include <System/LanguageSystem.h>
 const int lastImage = 42;
 
-void debugMenu() { InfoWindow("Nope.", "INFO", true, TFT_BLUE); }
+void debugMenu() { InfoWindow("Nope.", IW_TITLE::INFO); }
 
 void connectivityMenu() {
     NString options[] = {
@@ -85,10 +85,39 @@ void inputSettings() {
         }
     }
 }
+
+void languageSettings() {
+    NString options[] = {"System English", getTranslation(TextKey::LM_SYS_LANG_CHOOSE)};
+    int     selection = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+        selection = choiceMenu(options, ArraySize(options), false);
+        switch (selection) {
+        case 0:
+            resetLanguage();
+            preferences.begin("System");
+            preferences.putString("Language", "");
+            preferences.end();
+            break;
+        case 1:
+            NString path = fileBrowser("/", ".ini");
+            if (path.isEmpty()) { break; }
+            NString err = setLanguage(path);
+            if (!err.isEmpty()) { InfoWindow(err); }
+            preferences.begin("System");
+            preferences.putString("Language", path.c_str());
+            preferences.end();
+            break;
+        }
+    }
+}
+
 void systemSettings() {
     NString options[] = {
         getTranslation(TextKey::LM_SYS_DATE_TIME),
         getTranslation(TextKey::LM_SYS_INPUT),
+        getTranslation(TextKey::LM_SYS_LANG),
     };
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
@@ -98,6 +127,7 @@ void systemSettings() {
         switch (selection) {
         case 0: setTime(); break;
         case 1: inputSettings(); break;
+        case 2: languageSettings(); break;
         }
     }
 }
@@ -116,8 +146,7 @@ void lookAndFeelSettings() {
             NString filepath = fileBrowser("/", ".nph");
             if (VFS.exists(filepath)) {
                 NFile *resource = VFS.open(filepath);
-                InfoWindow(getTranslation(TextKey::IW_APPLYING_THEME),
-                           getTranslation(TextKey::IW_TITLE_INFO), false, TFT_BLUE);
+                InfoWindow(getTranslation(TextKey::IW_APPLYING_THEME), IW_TITLE::INFO);
                 res.Init(resource);
                 res.CopyToRam();
                 if (res.cache) { res.Files->close(); }

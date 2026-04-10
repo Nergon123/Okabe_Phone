@@ -23,8 +23,12 @@ enum NetworkStatusBarIcons {
     NSB_BT_CONNECTED = 11
 };
 
-void InfoWindow(NString reason, NString title = getTranslation(TextKey::IW_TITLE_ERROR),
-                bool WaitForButton = true, uint16_t titlecolor = TFT_RED);
+enum class IW_TITLE {
+    INFO,
+    ERROR,
+};
+
+void InfoWindow(NString reason, IW_TITLE _title = IW_TITLE::ERROR, bool WaitForButton = true);
 bool confirmation(NString reason, NString yes = getTranslation(TextKey::CONFIRM_YES),
                   NString no = getTranslation(TextKey::CONFIRM_NO));
 void drawStatusBar(bool force = false);

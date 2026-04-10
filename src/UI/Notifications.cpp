@@ -109,8 +109,13 @@ bool confirmation(NString reason, NString yes, NString no) {
 // Window)
 // @param WaitForButton wait for any button or show message like loading screen
 // @param titleColor RGB565 color for title
-void InfoWindow(NString reason, NString title, bool WaitForButton, uint16_t titlecolor) {
-    int xpos = 0;
+void InfoWindow(NString reason, IW_TITLE _title, bool WaitForButton) {
+    std::map<IW_TITLE, std::pair<NString, uint16_t>> titles = {
+        {IW_TITLE::INFO, {getTranslation(TextKey::IW_TITLE_INFO), TFT_BLUE}},
+        {IW_TITLE::ERROR, {getTranslation(TextKey::IW_TITLE_ERROR), TFT_RED}}};
+    NString  title      = titles.at(_title).first;
+    uint16_t titlecolor = titles.at(_title).second;
+    int      xpos       = 0;
     drawWallpaper();
     res.DrawImage(R_FULL_NOTIFICATION);
     tft.setTextSize(1);

@@ -75,7 +75,9 @@ int start() {
 
     // register package from fs
     PaStor.init();
-
+    preferences.begin("System");
+    setLanguage(preferences.getString("Language"));
+    preferences.end();
     progressBar(100, 100, 250);
     if (buttonsHelding(false) == '#') { AT_test(); }
     currentRenderTarget->setUseBuffer(true);

@@ -9,7 +9,7 @@
 // Function to initialize the storage
 void storageInit() {
     hw->initStorage();
-   // setLanguage("/spiffs/UA.ini");
+
     preferences.begin("System", false);
     resPath = preferences.getString("resPath", resPath.c_str());
 

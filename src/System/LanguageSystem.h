@@ -121,6 +121,8 @@ enum class TextKey {
     LM_INP_LAYOUTS, // "Layouts"
     LM_INP_TIMINGS, // "Timings"
 
+    LM_SYS_LANG,  // "Language"
+    LM_SYS_LANG_CHOOSE, // "Custom Language"
     // "Confirm Delay: %d ms"
     // NOTE: It meant to represent delay from choosing character
     // to actually printing it. "Confirm delay" can be confusing
@@ -166,32 +168,29 @@ enum class TextKey {
     WALLPAPER_STRETCHED, // "Streched"
     WALLPAPER_FIT_HOR,   // "Fit horizontally"
     WALLPAPER_FIT_VER,   // "Fit vertically"
-    CONFIRM_YES,  // "Yes"
-    CONFIRM_NO, // "No"
+    CONFIRM_YES,         // "Yes"
+    CONFIRM_NO,          // "No"
 
-    PKGS_CONF_REMOVE, //"Remove package?"
-    PKGS_CONF_REMOVED, //"Package removed!"
-    PKGS_ERR_FAIL_REMOVE, //"Failed to remove the package""
-    PKGS_ACT_OPT_RUN, // "Run package"
-    PKGS_ACT_OPT_INFO, // "Info"
-    PKGS_ACT_OPT_REMOVE, // "Remove"
+    PKGS_CONF_REMOVE,        //"Remove package?"
+    PKGS_CONF_REMOVED,       //"Package removed!"
+    PKGS_ERR_FAIL_REMOVE,    //"Failed to remove the package""
+    PKGS_ACT_OPT_RUN,        // "Run package"
+    PKGS_ACT_OPT_INFO,       // "Info"
+    PKGS_ACT_OPT_REMOVE,     // "Remove"
     PKGS_ACT_OPT_UNREGISTER, // "(DEBUG) Unregister"
 
     PKGS_INFOWINDOW, // "Name: %s\nID: %s\nVersion: %s"
 
     PKGS_LOAD_ERR, // "Package load error!"
-    PKGS_LOADED, // "Package loaded!"
+    PKGS_LOADED,   // "Package loaded!"
     PKGS_ID_EXIST, // "ID already exist.\nPackage not loaded!"
 
     PKGMGR_MANAGE, // "Manage packages"
-    PKGMGR_ADD, // "Add new package"
-    PKGMGR, // "PkgMgr"
+    PKGMGR_ADD,    // "Add new package"
+    PKGMGR,        // "PkgMgr"
 
-    
-    
-    
-    
     LAST
 };
+void    resetLanguage();
 NString getTranslation(TextKey id);
-bool setLanguage(NString path);
+NString setLanguage(NString path); // returns error message

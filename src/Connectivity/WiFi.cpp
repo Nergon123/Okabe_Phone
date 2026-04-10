@@ -13,8 +13,7 @@ void WifiPrompt(NString ssid, uint8_t encryptionType, NString password = NString
                     getTranslation(TextKey::WIFI_CONNECT_BUTTON),
                     getTranslation(TextKey::CANCEL_BUTTON))) {
         WiFi.begin(ssid.c_str(), password.c_str());
-        InfoWindow(getTranslation(TextKey::IW_WIFI_CONNECTING),
-                   getTranslation(TextKey::IW_TITLE_INFO), false, TFT_BLUE);
+        InfoWindow(getTranslation(TextKey::IW_WIFI_CONNECTING), IW_TITLE::INFO);
         if ((WiFiGenericClass::getMode() & WIFI_MODE_STA) == 0) {
             InfoWindow(getTranslation(TextKey::IW_WIFI_ISNT_EN));
             return;
@@ -50,10 +49,7 @@ void WifiPrompt(NString ssid, uint8_t encryptionType, NString password = NString
             errorResult =
                 NString::format(getTranslation(TextKey::IW_WIFI_UNKNOWN).c_str(), result);
         }
-        InfoWindow(errorResult,
-                   isError ? getTranslation(TextKey::IW_TITLE_ERROR)
-                           : getTranslation(TextKey::IW_TITLE_INFO),
-                   true, isError ? TFT_RED : TFT_BLUE);
+        InfoWindow(errorResult, isError ? IW_TITLE::ERROR : IW_TITLE::INFO);
     }
 }
 #endif
@@ -63,7 +59,7 @@ void WiFiList() {
     if (WiFi.getMode() == WIFI_MODE_STA || WiFi.getMode() == WIFI_MODE_APSTA) {
         while (true) {
             InfoWindow(getTranslation(TextKey::IW_WIFI_SCANNING),
-                       getTranslation(TextKey::IW_TITLE_INFO), false, TFT_BLUE);
+                       getTranslation(TextKey::IW_TITLE_INFO), false);
             int count = WiFi.scanNetworks();
             if (count == 0) { return; }
             uint8_t              enc[count];
@@ -109,18 +105,20 @@ static wifi_mode_t bitsToWifiMode(uint8_t bits) {
 
 void setHostname(bool Ap) {
     NString            hostname = WiFi.getHostname();
-    std::vector<FIELD> fields   = {FIELD(getTranslation(TextKey::WIFI_HOSTNAME_FIELD), hostname, false)};
+    std::vector<FIELD> fields   = {
+        FIELD(getTranslation(TextKey::WIFI_HOSTNAME_FIELD), hostname, false)};
     if (InputFieldS(getTranslation(TextKey::WIFI_SET_HOSTNAME), fields)) {
         if (Ap) { WiFi.softAPsetHostname(hostname.c_str()); }
         else { WiFi.setHostname(hostname.c_str()); };
     }
 }
 void WiFiSettings() {
-    std::vector<mOption> options = {
-        mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTOCONNECT), Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
-        mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTORECONNECT), Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
-        mOption(getTranslation(TextKey::WIFI_SET_HOSTNAME))};
-    int choice = LISTMENU_NULL;
+    std::vector<mOption> options = {mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTOCONNECT),
+                                            Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
+                                    mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTORECONNECT),
+                                            Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
+                                    mOption(getTranslation(TextKey::WIFI_SET_HOSTNAME))};
+    int                  choice  = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
         options.at(0).icon_index =
             WiFi.getAutoConnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;

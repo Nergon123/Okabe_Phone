@@ -10,7 +10,7 @@ static void removePopup(std::string &id) {
     if (yes) {
         res = PaStor.removePackage(id);
         if (res == 0) {
-            InfoWindow(getTranslation(TextKey::PKGS_CONF_REMOVED),getTranslation(TextKey::IW_TITLE_INFO), true, TFT_GREEN);
+            InfoWindow(getTranslation(TextKey::PKGS_CONF_REMOVED),IW_TITLE::INFO);
         }
         else { InfoWindow(getTranslation(TextKey::PKGS_ERR_FAIL_REMOVE)); }
     }
@@ -37,7 +37,7 @@ static void actionPopup(int index) {
     case 1:
         InfoWindow(SplitString(NString::format(getTranslation(TextKey::PKGS_INFOWINDOW).c_str(),
                                                pkgInfo->name.c_str(), pkgInfo->id.c_str(), pkgInfo->version.c_str())),
-                   getTranslation(TextKey::IW_TITLE_INFO), true, TFT_BLACK);
+                   IW_TITLE::INFO);
         break;
     case 2: removePopup(pkgInfo->id); break;
     case 3: pm.unregisterPackage(pkgInfo->id); break;
@@ -83,10 +83,9 @@ static void loadMenu() {
     }
 
     res = pm.registerPackage(p);
-    if (res == 0) { InfoWindow(getTranslation(TextKey::PKGS_LOADED), getTranslation(TextKey::IW_TITLE_INFO), true, TFT_BLACK); }
+    if (res == 0) { InfoWindow(getTranslation(TextKey::PKGS_LOADED), IW_TITLE::INFO); }
     else {
-        InfoWindow(getTranslation(TextKey::PKGS_ID_EXIST), getTranslation(TextKey::IW_TITLE_INFO),
-                   true, TFT_BLACK);
+        InfoWindow(getTranslation(TextKey::PKGS_ID_EXIST));
     }
 }
 

@@ -90,6 +90,8 @@ std::unordered_map<TextKey, NString> text_placeholders = {
     {TextKey::LM_SYS_INPUT, "LM_SYS_INPUT"},
     {TextKey::LM_INP_LAYOUTS, "LM_INP_LAYOUTS"},
     {TextKey::LM_INP_TIMINGS, "LM_INP_TIMINGS"},
+    {TextKey::LM_SYS_LANG, "LM_SYS_LANG"},
+    {TextKey::LM_SYS_LANG_CHOOSE, "LM_SYS_LANG_CHOOSE"},
     {TextKey::LM_INP_TIME_CONFIRM_DELAY, "LM_INP_TIME_CONFIRM_DELAY"},
     {TextKey::TEL_RECIEVING_CALL, "TEL_RECIEVING_CALL"},
     {TextKey::TEL_CALLING, "TEL_CALLING"},
@@ -141,6 +143,7 @@ std::unordered_map<TextKey, NString> text_placeholders = {
     {TextKey::PKGMGR_MANAGE, "PKGMGR_MANAGE"},
     {TextKey::PKGMGR_ADD, "PKGMGR_ADD"},
     {TextKey::PKGMGR, "PKGMGR"},
+
 };
 
 std::unordered_map<TextKey, NString> english = {
@@ -233,6 +236,8 @@ std::unordered_map<TextKey, NString> english = {
     {TextKey::LM_SYS_INPUT, "Input Settings"},
     {TextKey::LM_INP_LAYOUTS, "Layouts"},
     {TextKey::LM_INP_TIMINGS, "Timings"},
+    {TextKey::LM_SYS_LANG, "Language"},
+    {TextKey::LM_SYS_LANG_CHOOSE, "Custom Language"},
     {TextKey::LM_INP_TIME_CONFIRM_DELAY, "Confirm Delay: %d ms"},
     {TextKey::TEL_RECIEVING_CALL, "Recieving call"},
     {TextKey::TEL_CALLING, "Calling..."},
@@ -345,7 +350,9 @@ NString workSTR(const NString &str) {
 
     return output;
 }
-bool setLanguage(NString path) {
+
+void    resetLanguage() { custom.clear(); }
+NString setLanguage(NString path) {
     NFile *file     = VFS.open(path);
     size_t filesize = file->size();
     char  *text     = (char *)ps_malloc(filesize);
@@ -353,12 +360,12 @@ bool setLanguage(NString path) {
     file->close();
     if (filesize != read) {
         ESP_LOGE(LTAG, "ERROR when reading file!");
-        return false;
+        return "ERROR when reading file!";
     }
     INIReader reader(text, filesize);
     if (reader.ParseError()) {
         ESP_LOGE(LTAG, "%s", reader.ParseErrorMessage().c_str());
-        return false;
+        return reader.ParseErrorMessage();
     };
 
     for (int i = 0; i < (int)TextKey::LAST; i++) {
@@ -381,5 +388,5 @@ bool setLanguage(NString path) {
         }
     }
     free(text);
-    return true;
+    return "";
 }
