@@ -38,8 +38,9 @@ class SDL2RenderTarget : public RenderTarget {
     }
 
     void drawPixel(int16_t x, int16_t y, uint16_t color) override {
-        // color = (color >> 8) | (color << 8);
-
+         color = (color >> 8) | (color << 8);
+        x += vp.x;
+        y += vp.y;
         if (!buffer || x < vp.x || y < vp.y || x >= vp.x + vp.w || y >= vp.y + vp.h) { return; }
         buffer[y * width + x] = color;
     }

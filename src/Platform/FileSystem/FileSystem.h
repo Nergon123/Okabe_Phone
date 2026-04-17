@@ -16,6 +16,7 @@ class IFile {
     virtual bool        isDirectory()                         = 0;
     virtual bool        available()                           = 0;
     virtual std::string name() const                          = 0;
+    virtual std::string path() const                          = 0;
     virtual void        printf(const char* format, ...)       = 0;
     virtual void        println(const char* str = "")         = 0;
     virtual bool        readLine(char* buffer, size_t maxLen) = 0;

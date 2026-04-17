@@ -156,7 +156,7 @@ void recovery(NString message) {
         int choice = listMenuNonGraphical(options, options.size(), getTranslation(TextKey::RECOVERY_TITLE_CHOOSE_ACT), 150);
         switch (choice) {
         case 0:
-            NString TempResPath = fileBrowser("/", ".nph", false);
+            NString TempResPath = fileBrowser("/", "|.nph|.npz|", false);
             resPath             = TempResPath;
             NFile *nFile        = VFS.open(resPath);
             res.Init(nFile);

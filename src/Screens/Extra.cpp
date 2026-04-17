@@ -71,38 +71,21 @@ void execute_application() {
 void e() {
     const NString menu[] = {getTranslation(TextKey::LM_EXTRA_FILE_BROWSER),
                             getTranslation(TextKey::LM_EXTRA_VIEW_IMAGE),
-                            getTranslation(TextKey::LM_EXTRA_WALLPAPER_TEST),
                             getTranslation(TextKey::LM_EXTRA_SET_TIME),
                             getTranslation(TextKey::LM_EXTRA_TASK_MANAGER),
                             getTranslation(TextKey::LM_EXTRA_PKG_MANAGER)};
 
-    const NString wallpaperModes[] = {getTranslation(TextKey::WALLPAPER_CENTERED),
-                                      getTranslation(TextKey::WALLPAPER_TILED),
-                                      getTranslation(TextKey::WALLPAPER_FILLED),
-                                      getTranslation(TextKey::WALLPAPER_STRETCHED),
-                                      getTranslation(TextKey::WALLPAPER_FIT_HOR),
-                                      getTranslation(TextKey::WALLPAPER_FIT_VER)};
-    int           wallpaperMode    = IMG_CENTERED;
-    int           choice           = LISTMENU_NULL;
+
+    int choice        = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
         choice =
             listMenu(menu, ArraySize(menu), false, LM_SETTINGS, getTranslation(TextKey::LM_EXTRA));
         switch (choice) {
         case 0: ESP_LOGI("E", "PATH: %s", fileBrowser().c_str()); break;
         case 1: ImageViewer(fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|")); break;
-        case 2: {
-            NString path = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|");
-            if (path.isEmpty()) { break; }
-            while (wallpaperMode != LISTMENU_EXIT) {
-                wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
-                drawImageWithMode(path, (ImageMode)wallpaperMode, 0, 26);
-                while (buttonsHelding() == -1);
-            }
-            break;
-        }
-        case 3: setTime(); break;
-        case 4: TaskManager(); break;
-        case 5: pm.runPackage(SPKG_ID(PkgMgr)); break;
+        case 2: setTime(); break;
+        case 3: TaskManager(); break;
+        case 4: pm.runPackage(SPKG_ID(PkgMgr)); break;
         }
     };
     currentScreen = SCREENS::MAINMENU;

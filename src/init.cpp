@@ -23,7 +23,9 @@ void storageInit() {
     if (!res.Files) {
         NFile* Resource = VFS.open(resPath);
         res.Init(Resource, true);
+        ESP_LOGI("RESOURCES","Initialized file %s",Resource->path().c_str());
     }
+
     if (!res.Files) { recovery(getTranslation(TextKey::RECOVERY_FAIL_FAIL_RES)); }
 
     currentWallpaperPath = preferences.getString("wallpaper", "");

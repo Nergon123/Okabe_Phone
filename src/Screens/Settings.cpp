@@ -1,6 +1,7 @@
 #include "Settings.h"
 #include <System/LanguageSystem.h>
 const int lastImage = 42;
+#include <Screens/ImageViewer.h>
 
 void debugMenu() { InfoWindow("Nope.", IW_TITLE::INFO); }
 
@@ -146,7 +147,7 @@ void lookAndFeelSettings() {
             NString filepath = fileBrowser("/", ".nph");
             if (VFS.exists(filepath)) {
                 NFile *resource = VFS.open(filepath);
-                InfoWindow(getTranslation(TextKey::IW_APPLYING_THEME), IW_TITLE::INFO);
+                InfoWindow(getTranslation(TextKey::IW_APPLYING_THEME), IW_TITLE::INFO, false);
                 res.Init(resource);
                 res.CopyToRam();
                 if (res.cache) { res.Files->close(); }
@@ -193,7 +194,23 @@ void advancedSettings() {
     }
 }
 
-void changeWallpaper() {}
+
+
+void changeWallpaper() {
+    const NString wallpaperModes[] = {
+        getTranslation(TextKey::WALLPAPER_CENTERED), getTranslation(TextKey::WALLPAPER_TILED),
+        getTranslation(TextKey::WALLPAPER_FILLED),   getTranslation(TextKey::WALLPAPER_STRETCHED),
+        getTranslation(TextKey::WALLPAPER_FIT_HOR),  getTranslation(TextKey::WALLPAPER_FIT_VER)};
+    int     wallpaperMode = IMG_CENTERED;
+    NString path          = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|");
+    ESP_LOGI("E", "Path is %s", path.c_str());
+
+    if (path.isEmpty()) { ESP_LOGI("E", "Path is empty! %s", path.c_str()); }
+    wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
+    drawImageWithMode(path, (ImageMode)wallpaperMode, 0, 26);
+
+    wallpaperMode = IMG_CENTERED;
+}
 
 // Function to show the settings menu
 // This function is called when the user wants to change settings

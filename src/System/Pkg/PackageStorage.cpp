@@ -111,7 +111,7 @@ int PackageStorage::removePackage(const std::string &id) {
     int                      res  = 0;
     std::vector<std::string> list = VFS.listDir(PKG_STORAGE_DIR);
 
-    ESP_LOGD(TAG, "Items in dir: %i", list.size());
+    ESP_LOGD(TAG, "Items in dir: %zd", list.size());
     ESP_LOGD(TAG, "Id to remove: %s", id.c_str());
 
     ZipPackage      *pkg;

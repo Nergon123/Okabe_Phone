@@ -1,18 +1,37 @@
 #include "ResourceSystem.h"
 #include "Generic.h"
 #include <System/LanguageSystem.h>
+#include <System/Zip/ZipFileProvider.h>
 Coords czero = {0, 0};
 Coords cnone = {-1, -1};
 
 void ResourceSystem::Init(NFile *Main, bool _important) {
     important = _important;
     Files     = Main;
-
     free(cache);
     cache = nullptr;
     Images.clear();
+    ZipFileProvider *zfp = new ZipFileProvider();
+    if (NString(Main->name()).endsWith(".npz")) {
+
+        int res = zfp->openZip(Main);
+        if (res) {
+            ESP_LOGE("ZIP", "opening zip failed with code %d", res);
+           zfp = nullptr; 
+            return;
+        }
+        res = zfp->setFile("file.nph");
+        if (res) {
+            ESP_LOGE("ZIP", "setting file failed with code %d", res);
+            zfp = nullptr;
+            return;
+        }
+        Files = zfp;
+    }
+
     if (!Files) { ESP_LOGW("RES", "resource file is not available. Using Built-in."); }
     else { parseResourceFile(Files, Headers, important); }
+    if (zfp) { zfp->setFile("file.nph"); }
 };
 
 void ResourceSystem::parseResourceFile(NFile *file, Header &header, bool important) {
@@ -171,14 +190,13 @@ void ResourceSystem::CopyToRam(bool checksum) {
             }
             if (checksum) {
                 char crc32[7];
-                memcpy(crc32, (const uint8_t *)cache + Files->size() - 10, 6);
+                memcpy(crc32, (const uint8_t *)cache + readB - 10, 6);
                 crc32[6] = 0;
                 ESP_LOGI("CRC32", "CRC STR: %s", crc32);
                 const char *expected = "CRC32:";
                 if (strcmp(crc32, expected)) {
-                    sysWarn(
-                        NString::format(getTranslation(TextKey::RES_WARN_NO_CHECKSUM).c_str(),
-                                        crc32, expected));
+                    sysWarn(NString::format(getTranslation(TextKey::RES_WARN_NO_CHECKSUM).c_str(),
+                                            crc32, expected));
                     return;
                 }
                 const uint8_t *crc_bytes = cache + Files->size() - 4; // last 4 bytes
@@ -188,9 +206,9 @@ void ResourceSystem::CopyToRam(bool checksum) {
                 ESP_LOGI("CRC32", "PARSED CRC32 is 0x%08X", crc32_val);
                 ESP_LOGI("CRC32", "CALCULATED CRC32 is 0x%08X", crc32_calc);
                 if (crc32_val != crc32_calc) {
-                    sysWarn(NString::format(
-                        getTranslation(TextKey::RES_WARN_CHECKSUM_FAILURE).c_str(),
-                        crc32_val, crc32_calc));
+                    sysWarn(
+                        NString::format(getTranslation(TextKey::RES_WARN_CHECKSUM_FAILURE).c_str(),
+                                        crc32_val, crc32_calc));
                 }
             }
         }

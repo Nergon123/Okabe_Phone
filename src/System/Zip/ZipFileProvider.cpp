@@ -65,7 +65,7 @@ int ZipFileProvider::setFile(const std::string &path) {
     ESP_LOGD(TAG, "openCurrentFile: %i", res);
     if (res != UNZ_OK) { goto error; }
 
-    res = UNZIP::getFileInfo(&m_fileInfo, NULL, NULL, NULL, NULL, NULL, 0);
+    res = UNZIP::getFileInfo(&m_fileInfo, NULL, 0, NULL, 0, NULL, 0);
     ESP_LOGD(TAG, "getFileInfo: %i", res);
     if (res < 0) { goto file_error; }
 
@@ -102,7 +102,7 @@ size_t ZipFileProvider::size() {
 }
 
 bool ZipFileProvider::available() {
-    if (m_isFileOpen) { return getCurrentFilePos() < m_fileInfo.uncompressed_size; }
+    if (m_isFileOpen) { return (uLong)getCurrentFilePos() < m_fileInfo.uncompressed_size; }
     else { return false; }
 }
 

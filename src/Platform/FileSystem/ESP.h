@@ -5,10 +5,11 @@
 #include "SPIFFS.h"
 
 class Esp32File : public IFile {
-    File file;
+    File    file;
+    fs::FS* fs;
 
   public:
-    Esp32File(File f) : file(f) {}
+    Esp32File(File f, fs::FS* filesystem) : file(f), fs(filesystem) {}
     Esp32File() : file(File()) {}
     size_t read(void* buf, size_t len) override { return file.read((uint8_t*)buf, len); }
     size_t write(const void* buf, size_t len) override {
@@ -21,7 +22,14 @@ class Esp32File : public IFile {
     bool        isDirectory() override { return file.isDirectory(); }
     bool        available() override { return file.available(); }
     std::string name() const override { return std::string(file.name()); }
-    void        printf(const char* format, ...) override {
+    std::string path() const override {
+        if (!fs) { return file.path(); }
+        //hacks i guess...
+        if (fs == &SPIFFS) { return "/spiffs" + std::string(file.path()); }
+        else if (fs == &SD) { return "/sd" + std::string(file.path()); }
+        return std::string(file.path());
+    }
+    void printf(const char* format, ...) override {
         char    buffer[1024];
         va_list args;
         va_start(args, format);
@@ -61,7 +69,7 @@ class Esp32FileSystem : public IFileSystem {
 
     IFile* open(const std::string& path, const char* mode) override {
         File f = fs->open(path.c_str(), mode);
-        return f ? new Esp32File(f) : nullptr;
+        return f ? new Esp32File(f, fs) : nullptr;
     }
 
     std::vector<std::string> listDir(const std::string& path) override {

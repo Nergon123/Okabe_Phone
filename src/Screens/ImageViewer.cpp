@@ -97,7 +97,9 @@ void ImageViewer(const NString path) {
 }
 
 void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h) {
-    if (path.isEmpty()) { return; }
+    if (path.isEmpty()) {
+        ESP_LOGE("IMVIEWER","Path is empty");
+        return; }
     if (w <= 0 || h <= 0) {
         InfoWindow(openError);
         return;
@@ -116,6 +118,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
         if (activeImage.buffer) {
             tft.pushImage((w / 2) - (imageW / 2), (h / 2) - (imageH / 2), imageW, imageH,
                           activeImage.buffer);
+            currentRenderTarget->present();
             free(activeImage.buffer);
         }
         else { InfoWindow(openError); }
@@ -131,6 +134,8 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
                     tft.pushImage(ix, iy, imageW, imageH, activeImage.buffer);
                 }
             }
+            currentRenderTarget->present();
+
             free(activeImage.buffer);
         }
         else { InfoWindow(openError); }
@@ -148,6 +153,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
         if (activeImage.buffer) {
             tft.pushImage((w - newImageW) / 2, (h - newImageH) / 2, newImageW, newImageH,
                           activeImage.buffer);
+            currentRenderTarget->present();
 
             free(activeImage.buffer);
         }
@@ -158,6 +164,8 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
         activeImage = displayPNG(path, w, h, false);
         if (activeImage.buffer) {
             tft.pushImage(0, 0, w, h, activeImage.buffer);
+            currentRenderTarget->present();
+
             free(activeImage.buffer);
         }
         else { InfoWindow(openError); }
@@ -175,6 +183,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
         if (activeImage.buffer) {
             tft.pushImage((w - newImageW) / 2, (h - newImageH) / 2, newImageW, newImageH,
                           activeImage.buffer);
+            currentRenderTarget->present();
 
             free(activeImage.buffer);
         }

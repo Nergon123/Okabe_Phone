@@ -84,12 +84,12 @@ LoadedGlyph* getGlyphData(const NString& path, uint16_t charCode) {
         holder->file = VFS.open(path, "rb");
     }
 
-    for (int i = 0; i < holder->font.size(); i++) {
+    for (size_t i = 0; i < holder->font.size(); i++) {
         if (charCode >= holder->font[i].first && charCode <= holder->font[i].last) {
             GFXfontPacked& fnt = holder->font[i];
             size_t         pos = 0;
             pos += sizeof(fontsHeader);
-            for (int j = 0; j < i; j++) {
+            for (size_t j = 0; j < i; j++) {
                 pos += sizeof(GFXfontPacked);
                 pos += holder->font[j].bitmapSize;
                 pos += (holder->font[j].last - holder->font[j].first + 1) * sizeof(GFXglyphPacked);
@@ -123,7 +123,7 @@ LoadedGlyph* getGlyphData(const NString& path, uint16_t charCode) {
             if (bytesRead != bytesToRead) {
                 ESP_LOGE(TAG,
                          "Failed to read bitmap data for char code 0x%04X in font %s"
-                         "(expected %d bytes, got %d bytes) pos=%d, fileSize=%d posBeforeRead=%d",
+                         "(expected %zd bytes, got %zd bytes) pos=%zd, fileSize=%zd posBeforeRead=%zd",
                          charCode, path.c_str(), bytesToRead, bytesRead, holder->file->position(),
                          holder->file->size(), posBeforeRead);
                 free(bitmapData);
