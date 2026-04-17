@@ -65,8 +65,8 @@ class StdFile : public IFile {
     }
 
     std::string name() const override { return filePath; }
-
-    void println(const char* str = "") override {
+    std::string path() const override { return filePath; }
+    void        println(const char* str = "") override {
         write(str, strlen(str));
         write("\n", 1);
     }

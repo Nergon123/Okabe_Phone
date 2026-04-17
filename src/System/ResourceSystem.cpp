@@ -183,7 +183,7 @@ void ResourceSystem::CopyToRam(bool checksum) {
             size_t readB = Files->read(reinterpret_cast<uint8_t *>(cache), Files->size());
 
             if (readB != Files->size()) {
-                ESP_LOGE("CopyToRam", "Size mismatch %u != %u", Files->size(), readB);
+                ESP_LOGE("CopyToRam", "Size mismatch %zd != %zd", Files->size(), readB);
 
                 // free(cache[type]);
                 // cache[type] = nullptr;
