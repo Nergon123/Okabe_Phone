@@ -322,7 +322,7 @@ void      drawWallpaper() {
     if (currentWallpaper.path.isEmpty() && currentWallpaper.id < 0) {
         res.DrawImage(R_DEFAULT_WALLPAPER);
     }
-    else if (!currentWallpaper.path.isEmpty()) {
+    else if (!currentWallpaper.path.isEmpty() && VFS.exists(currentWallpaper.path)) {
         drawImageWithMode(currentWallpaper.path, currentWallpaper.mode, 0, 26);
     }
     else if (currentWallpaper.id >= 0) { res.DrawImage(currentWallpaper.id); }
@@ -400,9 +400,11 @@ void changeWallpaper() {
 
                     currentWallpaper.path = twp.path;
                     currentWallpaper.mode = (ImageMode)wallpaperMode;
+                    currentWallpaper.id   = -1;
                 preferences.begin("System");
                 preferences.putString("wallpaper_path", currentWallpaper.path.c_str());
                 preferences.putInt("wallpaper_mode", currentWallpaper.mode);
+                preferences.putInt("wallpaper_id", currentWallpaper.id);
                 preferences.end();
                 return;
             }

@@ -77,13 +77,15 @@ int start() {
     PaStor.init();
     preferences.begin("System");
     setLanguage(preferences.getString("Language"));
+    currentWallpaper.path = preferences.getString("wallpaper_path");
+    currentWallpaper.mode = (ImageMode)preferences.getInt("wallpaper_mode",IMG_CENTERED);
+    currentWallpaper.id = preferences.getInt("wallpaper_id",0);
     preferences.end();
     progressBar(100, 100, 250);
     if (buttonsHelding(false) == '#') { AT_test(); }
     currentRenderTarget->setUseBuffer(true);
     millSleep = hw->millis();
     return 0;
-    
 }
 
 void setup() { start(); }
