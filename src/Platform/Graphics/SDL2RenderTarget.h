@@ -15,6 +15,8 @@ class SDL2RenderTarget : public RenderTarget {
         window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowW,
                                   windowH, SDL_WINDOW_SHOWN);
         if (window) {
+            ESP_LOGI("SDL2 RT", "Created SDL window with size %dx%d (scaled by %d)", windowW, windowH,
+                     SDLScale);
             renderer = SDL_CreateRenderer(window, -1, 0);
             SDL_RenderSetScale(renderer, SDLScale, SDLScale);
             SDL_RenderSetLogicalSize(renderer, windowW, windowH);

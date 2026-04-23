@@ -23,7 +23,7 @@ uint16_t* resizeRGB565buffer(uint16_t* buffer, int inputW, int inputH, int targe
     for (int j = 0; j < inputH; j++) {
         for (int i = 0; i < inputW; i++) {
             int      idx        = (j * inputW + i);
-            uint16_t pixel      = buffer[idx];
+            uint16_t pixel      = buffer[idx] >>8 | (buffer[idx] & 0xFF) << 8; // convert back to RGB565
             uint8_t  r          = ((pixel >> 11) & 0x1F) << 3;
             uint8_t  g          = ((pixel >> 5) & 0x3F) << 2;
             uint8_t  b          = (pixel & 0x1F) << 3;
@@ -54,7 +54,6 @@ uint16_t* resizeRGB565buffer(uint16_t* buffer, int inputW, int inputH, int targe
         }
     }
     free(resizedRGB);
-    free(buffer);
     return resizedRGB565;
 }
 
@@ -98,6 +97,7 @@ image_data displayPNG(const NString path, int w, int h, bool onlyParams) {
         ESP_LOGE("IMG", "Failed to open %s", path.c_str());
         return {-1, -1, "Failed to open file", nullptr};
     }
+    printf("Loading image from file: %s\n", path.c_str());
 
     int            width, height, channels;
     unsigned char* img = loadPNGFromFile(f, &width, &height, &channels);
@@ -120,5 +120,5 @@ image_data displayPNG(const NString path, int w, int h, bool onlyParams) {
     if (!resized) { return {-1, -1, "Failed to resize image", nullptr}; }
     uint16_t* data = convertRGBToRGB565(resized, targetW, targetH);
 
-    return {width, height, nullptr, data};
+    return {targetW, targetH, nullptr, data};
 }

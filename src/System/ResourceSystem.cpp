@@ -17,7 +17,7 @@ void ResourceSystem::Init(NFile *Main, bool _important) {
         int res = zfp->openZip(Main);
         if (res) {
             ESP_LOGE("ZIP", "opening zip failed with code %d", res);
-           zfp = nullptr; 
+            zfp = nullptr;
             return;
         }
         res = zfp->setFile("file.nph");
@@ -84,6 +84,13 @@ ImageData ResourceSystem::GetImageDataByID(uint16_t id) {
 }
 
 ImageData ResourceSystem::GetImageDataByImage(Image image) {
+    if (image.w) {
+        ImageData img;
+        img.id     = R_NULL_IMAGE;
+        img.width  = image.w;
+        img.height = image.h;
+        return img;
+    }
     if (Images.empty()) {
         ESP_LOGE("RES", "Images are empty!!!!");
         return R_NULL_IMAGE;
@@ -91,6 +98,7 @@ ImageData ResourceSystem::GetImageDataByImage(Image image) {
     for (ImageData img : Images) {
         if (img.id == image.id) { return img; }
     }
+
     return ImageData(R_NULL_IMAGE);
 }
 
@@ -143,6 +151,29 @@ bool ResourceSystem::DrawImage(uint16_t id, uint8_t index, Coords pos, Coords st
 }
 bool ResourceSystem::DrawImage(Image image, uint8_t index, Coords pos, Coords startpos,
                                Coords endpos) {
+
+    if (image.buffer) { image.type = RES_POINTER; }
+    else if (image.id != R_NULL_IMAGE) { image.type = RES_RESFILE; }
+    else if (image.source) { image.type = RES_ADDRFILE; }
+    else { image.type = RES_NULLU8; }
+    switch (image.type) {
+    case RES_NULLU8: return false;
+    case RES_RESFILE: return DrawImage(image.id, index, pos, startpos, endpos);
+    case RES_POINTER: tft.pushImage(pos.x, pos.y, image.w, image.h, image.buffer); return true;
+    case RES_ADDRFILE: {
+        ImageBuffer imgBuf =
+            GetRGB565(GetImageDataByID(image.id), image.sw * image.sh * 2, image.id);
+        if (!imgBuf.pointer) {
+            sysError(getTranslation(TextKey::RES_FAIL_NULL_IMGBUFFER));
+            return false;
+        }
+        tft.pushImage(pos.x, pos.y, image.w ? image.w : image.sw, image.h ? image.h : image.sh,
+                      imgBuf.pointer);
+        if (imgBuf.freeNeeded) { free(imgBuf.pointer); }
+        return true;
+    }
+    default: return false;
+    }
     return DrawImage(image.id, index, pos, startpos, endpos);
 }
 
@@ -217,4 +248,4 @@ void ResourceSystem::CopyToRam(bool checksum) {
 
 ResourceSystem res;
 
-void drawWallpaper() { res.DrawImage(R_DEFAULT_WALLPAPER); }
+

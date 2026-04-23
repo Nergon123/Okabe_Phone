@@ -8,8 +8,16 @@
 #include "UI/ListMenu.h"
 #include "UI/Notifications.h"
 #include "UI/UIElements.h"
+#include <Screens/ImageViewer.h>
 
 void settings();
 void setTime();
 int  gallery();
 void ringtoneSelector(bool isMail);
+struct wallpaper {
+    int       id;
+    NString   path;
+    ImageMode mode;
+};
+extern wallpaper currentWallpaper;
+void             drawWallpaper();

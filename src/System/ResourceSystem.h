@@ -171,4 +171,4 @@ class ResourceSystem {
     void        failure(NString msg = "Unknown Error", bool important = false);
     void        parseResourceFile(NFile *file, Header &header, bool important = false);
 };
-void drawWallpaper();
+

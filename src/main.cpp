@@ -102,6 +102,7 @@ int main(int argc, char **argv) {
                 }
 
                 SDLScale = SDLScale > 0 ? SDLScale : 1;
+                ESP_LOGI("MAIN", "Set SDL scale to %d", SDLScale);
                 i++;
             }
             else {

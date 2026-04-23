@@ -1,24 +1,24 @@
 #include "ImageViewer.h"
 #include <GlobalVariables.h>
 #include <Platform/Graphics/RGB565BufferRenderTarget.h>
-#include <UI/UIElements.h>
 #include <System/LanguageSystem.h>
-NString openError = getTranslation(TextKey::IW_FAIL_OPEN_IMG);
-void redrawStatus(float zoom) {
+#include <UI/UIElements.h>
+NString openError;
+void    redrawStatus(float zoom) {
     Viewport vp = tft.getViewport();
     tft.resetViewport();
     int zoompercentage = zoom * 100;
     res.DrawImage(R_LIST_MENU_BACKGROUND);
-    drawHeader(getTranslation(TextKey::IMAGE_VIEWER), LM_SETTINGS, NString::format("%d%%", zoompercentage));
+    drawHeader(getTranslation(TextKey::IMAGE_VIEWER), LM_SETTINGS,
+               NString::format("%d%%", zoompercentage));
     tft.setViewport(vp);
 }
 
 void ImageViewer(const NString path) {
+    openError = getTranslation(TextKey::IW_FAIL_OPEN_IMG);
     if (path.isEmpty()) { return; }
     image_data activeImage = displayPNG(path);
-    if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) {
-        InfoWindow(openError);
-    }
+    if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) { InfoWindow(openError); }
     if (activeImage.errorReason) {
         InfoWindow(activeImage.errorReason);
         return;
@@ -98,8 +98,9 @@ void ImageViewer(const NString path) {
 
 void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h) {
     if (path.isEmpty()) {
-        ESP_LOGE("IMVIEWER","Path is empty");
-        return; }
+        ESP_LOGE("IMVIEWER", "Path is empty");
+        return;
+    }
     if (w <= 0 || h <= 0) {
         InfoWindow(openError);
         return;
@@ -122,6 +123,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             free(activeImage.buffer);
         }
         else { InfoWindow(openError); }
+        tft.resetViewport();
         return;
     }
 
@@ -139,7 +141,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             free(activeImage.buffer);
         }
         else { InfoWindow(openError); }
-
+        tft.resetViewport();
         return;
     }
     case IMG_FILLED: {
@@ -158,6 +160,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             free(activeImage.buffer);
         }
         else { InfoWindow(openError); }
+        tft.resetViewport();
         return;
     }
     case IMG_STRETCHED: {
@@ -169,6 +172,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             free(activeImage.buffer);
         }
         else { InfoWindow(openError); }
+        tft.resetViewport();
         return;
     }
     case IMG_FIT_HORIZONTALY:
@@ -188,8 +192,9 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             free(activeImage.buffer);
         }
         else { InfoWindow(openError); }
+        tft.resetViewport();
         return;
     }
-    default: return;
+    default: tft.resetViewport(); return;
     }
 }

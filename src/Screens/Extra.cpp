@@ -75,8 +75,7 @@ void e() {
                             getTranslation(TextKey::LM_EXTRA_TASK_MANAGER),
                             getTranslation(TextKey::LM_EXTRA_PKG_MANAGER)};
 
-
-    int choice        = LISTMENU_NULL;
+    int choice = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
         choice =
             listMenu(menu, ArraySize(menu), false, LM_SETTINGS, getTranslation(TextKey::LM_EXTRA));

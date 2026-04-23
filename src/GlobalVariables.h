@@ -44,9 +44,11 @@ struct mOption {
     uint8_t icon_index;
     void (*_function)();
     int data;
+    mOption (*_getOptionData)(void* args);
+    void *getOptArgs;
     mOption(NString label, Image image = Image(), uint8_t icon_index = 0,
-            void (*_function)() = nullptr, int data = 0)
-        : label(label), image(image), icon_index(icon_index), _function(_function), data(data) {};
+            void (*_function)() = nullptr, int data = 0, mOption (*_getOptionData)(void* args) = nullptr, void* getOptArgs = nullptr)
+        : label(label), image(image), icon_index(icon_index), _function(_function), data(data), _getOptionData(_getOptionData), getOptArgs(getOptArgs) {};
 };
 
 struct KeypadLayout {

@@ -6,7 +6,7 @@ static TFTESPIRenderTarget tftTarget(240, 320, true);
 
 RenderTarget* setupTFTESPIRenderTarget() { return &tftTarget; };
 #else
-static SDL2RenderTarget tftTarget(240, 320, "Emulator");
 
-RenderTarget* setupSDL2RenderTarget() { return &tftTarget; };
+RenderTarget* setupSDL2RenderTarget() { return new SDL2RenderTarget(240, 320, "Emulator"); };
+
 #endif

@@ -26,16 +26,24 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
                     bool unselected) {
     uint16_t color_active = 0xFDD3;
 
-    int yy = (lindex * esize) + y;
+    if (choice._getOptionData != nullptr) {
+        void *args                     = choice.getOptArgs;
+        mOption (*getDataFunc)(void *) = choice._getOptionData;
+        choice                         = getDataFunc(args);
+        choice.getOptArgs              = args; // restore getOptArgs after getting updated choice
+        choice._getOptionData = getDataFunc; // restore _getOptionData after getting updated choice
+    }
 
+    int yy = (lindex * esize) + y;
     if (selected) { tft.fillRect(0, yy, 240, esize, color_active); }
     else if (unselected) {
         res.DrawImage(R_LIST_MENU_BACKGROUND, 0, {.x = 0, .y = yy}, {.x = 0, .y = yy},
                       {.x = 0, .y = yy + esize});
     }
-    if (choice.image.id != R_NULL_IMAGE) {
-        ImageData imgData = res.GetImageDataByImage(choice.image);
-        res.DrawImage(choice.image, choice.icon_index, {x - imgData.width, yy}, {0, 0}, {0, 0});
+    if (choice.image.type != RES_NULLU8) {
+        ImageData icon = res.GetImageDataByImage(choice.image);
+        res.DrawImage(choice.image, choice.icon_index,
+                      {x - std::max(choice.image.w, (int)icon.width), yy}, {0, 0}, {0, 0});
     }
     if (lines) {
         tft.drawLine(0, yy, 240, yy, 0);
@@ -46,6 +54,13 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
     tft.setCursor(x + 3, yy + 17);
     tft.print(choice.label);
 }
+
+struct listMenuEntry {
+    NString   label;
+    uint16_t *image;
+    uint16_t  w, h;
+    listMenuEntry (*getMenuData)();
+};
 
 /// Function to display a list menu
 /// @param choices Array of mOption objects representing the menu options
@@ -96,16 +111,22 @@ LM_RET_VALUE listMenu(std::vector<mOption> choices, int icount, bool lines, int 
         return LM_RET_VALUE(LISTMENU_EXIT);
     }
     int entry_size = tft.fontHeight();
-
+    if (choices[0]._getOptionData) {
+        choices[0] = choices[0]._getOptionData(choices[0].getOptArgs);
+    }
     if (choices[0].image.type != RES_NULLU8) {
+
         ImageData icon = res.GetImageDataByImage(choices[0].image);
-        if (icon.height > entry_size) { entry_size = icon.height; }
-        x += icon.width;
+        int       cw   = icon.width;
+        int       ch   = icon.height;
+        x += cw;
+        entry_size = std::max(entry_size, ch);
     }
     else if (forceIcons) { x += entry_size; }
     if (findex >= 0 && findex < icount) { selected = findex; }
 
     int per_page = 269 / entry_size;
+    if(per_page <= 0) per_page = 1; 
     pages        = (icount + per_page - 1) / per_page;
 
     listMenu_header(type, label, page, pages, y);

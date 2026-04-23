@@ -1,7 +1,8 @@
 #include "Settings.h"
 #include <System/LanguageSystem.h>
+#include <algorithm>
+#include <cctype>
 const int lastImage = 42;
-#include <Screens/ImageViewer.h>
 
 void debugMenu() { InfoWindow("Nope.", IW_TITLE::INFO); }
 
@@ -146,7 +147,7 @@ void lookAndFeelSettings() {
         case 0:
             NString filepath = fileBrowser("/", ".nph");
             if (VFS.exists(filepath)) {
-                NFile *resource = VFS.open(filepath);
+                NFile* resource = VFS.open(filepath);
                 InfoWindow(getTranslation(TextKey::IW_APPLYING_THEME), IW_TITLE::INFO, false);
                 res.Init(resource);
                 res.CopyToRam();
@@ -194,24 +195,228 @@ void advancedSettings() {
     }
 }
 
+std::map<std::string, image_data> wallpaperPreviewCache;
 
+void drawSelectedFrame(uint16_t* buffer, int w, int h) {
+    if (!buffer || w <= 0 || h <= 0) { return; }
+    // draw red frame around the image
+    uint16_t color = 0x00F8; // Red in RGB565
+    for (int x = 0; x < w; x++) {
+        buffer[x]               = color; // top red line
+        buffer[(h - 1) * w + x] = color; // bottom red line
+    }
+    for (int y = 0; y < h; y++) {
+        buffer[y * w]           = color; // left red line
+        buffer[y * w + (w - 1)] = color; // right red line
+    }
+}
 
+mOption wallpaperPreview(void* data) {
+    wallpaper* wp = (wallpaper*)data;
+    if (!wp->path.isEmpty()) {
+        image_data idata = {}; // Initialize to zero
+
+        auto it = wallpaperPreviewCache.find(wp->path);
+        if (it != wallpaperPreviewCache.end()) { idata = it->second; }
+
+        if (wallpaperPreviewCache.size() > 30) {
+            auto first = wallpaperPreviewCache.begin();
+            if (first->second.buffer) { free(first->second.buffer); }
+            wallpaperPreviewCache.erase(first);
+        }
+
+        if (!idata.buffer) {
+            image_data params = displayPNG(wp->path, 0, 0, true);
+            if (params.errorReason || params.srcwidth <= 0 || params.srcheight <= 0) {
+                ESP_LOGI("WP PREVIEW", "Error reading image info for preview: %s",
+                         params.errorReason ? params.errorReason : "invalid dimensions");
+                return mOption(wp->path.substring(wp->path.lastIndexOf('/') + 1), Image(), 0,
+                               nullptr);
+            }
+
+            // 34x42 preview
+            float ratio = (float)params.srcwidth / (float)params.srcheight;
+            int previewMaxW = 34;
+            int previewMaxH = 42;
+            int w = 34, h = 42;
+            if (params.srcheight > previewMaxH || params.srcwidth > previewMaxW) {
+                if (ratio > 1) { // wider than taller
+                    w = previewMaxW;
+                    h = previewMaxW / ratio;
+                }
+                else { // taller than wider
+                    h = previewMaxH;
+                    w = previewMaxH * ratio;
+                }
+            }
+            idata = displayPNG(wp->path, w, h, false);
+            if (idata.errorReason || !idata.buffer) {
+                ESP_LOGI("WP PREVIEW", "Error loading image for preview: %s",
+                         idata.errorReason ? idata.errorReason : "no buffer");
+                return mOption(wp->path.substring(wp->path.lastIndexOf('/') + 1), Image(), 0,
+                               nullptr);
+            }
+
+            wallpaperPreviewCache[wp->path] = idata;
+        }
+
+        if (wp->path == currentWallpaper.path) {
+            drawSelectedFrame(idata.buffer, idata.srcwidth, idata.srcheight);
+        }
+
+        return mOption(wp->path.substring(wp->path.lastIndexOf('/') + 1),
+                       Image(idata.buffer, idata.srcwidth, idata.srcheight, idata.srcwidth,
+                             idata.srcheight, true));
+    }
+
+    if (wp->id >= 0) {
+        auto it = wallpaperPreviewCache.find(std::to_string(wp->id));
+        if (it != wallpaperPreviewCache.end()) {
+            image_data idata = it->second;
+            if (wp->id == currentWallpaper.id) {
+                drawSelectedFrame(idata.buffer, idata.srcwidth, idata.srcheight);
+            }
+            return mOption("Wallpaper " + NString(wp->id),
+                           Image(idata.buffer, idata.srcwidth, idata.srcheight, idata.srcwidth,
+                                 idata.srcheight, true));
+        }
+
+        int       previewMaxW = 34;
+        int       previewMaxH = 42;
+        ImageData idata       = res.GetImageDataByID(wp->id);
+        if (idata.width <= 0 || idata.height <= 0) {
+            return mOption("Wallpaper " + NString(wp->id), Image(), 0, nullptr);
+        }
+        float ratio = (float)idata.width / (float)idata.height;
+        int   w     = 34;
+        int   h     = 42;
+        if (idata.height > previewMaxH || idata.width > previewMaxW) {
+            if (ratio > 1) {
+                w = previewMaxW;
+                h = previewMaxW / ratio;
+            }
+            else {
+                h = previewMaxH;
+                w = previewMaxH * ratio;
+            }
+        }
+        uint16_t* previewBuffer =
+            resizeRGB565buffer(res.GetRGB565(idata).pointer, idata.width, idata.height, w, h);
+        if (!previewBuffer) {
+            return mOption("Wallpaper " + NString(wp->id), Image(), 0, nullptr);
+        }
+        if (wp->id == currentWallpaper.id) {
+            drawSelectedFrame(previewBuffer, w, h);
+        }
+        image_data previewData = {w, h, nullptr, previewBuffer};
+        wallpaperPreviewCache[std::to_string(wp->id)] = previewData;
+        return mOption("Wallpaper " + NString(wp->id),
+                       Image(previewBuffer, 0, 0, w, h, 0), 0, nullptr);
+    }
+
+    return mOption("", Image(), 0, nullptr);
+}
+#define WALLPAPER_DIR "/sd/Wallpapers/"
+wallpaper currentWallpaper;
+void      drawWallpaper() {
+    if (currentWallpaper.path.isEmpty() && currentWallpaper.id < 0) {
+        res.DrawImage(R_DEFAULT_WALLPAPER);
+    }
+    else if (!currentWallpaper.path.isEmpty()) {
+        drawImageWithMode(currentWallpaper.path, currentWallpaper.mode, 0, 26);
+    }
+    else if (currentWallpaper.id >= 0) { res.DrawImage(currentWallpaper.id); }
+}
 void changeWallpaper() {
+    wallpaper     twp;
     const NString wallpaperModes[] = {
         getTranslation(TextKey::WALLPAPER_CENTERED), getTranslation(TextKey::WALLPAPER_TILED),
         getTranslation(TextKey::WALLPAPER_FILLED),   getTranslation(TextKey::WALLPAPER_STRETCHED),
         getTranslation(TextKey::WALLPAPER_FIT_HOR),  getTranslation(TextKey::WALLPAPER_FIT_VER)};
-    int     wallpaperMode = IMG_CENTERED;
-    NString path          = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|");
-    ESP_LOGI("E", "Path is %s", path.c_str());
+    const NString wallpaperConfirmOptions[] = {"Change mode",
+                                               getTranslation(TextKey::CONFIRM_BUTTON),
+                                               getTranslation(TextKey::CANCEL_BUTTON)};
 
-    if (path.isEmpty()) { ESP_LOGI("E", "Path is empty! %s", path.c_str()); }
-    wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
-    drawImageWithMode(path, (ImageMode)wallpaperMode, 0, 26);
+    std::vector<std::string> wallpaperFiles = VFS.listDir(WALLPAPER_DIR);
+    uint8_t                  resourceCount    = res.GetImageDataByID(R_DEFAULT_WALLPAPER).count;
+    std::vector<mOption>     options;
+    std::vector<wallpaper>   wallpaperEntries;
+    wallpaperEntries.reserve(resourceCount + wallpaperFiles.size() + 1);
+    std::vector<std::string> supportedFormats = {".png", ".jpg", ".jpeg", ".bmp",
+                                                 ".tga", ".pic", ".gif"};
+    for (int i = 0; i < resourceCount; i++) {
+        wallpaperEntries.push_back({i, "", IMG_CENTERED});
+        options.push_back(
+            mOption("", Image(), 0, nullptr, 0, wallpaperPreview,
+                    (void*)&wallpaperEntries.back()));
+    }
+    for (const std::string& file : wallpaperFiles) {
 
-    wallpaperMode = IMG_CENTERED;
+        size_t dotPos = file.find_last_of('.');
+        if (dotPos == std::string::npos) { continue; }
+        std::string extension = file.substr(dotPos);
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+                       [](unsigned char c) { return (char)std::tolower(c); });
+        if (std::find(supportedFormats.begin(), supportedFormats.end(), extension) !=
+            supportedFormats.end()) {
+
+            wallpaperEntries.push_back({-1, WALLPAPER_DIR + file, IMG_CENTERED});
+            options.push_back(
+                mOption("", Image(), 0, nullptr, 0, wallpaperPreview,
+                        (void*)&wallpaperEntries.back()));
+        }
+    }
+
+    options.push_back(
+        mOption(/*getTranslation(TextKey::LM_SET_WALLPAPER_FILE_BROWSER)*/ "more wallpeppers"));
+    NString path;
+    int     selection = LISTMENU_NULL;
+    while (selection != LISTMENU_EXIT) {
+        res.DrawImage(R_MENU_BACKGROUND);
+        res.DrawImage(R_SETTING_MENU_L_HEADER);
+        selection = listMenu(options, options.size(), 1, LM_SETTINGS,
+                             getTranslation(TextKey::LM_SET_CHNG_WALLPAPER), false, selection);
+        if (selection < 0) { return; }
+        if (selection >= 0 && selection < options.size() - 1) {
+            twp = *(wallpaper*)options[selection].getOptArgs;
+        }
+        if (selection == options.size() - 1) {
+            NString path = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|");
+            if (path.isEmpty()) { return; }
+            ESP_LOGI("E", "Path is %s", path.c_str());
+
+            if (path.isEmpty()) { ESP_LOGI("E", "Path is empty! %s", path.c_str()); }
+            twp = wallpaper{-1, path, IMG_CENTERED};
+        }
+        int wallpaperMode = IMG_CENTERED;
+        if (twp.path.isEmpty()) { return; }
+        while (true) {
+            wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
+            drawImageWithMode(twp.path, (ImageMode)wallpaperMode, 0, 26);
+            while (buttonsHelding() == -1);
+            int confirm =
+                choiceMenu(wallpaperConfirmOptions, ArraySize(wallpaperConfirmOptions), true);
+            if (confirm == 1) {
+
+                    currentWallpaper.path = twp.path;
+                    currentWallpaper.mode = (ImageMode)wallpaperMode;
+                preferences.begin("System");
+                preferences.putString("wallpaper_path", currentWallpaper.path.c_str());
+                preferences.putInt("wallpaper_mode", currentWallpaper.mode);
+                preferences.end();
+                return;
+            }
+            if (confirm == 2) { return; }
+
+            if (wallpaperPreviewCache.size() > 0) {
+                for (auto it = wallpaperPreviewCache.begin(); it != wallpaperPreviewCache.end();) {
+                    if (it->second.buffer) { free(it->second.buffer); }
+                    it = wallpaperPreviewCache.erase(it);
+                }
+            }
+        }
+    }
 }
-
 // Function to show the settings menu
 // This function is called when the user wants to change settings
 // It allows the user to change the wallpaper, ringtones, etc.
