@@ -199,7 +199,10 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
         c_offset     = (pixelLen > boxWidth) ? (boxWidth - pixelLen) : 0;
         tft.setCursor(5 + c_offset, yoff + viewY);
         tft.setTextColor(clr_normal);
-        drawBorders(viewX, viewY, boxWidth, boxHeight, clr_border_down, clr_border_up);
+        if (selected)
+            tft.drawRect(viewX, viewY, boxWidth, boxWidth, TFT_RED);
+        else
+            drawBorders(viewX, viewY, boxWidth, boxHeight, clr_border_down, clr_border_up);
         tft.print(content);
 
         if (selected && drawCursor) {

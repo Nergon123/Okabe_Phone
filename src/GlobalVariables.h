@@ -126,6 +126,7 @@ enum LIST_ICONS {
     LM_ICO_WIRELESS_2       = 12,
     LM_ICO_WIRELESS_3       = 13,
     LM_ICO_WIRELESS_4       = 14,
+    LM_ICO_PACKAGE          = 15
 };
 
 extern TFT_STUB tft;

@@ -96,11 +96,9 @@ void ImageViewer(const NString path) {
     tft.resetViewport();
 }
 
-void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h) {
-    if (path.isEmpty()) {
-        ESP_LOGE("IMVIEWER", "Path is empty");
-        return;
-    }
+-
+bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h) {
+    if (path.isEmpty()) { return false; }
     if (w <= 0 || h <= 0) {
         InfoWindow(openError);
         return;
@@ -108,7 +106,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
     image_data activeImage = displayPNG(path); // metadata only
     if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) {
         InfoWindow(openError);
-        return;
+        return false;
     }
     int imageW = activeImage.srcwidth;
     int imageH = activeImage.srcheight;
@@ -122,7 +120,7 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             currentRenderTarget->present();
             free(activeImage.buffer);
         }
-        else { InfoWindow(openError); }
+        else { InfoWindow(openError); return false;}
         tft.resetViewport();
         return;
     }
@@ -140,7 +138,9 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
 
             free(activeImage.buffer);
         }
-        else { InfoWindow(openError); }
+
+        else { InfoWindow(openError)); return false; }
+
         tft.resetViewport();
         return;
     }
@@ -159,7 +159,10 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
 
             free(activeImage.buffer);
         }
-        else { InfoWindow(openError); }
+
+        else { InfoWindow(openError); return false; }
+        
+
         tft.resetViewport();
         return;
     }
@@ -171,7 +174,8 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
 
             free(activeImage.buffer);
         }
-        else { InfoWindow(openError); }
+        else {InfoWindow(openError); return false; }
+
         tft.resetViewport();
         return;
     }
@@ -191,10 +195,14 @@ void drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
 
             free(activeImage.buffer);
         }
-        else { InfoWindow(openError); }
+        else { InfoWindow(openError); return false; }
+        
         tft.resetViewport();
         return;
     }
-    default: tft.resetViewport(); return;
+    default: InfoWindow("Invalid image Mode (" + NString((int)mode) + ")"); return false;
+
     }
+    tft.resetViewport();
+    return true;
 }
