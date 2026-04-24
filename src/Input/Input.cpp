@@ -1,5 +1,5 @@
 #include "Input.h"
-
+#include <System/UTF.h>
 #ifdef PC
 #include <SDL2/SDL.h>
 #endif
@@ -111,7 +111,7 @@ void numberInput(char first) {
  * @param text text to be displayed
  * @param pos selected character position
  */
-void showText(const char *text, const char * pos) {
+void showText(const char *text, const char *pos) {
     Viewport      vp       = tft.getViewport();
     bool          viewport = false;
     RenderTarget *before   = tft.activeRenderTarget;
@@ -134,7 +134,7 @@ void showText(const char *text, const char * pos) {
         else if (str[0] == '\b') { tft.print("<-"); }
         else {
             uint32_t charcode;
-            str = tft.utf8_decode(str, &charcode);
+            str = utf8_decode(str, &charcode);
             tft.print(charcode);
         }
     }
@@ -146,7 +146,7 @@ void showText(const char *text, const char * pos) {
     currentRenderTarget->present();
 }
 
-void showTextPreview(const char *text, const char * pos) {
+void showTextPreview(const char *text, const char *pos) {
     Viewport      vp       = tft.getViewport();
     bool          viewport = false;
     RenderTarget *before   = tft.activeRenderTarget;
@@ -168,14 +168,14 @@ void showTextPreview(const char *text, const char * pos) {
             else if (str[0] == '\b') { tft.print("<-"); }
             else {
                 uint32_t charcode;
-                str = tft.utf8_decode(str, &charcode);
+                str = utf8_decode(str, &charcode);
                 tft.print(charcode);
             }
             break;
         }
         else {
             uint32_t charcode;
-            str = tft.utf8_decode(str, &charcode);
+            str = utf8_decode(str, &charcode);
         }
     }
 
@@ -186,32 +186,6 @@ void showTextPreview(const char *text, const char * pos) {
     currentRenderTarget->present();
 }
 
-
-char* utf8_encode(uint32_t cp, char* out) {
-    if (cp <= 0x7F) {
-        out[0] = cp;
-        return out + 1;
-    }
-    else if (cp <= 0x7FF) {
-        out[0] = 0xC0 | (cp >> 6);
-        out[1] = 0x80 | (cp & 0x3F);
-        return out + 2;
-    }
-    else if (cp <= 0xFFFF) {
-        out[0] = 0xE0 | (cp >> 12);
-        out[1] = 0x80 | ((cp >> 6) & 0x3F);
-        out[2] = 0x80 | (cp & 0x3F);
-        return out + 3;
-    }
-    else {
-        out[0] = 0xF0 | (cp >> 18);
-        out[1] = 0x80 | ((cp >> 12) & 0x3F);
-        out[2] = 0x80 | ((cp >> 6) & 0x3F);
-        out[3] = 0x80 | (cp & 0x3F);
-        return out + 4;
-    }
-}
-
 /*
  * Character selection
  * @param input pressed button
@@ -219,32 +193,47 @@ char* utf8_encode(uint32_t cp, char* out) {
  * @param nonl disable new line
  * @return selected character
  */
-NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, int *retButton, bool dontRedraw) {
+NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, int *retButton,
+                  bool dontRedraw) {
     if (input == -1) { return 0; }
     currentRenderTarget->setUseBuffer(false);
-    char buttons[5][10][32] = {
-        {" 0+\n",             ".,?!'\"1-()@/:_",        "abcà2",          "defèé3",       "ghiì4",
-         "jkl5",              "mnoò6",                 "pqrs7",          "tuvù8",        "wxyz9"},
+    char buttons[9][10][32] = {
+        /*0*/
+        {" 0+\n", ".,?!'\"1-()@/:_", "abcà2", "defèé3", "ghiì4", "jkl5", "mnoò6", "pqrs7", "tuvù8",
+         "wxyz9"},
 
-        {" 0+\n",             ".,?!'\"1-()@/:_",        "ABCÀ2",          "DEFÈÉ3",       "GHIÌ4",
-         "JKL5",              "MNOÒ6",                 "PQRS7",          "TUVÙ8",        "WXYZ9"},
+        /*1*/
+        {" 0+\n", ".,?!'\"1-()@/:_", "ABCÀ2", "DEFÈÉ3", "GHIÌ4", "JKL5", "MNOÒ6", "PQRS7", "TUVÙ8",
+         "WXYZ9"},
 
-        {"0",                 "1",                     "2",              "3",            "4",   
-         "5",                 "6",                     "7",              "8",            "9"},
+        /*2*/
+        {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"},
 
-        {"わをんー～　\n",    "あいうえおぁぃぅぇぉ",  "かきくけこ",    "さしすせそ",    "たちつてとっ",
-         "なにぬねの",        "はひふへほ",            "まみむめも",    "やゆよゃゅょ",  "らりるれろ"},
+        /*3*/
+        {"わをんー～　\n", "あいうえおぁぃぅぇぉ", "かきくけこ", "さしすせそ", "たちつてとっ",
+         "なにぬねの", "はひふへほ", "まみむめも", "やゆよゃゅょ", "らりるれろ"},
 
-        {"ワヲンー～　\n",     "アイウエオァィゥェォ", "カキクケコ",    "サシスセソ",    "タチツテトッ",
-         "ナニヌネノ",         "ハヒフヘホ",           "マミムメモ",    "ヤユヨャュョ",  "ラリルレロ"}
+        /*4*/
+        {"ワヲンー～　\n", "アイウエオァィゥェォ", "カキクケコ", "サシスセソ", "タチツテトッ",
+         "ナニヌネノ", "ハヒフヘホ", "マミムメモ", "ヤユヨャュョ", "ラリルレロ"},
+        /*5*/
+        {" 0+\n", ".,?!'\"1-()@/:_", "абвгґ2", "деєжз3", "иїйкл4", "мноп5", "рсту6", "фхцч7",
+         "шщь8", "юя9"},
+        /*6*/
+        {" 0+\n", ".,?!'\"1-()@/:_", "АБВГҐ2", "ДЕЄЖЗ3", "ИЇЙКЛ4", "МНОП5", "РСТУ6", "ФХЦЧ7",
+         "ШЩЬ8", "ЮЯ9"},
+        /*7*/
+        {" 0+\n", ".,?!'\"1-()@/:_", "абвг2", "дежз3", "ийкл4", "мноп5", "рсту6", "фхцч7",
+         "шщъыь8", "эюя9"},
+        /*8*/
+        {" 0+\n", ".,?!'\"1-()@/:_", "АБВГ2", "ДЕЖЗ3", "ИЙКЛ4", "МНОП5", "РСТУ6", "ФХЦЧ7",
+         "ШЩЪЫЬ8", "ЭЮЯ9"},
+
     };
-                                 // * = ﾞﾟ 
+    // * = ﾞﾟ
 
-    if (nonl) {buttons[SMALL_LATIN][0][3] = '\0'; buttons[CAPS_LATIN][0][3] = '\0'; buttons[HIRAGANA][0][18] = '\0'; buttons[KATAKANA][0][18] = '\0';}
-    
     bool first = true;
-    // int  sizes[12];
-    uint32_t  result;
+    uint32_t    result;
     const char *pos          = 0;
     int         currentIndex = input >= '0' && input <= '9' ? input - 48
                                : input == '*'               ? 10
@@ -255,14 +244,6 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
         ESP_LOGI(ITAG, "UNKNOWN BUTTON:%d", input);
         return 0;
     }
-
-    // for (int i = 0; i < 12; i++) {
-    //     int b = 0;
-    //     for (; b < 12; b++) {
-    //         if (buttons[i][b] == '\0') { break; }
-    //     }
-    //     b = 0;
-    // }
     ulong mil = hw->millis();
     pos       = buttons[useCharset][currentIndex];
     int curx  = tft.getCursorX();
@@ -279,17 +260,17 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
                 tft.setCursor(curX, curY); // Coordinates based on screen's origin
                 // showTextPreview(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury); // Coordinates based on viewport's origin
-                pos = tft.utf8_decode(pos, &result);
-                if(useCharset == NUMBERS) { mil = DIB_MS + 1; }
+                pos = utf8_decode(pos, &result);
+                if (useCharset == NUMBERS) { mil = DIB_MS + 1; }
             }
             else {
-                mil    = hw->millis();
+                mil = hw->millis();
                 pos = buttons[useCharset][currentIndex];
                 showText(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curX, curY); // Coordinates based on screen's origin
                 // showTextPreview(buttons[useCharset][currentIndex], pos);
                 tft.setCursor(curx, cury); // Coordinates based on viewport's origin
-                pos = tft.utf8_decode(pos, &result);
+                pos = utf8_decode(pos, &result);
             }
         }
         if (c != input && c != -1) {
@@ -309,11 +290,12 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
     if (viewport) { tft.setViewport(vp); }
     currentRenderTarget->setUseBuffer(true);
     currentRenderTarget->present();
+    if (result == '\n' && nonl) { return 0; }
     if (result == '\r') { return 0; }
 
-    char selectedChar[5];
-    char* end = utf8_encode(result, selectedChar);
-    *end = '\0';
+    char  selectedChar[5];
+    char *end = utf8_encode(result, selectedChar);
+    *end      = '\0';
     return NString(selectedChar);
     (void)dontRedraw;
 }
@@ -411,9 +393,9 @@ int buttonsHelding(bool _idle) {
         }
     }
     switch (result) {
-    //case 1: return LEFTFN;
+    // case 1: return LEFTFN;
     case 2: return UP;
-    //case 3: return RIGHTFN;
+    // case 3: return RIGHTFN;
     case 4: return LEFT;
     case 5: return SELECT;
     case 6: return RIGHT;

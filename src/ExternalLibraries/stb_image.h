@@ -411,7 +411,7 @@ typedef struct {
     int (*read)(void *user, char *data,
                 int size); // fill 'data' with 'size' bytes.  return number of bytes actually read
     void (*skip)(void *user,
-                 int   n);    // skip the next 'n' bytes, or 'unget' the last -n bytes if negative
+                 int   n);  // skip the next 'n' bytes, or 'unget' the last -n bytes if negative
     int (*eof)(void *user); // returns nonzero if we are at end of file/data
 } stbi_io_callbacks;
 
@@ -1269,7 +1269,7 @@ static unsigned char *stbi__load_and_postprocess_8bit(stbi__context *s, int *x, 
 
     if (ri.bits_per_channel != 8) {
         result              = stbi__convert_16_to_8((stbi__uint16 *)result, *x, *y,
-                                       req_comp == 0 ? *comp : req_comp);
+                                                    req_comp == 0 ? *comp : req_comp);
         ri.bits_per_channel = 8;
     }
 
@@ -2224,7 +2224,7 @@ stbi_inline static int stbi__extend_receive(stbi__jpeg *j, int n) {
 
     sgn = j->code_buffer >>
           31; // sign bit always in MSB; 0 if MSB clear (positive), 1 if MSB set (negative)
-    k              = stbi_lrot(j->code_buffer, n);
+    k   = stbi_lrot(j->code_buffer, n);
     j->code_buffer = k & ~stbi__bmask[n];
     k &= stbi__bmask[n];
     j->code_bits -= n;
@@ -3864,8 +3864,8 @@ static void stbi__YCbCr_to_RGB_row(stbi_uc *out, const stbi_uc *y, const stbi_uc
         int cb = pcb[i] - 128;
         r      = y_fixed + cr * stbi__float2fixed(1.40200f);
         g      = y_fixed + (cr * -stbi__float2fixed(0.71414f)) +
-            ((cb * -stbi__float2fixed(0.34414f)) & 0xffff0000);
-        b = y_fixed + cb * stbi__float2fixed(1.77200f);
+                 ((cb * -stbi__float2fixed(0.34414f)) & 0xffff0000);
+        b      = y_fixed + cb * stbi__float2fixed(1.77200f);
         r >>= 20;
         g >>= 20;
         b >>= 20;
@@ -4008,8 +4008,8 @@ static void stbi__YCbCr_to_RGB_simd(stbi_uc *out, stbi_uc const *y, stbi_uc cons
         int cb = pcb[i] - 128;
         r      = y_fixed + cr * stbi__float2fixed(1.40200f);
         g      = y_fixed + cr * -stbi__float2fixed(0.71414f) +
-            ((cb * -stbi__float2fixed(0.34414f)) & 0xffff0000);
-        b = y_fixed + cb * stbi__float2fixed(1.77200f);
+                 ((cb * -stbi__float2fixed(0.34414f)) & 0xffff0000);
+        b      = y_fixed + cb * stbi__float2fixed(1.77200f);
         r >>= 20;
         g >>= 20;
         b >>= 20;

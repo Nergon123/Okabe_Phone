@@ -30,7 +30,7 @@ static int copyFile(const std::string &src, const std::string &dest) {
 
         bytesToCopy -= count;
 
-        ESP_LOGD(TAG, "copy %i, left %i bytes", count, bytesToCopy);
+        ESP_LOGD(TAG, "copy %zd, left %zd bytes", count, bytesToCopy);
     }
 
     delete srcFile;
@@ -43,7 +43,7 @@ int PackageStorage::init() {
     int                      res  = 0;
     std::vector<std::string> list = VFS.listDir(PKG_STORAGE_DIR);
 
-    ESP_LOGD(TAG, "Items in dir: %i", list.size());
+    ESP_LOGD(TAG, "Items in dir: %zd", list.size());
 
     LuaPackage *pkg;
     NString     nstr;
@@ -111,7 +111,7 @@ int PackageStorage::removePackage(const std::string &id) {
     int                      res  = 0;
     std::vector<std::string> list = VFS.listDir(PKG_STORAGE_DIR);
 
-    ESP_LOGD(TAG, "Items in dir: %i", list.size());
+    ESP_LOGD(TAG, "Items in dir: %zd", list.size());
     ESP_LOGD(TAG, "Id to remove: %s", id.c_str());
 
     ZipPackage      *pkg;

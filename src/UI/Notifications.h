@@ -6,6 +6,7 @@
 #include "System/TextManipulation.h"
 #include "System/Time.h"
 #include "UI/UIElements.h"
+#include <System/LanguageSystem.h>
 
 enum NetworkStatusBarIcons {
     NSB_WIFI_0       = 0,
@@ -22,7 +23,12 @@ enum NetworkStatusBarIcons {
     NSB_BT_CONNECTED = 11
 };
 
-void InfoWindow(NString reason, NString title = "ERROR", bool WaitForButton = true,
-                uint16_t titlecolor = TFT_RED);
-bool confirmation(NString reason, NString yes = "Yes", NString no = "No");
+enum class IW_TITLE {
+    INFO,
+    ERROR,
+};
+
+void InfoWindow(NString reason, IW_TITLE _title = IW_TITLE::ERROR, bool WaitForButton = true);
+bool confirmation(NString reason, NString yes = getTranslation(TextKey::CONFIRM_YES),
+                  NString no = getTranslation(TextKey::CONFIRM_NO));
 void drawStatusBar(bool force = false);

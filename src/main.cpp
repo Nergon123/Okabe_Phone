@@ -1,6 +1,7 @@
 #include "Screens/Main.h"
 #include "BuiltinPackages.h"
 #include "GlobalVariables.h"
+#include "Platform/Graphics/Fonts/FontLoader.h"
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/Hardware/Profiles/ESP32.h"
 #include "Platform/Hardware/Profiles/Linux.h"
@@ -8,6 +9,8 @@
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
+#include <System/LanguageSystem.h>
+#include <Platform/Audio/AudioGen.h>
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
 
@@ -53,12 +56,12 @@ int start() {
 
     // Chance to change resource file to custom one
     storageInit();
-    if (buttonsHelding(false) == '*') { recovery("Manually triggered recovery."); }
+    if (buttonsHelding(false) == '*') { recovery(getTranslation(TextKey::RECOVERY_MANUAL)); }
 
     res.CopyToRam(true);
     if (res.cache) { res.Files->close(); }
     res.DrawImage(R_BOOT_LOGO);
-    bootText("Initializing RTOS tasks...");
+    bootText(getTranslation(TextKey::BOOT_INIT_RTOS));
     initBackgroundTasks();
 
     ESP_LOGI("DEVICE",
@@ -73,7 +76,12 @@ int start() {
 
     // register package from fs
     PaStor.init();
-
+    preferences.begin("System");
+    setLanguage(preferences.getString("Language"));
+    currentWallpaper.path = preferences.getString("wallpaper_path");
+    currentWallpaper.mode = (ImageMode)preferences.getInt("wallpaper_mode",IMG_CENTERED);
+    currentWallpaper.id = preferences.getInt("wallpaper_id",0);
+    preferences.end();
     progressBar(100, 100, 250);
     if (buttonsHelding(false) == '#') { AT_test(); }
     currentRenderTarget->setUseBuffer(true);
@@ -97,6 +105,7 @@ int main(int argc, char **argv) {
                 }
 
                 SDLScale = SDLScale > 0 ? SDLScale : 1;
+                ESP_LOGI("MAIN", "Set SDL scale to %d", SDLScale);
                 i++;
             }
             else {

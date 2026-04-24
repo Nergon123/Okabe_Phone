@@ -1,4 +1,5 @@
 #include "Main.h"
+#include <System/LanguageSystem.h>
 
 // Current screen selection based on currentScreen variable
 void screens() {
@@ -182,15 +183,15 @@ void recovery(NString message) {
         tft.setTextFont(1);
         tft.setTextSize(4);
         tft.setTextColor(0x00FF);
-        tft.println("=RECOVERY=\n");
+        tft.println(getTranslation(TextKey::RECOVERY_TITLE));
         tft.setTextSize(1);
         tft.setTextColor(0xFFFF);
         tft.println(message);
-        std::vector<mOption> options = {{"Choose resource file"}, {"Try again"}};
-        int choice = listMenuNonGraphical(options, options.size(), "Choose action.", 150);
+        std::vector<mOption> options = {{getTranslation(TextKey::RECOVERY_OPT_CHOOSE_RES)}, {getTranslation(TextKey::RECOVERY_TRY_AGAIN)}};
+        int choice = listMenuNonGraphical(options, options.size(), getTranslation(TextKey::RECOVERY_TITLE_CHOOSE_ACT), 150);
         switch (choice) {
         case 0:
-            NString TempResPath = fileBrowser("/", ".nph", false);
+            NString TempResPath = fileBrowser("/", "|.nph|.npz|", false);
             resPath             = TempResPath;
             NFile *nFile        = VFS.open(resPath);
             res.Init(nFile);

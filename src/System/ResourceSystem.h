@@ -168,7 +168,7 @@ class ResourceSystem {
 
   private:
     const char *name;
-    void        failure(const char *msg = "Unknown Error", bool important = false);
+    void        failure(NString msg = "Unknown Error", bool important = false);
     void        parseResourceFile(NFile *file, Header &header, bool important = false);
 };
-void drawWallpaper();
+

@@ -1,22 +1,24 @@
 #include "ImageViewer.h"
 #include <GlobalVariables.h>
 #include <Platform/Graphics/RGB565BufferRenderTarget.h>
+#include <System/LanguageSystem.h>
 #include <UI/UIElements.h>
-void redrawStatus(float zoom) {
+NString openError;
+void    redrawStatus(float zoom) {
     Viewport vp = tft.getViewport();
     tft.resetViewport();
     int zoompercentage = zoom * 100;
     res.DrawImage(R_LIST_MENU_BACKGROUND);
-    drawHeader("Image Viewer", LM_SETTINGS, NString::format("%d%%", zoompercentage));
+    drawHeader(getTranslation(TextKey::IMAGE_VIEWER), LM_SETTINGS,
+               NString::format("%d%%", zoompercentage));
     tft.setViewport(vp);
 }
 
 void ImageViewer(const NString path) {
+    openError = getTranslation(TextKey::IW_FAIL_OPEN_IMG);
     if (path.isEmpty()) { return; }
     image_data activeImage = displayPNG(path);
-    if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) {
-        InfoWindow("Failed to open file");
-    }
+    if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) { InfoWindow(openError); }
     if (activeImage.errorReason) {
         InfoWindow(activeImage.errorReason);
         return;
@@ -94,18 +96,17 @@ void ImageViewer(const NString path) {
     tft.resetViewport();
 }
 
+-
 bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h) {
-    if (fail) { *fail = false; }
-    if (path.isEmpty()) { if (fail) { *fail = true; } return; }
+    if (path.isEmpty()) { return false; }
     if (w <= 0 || h <= 0) {
-        InfoWindow("Invalid image dimensions");
+        InfoWindow(openError);
         return;
     }
     image_data activeImage = displayPNG(path); // metadata only
     if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) {
-        InfoWindow("Failed to open Image!");
+        InfoWindow(openError);
         return false;
-        return;
     }
     int imageW = activeImage.srcwidth;
     int imageH = activeImage.srcheight;
@@ -116,10 +117,10 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
         if (activeImage.buffer) {
             tft.pushImage((w / 2) - (imageW / 2), (h / 2) - (imageH / 2), imageW, imageH,
                           activeImage.buffer);
+            currentRenderTarget->present();
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); return false; }
-
+        else { InfoWindow(openError); return false;}
         tft.resetViewport();
         return;
     }
@@ -133,9 +134,12 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
                     tft.pushImage(ix, iy, imageW, imageH, activeImage.buffer);
                 }
             }
+            currentRenderTarget->present();
+
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); return false; }
+
+        else { InfoWindow(openError)); return false; }
 
         tft.resetViewport();
         return;
@@ -151,11 +155,14 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
         if (activeImage.buffer) {
             tft.pushImage((w - newImageW) / 2, (h - newImageH) / 2, newImageW, newImageH,
                           activeImage.buffer);
+            currentRenderTarget->present();
 
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); return false; }
+
+        else { InfoWindow(openError); return false; }
         
+
         tft.resetViewport();
         return;
     }
@@ -163,10 +170,12 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
         activeImage = displayPNG(path, w, h, false);
         if (activeImage.buffer) {
             tft.pushImage(0, 0, w, h, activeImage.buffer);
+            currentRenderTarget->present();
+
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); return false; }
-        
+        else {InfoWindow(openError); return false; }
+
         tft.resetViewport();
         return;
     }
@@ -182,15 +191,17 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
         if (activeImage.buffer) {
             tft.pushImage((w - newImageW) / 2, (h - newImageH) / 2, newImageW, newImageH,
                           activeImage.buffer);
+            currentRenderTarget->present();
 
             free(activeImage.buffer);
         }
-        else { InfoWindow("Error when opening file."); return false; }
+        else { InfoWindow(openError); return false; }
         
         tft.resetViewport();
         return;
     }
     default: InfoWindow("Invalid image Mode (" + NString((int)mode) + ")"); return false;
+
     }
     tft.resetViewport();
     return true;

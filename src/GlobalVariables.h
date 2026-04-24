@@ -43,9 +43,26 @@ struct mOption {
     Image   image;
     uint8_t icon_index;
     void (*_function)();
+    int data;
+    mOption (*_getOptionData)(void* args);
+    void *getOptArgs;
     mOption(NString label, Image image = Image(), uint8_t icon_index = 0,
-            void (*_function)() = nullptr)
-        : label(label), image(image), icon_index(icon_index), _function(_function) {};
+            void (*_function)() = nullptr, int data = 0, mOption (*_getOptionData)(void* args) = nullptr, void* getOptArgs = nullptr)
+        : label(label), image(image), icon_index(icon_index), _function(_function), data(data), _getOptionData(_getOptionData), getOptArgs(getOptArgs) {};
+};
+
+struct KeypadLayout {
+    int                  id;
+    std::vector<NString> Layout;
+    NString              FullName;
+    NString              ShortName;
+    KeypadLayout*        linkedLayout;
+    bool                 enabled;
+    bool                 available;
+    KeypadLayout(int id, std::vector<NString> layout, NString FullName, NString ShortName,
+                 KeypadLayout* linkedLayout = NULL, bool enabled = false, bool available = true)
+        : id(id), Layout(layout), FullName(FullName), ShortName(ShortName),
+          linkedLayout(linkedLayout), enabled(enabled), available(available) {};
 };
 
 // SMS status
@@ -116,6 +133,7 @@ extern TFT_STUB tft;
 
 // extern Preferences preferences;
 
+extern ulong                DIB_MS;
 extern int                  currentScreen;
 extern int                  currentFont;
 extern int                  delayBeforeSleep;
@@ -141,6 +159,8 @@ extern std::vector<Contact> contacts;
 extern bool                 mcpexists;
 extern bool                 ip5306exists;
 extern Contact              examplecontact;
+
+extern std::vector<KeypadLayout> keypadLayouts;
 
 extern NString lastSIMerror;
 extern NString currentNumber;

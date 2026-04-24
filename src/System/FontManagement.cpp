@@ -1,34 +1,38 @@
 #include "FontManagement.h"
-static const GFXfont*  FONT1[]        = {&FreeSans9pt7b, &FreeSans9pt8bCYR,&JP_P1,&JP_P2,&JP_P3};
-static const GFXfont*  FONT2[]        = {&FreeSansBold9pt7b, &FreeSansBold9pt8bCYR,&JP_P1,&JP_P2,&JP_P3};
-static const GFXfont*  FONT3[]        = {&FreeMono9pt7b, &FreeMono9pt8bCYR,&JP_P1,&JP_P2,&JP_P3};
-static const GFXfont*  FONT4[]        = {&FreeSans12pt7b, &FreeSans12pt8bCYR,&JP_P1,&JP_P2,&JP_P3};
-static const GFXfont** fonts[]        = {FONT1, FONT2, FONT3, FONT4};
-static const size_t    fonts_counts[] = {
+
+static fontFile_t   FONT1[]        = {{&FreeSans9pt7b, false, ""},
+                                      {&FreeSans9pt8bCYR, false, ""},
+                                      {nullptr, true, "/spiffs/JPfont.nfnt"}};
+static fontFile_t   FONT2[]        = {{&FreeSansBold9pt7b, false, ""},
+                                      {&FreeSansBold9pt8bCYR, false, ""},
+                                      {nullptr, true, "/spiffs/JPfont.nfnt"}};
+static fontFile_t   FONT3[]        = {{&FreeMono9pt7b, false, ""},
+                                      {&FreeMono9pt8bCYR, false, ""},
+                                      {nullptr, true, "/spiffs/JPfont.nfnt"}};
+static fontFile_t   FONT4[]        = {{&FreeSans12pt7b, false, ""},
+                                      {&FreeSans12pt8bCYR, false, ""},
+                                      {nullptr, true, "/spiffs/JPfont.nfnt"}};
+static fontFile_t*  fonts[]        = {FONT1, FONT2, FONT3, FONT4};
+static const size_t fonts_counts[] = {
     sizeof(FONT1) / sizeof(FONT1[0]), sizeof(FONT2) / sizeof(FONT2[0]),
     sizeof(FONT3) / sizeof(FONT3[0]), sizeof(FONT4) / sizeof(FONT4[0])};
 
 void changeFont(int ch) {
-    // 5x7 font is index 0
-    if (ch == 0) {
-        tft.currentFont.isGFX = false;
-        tft.currentFont.font  = nullptr;
+    if (ch > 0 && (size_t)ch < ArraySize(fonts)) {
+        ch -= 1;
+        tft.currentFont.isGFX          = true;
+        tft.currentFont.isGFXFontSet   = true;
+        tft.currentFont.font_file      = fonts[ch][0];
+        tft.currentFont.font_set       = fonts[ch];
+        tft.currentFont.font_set_count = fonts_counts[ch];
     }
     else {
-
-        ch -= 1; // adjust to 0-based index
-        if (ch >= 0 && (size_t)ch < ArraySize(fonts)) {
-            tft.currentFont.isGFX          = true;
-            tft.currentFont.isGFXFontSet   = true;
-            tft.currentFont.font           = fonts[ch][0];
-            tft.currentFont.font_set       = fonts[ch];
-            tft.currentFont.font_set_count = fonts_counts[ch];
-        }
-        else {
-            // fallback if invalid index
-            tft.currentFont.isGFX = false;
-            tft.currentFont.font  = nullptr;
-        }
+        tft.currentFont.isGFX            = false;
+        tft.currentFont.font_file.gfont  = nullptr;
+        tft.currentFont.font_file.isFile = false;
+        tft.currentFont.font_file.path   = "";
+        tft.currentFont.font_set         = nullptr;
+        tft.currentFont.font_set_count   = 0;
     }
 }
 

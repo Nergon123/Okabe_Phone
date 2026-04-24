@@ -11,8 +11,8 @@ monitor.sh
 upload.sh
 PLAN.MD
 *.nph
+*.npz
 **/test_formats/
 *.cfg
 build/
 *.old
-sdkconfig.O*

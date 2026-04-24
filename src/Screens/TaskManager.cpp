@@ -1,4 +1,5 @@
 #include "TaskManager.h"
+#include <System/LanguageSystem.h>
 #ifdef IDF_VER
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -9,7 +10,7 @@ void ListTasks() {
     TaskStatus_t tasks[taskCount];
     uint32_t     totalRunTime[taskCount];
     uxTaskGetSystemState(tasks, taskCount, totalRunTime);
-    drawHeader("Running Tasks", LM_SETTINGS);
+    // drawHeader(getTranslation(TextKey::LM_TASKS_RUNNING), LM_SETTINGS);
     std::vector<mOption> taskList;
     for (UBaseType_t i = 0; i < taskCount; i++) {
         mOption option = mOption("");
@@ -18,12 +19,13 @@ void ListTasks() {
                                          tasks[i].uxCurrentPriority, tasks[i].eCurrentState);
         taskList.push_back(option);
     }
-    listMenu(taskList, taskList.size(), true, LM_SETTINGS, "Tasks", false, 0);
+    listMenu(taskList, taskList.size(), true, LM_SETTINGS,
+             getTranslation(TextKey::LM_TASKS_RUNNING), false, 0);
 #endif
-    InfoWindow("Task listing is not available.");
+    InfoWindow(getTranslation(TextKey::IW_TASK_LIST_NA));
 }
 
-// void ListAllocations() {
+// void ??????????ListAllocations() {
 //     drawHeader("Memory Allocations", LM_SETTINGS);
 //     std::vector<mOption> allocationList;
 //     const char*          sizeSuffixes[3] = {"B", "KB", "MB"};
@@ -40,13 +42,15 @@ void ListTasks() {
 // }
 
 void TaskManager() {
-    drawHeader("Task Manager", LM_SETTINGS);
-    NString options[2] = {"Tasks", "Enable RAM Monitor"};
+    // drawHeader("Task Manager", LM_SETTINGS);
+    NString options[2] = {getTranslation(TextKey::LM_TASKS_RUNNING),
+                          getTranslation(TextKey::LM_TASKS_EN_RAM_MON)};
     int     selection  = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
-        options[1] = enableRAMMonitor ? "Disable RAM Monitor" : "Enable RAM Monitor";
-        selection  = listMenu(options, ArraySize(options), false, LM_SETTINGS, "Task Manager",
-                              false, selection);
+        options[1] = enableRAMMonitor ? getTranslation(TextKey::LM_TASKS_DIS_RAM_MON)
+                                      : getTranslation(TextKey::LM_TASKS_EN_RAM_MON);
+        selection  = listMenu(options, ArraySize(options), false, LM_SETTINGS,
+                              getTranslation(TextKey::LM_TASKS_MANAGER), false, selection);
         switch (selection) {
         case 0: ListTasks(); break;
         case 1:

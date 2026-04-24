@@ -1,4 +1,5 @@
 #include "Files.h"
+#include <System/LanguageSystem.h>
 
 struct iconFormat {
     uint8_t     icon;
@@ -46,9 +47,9 @@ NString fileBrowser(NString path, NString format, bool graphical, NString title,
         std::vector<mOption> entries;
         Image                iconSet = Image(R_FILE_MANAGER_ICONS);
 
-        if (path != "/") { entries.push_back(mOption("..", iconSet, LM_ICO_FOLDER)); }
+        if (path != "/") { entries.push_back(mOption(getTranslation(TextKey::FILEMANAGER_PREV_FOLDER), iconSet, LM_ICO_FOLDER)); }
 
-        if (saveMode) { entries.push_back(mOption("Save here", iconSet, LM_ICO_FILE)); }
+        if (saveMode) { entries.push_back(mOption(getTranslation(TextKey::FILEMANAGER_SAVE_HERE), iconSet, LM_ICO_FILE)); }
 
         std::vector<std::string> files = VFS.listDir(path);
 

@@ -1,19 +1,21 @@
 #include "System/Generic.h"
 #include "UI/UIElements.h"
 #include "_WiFi.h"
-
+#include <System/LanguageSystem.h>
 #ifdef WiFi_h
 
 void WifiPrompt(NString ssid, uint8_t encryptionType, NString password = NString()) {
     std::vector<FIELD> fields = {
-        FIELD("Name", ssid, false),
-        FIELD("Password", password, false),
+        FIELD(getTranslation(TextKey::WIFI_SSID), ssid, false),
+        FIELD(getTranslation(TextKey::WIFI_PASSWORD), password, false),
     };
-    if (InputFieldS("Connect To Wi-Fi", fields, LM_SETTINGS, 0, "Connect", "Cancel")) {
+    if (InputFieldS(getTranslation(TextKey::WIFI_CONNECT_TITLE), fields, LM_SETTINGS, 0,
+                    getTranslation(TextKey::WIFI_CONNECT_BUTTON),
+                    getTranslation(TextKey::CANCEL_BUTTON))) {
         WiFi.begin(ssid.c_str(), password.c_str());
-        InfoWindow("Connecting...", "INFO", false, TFT_BLUE);
+        InfoWindow(getTranslation(TextKey::IW_WIFI_CONNECTING), IW_TITLE::INFO);
         if ((WiFiGenericClass::getMode() & WIFI_MODE_STA) == 0) {
-            InfoWindow("Wifi not enabled");
+            InfoWindow(getTranslation(TextKey::IW_WIFI_ISNT_EN));
             return;
         }
         unsigned long start = millis();
@@ -27,19 +29,27 @@ void WifiPrompt(NString ssid, uint8_t encryptionType, NString password = NString
         NString errorResult;
         bool    isError = result != WL_CONNECTED;
         switch (result) {
-        case WL_IDLE_STATUS: errorResult = "Idle (maybe timeout)"; break;
-        case WL_NO_SSID_AVAIL: errorResult = "No SSID avaliable"; break;
+        case WL_IDLE_STATUS: errorResult = getTranslation(TextKey::IW_WIFI_ERR_IDLE); break;
+        case WL_NO_SSID_AVAIL: errorResult = getTranslation(TextKey::IW_WIFI_ERR_NO_SSID); break;
         case WL_SCAN_COMPLETED:
-            errorResult = "Scan Completed\n(this one shouldn't be here)";
+            errorResult = getTranslation(TextKey::IW_WIFI_ERR_SCAN_COMPLETED);
             break;
-        case WL_CONNECTED: errorResult = "Connected!"; break;
-        case WL_CONNECT_FAILED: errorResult = "Connection Failed"; break;
-        case WL_CONNECTION_LOST: errorResult = "Connection Lost"; break;
-        case WL_DISCONNECTED: errorResult = "Disconnected\n(maybe timeout)"; break;
-        case WL_NO_SHIELD: errorResult = "No WiFi shield"; break;
-        default: errorResult = "Unknown Status(" + NString(result) + ").";
+        case WL_CONNECTED: errorResult = getTranslation(TextKey::IW_WIFI_CONNECTED); break;
+        case WL_CONNECT_FAILED:
+            errorResult = getTranslation(TextKey::IW_WIFI_ERR_CONN_FAIL);
+            break;
+        case WL_CONNECTION_LOST:
+            errorResult = getTranslation(TextKey::IW_WIFI_ERR_CONN_LOST);
+            break;
+        case WL_DISCONNECTED:
+            errorResult = getTranslation(TextKey::IW_WIFI_ERR_DISCONNECTED);
+            break;
+        case WL_NO_SHIELD: errorResult = getTranslation(TextKey::IW_WIFI_ERR_NO_SHIELD); break;
+        default:
+            errorResult =
+                NString::format(getTranslation(TextKey::IW_WIFI_UNKNOWN).c_str(), result);
         }
-        InfoWindow(errorResult, isError ? "ERROR" : "INFO", true, isError ? TFT_RED : TFT_BLUE);
+        InfoWindow(errorResult, isError ? IW_TITLE::ERROR : IW_TITLE::INFO);
     }
 }
 #endif
@@ -48,7 +58,8 @@ void WiFiList() {
 #ifdef WiFi_h
     if (WiFi.getMode() == WIFI_MODE_STA || WiFi.getMode() == WIFI_MODE_APSTA) {
         while (true) {
-            InfoWindow("Scanning for WiFi Networks...", "INFO", false, TFT_BLUE);
+            InfoWindow(getTranslation(TextKey::IW_WIFI_SCANNING),
+                       IW_TITLE::INFO);
             int count = WiFi.scanNetworks();
             if (count == 0) { return; }
             uint8_t              enc[count];
@@ -70,7 +81,7 @@ void WiFiList() {
                     mOption(name.c_str(), Image(R_FILE_MANAGER_ICONS), LM_ICO_WIRELESS_0 + _RSSI));
             }
             if (list.empty()) { return; }
-            int ch = listMenu(list, count, false, LM_SETTINGS, "WI-FI");
+            int ch = listMenu(list, count, false, LM_SETTINGS, getTranslation(TextKey::LM_WIFI));
             if (ch == -1) { return; }
             else {
                 WifiPrompt(list.at(ch).label, enc[ch]);
@@ -78,7 +89,7 @@ void WiFiList() {
             }
         }
     }
-    else { InfoWindow("You need to enable wifi before that"); }
+    else { InfoWindow(getTranslation(TextKey::IW_WIFI_EN_NEEDED)); }
 #endif
 }
 
@@ -94,24 +105,27 @@ static wifi_mode_t bitsToWifiMode(uint8_t bits) {
 
 void setHostname(bool Ap) {
     NString            hostname = WiFi.getHostname();
-    std::vector<FIELD> fields   = {FIELD("Hostname", hostname, false)};
-    if (InputFieldS("Set Hostname", fields)) {
+    std::vector<FIELD> fields   = {
+        FIELD(getTranslation(TextKey::WIFI_HOSTNAME_FIELD), hostname, false)};
+    if (InputFieldS(getTranslation(TextKey::WIFI_SET_HOSTNAME), fields)) {
         if (Ap) { WiFi.softAPsetHostname(hostname.c_str()); }
         else { WiFi.setHostname(hostname.c_str()); };
     }
 }
 void WiFiSettings() {
-    std::vector<mOption> options = {
-        mOption("Auto Connect", Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
-        mOption("Auto Reconnect", Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
-        mOption("Set Hostname")};
-    int choice = LISTMENU_NULL;
+    std::vector<mOption> options = {mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTOCONNECT),
+                                            Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
+                                    mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTORECONNECT),
+                                            Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
+                                    mOption(getTranslation(TextKey::WIFI_SET_HOSTNAME))};
+    int                  choice  = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
         options.at(0).icon_index =
             WiFi.getAutoConnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
         options.at(1).icon_index =
             WiFi.getAutoReconnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi Settings");
+        choice = listMenu(options, options.size(), false, LM_SETTINGS,
+                          getTranslation(TextKey::LM_WIFI_SETTINGS));
         switch (choice) {
         case 0: WiFi.setAutoConnect(!WiFi.getAutoConnect()); break;
         case 1: WiFi.setAutoReconnect(!WiFi.getAutoReconnect()); break;
@@ -120,7 +134,7 @@ void WiFiSettings() {
     }
 }
 void HotspotSettings() {
-    return; /////////////
+    return; ///////////// TODO
     std::vector<mOption> options = {
         mOption("Change Properties"),
     };
@@ -128,7 +142,8 @@ void HotspotSettings() {
     int choice = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
 
-        listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi Settings", false, choice);
+        listMenu(options, options.size(), false, LM_SETTINGS,
+                 getTranslation(TextKey::LM_WIFI_SETTINGS), false, choice);
         switch (choice) {
         case 0: break;
         }
@@ -139,9 +154,14 @@ void HotspotSettings() {
 void WiFiMenu() {
 #ifdef WiFi_h
     std::vector<mOption> options = {
-        mOption("Wi-Fi", Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
-        mOption("Wi-Fi Hotspot", Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
-        mOption("Wi-Fi Settings"), mOption("Hotspot settings"), mOption("Scan WiFi networks")};
+        mOption(getTranslation(TextKey::LM_WIFI), Image(R_FILE_MANAGER_ICONS),
+                LM_ICO_CHECK_UNCHECKED),
+        mOption(getTranslation(TextKey::WIFI_HOTSPOT_TOGGLE), Image(R_FILE_MANAGER_ICONS),
+                LM_ICO_CHECK_UNCHECKED),
+        mOption(getTranslation(TextKey::LM_WIFI_SETTINGS)),
+        mOption(getTranslation(TextKey::WIFI_HOTSPOT_SETTINGS)),
+        mOption(getTranslation(TextKey::WIFI_SCAN_BUTTON)),
+    };
     int choice = 0;
     while (choice != LISTMENU_EXIT) {
         uint8_t wifimode;
@@ -157,7 +177,8 @@ void WiFiMenu() {
             wifimode & WIFI_BIT_AP ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
         options.at(0).icon_index =
             wifimode & WIFI_BIT_STA ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        choice = listMenu(options, options.size(), false, LM_SETTINGS, "Wi-Fi", 1, choice);
+        choice = listMenu(options, options.size(), false, LM_SETTINGS,
+                          getTranslation(TextKey::LM_WIFI), 1, choice);
         switch (choice) {
         case 0: // toggle Wi-Fi
             wifimode ^= WIFI_BIT_STA;
@@ -176,7 +197,7 @@ void WiFiMenu() {
         }
     }
 #else
-    InfoWindow("Not supported");
+    InfoWindow(getTranslation(TextKey::IW_NOT_SUPPORTED));
 
 #endif
 }

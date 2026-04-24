@@ -90,8 +90,6 @@ class DEV_LINUX : public iHW {
                 // printf("Key pressed: %c\n", input);
 
                 return input;
-                break;
-                break;
 
             default: break;
             }
@@ -242,6 +240,7 @@ class DEV_LINUX : public iHW {
         if (userCallback && *userCallback) {
             (*userCallback)(static_cast<size_t>(dlnow), static_cast<size_t>(dltotal));
         }
+        (void)ultotal;(void)ulnow;
         return 0; // return non-zero to abort transfer
     }
     static size_t writeCallback(void* ptr, size_t size, size_t nmemb, void* userdata) {

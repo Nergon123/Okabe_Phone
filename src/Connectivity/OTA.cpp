@@ -1,4 +1,5 @@
 #include "OTA.h"
+#include <System/LanguageSystem.h>
 #ifdef ARDUINO
 WebServer server(80);
 WebOTA    ota(server);
@@ -14,10 +15,11 @@ void WebOTATask(void* param) {
 #endif
 
 void OTAactivity() {
+    return; // no space for second partition atm
 #ifdef ARDUINO
     if (WiFi.status() != WL_CONNECTED && WiFi.getMode() != WIFI_MODE_AP &&
         WiFi.getMode() != WIFI_MODE_APSTA) {
-        InfoWindow("WiFi is Not Connected");
+        InfoWindow(getTranslation(TextKey::IW_WIFI_EN_NEEDED));
         return;
     }
 
@@ -72,6 +74,6 @@ void OTAactivity() {
         delay(1); // yield
     }
 #else
-    InfoWindow("Not supported on current platform...");
+    InfoWindow(getTranslation(TextKey::IW_NOT_SUPPORTED));
 #endif // ARDUINO
 }

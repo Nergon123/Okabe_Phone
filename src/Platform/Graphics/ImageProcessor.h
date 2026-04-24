@@ -10,3 +10,4 @@ struct image_data {
 uint16_t*  convertRGBToRGB565(uint8_t* img, int w, int h);
 uint8_t*   resizePNG(uint8_t* img, int width, int height, int targetW, int targetH);
 image_data displayPNG(const NString path, int w = -1, int h = -1, bool onlyParams = true);
+uint16_t* resizeRGB565buffer(uint16_t* buffer, int inputW, int inputH, int targetW, int targetH);

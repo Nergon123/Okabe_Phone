@@ -1,4 +1,5 @@
 #include "UIElements.h"
+#include <System/UTF.h>
 #include <functional>
 const uint16_t clr_selected    = TFT_RED;
 const uint16_t clr_normal      = TFT_BLACK;
@@ -74,20 +75,30 @@ bool button(NString title, int xpos, int ypos, int w, int h, bool selected, int 
 // @param direction: Pointer to the direction variable
 // @param format: Format string for the value
 void sNumberChange(int x, int y, int w, int h, int &val, int min, int max, bool selected,
-                   int *direction, const char *format) {
+                   int *direction, const char *format, bool isHorizontal) {
     // calculation of triangle corners
-    int fp  = w / 2;
-    int st  = h / 5;
-    int stf = w / 5;
+    int fp;
+    int st;
+    int stf;
 
+    if (isHorizontal) {
+        fp  = h / 2;
+        st  = w / 5;
+        stf = h / 5;
+    }
+    else {
+        fp  = w / 2;
+        st  = h / 5;
+        stf = w / 5;
+    }
     int tx1 = x + fp - stf, tx2 = x + fp, tx3 = x + fp + stf;
     int ty1 = y - st, ty2 = y - st * 2, ty3 = y - st;
-    int ty11 = y + h + st, ty21 = y + h + st * 2, ty31 = y + h + st;
+    int t1y1 = y + h + st, t1y2 = y + h + st * 2, t1y3 = y + h + st;
 
     tft.resetViewport();
 
     tft.fillTriangle(tx1, ty1, tx2, ty2, tx3, ty3, selected ? clr_selected : clr_normal);
-    tft.fillTriangle(tx1, ty11, tx2, ty21, tx3, ty31, selected ? clr_selected : clr_normal);
+    tft.fillTriangle(tx1, t1y1, tx2, t1y2, tx3, t1y3, selected ? clr_selected : clr_normal);
 
     changeFont(1);
     tft.setTextSize(1);
@@ -299,7 +310,7 @@ NString InputField(NString title, NString content, int ypos, bool onlydraw, bool
                     content.toCharArray(buf, content.length() + 1);
                     uint32_t    character;
                     const char *temp  = buf + cursorPos;
-                    const char *temp2 = tft.utf8_decode(temp, &character);
+                    const char *temp2 = utf8_decode(temp, &character);
                     cursorPos += temp2 - temp;
                 }
                 break;
@@ -412,29 +423,31 @@ bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selecte
     int direction = -1;
     button(confirmbtn, 10, 285, 100, 28);
     button(cancelbtn, 120, 285, 100, 28);
-    for (int i = 0; i < fields.size(); i++) {
+    for (int i = 0; (size_t)i < fields.size(); i++) {
         fields.at(i).notConfirmed = fields.at(i).resultstr;
         InputField(fields.at(i).name, fields.at(i).notConfirmed, ystart + spacing * i, 1, 0, 0);
     }
     currentRenderTarget->present();
     while (true) {
-        if (selected >= 0 && selected < fields.size()) {
+        if (selected >= 0 && (size_t)selected < fields.size()) {
             FIELD &currentField = fields.at(selected);
 
             currentField.notConfirmed = InputField(currentField.name, currentField.notConfirmed,
                                                    ystart + spacing * selected, false, 1, 1,
                                                    &direction, currentField.OnlyNumbers);
         }
-        else if (selected < fields.size() + 2) {
+        else if ((size_t)selected < fields.size() + 2) {
 
-            if (button(confirmbtn, 10, 285, 100, 28, selected == fields.size(), &direction)) {
-                for (int i = 0; i < fields.size(); i++) {
+            if (button(confirmbtn, 10, 285, 100, 28, (size_t)selected == fields.size(),
+                       &direction)) {
+                for (int i = 0; (size_t)i < fields.size(); i++) {
                     fields.at(i).resultstr = fields.at(i).notConfirmed;
                 }
                 return true;
             }
 
-            if (button(cancelbtn, 120, 285, 100, 28, selected == fields.size() + 1, &direction)) {
+            if (button(cancelbtn, 120, 285, 100, 28, (size_t)selected == fields.size() + 1,
+                       &direction)) {
                 return false;
             };
         }
@@ -444,7 +457,7 @@ bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selecte
             else { selected = fields.size() + 1; }
             break;
         case DOWN:
-            if (selected < fields.size() + 2) { selected++; }
+            if ((size_t)selected < fields.size() + 2) { selected++; }
             else { selected = 0; }
             break;
         case LEFT:
@@ -453,7 +466,7 @@ bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selecte
             break;
 
         case RIGHT:
-            if (selected < fields.size() + 2) { selected++; }
+            if ((size_t)selected < fields.size() + 2) { selected++; }
             else { selected = 0; }
             break;
         case BACK: return false;
@@ -526,10 +539,10 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
         tft.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.fillRect(69, y, i, h, color);
-            if (!fast) {
-                hw->delay(5);
-                currentRenderTarget->present();
-            }
+            // if (!fast) {
+            //     hw->delay(5);
+            //     currentRenderTarget->present();
+            // }
         }
     }
     else {
@@ -537,10 +550,10 @@ void progressBar(int val, int max, int y, int h, uint16_t color, bool log, bool 
         tft.drawRect(69, y, 100, h, color);
         for (int i = lastpercentage; i <= percentage; i++) {
             tft.fillRect(69, y, i, h, color);
-            if (!fast) {
-                hw->delay(5);
-                currentRenderTarget->present();
-            }
+            // if (!fast) {
+                // hw->delay(5);
+                // currentRenderTarget->present();
+            // }
         }
 #endif
     }

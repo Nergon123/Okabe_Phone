@@ -3,7 +3,7 @@
 #include <BuiltinPackages.h>
 #include <Screens/ImageViewer.h>
 #include <Screens/TaskManager.h>
-
+#include <System/LanguageSystem.h>
 /*
  * ## Executes application from sdcard
  *
@@ -12,6 +12,7 @@
  *
  */
 void execute_application() {
+    return; // TODO
 #ifndef PC
     NString file_path = fileBrowser("/", "bin");
     if (file_path.isEmpty()) { return; }
@@ -68,33 +69,22 @@ void execute_application() {
 
 // Additional features screen
 void e() {
-    const NString menu[] = {"FileBrowser",  "OTA web update",  "Boot application",
-                            "View Image",   "Wallpaper Modes", "Set Time",
-                            "Task Manager", "Package Manager"};
+    const NString menu[] = {getTranslation(TextKey::LM_EXTRA_FILE_BROWSER),
+                            getTranslation(TextKey::LM_EXTRA_VIEW_IMAGE),
+                            getTranslation(TextKey::LM_EXTRA_SET_TIME),
+                            getTranslation(TextKey::LM_EXTRA_TASK_MANAGER),
+                            getTranslation(TextKey::LM_EXTRA_PKG_MANAGER)};
 
-    const NString wallpaperModes[] = {"CENTERED",  "TILED",           "FILLED",
-                                      "STRETCHED", "FIT_HORIZONTALY", "FIT_VERTICALY"};
-    int           wallpaperMode    = IMG_CENTERED;
-    int           choice           = LISTMENU_NULL;
+    int choice = LISTMENU_NULL;
     while (choice != LISTMENU_EXIT) {
-        choice = listMenu(menu, ArraySize(menu), false, LM_SETTINGS, "Extra");
+        choice =
+            listMenu(menu, ArraySize(menu), false, LM_SETTINGS, getTranslation(TextKey::LM_EXTRA));
         switch (choice) {
         case 0: ESP_LOGI("E", "PATH: %s", fileBrowser().c_str()); break;
-        case 1: OTAactivity(); break;
-        case 2: execute_application(); break;
-        case 3: ImageViewer(fileBrowser("/", "|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|")); break;
-        case 4: {
-            NString path = fileBrowser("/", "|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|");
-            while (wallpaperMode != LISTMENU_EXIT) {
-                wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
-                { drawImageWithMode(path, (ImageMode)wallpaperMode, 0, 26); }
-                while (buttonsHelding() == -1);
-            }
-            break;
-        }
-        case 5: setTime(); break;
-        case 6: TaskManager(); break;
-        case 7: pm.runPackage(SPKG_ID(PkgMgr)); break;
+        case 1: ImageViewer(fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|")); break;
+        case 2: setTime(); break;
+        case 3: TaskManager(); break;
+        case 4: pm.runPackage(SPKG_ID(PkgMgr)); break;
         }
     };
     currentScreen = SCREENS::MAINMENU;

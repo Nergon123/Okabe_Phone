@@ -4,14 +4,15 @@
 #include "System/TextManipulation.h"
 #include "UI/ListMenu.h"
 #include "UI/UIElements.h"
+#include <System/LanguageSystem.h>
 #include <algorithm>
-
 // messages menu
 void messages() {
     res.DrawImage(R_MENU_BACKGROUND);
     res.DrawImage(R_MAIL_MENU_L_HEADER);
     res.DrawImage(R_MENU_L_HEADER);
-    NString entries[] = {"Inbox", "Outbox"};
+    NString entries[] = {getTranslation(TextKey::MSGS_INBOX),
+                         getTranslation(TextKey::MSGS_OUTBOX)};
     int     ch        = choiceMenu(entries, ArraySize(entries), false);
     if (ch < 2 && ch >= 0) { inbox(ch); }
     currentScreen = SCREENS::MAINMENU;
@@ -39,7 +40,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
     int text_pos = 0;
     int position = 0;
     drawStatusBar();
-    drawHeader("Outgoing Mail", LM_MESSAGES);
+    drawHeader(getTranslation(TextKey::MSGS_OUTGOING), LM_MESSAGES);
     // jump in pixels per one button press
     int y_jump = 22;
     // offset of screen in height
@@ -80,7 +81,10 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
         changeFont(1);
         tft.print(content);
         int     input = -1;
-        NString a[]   = {"Continue", "Send Message", "Delete", "Save To Drafts"};
+        NString a[]   = {getTranslation(TextKey::MSGS_OUT_MENU_CONTINUE),
+                         getTranslation(TextKey::MSGS_OUT_MENU_SEND),
+                         getTranslation(TextKey::MSGS_OUT_MENU_DELETE),
+                         getTranslation(TextKey::MSGS_OUT_MENU_SAVE)};
         int     u;
         tft.drawLine(curx + 1, 2 + position + y_scr + cury, 1 + curx, y_scr + cury + position + 20,
                      TFT_BLACK);
@@ -136,8 +140,14 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                     }
                     return;
                     break;
-                case 2: ESP_LOGI("INFO", "DELETE"); break;
-                case 3: ESP_LOGI("INFO", "Save to Drafts"); break;
+                case 2: ESP_LOGI("INFO", "DELETE");
+#warning Delete Message not implemented
+                    break;
+                case 3:
+                    ESP_LOGI("INFO", "Save to Drafts")
+#warning Save to Drafts not implemented
+                        ;
+                    break;
 
                 default: break;
                 }
@@ -145,7 +155,7 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
             default:
                 if (input >= '0' && input <= '9') {
                     NString l = textInput(input, 0, 0, 1);
-                    input  = buttonsHelding();
+                    input     = buttonsHelding();
                     if (l != 0) {
 
                         if (content.length() < limit) {
@@ -156,10 +166,11 @@ void messageActivityOut(Contact contact, NString subject, NString content, bool 
                                     text_pos += l[0] > 0x7F ? 2 : 1;
                                 }
                                 else {
-                                    uint8_t deletedCharLength = content[text_pos-1] >= 0x7F ? 2 : 1;
+                                    uint8_t deletedCharLength =
+                                        content[text_pos - 1] >= 0x7F ? 2 : 1;
                                     content = content.substring(0, text_pos - deletedCharLength) +
                                               content.substring(text_pos, content.length());
-                                    input = BACK;
+                                    input   = BACK;
                                 }
                             }
                         }
@@ -205,9 +216,9 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
                      bool outcoming, bool sms) {
     tft.setTextWrap(true);
     content.trim();
-    const NString choices[] = {"Reply", "Delete"};
+    const NString choices[] = {getTranslation(TextKey::MSGS_INC_MENU_REPLY), getTranslation(TextKey::MSGS_INC_MENU_DELETE)};
     drawStatusBar();
-    drawHeader("Recieve Mail", LM_MESSAGES);
+    drawHeader(getTranslation(TextKey::MSGS_INCOMING) ,LM_MESSAGES);
     int y_jump = 22;
     int y_scr  = 0;
     changeFont(1);
@@ -257,7 +268,7 @@ bool messageActivity(Contact contact, NString date, NString subject, NString con
                 case 0: messageActivityOut(contact, "", "", true); break;
                 case 1:
                     tft.resetViewport();
-                    if (confirmation("ARE YOU SURE YOU WANT TO DELETE MESSAGE?")) {
+                    if (confirmation(getTranslation(TextKey::MSGS_INC_MENU_DELETE_CONFIRM))) {
                         sendATCommand("AT+CMGD=" + NString(index), 5000);
                         return true;
                     }
@@ -298,7 +309,8 @@ void inbox(bool outbox) {
     bool exit = false;
     while (!exit) {
         exit = true;
-        InfoWindow("Loading messages...", "INFO", false, TFT_BLUE);
+        InfoWindow(getTranslation(TextKey::IW_INBOX_LOAD_MSGS),
+                   IW_TITLE::INFO,false);
         std::vector<Message> msgs = parseMessages();
         std::reverse(msgs.begin(), msgs.end());
         std::vector<mOption> messList;
@@ -306,7 +318,9 @@ void inbox(bool outbox) {
         int choice = LISTMENU_NULL;
         while (choice != LISTMENU_EXIT) {
             choice = listMenu(messList, messList.size(), false, LM_MESSAGES,
-                              outbox ? "Outbox" : "Inbox", false, choice)
+                              outbox ? getTranslation(TextKey::MSGS_OUTBOX)
+                                     : getTranslation(TextKey::MSGS_INBOX),
+                              false, choice)
                          .index;
             if (choice >= 0) {
                 exit = !messageActivity(msgs[choice]);
