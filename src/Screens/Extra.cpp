@@ -82,9 +82,9 @@ void e() {
         case 0: ESP_LOGI("E", "PATH: %s", fileBrowser().c_str()); break;
         case 1: OTAactivity(); break;
         case 2: execute_application(); break;
-        case 3: ImageViewer(fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|")); break;
+        case 3: ImageViewer(fileBrowser("/", "|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|")); break;
         case 4: {
-            NString path = fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|");
+            NString path = fileBrowser("/", "|.PNG|.JPG|.JPEG|.BMP|.TGA|.PIC|.GIF|");
             while (wallpaperMode != LISTMENU_EXIT) {
                 wallpaperMode = choiceMenu(wallpaperModes, ArraySize(wallpaperModes), true);
                 { drawImageWithMode(path, (ImageMode)wallpaperMode, 0, 26); }
