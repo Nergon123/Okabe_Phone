@@ -52,6 +52,10 @@ typedef unsigned long ulong;
 // delay between SIM card checks
 #define DBC_MS 5000
 
+#define USER_DIR "/sd/"
+#define SYSTEM_DIR "/spiffs/"
+#define WALLPAPER_DIR "/sd/Wallpapers/"
+
 #define SimSerial Serial1
 
 #define lines_to_draw_wo_psram 3

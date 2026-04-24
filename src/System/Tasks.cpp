@@ -1,5 +1,5 @@
 #include "Tasks.h"
-
+#include <Platform/Audio/AudioGen.h>
 void suspendCore(bool suspend) { (void)suspend; };
 
 // Function to handle the idle task

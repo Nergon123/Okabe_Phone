@@ -10,6 +10,7 @@
 #include "System/Time.h"
 #include "init.h"
 #include <System/LanguageSystem.h>
+#include <Platform/Audio/AudioGen.h>
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
 

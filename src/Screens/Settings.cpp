@@ -235,10 +235,10 @@ mOption wallpaperPreview(void* data) {
             }
 
             // 34x42 preview
-            float ratio = (float)params.srcwidth / (float)params.srcheight;
-            int previewMaxW = 34;
-            int previewMaxH = 42;
-            int w = 34, h = 42;
+            float ratio       = (float)params.srcwidth / (float)params.srcheight;
+            int   previewMaxW = 34;
+            int   previewMaxH = 42;
+            int   w = 34, h = 42;
             if (params.srcheight > previewMaxH || params.srcwidth > previewMaxW) {
                 if (ratio > 1) { // wider than taller
                     w = previewMaxW;
@@ -305,27 +305,23 @@ mOption wallpaperPreview(void* data) {
         if (!previewBuffer) {
             return mOption("Wallpaper " + NString(wp->id), Image(), 0, nullptr);
         }
-        if (wp->id == currentWallpaper.id) {
-            drawSelectedFrame(previewBuffer, w, h);
-        }
-        image_data previewData = {w, h, nullptr, previewBuffer};
+        if (wp->id == currentWallpaper.id) { drawSelectedFrame(previewBuffer, w, h); }
+        image_data previewData                        = {w, h, nullptr, previewBuffer};
         wallpaperPreviewCache[std::to_string(wp->id)] = previewData;
-        return mOption("Wallpaper " + NString(wp->id),
-                       Image(previewBuffer, 0, 0, w, h, 0), 0, nullptr);
+        return mOption("Wallpaper " + NString(wp->id), Image(previewBuffer, 0, 0, w, h, 0), 0,
+                       nullptr);
     }
 
     return mOption("", Image(), 0, nullptr);
 }
-#define WALLPAPER_DIR "/sd/Wallpapers/"
 wallpaper currentWallpaper;
 void      drawWallpaper() {
-    if (currentWallpaper.path.isEmpty() && currentWallpaper.id < 0) {
-        res.DrawImage(R_DEFAULT_WALLPAPER);
-    }
-    else if (!currentWallpaper.path.isEmpty() && VFS.exists(currentWallpaper.path)) {
+    tft.fillRect(0, 26, 240, 294, 0x0000); // in case if wallpaper will fail
+    if (currentWallpaper.id >= 0) { res.DrawImage(currentWallpaper.id); }
+    else if (currentWallpaper.path.isEmpty()) { res.DrawImage(R_DEFAULT_WALLPAPER); }
+    else if (VFS.exists(currentWallpaper.path)) {
         drawImageWithMode(currentWallpaper.path, currentWallpaper.mode, 0, 26);
     }
-    else if (currentWallpaper.id >= 0) { res.DrawImage(currentWallpaper.id); }
 }
 void changeWallpaper() {
     wallpaper     twp;
@@ -338,7 +334,7 @@ void changeWallpaper() {
                                                getTranslation(TextKey::CANCEL_BUTTON)};
 
     std::vector<std::string> wallpaperFiles = VFS.listDir(WALLPAPER_DIR);
-    uint8_t                  resourceCount    = res.GetImageDataByID(R_DEFAULT_WALLPAPER).count;
+    uint8_t                  resourceCount  = res.GetImageDataByID(R_DEFAULT_WALLPAPER).count;
     std::vector<mOption>     options;
     std::vector<wallpaper>   wallpaperEntries;
     wallpaperEntries.reserve(resourceCount + wallpaperFiles.size() + 1);
@@ -346,9 +342,8 @@ void changeWallpaper() {
                                                  ".tga", ".pic", ".gif"};
     for (int i = 0; i < resourceCount; i++) {
         wallpaperEntries.push_back({i, "", IMG_CENTERED});
-        options.push_back(
-            mOption("", Image(), 0, nullptr, 0, wallpaperPreview,
-                    (void*)&wallpaperEntries.back()));
+        options.push_back(mOption("", Image(), 0, nullptr, 0, wallpaperPreview,
+                                  (void*)&wallpaperEntries.back()));
     }
     for (const std::string& file : wallpaperFiles) {
 
@@ -361,16 +356,15 @@ void changeWallpaper() {
             supportedFormats.end()) {
 
             wallpaperEntries.push_back({-1, WALLPAPER_DIR + file, IMG_CENTERED});
-            options.push_back(
-                mOption("", Image(), 0, nullptr, 0, wallpaperPreview,
-                        (void*)&wallpaperEntries.back()));
+            options.push_back(mOption("", Image(), 0, nullptr, 0, wallpaperPreview,
+                                      (void*)&wallpaperEntries.back()));
         }
     }
 
     options.push_back(
         mOption(/*getTranslation(TextKey::LM_SET_WALLPAPER_FILE_BROWSER)*/ "more wallpeppers"));
     NString path;
-    int     selection = LISTMENU_NULL;
+    size_t     selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
@@ -378,6 +372,17 @@ void changeWallpaper() {
                              getTranslation(TextKey::LM_SET_CHNG_WALLPAPER), false, selection);
         if (selection < 0) { return; }
         if (selection >= 0 && selection < options.size() - 1) {
+            if (!options[selection].getOptArgs) {
+                ESP_LOGE("WP", "Options getOptArgs is null for selection %d", selection);
+                continue;
+            }
+
+            if (((wallpaper*)options[selection].getOptArgs)->id >= 0) {
+                currentWallpaper.id   = ((wallpaper*)options[selection].getOptArgs)->id;
+                currentWallpaper.path = "";
+                currentWallpaper.mode = IMG_CENTERED;
+                continue;
+            }
             twp = *(wallpaper*)options[selection].getOptArgs;
         }
         if (selection == options.size() - 1) {
@@ -397,10 +402,9 @@ void changeWallpaper() {
             int confirm =
                 choiceMenu(wallpaperConfirmOptions, ArraySize(wallpaperConfirmOptions), true);
             if (confirm == 1) {
-
-                    currentWallpaper.path = twp.path;
-                    currentWallpaper.mode = (ImageMode)wallpaperMode;
-                    currentWallpaper.id   = -1;
+                currentWallpaper.path = twp.path;
+                currentWallpaper.id   = twp.id;
+                currentWallpaper.mode = (ImageMode)wallpaperMode;
                 preferences.begin("System");
                 preferences.putString("wallpaper_path", currentWallpaper.path.c_str());
                 preferences.putInt("wallpaper_mode", currentWallpaper.mode);
