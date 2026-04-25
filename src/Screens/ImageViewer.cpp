@@ -96,12 +96,11 @@ void ImageViewer(const NString path) {
     tft.resetViewport();
 }
 
--
 bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h) {
     if (path.isEmpty()) { return false; }
     if (w <= 0 || h <= 0) {
         InfoWindow(openError);
-        return;
+        return false;
     }
     image_data activeImage = displayPNG(path); // metadata only
     if (activeImage.srcheight <= 0 || activeImage.srcwidth <= 0) {
@@ -120,9 +119,9 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             currentRenderTarget->present();
             free(activeImage.buffer);
         }
-        else { InfoWindow(openError); return false;}
+        else { InfoWindow(openError); }
         tft.resetViewport();
-        return;
+        return false;
     }
 
     case IMG_TILED: {
@@ -139,10 +138,14 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             free(activeImage.buffer);
         }
 
-        else { InfoWindow(openError)); return false; }
+        else {
+            InfoWindow(openError);
+            tft.resetViewport();
+            return false;
+        }
 
         tft.resetViewport();
-        return;
+        return true;
     }
     case IMG_FILLED: {
         bool priorWidth = h - imageH > w - imageW;
@@ -160,11 +163,14 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
             free(activeImage.buffer);
         }
 
-        else { InfoWindow(openError); return false; }
-        
+        else {
+            InfoWindow(openError);
+            tft.resetViewport();
+            return false;
+        }
 
         tft.resetViewport();
-        return;
+        return true;
     }
     case IMG_STRETCHED: {
         activeImage = displayPNG(path, w, h, false);
@@ -174,10 +180,14 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
 
             free(activeImage.buffer);
         }
-        else {InfoWindow(openError); return false; }
+        else {
+            InfoWindow(openError);
+            tft.resetViewport();
+            return false;
+        }
 
         tft.resetViewport();
-        return;
+        return true;
     }
     case IMG_FIT_HORIZONTALY:
     case IMG_FIT_VERTICALY: {
@@ -195,13 +205,19 @@ bool drawImageWithMode(NString path, ImageMode mode, int x, int y, int w, int h)
 
             free(activeImage.buffer);
         }
-        else { InfoWindow(openError); return false; }
-        
-        tft.resetViewport();
-        return;
-    }
-    default: InfoWindow("Invalid image Mode (" + NString((int)mode) + ")"); return false;
+        else {
+            InfoWindow(openError);
+            tft.resetViewport();
+            return false;
+        }
 
+        tft.resetViewport();
+        return true;
+    }
+    default:
+        InfoWindow("Invalid image Mode (" + NString((int)mode) + ")");
+        tft.resetViewport();
+        return false;
     }
     tft.resetViewport();
     return true;

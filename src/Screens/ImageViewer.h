@@ -9,5 +9,5 @@ enum ImageMode {
     IMG_FIT_VERTICALY
 };
 void ImageViewer(const NString path);
-void drawImageWithMode(NString path, ImageMode mode, int x = 0, int y = 0, int w = 240,
-                       int h = 294, bool * fail = nullptr);
+bool drawImageWithMode(NString path, ImageMode mode, int x = 0, int y = 0, int w = 240,
+                       int h = 294);

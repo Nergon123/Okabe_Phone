@@ -1,5 +1,6 @@
 #include "Settings.h"
 #include <System/LanguageSystem.h>
+#include <Screens/ImageViewer.h>
 #include <algorithm>
 #include <cctype>
 const int lastImage = 42;
