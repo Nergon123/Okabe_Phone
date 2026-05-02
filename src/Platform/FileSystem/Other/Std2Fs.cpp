@@ -27,7 +27,7 @@ Std2File::Std2File(const std::string& path, const char* mode)
 
     const char *temp = m_filePath.c_str();
 
-    ESP_LOGD(TAG, "open: f=%s, mode=%s", m_filePath.c_str(), mode);
+    // ESP_LOGD(TAG, "open: f=%s, mode=%s", m_filePath.c_str(), mode);
     
     if (!mode || mode[0] == 'r') {
         if (!stat(temp, &m_stat)) {
@@ -78,7 +78,7 @@ Std2File::Std2File(const std::string& path, const char* mode)
         }
     }
 
-    ESP_LOGD(TAG, "open: _f=%p, is_dir=%i", _f, _isDirectory);
+    // ESP_LOGD(TAG, "open: _f=%p, is_dir=%i", _f, _isDirectory);
     
 }
 
@@ -109,12 +109,12 @@ size_t Std2File::write(const void* buf, size_t len)
 }
 bool Std2File::seek(size_t pos, int mode)
 {
-    ESP_LOGD(TAG, "seek(%s): pos=%li, mpde=%i, _f=%p, is_dir=%i",m_filePath.c_str(), pos, mode, _f, _isDirectory);
+    // ESP_LOGD(TAG, "seek(%s): pos=%li, mpde=%i, _f=%p, is_dir=%i",m_filePath.c_str(), pos, mode, _f, _isDirectory);
     if (_isDirectory || !_f) {
         return false;
     }
 
-    ESP_LOGD(TAG, "seek(%s): check ok!!",m_filePath.c_str());
+    // ESP_LOGD(TAG, "seek(%s): check ok!!",m_filePath.c_str());
     
     return fseek(_f, pos, mode) == 0;
 }
