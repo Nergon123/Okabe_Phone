@@ -22,8 +22,8 @@ class DEV_LINUX : public iHW {
   public:
     void init() override {};
     void initStorage() override {
-        IFileSystem* spiffs = new StdFileSystem("spiffs/", FS_INTERNAL);
-        IFileSystem* sdcard = new StdFileSystem("sd/", FS_EXTERNAL);
+        IFileSystem* spiffs = new Std2FileSystem("spiffs/", FS_INTERNAL);
+        IFileSystem* sdcard = new Std2FileSystem("sd/", FS_EXTERNAL);
         sdcard->begin();
         spiffs->begin();
         VFS.mount("/sd", sdcard);
