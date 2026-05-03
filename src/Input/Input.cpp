@@ -1,4 +1,5 @@
 #include "Input.h"
+#include <Screens/Settings.h>
 #include <System/UTF.h>
 #ifdef PC
 #include <SDL2/SDL.h>
@@ -49,21 +50,28 @@ void numberInput(char first) {
     NString       number;
     number += first;
 
-    int c = 127;
+    int c          = 127;
     int spinOffset = 0;
-    int spinTimer = 20;
+    int spinTimer  = 20;
 
     tft.setTextColor(TFT_WHITE);
     changeFont(1);
     tft.setCursor(18, 200);
     tft.print("Dialing...");
 
-    auto redraw = [&]() {    
+    auto redraw = [&]() {
         tft.fillRect(0, 218, 240, 60, 0);
-        for(int i = 0; i < number.length(); i++) {
-            if(number[i] >= '0' && number[i] <= '9') { res.DrawImage(R_OUTGOING_CALL_FONT, (int)(number[i]-'0'), {(i%10)*22, 220 + (28*(i/10))}); }
-            else if(number[i] == '*') { res.DrawImage(R_OUTGOING_CALL_FONT, 11, {(i%10)*22, 220 + (28*(i/10))}); }
-            else if(number[i] == '#') { res.DrawImage(R_OUTGOING_CALL_FONT, 10, {(i%10)*22, 220 + (28*(i/10))}); }
+        for (int i = 0; i < number.length(); i++) {
+            if (number[i] >= '0' && number[i] <= '9') {
+                res.DrawImage(R_OUTGOING_CALL_FONT, (int)(number[i] - '0'),
+                              {(i % 10) * 22, 220 + (28 * (i / 10))});
+            }
+            else if (number[i] == '*') {
+                res.DrawImage(R_OUTGOING_CALL_FONT, 11, {(i % 10) * 22, 220 + (28 * (i / 10))});
+            }
+            else if (number[i] == '#') {
+                res.DrawImage(R_OUTGOING_CALL_FONT, 10, {(i % 10) * 22, 220 + (28 * (i / 10))});
+            }
         }
         currentRenderTarget->present();
     };
@@ -71,9 +79,7 @@ void numberInput(char first) {
     redraw();
 
     while (true) {
-        while (c == 127 || c == -1) { 
-            c = buttonsHelding();
-        }
+        while (c == 127 || c == -1) { c = buttonsHelding(); }
 
         switch (c) {
 
@@ -91,6 +97,7 @@ void numberInput(char first) {
         case BACK: return;
 
         default:
+
             if ((std::isdigit(static_cast<unsigned char>(c)) || c == '*' || c == '#') &&
                 number.length() < max_length) {
                 if (!simIsBusy) {
@@ -99,6 +106,10 @@ void numberInput(char first) {
 
                 number += char(c);
                 redraw();
+            }
+            if (number == "*#*#0#*#*") {
+                debugMenu();
+                return;
             }
             break;
         }
@@ -232,7 +243,7 @@ NString textInput(int input, uint8_t useCharset, int curX, int curY, bool nonl, 
     };
     // * = ﾞﾟ
 
-    bool first = true;
+    bool        first = true;
     uint32_t    result;
     const char *pos          = 0;
     int         currentIndex = input >= '0' && input <= '9' ? input - 48

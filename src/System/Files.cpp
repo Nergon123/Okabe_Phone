@@ -16,7 +16,7 @@ const iconFormat fileFormats[] = {
 };
 
 uint8_t getIconByFormat(NString name) {
-    NString format = name.substring(name.lastIndexOf('.'), name.length());
+    NString format = name.substring(name.lastIndexOf('.'), name.length()).toLowerCase();
     char formatCA[6];
     format.toCharArray(formatCA, 5);
     for (size_t i = 0; i < sizeof(fileFormats) / sizeof(fileFormats[0]); i++) {

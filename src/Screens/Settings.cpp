@@ -1,9 +1,10 @@
 #include "Settings.h"
-#include <System/LanguageSystem.h>
 #include <Screens/ImageViewer.h>
+#include <System/LanguageSystem.h>
 #include <algorithm>
 #include <cctype>
 const int lastImage = 42;
+int       getDaysInMonth(int year, int month);
 
 void debugMenu() { InfoWindow("Nope.", IW_TITLE::INFO); }
 
@@ -317,7 +318,7 @@ mOption wallpaperPreview(void* data) {
 }
 wallpaper currentWallpaper;
 void      drawWallpaper() {
-    tft.fillRect(0, 26, 240, 294, 0x0000); // in case if wallpaper will fail
+    res.DrawImage(R_DEFAULT_WALLPAPER); // in case if wallpaper will fail
     if (currentWallpaper.id >= 0) { res.DrawImage(currentWallpaper.id); }
     else if (currentWallpaper.path.isEmpty()) { res.DrawImage(R_DEFAULT_WALLPAPER); }
     else if (VFS.exists(currentWallpaper.path)) {
@@ -363,9 +364,9 @@ void changeWallpaper() {
     }
 
     options.push_back(
-        mOption(/*getTranslation(TextKey::LM_SET_WALLPAPER_FILE_BROWSER)*/ "more wallpeppers"));
+        mOption(/*getTranslation(TextKey::LM_SET_WALLPAPER_FILE_BROWSER)*/ "more wallpapers"));
     NString path;
-    size_t     selection = LISTMENU_NULL;
+    size_t  selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
         res.DrawImage(R_MENU_BACKGROUND);
         res.DrawImage(R_SETTING_MENU_L_HEADER);
@@ -382,6 +383,11 @@ void changeWallpaper() {
                 currentWallpaper.id   = ((wallpaper*)options[selection].getOptArgs)->id;
                 currentWallpaper.path = "";
                 currentWallpaper.mode = IMG_CENTERED;
+                preferences.begin("System");
+                preferences.putString("wallpaper_path", currentWallpaper.path.c_str());
+                preferences.putInt("wallpaper_mode", currentWallpaper.mode);
+                preferences.putInt("wallpaper_id", currentWallpaper.id);
+                preferences.end();
                 continue;
             }
             twp = *(wallpaper*)options[selection].getOptArgs;
@@ -478,7 +484,8 @@ void setTime() {
     bool renderall = true;
     int  direction = LEFT;
     while (!exit) {
-        int dayMax = (tm_time.tm_mon == 2)?((!tm_time.tm_year % 4)?29:28):((tm_time.tm_mon < 8)?30+(tm_time.tm_mon % 2):31-(tm_time.tm_mon % 2));
+        int dayMax = getDaysInMonth(temp_year, tm_time.tm_mon);
+
         if (tm_time.tm_mday > dayMax) { tm_time.tm_mday = dayMax; }
 
         sNumberChange(57, 90, 25, 25, tm_time.tm_mday, 1, dayMax, choice == 0 && !renderall,
@@ -523,4 +530,12 @@ void setTime() {
 void ringtoneSelector(bool isMail) {
 #warning ringtoneSelector not implemented
     (void)isMail;
+}
+
+int getDaysInMonth(int year, int month) {
+    static const int days[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (month == 2 && (year % 4 == 0)) { // Simplified leap year check (ignores century rules)
+        return 29;
+    }
+    return days[month];
 }

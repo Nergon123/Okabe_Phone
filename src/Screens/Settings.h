@@ -9,7 +9,7 @@
 #include "UI/Notifications.h"
 #include "UI/UIElements.h"
 #include <Screens/ImageViewer.h>
-
+void debugMenu();
 void settings();
 void setTime();
 int  gallery();

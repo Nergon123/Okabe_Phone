@@ -136,6 +136,12 @@ class NString {
         return NString(upper);
     }
 
+    NString toLowerCase() const {
+        std::string lower = s_;
+        for (char& c : lower) { c = std::tolower(static_cast<unsigned char>(c)); }
+        return NString(lower);
+    }
+
     void remove(unsigned long index) {
         if (index >= s_.size()) {
             s_.clear();
