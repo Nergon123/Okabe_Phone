@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <filesystem>
+#include <stdarg.h>
 namespace fs = std::filesystem;
 
 
