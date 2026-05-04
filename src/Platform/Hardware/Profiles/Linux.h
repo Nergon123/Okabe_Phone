@@ -2,6 +2,7 @@
 #ifdef PC
 #include <Platform/FileSystem/FileSystem.h>
 #include <Platform/Graphics/SDL2RenderTarget.h>
+#include <Platform/Audio/SDLAudio.h>
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <chrono>
@@ -20,7 +21,9 @@ struct WriteContext {
 };
 class DEV_LINUX : public iHW {
   public:
-    void init() override {};
+    void init() override {
+        audioSource = new SDLAudio();
+    };
     void initStorage() override {
         IFileSystem* spiffs = new Std2FileSystem("spiffs/", FS_INTERNAL);
         IFileSystem* sdcard = new Std2FileSystem("sd/", FS_EXTERNAL);
@@ -86,6 +89,7 @@ class DEV_LINUX : public iHW {
             case SDL_KEYDOWN:
                 input = ev.key.keysym.sym;
                 if (input == 'u') { input = '*'; }
+                if (input == 'i') { input = '#'; }
                 if (input == ']') { SDL_Quit(); }
                 // printf("Key pressed: %c\n", input);
 
@@ -240,7 +244,8 @@ class DEV_LINUX : public iHW {
         if (userCallback && *userCallback) {
             (*userCallback)(static_cast<size_t>(dlnow), static_cast<size_t>(dltotal));
         }
-        (void)ultotal;(void)ulnow;
+        (void)ultotal;
+        (void)ulnow;
         return 0; // return non-zero to abort transfer
     }
     static size_t writeCallback(void* ptr, size_t size, size_t nmemb, void* userdata) {

@@ -27,9 +27,9 @@ struct AudioStream {
     volatile AudioState state;
 };
 
-class Audio {
+class AudioSource {
   public:
-    virtual ~Audio() = default;
+    virtual ~AudioSource() = default;
 
     virtual void init()                    = 0;
     virtual void play(AudioStream* stream) = 0;
@@ -37,7 +37,7 @@ class Audio {
     virtual void setVolume(float volume)   = 0; // 0.0–1.0
 };
 
-class NullAudio : public Audio {
+class NullAudio : public AudioSource {
   public:
     void init() override {}
     void play(AudioStream* stream) override { (void)stream; }
