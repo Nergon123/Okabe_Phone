@@ -16,15 +16,7 @@ size_t multi_callback(void* user, void* out, size_t bytes) {
     return bytes;
 }
 
-void PlayMP3Sample(NString path) {
-    audioSource->init();
-    MP3Player* player = new MP3Player(audioSource);
-    player->init(path);
-    player->play();
-    player->setLoop(true);
-}
-
-void sampleOSC() {
+void sample() {
 
     MultiOscillator synth(48000, 2);
 
@@ -37,9 +29,9 @@ void sampleOSC() {
                        .format     = AUDIOFMT_S16,
                        .state      = AUDIO_STOPPED};
 #ifdef SDL_h_
-    AudioSource* audio = new SDLAudio();
+    Audio* audio = new SDLAudio();
 #else
-    AudioSource* audio = new NullAudio();
+    Audio* audio = new NullAudio();
 #endif
     audio->init();
     audio->play(&stream);
