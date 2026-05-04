@@ -13,28 +13,30 @@ extern "C" {
 
 class MP3Player {
   public:
-    explicit MP3Player(Audio* audio);
+    explicit MP3Player(AudioSource* audio);
 
     bool init(const NString& file_path);
     void play();
     void stop();
+    void setLoop(bool isLooped) { loop = isLooped; };
+    bool getLoop() { return loop; };
+    uint32_t getTimeMs();
+    void setTimeMs(uint32_t timeMs);
 
   private:
     static size_t audioCallback(void* user, void* out, size_t bytes);
     size_t        onAudio(void* out, size_t bytes);
-
-  private:
-    Audio*      audio;
-    AudioStream stream{};
+    AudioSource*  audio;
+    AudioStream   stream{};
 
     mp3dec_t mp3d;
     NFile*   currentFile = nullptr;
 
-    int sampleRate = 0;
-    int channels   = 0;
-
-    bool eof      = false;
-    bool file_eof = false; // Track if we've reached end of file
+    int  sampleRate = 0;
+    int  channels   = 0;
+    bool loop       = false;
+    bool eof        = false;
+    bool file_eof   = false; // Track if we've reached end of file
 
     // decode scratch buffers (owned by player, reused)
     // Larger input buffer: docs recommend ~16KB for reliable sync (10 consecutive frames)
@@ -59,4 +61,9 @@ class MP3Player {
     // Diagnostic counters
     size_t framesDecoded  = 0; // incremented on each successful decode
     size_t loopIterations = 0; // incremented every onAudio loop iteration (for diagnostics)
+
+    // Position tracking
+    uint64_t totalSamplesOutput = 0; // cumulative samples sent to audio system
+    uint32_t lastBitrate        = 128; // estimated bitrate in kbps for seeking
+    size_t   fileSizeBytes      = 0; // total file size for duration estimation
 };

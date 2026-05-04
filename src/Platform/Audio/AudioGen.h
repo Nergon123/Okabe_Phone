@@ -1,15 +1,15 @@
+#include <Platform/NString.h>
 #include <random>
 #include <vector>
-
 enum WaveformType { WAVE_SINE, WAVE_SQUARE, WAVE_TRIANGLE, WAVE_NOISE };
 struct Voice {
     WaveformType type;
     float        frequency;
     float        amplitude;
     float        phase;
-
-    Voice(WaveformType t = WAVE_SINE, float f = 440.0f, float a = 1.0f)
-        : type(t), frequency(f), amplitude(a), phase(0.0f) {}
+    uint16_t     id;
+    Voice(WaveformType t = WAVE_SINE, float f = 440.0f, float a = 1.0f, int id = -1)
+        : type(t), frequency(f), amplitude(a), phase(0.0f), id(id) {}
 };
 class MultiOscillator {
   public:
@@ -22,7 +22,11 @@ class MultiOscillator {
         return &voices.back(); // return pointer to the newly added voice
     }
     void clearVoices() { voices.clear(); }
-
+    void deleteVoice(int id) {
+        for (size_t i = 0; i < voices.size(); i++) {
+            if (voices.at(i).id == id) { voices.erase(voices.begin() + i); }
+        }
+    }
     float nextSample(size_t voiceIndex) {
         if (voiceIndex >= voices.size()) { return 0.0f; }
 
@@ -63,4 +67,5 @@ class MultiOscillator {
     std::mt19937                          rng;
     std::uniform_real_distribution<float> noiseDist{-1.0f, 1.0f};
 };
-void sample();
+void sampleOSC();
+void PlayMP3Sample(NString path);

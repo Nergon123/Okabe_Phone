@@ -13,6 +13,7 @@
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/NString.h"
 #include "Platform/Preferences.h"
+#include "Platform/Audio/Audio.h"
 
 #include <vector>
 
@@ -179,6 +180,8 @@ extern uint8_t* resources;
 
 extern PackageManager pm;
 extern PackageStorage PaStor;
+
+extern AudioSource* audioSource;
 
 // Function to get the size of an array ... bruh
 template <typename T, size_t N> size_t ArraySize(T (&)[N]) { return N; }

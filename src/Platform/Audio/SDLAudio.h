@@ -3,7 +3,7 @@
 #ifdef __linux__
 #include <SDL2/SDL.h>
 
-class SDLAudio : public Audio {
+class SDLAudio : public AudioSource {
   public:
     SDLAudio();
     ~SDLAudio() override;

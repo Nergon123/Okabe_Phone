@@ -23,6 +23,7 @@ bool isSPIFFS = false;
 // current brightness in percentage
 uint8_t brightness = 100;
 
+
 int currentScreen = SCREENS::MAINSCREEN;
 // index of current wallpaper
 uint32_t wallpaperIndex = 0;
@@ -48,7 +49,7 @@ std::vector<Contact> contacts;
 VirtualFileSystem VFS;
 
 ulong DIB_MS = 500;
-
+AudioSource* audioSource = new NullAudio();
 // forbid to change fastMode
 bool          lockFastMode         = false;
 RenderTarget* currentRenderTarget  = nullptr;

@@ -3,7 +3,7 @@
 #include <string.h>
 #define MINIMP3_IMPLEMENTATION
 #include <Platform/Audio/minimp3.h>
-MP3Player::MP3Player(Audio* a) : audio(a) {}
+MP3Player::MP3Player(AudioSource* a) : audio(a) {}
 static const char* TAG = "MP3Player";
 bool               MP3Player::init(const NString& file_path) {
     // Add compile-time size check
@@ -13,7 +13,7 @@ bool               MP3Player::init(const NString& file_path) {
     // Add runtime debug
     ESP_LOGI(TAG, "MP3 buffer: %zu bytes", sizeof(mp3buf));
     ESP_LOGI(TAG, "PCM cache: %zu bytes (max %d samples per frame)", sizeof(pcmCache),
-                           MINIMP3_MAX_SAMPLES_PER_FRAME);
+             MINIMP3_MAX_SAMPLES_PER_FRAME);
     ESP_LOGI(TAG, "init: %s", file_path.c_str());
     mp3dec_init(&mp3d);
 
@@ -23,8 +23,9 @@ bool               MP3Player::init(const NString& file_path) {
         return false;
     }
 
-    // Read initial data for testing
-    mp3bufFill = currentFile->read(mp3buf, sizeof(mp3buf));
+    // Get file size for duration estimation
+    fileSizeBytes = currentFile->size();
+    mp3bufFill    = currentFile->read(mp3buf, sizeof(mp3buf));
     ESP_LOGI(TAG, "Read %zu bytes for initial decode", mp3bufFill);
 
     if (mp3bufFill == 0) {
@@ -67,7 +68,7 @@ bool               MP3Player::init(const NString& file_path) {
 
     ESP_LOGI(TAG, "Audio info: %d Hz, %d channels", sampleRate, channels);
     ESP_LOGI(TAG, "PCM cache: %zu bytes, %zu samples (max %zu frames)", pcm_cache_size_bytes,
-                           pcm_cache_size_samples, pcm_cache_size_samples / (MINIMP3_MAX_SAMPLES_PER_FRAME * 2));
+             pcm_cache_size_samples, pcm_cache_size_samples / (MINIMP3_MAX_SAMPLES_PER_FRAME * 2));
     ESP_LOGI(TAG, "MINIMP3_MAX_SAMPLES_PER_FRAME = %d", MINIMP3_MAX_SAMPLES_PER_FRAME);
 
     // Reset file position to beginning
@@ -78,12 +79,12 @@ bool               MP3Player::init(const NString& file_path) {
 
     // Print addresses & initial values of guards to make it easy to set watchpoints in gdb
     ESP_LOGI(TAG,
-                           "Guards addr: &guard_mp3buf_start=%p &mp3buf=%p &guard_mp3buf_end=%p "
-                                         "&guard_pcm_start=%p &pcmCache=%p &guard_pcm_end=%p",
-                           (void*)&guard_mp3buf_start, (void*)mp3buf, (void*)&guard_mp3buf_end,
-                           (void*)&guard_pcm_start, (void*)pcmCache, (void*)&guard_pcm_end);
+             "Guards addr: &guard_mp3buf_start=%p &mp3buf=%p &guard_mp3buf_end=%p "
+             "&guard_pcm_start=%p &pcmCache=%p &guard_pcm_end=%p",
+             (void*)&guard_mp3buf_start, (void*)mp3buf, (void*)&guard_mp3buf_end,
+             (void*)&guard_pcm_start, (void*)pcmCache, (void*)&guard_pcm_end);
     ESP_LOGI(TAG, "Guards val: start=%08x end=%08x pcm_start=%08x pcm_end=%08x",
-                           guard_mp3buf_start, guard_mp3buf_end, guard_pcm_start, guard_pcm_end);
+             guard_mp3buf_start, guard_mp3buf_end, guard_pcm_start, guard_pcm_end);
 
     stream.callback   = &MP3Player::audioCallback;
     stream.user       = this;
@@ -97,6 +98,9 @@ bool               MP3Player::init(const NString& file_path) {
     eof      = false;
     file_eof = false;
 
+    // Reset position tracking
+    totalSamplesOutput = 0;
+
     ESP_LOGI(TAG, "MP3Player initialized successfully");
     return true;
 }
@@ -109,6 +113,7 @@ void MP3Player::play() {
 
     stream.state = AUDIO_PLAYING;
     ESP_LOGI(TAG, "Starting audio playback");
+    ESP_LOGI(TAG, "Audio object pointer is %p", audio);
     audio->play(&stream);
 }
 
@@ -125,9 +130,20 @@ size_t MP3Player::onAudio(void* out, size_t bytes) {
     uint8_t* dst  = static_cast<uint8_t*>(out);
     size_t   done = 0;
 
-    ESP_LOGV(TAG, "onAudio: requested %zu bytes, state=%d, eof=%d, file_eof=%d", bytes,
-             stream.state, eof, file_eof);
-
+    // ESP_LOGV(TAG, "onAudio: requested %zu bytes, state=%d, eof=%d, file_eof=%d", bytes,
+    //          stream.state, eof, file_eof);
+    if (eof) {
+        if (loop) {
+            eof      = 0;
+            file_eof = 0;
+            setTimeMs(0);
+            memset(dst, 0, bytes);
+            return bytes;
+        }
+        audio->stop();
+        delete this;
+        return bytes;
+    }
     // If not playing or already at EOF, fill with silence
     if (stream.state != AUDIO_PLAYING || eof) {
         memset(dst, 0, bytes);
@@ -153,14 +169,16 @@ size_t MP3Player::onAudio(void* out, size_t bytes) {
 
     // Log addresses and initial canary state (helps root-cause memory layout corruption)
     loopIterations++;
-    ESP_LOGV(TAG,
-             "onAudio loop %zu: addr:this=%p, &mp3buf=%p, &mp3bufFill=%p, &guard_mp3buf_end=%p, "
-             "&pcmCache=%p, "
-             "&guard_pcm_end=%p, &pcmFill=%p",
-             loopIterations, (void*)this, (void*)&mp3buf, (void*)&mp3bufFill,
-             (void*)&guard_mp3buf_end, (void*)&pcmCache, (void*)&guard_pcm_end, (void*)&pcmFill);
-    ESP_LOGV(TAG, "canaries: start=%08x, mp3_end=%08x, pcm_start=%08x, pcm_end=%08x",
-             guard_mp3buf_start, guard_mp3buf_end, guard_pcm_start, guard_pcm_end);
+    // ESP_LOGV(TAG,
+    //          "onAudio loop %zu: addr:this=%p, &mp3buf=%p, &mp3bufFill=%p, &guard_mp3buf_end=%p,
+    //          "
+    //          "&pcmCache=%p, "
+    //          "&guard_pcm_end=%p, &pcmFill=%p",
+    //          loopIterations, (void*)this, (void*)&mp3buf, (void*)&mp3bufFill,
+    //          (void*)&guard_mp3buf_end, (void*)&pcmCache, (void*)&guard_pcm_end,
+    //          (void*)&pcmFill);
+    // ESP_LOGV(TAG, "canaries: start=%08x, mp3_end=%08x, pcm_start=%08x, pcm_end=%08x",
+    //          guard_mp3buf_start, guard_mp3buf_end, guard_pcm_start, guard_pcm_end);
 
     while (done < bytes) {
         // 1) Copy leftover PCM from cache
@@ -228,8 +246,8 @@ size_t MP3Player::onAudio(void* out, size_t bytes) {
                 ESP_LOGV(TAG, "File EOF reached");
             }
 
-            ESP_LOGV(TAG, "Read r1=%zu r2=%zu, mp3bufFill=%zu (start=%zu)", r1,
-                     (size_t)remaining_to_read, mp3bufFill, mp3bufStart);
+            //    ESP_LOGV(TAG, "Read r1=%zu r2=%zu, mp3bufFill=%zu (start=%zu)", r1,
+            //             (size_t)remaining_to_read, mp3bufFill, mp3bufStart);
         }
 
         // 4) If we still have no MP3 data, break and pad silence
@@ -264,8 +282,9 @@ size_t MP3Player::onAudio(void* out, size_t bytes) {
         *guard                     = GUARD_MAGIC;
 
         int samples = mp3dec_decode_frame(&mp3d, decode_ptr, contiguous_bytes, local_pcm, &info);
-        ESP_LOGV(TAG, "mp3 decode: samples=%d, frame_bytes=%d, hz=%d, ch=%d (start=%zu fill=%zu)",
-                 samples, info.frame_bytes, info.hz, info.channels, mp3bufStart, mp3bufFill);
+        //  ESP_LOGV(TAG, "mp3 decode: samples=%d, frame_bytes=%d, hz=%d, ch=%d (start=%zu
+        //  fill=%zu)",
+        //           samples, info.frame_bytes, info.hz, info.channels, mp3bufStart, mp3bufFill);
 
         // Check guard to ensure decoder did not write beyond local_pcm buffer
         if (*guard != GUARD_MAGIC) {
@@ -319,6 +338,9 @@ size_t MP3Player::onAudio(void* out, size_t bytes) {
                 ESP_LOGI(TAG, "Decoded frames=%zu, sampleRate=%d, channels=%d, mp3bufFill=%zu",
                          framesDecoded, sampleRate, channels, mp3bufFill);
             }
+
+            // Update bitrate estimate from frame header (helps with seeking accuracy)
+            if (info.bitrate_kbps > 0) { lastBitrate = info.bitrate_kbps; }
 
             // Validate canaries after copying PCM
             if (guard_mp3buf_start != 0xC0FFEE11 || guard_mp3buf_end != 0xB16B00B5 ||
@@ -432,5 +454,70 @@ size_t MP3Player::onAudio(void* out, size_t bytes) {
         ESP_LOGV(TAG, "Padded %zu bytes with silence", bytes - done);
     }
 
+    // Track samples output (each sample is 2 bytes for 16-bit audio)
+    totalSamplesOutput += (done / sizeof(int16_t));
+
     return bytes;
+}
+
+uint32_t MP3Player::getTimeMs() {
+    if (sampleRate == 0 || channels == 0) {
+        return 0; // Not initialized
+    }
+
+    // Calculate time from total samples output divided by sample rate and channels
+    // totalSamplesOutput counts int16_t values (one per channel per sample)
+    // So actual audio samples = totalSamplesOutput / channels
+    // time(ms) = (totalSamplesOutput / channels / sampleRate) * 1000
+    //          = (totalSamplesOutput * 1000) / (sampleRate * channels)
+    uint64_t timeMs = (totalSamplesOutput * 1000ULL) / ((uint64_t)sampleRate * channels);
+
+    // Cap at reasonable 32-bit value
+    if (timeMs > 0xFFFFFFFFULL) { return 0xFFFFFFFF; }
+
+    return (uint32_t)timeMs;
+}
+
+void MP3Player::setTimeMs(uint32_t timeMs) {
+    if (!currentFile || sampleRate == 0 || channels == 0) {
+        ESP_LOGW(TAG, "setTimeMs: Player not initialized");
+        return;
+    }
+
+    ESP_LOGI(TAG, "Seeking to %u ms", timeMs);
+
+    // Calculate estimated file position based on bitrate
+    // Formula: file_pos = (timeMs / 1000.0) * (bitrate_kbps * 1000) / 8
+    // Simplified: file_pos = timeMs * bitrate_kbps / 8
+    uint32_t estimatedPos = (timeMs * lastBitrate) / 8;
+
+    // Clamp to file size
+    if (estimatedPos > fileSizeBytes) { estimatedPos = fileSizeBytes; }
+
+    // Seek to the estimated position
+    currentFile->seek(estimatedPos, SEEK_SET);
+
+    // Reset decoder state
+    mp3dec_init(&mp3d);
+
+    // Reset buffers
+    mp3bufStart = 0;
+    mp3bufFill  = 0;
+    pcmPos      = 0;
+    pcmFill     = 0;
+    file_eof    = false;
+
+    // Initialize totalSamplesOutput to the target time position
+    // so getTimeMs() returns the correct absolute playback time
+    totalSamplesOutput = ((uint64_t)timeMs * sampleRate * channels) / 1000;
+
+    // Try to find and decode the next valid MP3 frame
+    mp3bufFill = currentFile->read(mp3buf, sizeof(mp3buf));
+    if (mp3bufFill == 0) {
+        ESP_LOGE(TAG, "setTimeMs: Failed to read data after seek");
+        eof = true;
+        return;
+    }
+
+    ESP_LOGI(TAG, "Sought to file position %u, readBuffer %zu bytes", estimatedPos, mp3bufFill);
 }

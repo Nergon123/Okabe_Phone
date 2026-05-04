@@ -1,6 +1,7 @@
 #include "AudioGen.h"
 #include "SDLAudio.h"
 #include <GlobalVariables.h>
+#include <System/MP3Player.h>
 size_t multi_callback(void* user, void* out, size_t bytes) {
     MultiOscillator* osc     = (MultiOscillator*)user;
     int16_t*         dst     = (int16_t*)out;
@@ -15,7 +16,15 @@ size_t multi_callback(void* user, void* out, size_t bytes) {
     return bytes;
 }
 
-void sample() {
+void PlayMP3Sample(NString path) {
+    audioSource->init();
+    MP3Player* player = new MP3Player(audioSource);
+    player->init(path);
+    player->play();
+    player->setLoop(true);
+}
+
+void sampleOSC() {
 
     MultiOscillator synth(48000, 2);
 
@@ -28,16 +37,18 @@ void sample() {
                        .format     = AUDIOFMT_S16,
                        .state      = AUDIO_STOPPED};
 #ifdef SDL_h_
-    Audio* audio = new SDLAudio();
+    AudioSource* audio = new SDLAudio();
 #else
-    Audio* audio = new NullAudio();
+    AudioSource* audio = new NullAudio();
 #endif
     audio->init();
     audio->play(&stream);
+    
+
     for (;;) {
         v->amplitude = 1;
         for (int i = 0; i < 10; i++) {
-            v->frequency = (sinf(i % 3) * 300) + 300;
+            v->frequency = (sinf(i % 3) * 500) + 600;
             hw->delay(100);
         }
         v->amplitude = 0;
