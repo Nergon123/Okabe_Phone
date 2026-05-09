@@ -11,9 +11,9 @@ void ResourceSystem::Init(NFile *Main, bool _important) {
     free(cache);
     cache = nullptr;
     Images.clear();
-    ZipFileProvider *zfp = new ZipFileProvider();
+    ZipFileProvider *zfp = nullptr;
     if (NString(Main->name()).endsWith(".npz")) {
-
+        zfp     = new ZipFileProvider();
         int res = zfp->openZip(Main);
         if (res) {
             ESP_LOGE("ZIP", "opening zip failed with code %d", res);
@@ -247,5 +247,3 @@ void ResourceSystem::CopyToRam(bool checksum) {
 }
 
 ResourceSystem res;
-
-

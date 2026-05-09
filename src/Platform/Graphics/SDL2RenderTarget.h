@@ -17,7 +17,7 @@ class SDL2RenderTarget : public RenderTarget {
         if (window) {
             ESP_LOGI("SDL2 RT", "Created SDL window with size %dx%d (scaled by %d)", windowW, windowH,
                      SDLScale);
-            renderer = SDL_CreateRenderer(window, -1, 0);
+            renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
             SDL_RenderSetScale(renderer, SDLScale, SDLScale);
             SDL_RenderSetLogicalSize(renderer, windowW, windowH);
             if (renderer) {
@@ -102,7 +102,7 @@ class SDL2RenderTarget : public RenderTarget {
     }
     Viewport getViewport() override { return vp; }
 
-    virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) {
+    virtual void setAddrWindow(uint16_t xs, uint16_t ys, uint16_t w, uint16_t h) override {
         windowX = xs;
         windowY = ys;
         windowW = w;

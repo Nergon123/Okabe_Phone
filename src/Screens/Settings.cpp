@@ -154,6 +154,9 @@ void lookAndFeelSettings() {
                 res.Init(resource);
                 res.CopyToRam();
                 if (res.cache) { res.Files->close(); }
+                preferences.begin("System");
+                preferences.putString("resPath", filepath.c_str());
+                preferences.end();
             }
             break;
         }

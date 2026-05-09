@@ -1,7 +1,7 @@
 #include "Input.h"
 #include <Screens/Settings.h>
 #include <System/UTF.h>
-#ifdef PC
+#ifdef PC 
 #include <SDL2/SDL.h>
 #endif
 const char *ITAG      = "INPUT";

@@ -43,11 +43,32 @@ struct font_t {
 #define TFT_SILVER      0xC618 /* 192, 192, 192 */
 #define TFT_SKYBLUE     0x867D /* 135, 206, 235 */
 #define TFT_VIOLET      0x915C /* 180,  46, 226 */
-
+struct TEXT_PARAMS {
+    font_t   currentFont;
+    uint16_t textcolor;
+    uint16_t textbgcolor;
+    uint8_t  textsize;
+    bool     textbgopaque;
+    int16_t  cursor_x;
+    int16_t  cursor_y;
+};
 class TFT_STUB {
   public:
     TFT_STUB(int16_t w = 240, int16_t h = 320);
-
+    TEXT_PARAMS getTextParams() const {
+        return TEXT_PARAMS{currentFont,   textcolor, _textbgcolor, textsize,
+                           _textbgopaque, _cursor_x, _cursor_y};
+    }
+    void setTextParams(const TEXT_PARAMS &params) {
+        currentFont   = params.currentFont;
+        textcolor     = params.textcolor;
+        _textcolor    = params.textcolor;
+        _textbgcolor  = params.textbgcolor;
+        textsize      = params.textsize;
+        _textbgopaque = params.textbgopaque;
+        _cursor_x     = params.cursor_x;
+        _cursor_y     = params.cursor_y;
+    }
     RenderTarget *activeRenderTarget = nullptr;
     void          setRenderTarget(RenderTarget *target);
 

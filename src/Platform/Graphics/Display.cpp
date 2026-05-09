@@ -212,8 +212,8 @@ void TFT_STUB::drawGlyphCore(uint8_t *bitmap, uint32_t bo, uint8_t w, uint8_t h,
                              int16_t y) {
     if (_textbgopaque) {
         uint16_t cellW = xAdvance * textsize;
-        uint16_t cellH = yAdvance * textsize;
-        fillRect(x, y - cellH, cellW, cellH, _textbgcolor);
+        uint16_t cellH = h * textsize;
+        fillRect(x+xo, y+yo , cellW, cellH, _textbgcolor);
     }
 
     uint16_t hpc  = 0;

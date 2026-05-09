@@ -18,6 +18,7 @@ class MP3Player {
     bool init(const NString& file_path);
     void play();
     void stop();
+    bool isEOF() {return eof;}
     void setLoop(bool isLooped) { loop = isLooped; };
     bool getLoop() { return loop; };
     uint32_t getTimeMs();

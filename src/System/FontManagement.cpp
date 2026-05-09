@@ -44,7 +44,7 @@ void changeFont(int ch) {
 //  @param input: string to be written
 //  @param type: type of font (0: white outcoming call font , 1: black incoming call font)
 //  @note Expected char sequence: `0123456789#*X/:`
-void writeCustomFont(int x, int y, NString input, int type) {
+void writeCustomFont(int x, int y, NString input, int type, bool background, uint16_t bgColor) {
     NString seq     = "0123456789#*X/:";
     int     spacing = 0;
     int     image;
@@ -55,9 +55,11 @@ void writeCustomFont(int x, int y, NString input, int type) {
     }
 
     int xAdvance = res.GetImageDataByID(image).width;
+    if (background) { tft.fillRect(x, y, (xAdvance+spacing) * input.length(), res.GetImageDataByID(image).height, bgColor); }
     for (size_t i = 0; i < input.length(); i++) {
         for (size_t u = 0; u < seq.length(); u++) {
             if (input[i] == seq[u]) {
+
                 res.DrawImage(image, u, {x, y});
                 x += xAdvance + spacing;
                 break;

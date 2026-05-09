@@ -133,15 +133,14 @@ size_t MP3Player::onAudio(void* out, size_t bytes) {
     // ESP_LOGV(TAG, "onAudio: requested %zu bytes, state=%d, eof=%d, file_eof=%d", bytes,
     //          stream.state, eof, file_eof);
     if (eof) {
+        memset(dst, 0, bytes);
         if (loop) {
             eof      = 0;
             file_eof = 0;
             setTimeMs(0);
-            memset(dst, 0, bytes);
             return bytes;
         }
-        audio->stop();
-        delete this;
+
         return bytes;
     }
     // If not playing or already at EOF, fill with silence
