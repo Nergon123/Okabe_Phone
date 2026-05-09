@@ -41,9 +41,11 @@ void listMenu_entry(int lindex, int x, int y, mOption choice, int esize, bool li
                       {.x = 0, .y = yy + esize});
     }
     if (choice.image.type != RES_NULLU8) {
+
         ImageData icon = res.GetImageDataByImage(choice.image);
+        ESP_LOGI("LM","ICON %d, INDEX %d x%d y%d",choice.image.id,choice.icon_index,x - std::max(choice.image.w, (int)icon.width), yy);
         res.DrawImage(choice.image, choice.icon_index,
-                      {x - std::max(choice.image.w, (int)icon.width), yy}, {0, 0}, {0, 0});
+                      {x - std::max(choice.image.w, (int)icon.width), yy});
     }
     if (lines) {
         tft.drawLine(0, yy, 240, yy, 0);

@@ -1,3 +1,4 @@
+#ifdef PC
 #include "Std2Fs.h"
 // #include <errno.h>
 #include <stdlib.h>
@@ -269,3 +270,4 @@ std::vector<std::string> Std2FileSystem::listDir(const std::string& path)
     }
     return entries;
 }
+#endif

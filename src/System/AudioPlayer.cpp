@@ -29,15 +29,12 @@ void AudioPlayer(NString path) {
     NString filename = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
     res.DrawImage(R_AUDIOPLAYER_DISC);
     int16_t animFrame  = 0;
-    uint8_t textOffset = 0;
     tft.setCursor(65, 93);
     tft.setTextColor(TFT_WHITE, TFT_BLACK, true);
     res.DrawImage(R_AUDIOPLAYER_LABEL);
     ulong lastMillis     = hw->millis();
     int   animDelay      = 70;
     bool  textStopDelay  = false;
-    int   timeCharWidth  = res.GetImageDataByID(R_OUTGOING_CALL_FONT).width;
-    int   timeCharHeight = res.GetImageDataByID(R_OUTGOING_CALL_FONT).height;
     int dotsCount = res.GetImageDataByID(R_CALL_ANIM_DOTS).count;
     while (buttonsHelding() != BACK || !player->isEOF()) {
         uint64_t time_s  = player->getTimeMs() / 1000;
@@ -65,7 +62,7 @@ void AudioPlayer(NString path) {
 
             tft.setCursor(30, 200);
 
-            char timeLabel[9];
+            char timeLabel[10];
             snprintf(timeLabel, sizeof(timeLabel), "%02u:%02u:%02u", hours, minutes, seconds);
             writeCustomFont(35, 220, timeLabel, 0, true, TFT_BLACK);
             last_seconds = seconds;

@@ -99,7 +99,7 @@ void MainScreen() {
 
     time_t currentTime;
     tm     sbtime;
-    int    lastMinute;
+    int    lastMinute = 0;
 
     if (isClockEnabled) {
         tft.drawRect(20, 40, 200, 52, TFT_WHITE);
