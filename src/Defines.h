@@ -132,3 +132,13 @@ enum charsets {
 
 // FONTS
 #define FONT0 1
+
+#define PROPERTIES_KEY_RESPATH "sys.res_path"
+#define PROPERTIES_KEY_WALLPAPER "sys.wallpaper"
+#define PROPERTIES_KEY_WALLPAPER_INDEX "sys.wallpaper_index"
+#define PROPERTIES_KEY_WALLPAPER_ID "sys.wallpaper_id"
+#define PROPERTIES_KEY_WALLPAPER_MODE "sys.wallpaper_mode"
+#define PROPERTIES_KEY_WALLPAPER_PATH "sys.wallpaper_path"
+#define PROPERTIES_KEY_DIB_MS "sys.dib_ms"
+#define PROPERTIES_KEY_LANGUAGE "sys.language"
+

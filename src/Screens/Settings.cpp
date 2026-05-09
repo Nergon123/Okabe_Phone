@@ -1,6 +1,7 @@
 #include "Settings.h"
 #include <Screens/ImageViewer.h>
 #include <System/AudioPlayer.h>
+#include <System/properties.h>
 #include <System/LanguageSystem.h>
 #include <algorithm>
 #include <cctype>
@@ -69,9 +70,7 @@ void inputTimings() {
             break;
         }
     }
-    preferences.begin("System");
-    preferences.putInt("DIB_MS", DIB_MS);
-    preferences.end();
+    property_set_long(PROPERTIES_KEY_DIB_MS, DIB_MS);
 }
 
 void inputSettings() {
@@ -101,18 +100,14 @@ void languageSettings() {
         switch (selection) {
         case 0:
             resetLanguage();
-            preferences.begin("System");
-            preferences.putString("Language", "");
-            preferences.end();
+            property_set(PROPERTIES_KEY_LANGUAGE, "");
             break;
         case 1:
             NString path = fileBrowser("/", ".ini");
             if (path.isEmpty()) { break; }
             NString err = setLanguage(path);
             if (!err.isEmpty()) { InfoWindow(err); }
-            preferences.begin("System");
-            preferences.putString("Language", path.c_str());
-            preferences.end();
+            property_set(PROPERTIES_KEY_LANGUAGE, path.c_str());
             break;
         }
     }
@@ -155,9 +150,7 @@ void lookAndFeelSettings() {
                 res.Init(resource);
                 res.CopyToRam();
                 if (res.cache) { res.Files->close(); }
-                preferences.begin("System");
-                preferences.putString("resPath", filepath.c_str());
-                preferences.end();
+                property_set(PROPERTIES_KEY_RESPATH, filepath.c_str());
             }
             break;
         }
@@ -387,11 +380,9 @@ void changeWallpaper() {
                 currentWallpaper.id   = ((wallpaper*)options[selection].getOptArgs)->id;
                 currentWallpaper.path = "";
                 currentWallpaper.mode = IMG_CENTERED;
-                preferences.begin("System");
-                preferences.putString("wallpaper_path", currentWallpaper.path.c_str());
-                preferences.putInt("wallpaper_mode", currentWallpaper.mode);
-                preferences.putInt("wallpaper_id", currentWallpaper.id);
-                preferences.end();
+                property_set(PROPERTIES_KEY_WALLPAPER_PATH, currentWallpaper.path.c_str());
+                property_set_long(PROPERTIES_KEY_WALLPAPER_MODE, currentWallpaper.mode);
+                property_set_long(PROPERTIES_KEY_WALLPAPER_ID, currentWallpaper.id);
                 continue;
             }
             twp = *(wallpaper*)options[selection].getOptArgs;
@@ -416,11 +407,9 @@ void changeWallpaper() {
                 currentWallpaper.path = twp.path;
                 currentWallpaper.id   = twp.id;
                 currentWallpaper.mode = (ImageMode)wallpaperMode;
-                preferences.begin("System");
-                preferences.putString("wallpaper_path", currentWallpaper.path.c_str());
-                preferences.putInt("wallpaper_mode", currentWallpaper.mode);
-                preferences.putInt("wallpaper_id", currentWallpaper.id);
-                preferences.end();
+                property_set(PROPERTIES_KEY_WALLPAPER_PATH, currentWallpaper.path.c_str());
+                property_set_long(PROPERTIES_KEY_WALLPAPER_MODE, currentWallpaper.mode);
+                property_set_long(PROPERTIES_KEY_WALLPAPER_ID, currentWallpaper.id);
                 return;
             }
             if (confirm == 2) { return; }

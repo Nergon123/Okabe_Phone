@@ -1,6 +1,5 @@
 #include "GlobalVariables.h"
 TFT_STUB    tft;
-Preferences preferences;
 
 int8_t _signal = 0;
 int8_t charge  = 0;

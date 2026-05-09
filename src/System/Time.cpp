@@ -1,14 +1,16 @@
 #include "Time.h"
 #include <sys/time.h>
+#include <System/properties.h>
+#include <cstdlib>
+
+#define PROPERTY_KEY_TIME "sys.time"
 
 // Function to set up the time
 // This function sets the system time to a specific date and time
 // and saves it in the preferences storage
 void SetUpTime() {
     struct tm tm_time = {};
-    preferences.begin("TimePhone");
-    hw->timeSet(preferences.getLong("TIME", mktime(&tm_time)));
-    preferences.end();
+    hw->timeSet(property_get_long(PROPERTY_KEY_TIME, mktime(&tm_time)));
 }
 
 // Function to save the time
@@ -16,8 +18,6 @@ void SetUpTime() {
 // and updates the system time
 // @param time The time to be saved
 void SaveTime(time_t time) {
-    preferences.begin("TimePhone");
-    preferences.putLong("TIME", time);
-    preferences.end();
+    property_set_long(PROPERTY_KEY_TIME, time);
     hw->timeSet(time);
 }
