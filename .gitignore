@@ -16,3 +16,4 @@ PLAN.MD
 *.cfg
 build/
 *.old
+*.mp3

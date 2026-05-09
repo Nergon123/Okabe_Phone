@@ -13,7 +13,6 @@ void printScrollingText(int x, int y, int w, NString text, int offsetX,
         if (rgb) { tft.setRenderTarget(rt); }
         return;
     }
-    ESP_LOGI("RERE", "x %d offsetX %d, realX %d", x, offsetX, x - offsetX);
     tft.setCursor(x - offsetX, tft.fontHeight());
     tft.print(text.c_str());
     if (rgb) { tft.setRenderTarget(rt); }
@@ -28,13 +27,15 @@ void AudioPlayer(NString path) {
     currentRenderTarget->setUseBuffer(false);
     MP3Player *player = new MP3Player(audioSource);
     audioSource->init();
-    player->init(path);
+    NString filename = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+    if(!player->init(path)){
+        filename = "Could not open file...";
+    }
     player->play();
     int8_t last_seconds = INT8_MAX;
     changeFont(1);
     tft.fillRect(0, 26, 240, 294, TFT_BLACK);
     tft.setTextWrap(false);
-    NString filename = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
     res.DrawImage(R_AUDIOPLAYER_DISC);
     int16_t animFrame = 0;
     tft.setCursor(65, 93);
@@ -45,7 +46,7 @@ void AudioPlayer(NString path) {
     bool                      textStopDelay = false;
     int                       dotsCount     = res.GetImageDataByID(R_CALL_ANIM_DOTS).count;
     RGB565BufferRenderTarget *rt = new RGB565BufferRenderTarget(240, tft.fontHeight() + 3);
-    while (buttonsHelding() != BACK || !player->isEOF()) {
+    while (buttonsHelding() != BACK && !player->isEOF()) {
         uint64_t time_s  = player->getTimeMs() / 1000;
         uint8_t  seconds = time_s % 60;
         uint8_t  minutes = time_s / 60 % 60;
