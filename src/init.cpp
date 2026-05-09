@@ -6,12 +6,14 @@
 #include "Platform/Graphics/TFTESPIRenderTarget.h"
 #endif
 #include <System/LanguageSystem.h>
+#include <System/properties.h>
 // Function to initialize the storage
 void storageInit() {
     hw->initStorage();
-    
-    preferences.begin("System", false);
-    resPath = preferences.getString("resPath", resPath.c_str());
+
+    char prop_val[PROPERTY_VALUE_MAX];
+    property_get(PROPERTIES_KEY_RESPATH, prop_val, resPath.c_str());
+    resPath = NString(prop_val);
 
     if (!VFS.exists(resPath)) {
         recovery(SplitString(getTranslation(TextKey::RECOVERY_FAIL_NO_RES)));
@@ -28,13 +30,13 @@ void storageInit() {
 
     if (!res.Files) { recovery(getTranslation(TextKey::RECOVERY_FAIL_FAIL_RES)); }
 
-    currentWallpaperPath = preferences.getString("wallpaper", "");
+    property_get(PROPERTIES_KEY_WALLPAPER, prop_val, "");
+    currentWallpaperPath = NString(prop_val);
 
     if (!VFS.exists(currentWallpaperPath)) {
-        wallpaperIndex = preferences.getInt("wallpaperIndex", 0);
+        wallpaperIndex = property_get_long(PROPERTIES_KEY_WALLPAPER_INDEX, 0);
     }
 
-    DIB_MS = preferences.getInt("DIB_MS", DIB_MS);
-    preferences.end();
+    DIB_MS = property_get_long(PROPERTIES_KEY_DIB_MS, DIB_MS);
     progressBar(70, 100, 250);
 }
