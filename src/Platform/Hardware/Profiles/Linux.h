@@ -3,7 +3,6 @@
 #include <Platform/Audio/SDLAudio.h>
 #include <Platform/FileSystem/FileSystem.h>
 #include <Platform/Graphics/SDL2RenderTarget.h>
-#include <Platform/Audio/SDLAudio.h>
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <chrono>
@@ -27,9 +26,7 @@ struct WriteContext {
 };
 class DEV_LINUX : public iHW {
   public:
-    void init() override {
-        audioSource = new SDLAudio();
-    };
+    void init() override { audioSource = new SDLAudio(); };
     void initStorage() override {
         IFileSystem* spiffs = new Std2FileSystem("spiffs/", FS_INTERNAL);
         IFileSystem* sdcard = new Std2FileSystem("sd/", FS_EXTERNAL);
