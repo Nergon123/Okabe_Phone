@@ -5,6 +5,7 @@
 
 class Preferences {
   private:
+    const char*                        PTAG = "Preferences";
     std::map<std::string, std::string> values;
     std::string                        filePath;
     std::string                        sectionName;
@@ -18,43 +19,51 @@ class Preferences {
         for (const auto& pair : values) {
             file->printf("%s=\"%s\"\n", pair.first.c_str(), pair.second.c_str());
         }
+        file->close();
         delete file;
         return true;
     }
 
     bool loadFromFile() {
         auto file = VFS.open(filePath, "r");
-        if (!file) { return false; }
+        if (!file) {
+            ESP_LOGE(PTAG, "Failed to open file %s", filePath.c_str());
+            return false;
+        }
 
         char buffer[256];
         bool inCorrectSection = false;
-
+        ESP_LOGI(PTAG, "Loading preferences from file %s", filePath.c_str());
+        ESP_LOGI(PTAG, "Looking for section [%s]", sectionName.c_str());
         while (file->readLine(buffer, sizeof(buffer))) {
-            std::string line(buffer);
-
+            NString line(buffer);
+            line = line.trim();
             // Check if this is a section header
-            if (line.length() >= 3 && line.front() == '[' && line.back() == ']') {
-                std::string foundSection = line.substr(1, line.length() - 2);
+            if (line.length() >= 3 && line.charAt(0) == '[' && line.charAt(line.length() - 1) == ']') {
+                std::string foundSection = line.substring(1, line.length() - 1);
                 inCorrectSection         = (foundSection == sectionName);
                 continue;
             }
 
             if (!inCorrectSection) { continue; }
 
-            size_t eqPos = line.find('=');
+            size_t eqPos = line.indexOf('=');
             if (eqPos == std::string::npos) { continue; }
 
-            std::string key   = line.substr(0, eqPos);
-            std::string value = line.substr(eqPos + 1);
+            std::string key   = line.substring(0, eqPos);
+            std::string value = line.substring(eqPos + 1);
 
             // Remove quotes
             if (value.size() >= 2 && value.front() == '"' && value.back() == '"') {
                 value = value.substr(1, value.size() - 2);
             }
+            ESP_LOGI(PTAG, "Loaded key: '%s' with value: '%s'", key.c_str(), value.c_str());
 
             values[key] = value;
         }
-
+        if (values.empty()) { ESP_LOGW(PTAG, "No values loaded from file %s", filePath.c_str()); }
+        else { ESP_LOGI(PTAG, "Loaded %zu values from file %s", values.size(), filePath.c_str()); }
+        file->close();
         delete file;
         return true;
     }
@@ -67,7 +76,13 @@ class Preferences {
 
         // Try SD first, then SPIFFS
         filePath = std::string("/sd/") + name + ".cfg";
-        if (!VFS.exists(filePath)) { filePath = std::string("/spiffs/") + name + ".cfg"; }
+        if (!VFS.exists(filePath)) {
+            filePath = std::string("/spiffs/") + name + ".cfg";
+            if (!VFS.exists(filePath)) {
+                ESP_LOGW(PTAG, "File %s does not exist, will create new one on save",
+                         filePath.c_str());
+            }
+        }
 
         initialized = loadFromFile();
         (void)readOnly;

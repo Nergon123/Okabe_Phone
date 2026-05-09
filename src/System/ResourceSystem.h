@@ -108,6 +108,8 @@ enum MainResID {
     R_BOOT_LOGO              = 27,
     R_STATUSBAR_NETWORK      = 28,
     R_TEXTINPUT_CHARSETS_BG  = 29,
+    R_AUDIOPLAYER_DISC       = 30,
+    R_AUDIOPLAYER_LABEL      = 31,
     R_NULL_IMAGE             = 0xFFFF,
 };
 
@@ -171,4 +173,3 @@ class ResourceSystem {
     void        failure(NString msg = "Unknown Error", bool important = false);
     void        parseResourceFile(NFile *file, Header &header, bool important = false);
 };
-

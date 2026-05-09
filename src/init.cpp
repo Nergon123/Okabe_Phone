@@ -9,7 +9,7 @@
 // Function to initialize the storage
 void storageInit() {
     hw->initStorage();
-
+    
     preferences.begin("System", false);
     resPath = preferences.getString("resPath", resPath.c_str());
 
@@ -17,7 +17,7 @@ void storageInit() {
         recovery(SplitString(getTranslation(TextKey::RECOVERY_FAIL_NO_RES)));
     }
 
-    ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE");
+    ESP_LOGI("RESOURCES", "LOADING RESOURCE FILE %s", resPath.c_str());
     progressBar(10, 100, 250);
     bootText(getTranslation(TextKey::BOOT_LOAD_RES));
     if (!res.Files) {

@@ -1,8 +1,8 @@
 #include "Platform/Hardware/Hardware.h"
 #ifdef PC
+#include <Platform/Audio/SDLAudio.h>
 #include <Platform/FileSystem/FileSystem.h>
 #include <Platform/Graphics/SDL2RenderTarget.h>
-#include <Platform/Audio/SDLAudio.h>
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <chrono>
@@ -13,17 +13,17 @@
 #include <sys/utsname.h>
 #include <thread>
 #include <zlib.h>
+#ifndef NO_CURL
 extern "C" {
 #include <curl/curl.h>
 }
+#endif
 struct WriteContext {
     FILE* file;
 };
 class DEV_LINUX : public iHW {
   public:
-    void init() override {
-        audioSource = new SDLAudio();
-    };
+    void init() override { audioSource = new SDLAudio(); };
     void initStorage() override {
         IFileSystem* spiffs = new Std2FileSystem("spiffs/", FS_INTERNAL);
         IFileSystem* sdcard = new Std2FileSystem("sd/", FS_EXTERNAL);
@@ -120,7 +120,7 @@ class DEV_LINUX : public iHW {
     HttpAnswer httpSend(HttpMethod method, const NString& url, NString& payload,
                         const std::vector<HttpHeader>& headers, uint16_t timeout) override {
         HttpAnswer answ;
-
+#ifndef NO_CURL
         CURL* curl = curl_easy_init();
         if (!curl) { return answ; }
 
@@ -186,14 +186,14 @@ class DEV_LINUX : public iHW {
         // Cleanup
         if (chunk) { curl_slist_free_all(chunk); }
         curl_easy_cleanup(curl);
-
+#endif
         return answ;
     }
 
     void downloadFile(NString& url, IFile* fileToDownload,
-                      std::function<void(size_t, size_t)> progressCallback) {
+                      std::function<void(size_t, size_t)> progressCallback) override {
         if (!fileToDownload) { return; }
-
+#ifndef NO_CURL
         CURL* curl = curl_easy_init();
         if (!curl) {
             fprintf(stderr, "Failed to initialize CURL\n");
@@ -222,6 +222,7 @@ class DEV_LINUX : public iHW {
         }
 
         curl_easy_cleanup(curl);
+#endif
     }
 
     uint32_t crc32(uint32_t crc, const uint8_t* buf, size_t len) override {
@@ -229,15 +230,19 @@ class DEV_LINUX : public iHW {
     }
 
     bool isCharging() override {
+#ifndef EMU
         std::string path = getBatteryPath();
         if (path.empty()) { return false; }
         std::string status = readFile(path + "/status");
         std::transform(status.begin(), status.end(), status.begin(), ::tolower);
         return status.find("charging") != std::string::npos && status != "not charging";
+#endif
+return true;
     }
 
   private:
-    time_t     timeOffset = 0;
+    time_t timeOffset = 0;
+#ifndef NO_CURL
     static int progressCallbackCurl(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
                                     curl_off_t ultotal, curl_off_t ulnow) {
         auto* userCallback = reinterpret_cast<std::function<void(size_t, size_t)>*>(clientp);
@@ -253,7 +258,7 @@ class DEV_LINUX : public iHW {
         size_t written = file->write(ptr, size * nmemb);
         return written;
     }
-
+#endif
     struct utsname sys;
     bool           AudioAvailable = false;
     std::string    readFile(const std::string& path) {
@@ -266,8 +271,8 @@ class DEV_LINUX : public iHW {
     std::string batteryPath;
 
     std::string getBatteryPath() {
+#ifndef EMU
         if (!batteryPath.empty()) { return batteryPath; }
-
         const std::string base = "/sys/class/power_supply/";
         auto              opts = std::filesystem::directory_options::skip_permission_denied;
         for (const auto& entry : std::filesystem::directory_iterator(base, opts)) {
@@ -277,6 +282,7 @@ class DEV_LINUX : public iHW {
                 return batteryPath;
             }
         }
+#endif
         return "";
     }
 

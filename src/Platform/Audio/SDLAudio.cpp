@@ -1,7 +1,7 @@
 #include "SDLAudio.h"
 #include <cstring>
 
-#ifdef __linux__
+#ifdef PC
 
 SDLAudio::SDLAudio() {}
 SDLAudio::~SDLAudio() { stop(); }

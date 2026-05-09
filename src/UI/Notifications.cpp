@@ -22,9 +22,7 @@ void drawStatusBar(bool force) {
     if (enableRAMMonitor && sbtime.tm_sec % 10 == 0) { sBarChanged = true; }
 
     if (sBarChanged) {
-        font_t   _currentFont = tft.currentFont;
-        uint16_t ccolor       = tft.textcolor;
-        int      textSize     = tft.textsize;
+TEXT_PARAMS textParams = tft.getTextParams();
         Viewport vp           = tft.getViewport();
         tft.resetViewport();
 
@@ -69,9 +67,7 @@ void drawStatusBar(bool force) {
                                         0, 0);
         currentRenderTarget->present();
         tft.setViewport(vp);
-        tft.setTextSize(textSize);
-        tft.textcolor   = ccolor;
-        tft.currentFont = _currentFont;
+        tft.setTextParams(textParams);
         delete buf;
     }
 }
