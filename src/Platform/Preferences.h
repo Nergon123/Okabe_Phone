@@ -55,7 +55,6 @@ class Preferences {
             if (value.size() >= 2 && value.front() == '"' && value.back() == '"') {
                 value = value.substr(1, value.size() - 2);
             }
-            ESP_LOGI(PTAG, "Loaded key: '%s' with value: '%s'", key.c_str(), value.c_str());
 
             values[key] = value;
         }
