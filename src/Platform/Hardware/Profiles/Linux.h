@@ -18,6 +18,9 @@ extern "C" {
 #include <curl/curl.h>
 }
 #endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 struct WriteContext {
     FILE* file;
 };
@@ -39,7 +42,13 @@ class DEV_LINUX : public iHW {
         return duration.count();
     }
     ulong millis() override { return micros() / 1000; };
-    void  delay(ulong ms) override { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+    void  delay(ulong ms) override {
+        #ifndef __EMSCRIPTEN__
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        #else
+        emscripten_sleep(ms);   
+        #endif
+     }
     void  setCPUSpeed(CPU_SPEED speed) override { (void)speed; };
     void  timeSet(time_t t) override {
         time_t now = time(nullptr);

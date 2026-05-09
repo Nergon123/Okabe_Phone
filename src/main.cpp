@@ -9,8 +9,8 @@
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
-#include <System/LanguageSystem.h>
 #include <System/AudioPlayer.h>
+#include <System/LanguageSystem.h>
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
 
@@ -29,7 +29,7 @@ extern "C" void app_main(void) {
 #endif
 
 int start() {
-#ifdef __LINUX__
+#ifdef PC
     hw = new DEV_LINUX();
 #elif defined(ESP32)
     hw = new DEV_ESP32();
@@ -79,13 +79,14 @@ int start() {
     preferences.begin("System");
     setLanguage(preferences.getString("Language"));
     currentWallpaper.path = preferences.getString("wallpaper_path");
-    currentWallpaper.mode = (ImageMode)preferences.getInt("wallpaper_mode",IMG_CENTERED);
-    currentWallpaper.id = preferences.getInt("wallpaper_id",0);
+    currentWallpaper.mode = (ImageMode)preferences.getInt("wallpaper_mode", IMG_CENTERED);
+    currentWallpaper.id   = preferences.getInt("wallpaper_id", 0);
     preferences.end();
     progressBar(100, 100, 250);
     if (buttonsHelding(false) == '#') { AT_test(); }
     currentRenderTarget->setUseBuffer(true);
     millSleep = hw->millis();
+
     return 0;
 }
 

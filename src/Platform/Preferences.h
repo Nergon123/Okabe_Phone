@@ -33,8 +33,6 @@ class Preferences {
 
         char buffer[256];
         bool inCorrectSection = false;
-        ESP_LOGI(PTAG, "Loading preferences from file %s", filePath.c_str());
-        ESP_LOGI(PTAG, "Looking for section [%s]", sectionName.c_str());
         while (file->readLine(buffer, sizeof(buffer))) {
             NString line(buffer);
             line = line.trim();
@@ -57,12 +55,9 @@ class Preferences {
             if (value.size() >= 2 && value.front() == '"' && value.back() == '"') {
                 value = value.substr(1, value.size() - 2);
             }
-            ESP_LOGI(PTAG, "Loaded key: '%s' with value: '%s'", key.c_str(), value.c_str());
 
             values[key] = value;
         }
-        if (values.empty()) { ESP_LOGW(PTAG, "No values loaded from file %s", filePath.c_str()); }
-        else { ESP_LOGI(PTAG, "Loaded %zu values from file %s", values.size(), filePath.c_str()); }
         file->close();
         delete file;
         return true;
