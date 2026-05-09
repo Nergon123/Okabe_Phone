@@ -47,9 +47,11 @@ void sampleOSC() {
 
     for (;;) {
         v->amplitude = 1;
-        for (int i = 0; i < 10; i++) {
-            v->frequency = (sinf(i % 3) * 500) + 600;
-            hw->delay(100);
+        for (int i = 0; i < 20; i++) {
+            v->frequency = 1440;
+            hw->delay(50);
+            v->frequency = 1140;
+            hw->delay(50);
         }
         v->amplitude = 0;
         hw->delay(1000);

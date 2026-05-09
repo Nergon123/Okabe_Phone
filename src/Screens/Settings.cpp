@@ -1,5 +1,6 @@
 #include "Settings.h"
 #include <Screens/ImageViewer.h>
+#include <System/AudioPlayer.h>
 #include <System/LanguageSystem.h>
 #include <algorithm>
 #include <cctype>
@@ -532,7 +533,39 @@ void setTime() {
  */
 void ringtoneSelector(bool isMail) {
 #warning ringtoneSelector not implemented
-    (void)isMail;
+    NString* selectedRingtonePath = isMail ? &currentMailRingtonePath : &currentRingtonePath;
+    if (!selectedRingtonePath) {
+        InfoWindow("Something went wrong.");
+        ESP_LOGE("RING", "selectedRingtonePath is NULL!!!");
+        return;
+    }
+    std::string              path      = "/sd/Ringtones/";
+    std::vector<std::string> ringtones = VFS.listDir(path);
+    if (ringtones.empty()) {
+        InfoWindow(NString::format("No Ringtones in %s", path.c_str()));
+        return;
+    }
+    std::vector<mOption> options;
+    options.push_back(mOption("Mute"));
+    for (std::string ringstr : ringtones) {
+        printf("%s\n",ringstr.c_str());
+        options.push_back(mOption(
+            ringstr.substr(0, ringstr.find_last_of(".")),
+            selectedRingtonePath->stdstr() == ringstr ? Image(R_FILE_MANAGER_ICONS) : Image(),
+            LM_ICO_SELECTED_RING));
+    }
+    int selected = listMenu(options, options.size(), false, LM_TYPE::LM_SETTINGS,
+                            isMail ? "Mail Ringtone" : "Phone Ringtone",true);
+
+    if (selected == 0) { *selectedRingtonePath = ""; }
+    else {
+        std::string selectedRingtone = ringtones.at(selected - 1);
+        NString     choice[2]        = {"Preview", "Apply"};
+        int         selectedChoice   = choiceMenu(choice, 2, true);
+        if (selectedChoice == 0) { AudioPlayer(path + selectedRingtone); }
+        else if (selectedChoice == 1) { *selectedRingtonePath = ringtones.at(selected - 1); 
+        }
+    }
 }
 
 int getDaysInMonth(int year, int month) {
