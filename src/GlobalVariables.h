@@ -8,7 +8,6 @@
 #include <MCP23017.h>
 #include <TFT_eSPI.h>
 #endif
-#include "Platform/Audio/Audio.h"
 #include "Platform/FileSystem/VFS.h"
 #include "Platform/Graphics/ImageProcessor.h"
 #include "Platform/Hardware/Hardware.h"
