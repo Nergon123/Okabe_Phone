@@ -8,11 +8,13 @@
 #include <MCP23017.h>
 #include <TFT_eSPI.h>
 #endif
+#include "Platform/Audio/Audio.h"
 #include "Platform/FileSystem/VFS.h"
 #include "Platform/Graphics/ImageProcessor.h"
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/NString.h"
 #include "Platform/Audio/Audio.h"
+#include "Platform/Preferences.h"
 
 #include <vector>
 
@@ -45,10 +47,12 @@ struct mOption {
     void (*_function)();
     int data;
     mOption (*_getOptionData)(void* args);
-    void *getOptArgs;
+    void* getOptArgs;
     mOption(NString label, Image image = Image(), uint8_t icon_index = 0,
-            void (*_function)() = nullptr, int data = 0, mOption (*_getOptionData)(void* args) = nullptr, void* getOptArgs = nullptr)
-        : label(label), image(image), icon_index(icon_index), _function(_function), data(data), _getOptionData(_getOptionData), getOptArgs(getOptArgs) {};
+            void (*_function)() = nullptr, int                     data = 0,
+            mOption (*_getOptionData)(void* args) = nullptr, void* getOptArgs = nullptr)
+        : label(label), image(image), icon_index(icon_index), _function(_function), data(data),
+          _getOptionData(_getOptionData), getOptArgs(getOptArgs) {};
 };
 
 struct KeypadLayout {
@@ -126,7 +130,9 @@ enum LIST_ICONS {
     LM_ICO_WIRELESS_2       = 12,
     LM_ICO_WIRELESS_3       = 13,
     LM_ICO_WIRELESS_4       = 14,
-    LM_ICO_PACKAGE          = 15
+    LM_ICO_PACKAGE          = 15,
+    LM_ICO_SELECTED_RING    = 16,
+    LM_ICO_MUTED_RING       = 17,
 };
 
 extern TFT_STUB tft;

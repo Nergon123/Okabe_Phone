@@ -481,7 +481,7 @@ bool InputFieldS(NString title, std::vector<FIELD> fields, int type, int selecte
 // @param size_y: Height of the rectangle
 // @param offset: Offset for the animation
 // @param spacing: Spacing between the circles
-void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
+void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing,bool useBuffer) {
     // Get image data and allocate buffer
     ImageData img           = res.GetImageDataByID(R_CALL_ANIM_DOTS);
     int       max_count     = (2 * size_x) + (2 * (size_y - 1));
@@ -489,7 +489,7 @@ void spinAnim(int x, int y, int size_x, int size_y, int offset, int spacing) {
     int       xt = 0, yt = 0;
     bool      draw      = true;
     bool      wasBuffer = currentRenderTarget->getUseBuffer();
-    currentRenderTarget->setUseBuffer(false);
+    currentRenderTarget->setUseBuffer(useBuffer);
     while (printed_count < max_count) {
         for (int j = offset; j >= 0 && printed_count < max_count; j--) {
 
