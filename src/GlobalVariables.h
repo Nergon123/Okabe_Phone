@@ -13,6 +13,7 @@
 #include "Platform/Graphics/ImageProcessor.h"
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/NString.h"
+#include "Platform/Audio/Audio.h"
 #include "Platform/Preferences.h"
 
 #include <vector>
@@ -136,7 +137,6 @@ enum LIST_ICONS {
 
 extern TFT_STUB tft;
 
-// extern Preferences preferences;
 
 extern ulong                DIB_MS;
 extern int                  currentScreen;

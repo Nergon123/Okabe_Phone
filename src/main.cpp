@@ -6,6 +6,7 @@
 #include "Platform/Hardware/Profiles/ESP32.h"
 #include "Platform/Hardware/Profiles/Linux.h"
 #include "System/ResourceSystem.h"
+#include "System/properties.h"
 #include "System/Tasks.h"
 #include "System/Time.h"
 #include "init.h"
@@ -76,12 +77,13 @@ int start() {
 
     // register package from fs
     PaStor.init();
-    preferences.begin("System");
-    setLanguage(preferences.getString("Language"));
-    currentWallpaper.path = preferences.getString("wallpaper_path");
-    currentWallpaper.mode = (ImageMode)preferences.getInt("wallpaper_mode", IMG_CENTERED);
-    currentWallpaper.id   = preferences.getInt("wallpaper_id", 0);
-    preferences.end();
+    char prop_val[PROPERTY_VALUE_MAX];
+    property_get(PROPERTIES_KEY_LANGUAGE, prop_val, "");
+    setLanguage(prop_val);
+    property_get(PROPERTIES_KEY_WALLPAPER_PATH, prop_val, "");
+    currentWallpaper.path = NString(prop_val);
+    currentWallpaper.mode = (ImageMode)property_get_long(PROPERTIES_KEY_WALLPAPER_MODE,IMG_CENTERED);
+    currentWallpaper.id = property_get_long(PROPERTIES_KEY_WALLPAPER_ID,0);
     progressBar(100, 100, 250);
     if (buttonsHelding(false) == '#') { AT_test(); }
     currentRenderTarget->setUseBuffer(true);

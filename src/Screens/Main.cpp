@@ -1,5 +1,6 @@
 #include "Main.h"
 #include <System/LanguageSystem.h>
+#include <System/properties.h>
 
 // Current screen selection based on currentScreen variable
 void screens() {
@@ -219,9 +220,7 @@ void recovery(NString message) {
             res.CopyToRam();
 
             if (res.Files) {
-                preferences.begin("System");
-                preferences.putString("resPath", resPath.c_str());
-                preferences.end();
+                property_set(PROPERTIES_KEY_RESPATH, resPath.c_str());
                 return;
             }
             break;
