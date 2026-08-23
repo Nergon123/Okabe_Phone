@@ -43,18 +43,21 @@ class DEV_LINUX : public iHW {
     }
     ulong millis() override { return micros() / 1000; };
     void  delay(ulong ms) override {
-        #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
         std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-        #else
-        emscripten_sleep(ms);   
-        #endif
-     }
-    void  setCPUSpeed(CPU_SPEED speed) override { (void)speed; };
-    void  timeSet(time_t t) override {
+#else
+        emscripten_sleep(ms);
+#endif
+    }
+    void setCPUSpeed(CPU_SPEED speed) override { (void)speed; };
+    void timeSet(time_t t) override {
         time_t now = time(nullptr);
         timeOffset = t - now;
     }
-    time_t    timeGet() override { return time(nullptr) + timeOffset; }
+    time_t timeGet() override {
+        ESP_LOGI("TIME", "time %lu %lu", time(nullptr), timeOffset);
+        return time(nullptr) + timeOffset;
+    }
     CPU_SPEED getCPUSpeed() override {
 #ifndef EMU
 #endif
@@ -246,7 +249,7 @@ class DEV_LINUX : public iHW {
         std::transform(status.begin(), status.end(), status.begin(), ::tolower);
         return status.find("charging") != std::string::npos && status != "not charging";
 #endif
-return true;
+        return true;
     }
 
   private:

@@ -19,6 +19,7 @@
 #include <esp_debug_helpers.h>
 #include <esp_task_wdt.h>
 #include <esp_wifi.h>
+#include <Platform/Audio/I2S/I2SAudio.h>
 #define FAST_SD_FREQ          20 * 1000 * 1000
 #define SAFE_SD_FREQ          1 * 1000 * 1000
 #define SERIAL_BAUD_RATE      115200
@@ -28,19 +29,9 @@
 
 #define MCP23017_ADDR 0x20
 
-#define SD_CS   13
-#define SD_SCK  14
-#define SD_MISO 2
-#define SD_MOSI 15
-
-#define SIM_RX_PIN 35
-#define SIM_TX_PIN 26
-#define I2C_SDA    21
-#define I2C_SCL    22
-
 #define SimSerial Serial1
 
-MCP23017 mcp(MCP23017_ADDR);
+static MCP23017 mcp(MCP23017_ADDR);
 
 class DEV_ESP32 : public iHW {
   public:
@@ -49,7 +40,7 @@ class DEV_ESP32 : public iHW {
         esp_task_wdt_init(10000, false);
         esp_log_level_set("ledc", ESP_LOG_NONE); // brightness logger
 
-        Wire.setPins(I2C_SDA, I2C_SCL);
+        //Wire.setPins(I2C_SDA, I2C_SCL);
         if (Wire.begin()) {
             ESP_LOGI("I2C", "I2C initalized at SDA:%d SCL:%d Freq: %d kHz", I2C_SDA, I2C_SCL,
                      Wire.getClock() / 1000);
@@ -60,13 +51,13 @@ class DEV_ESP32 : public iHW {
         }
         Serial.begin(SERIAL_BAUD_RATE);
         ESP_LOGI("SERIAL", "Serial initalized at %d baud", SERIAL_BAUD_RATE);
-        SimSerial.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
+        //SimSerial.begin(SIM_BAUD_RATE, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
         ESP_LOGI("SIM_CARD_SERIAL", "Sim Card Serial initialized at %d", SIM_BAUD_RATE);
         initMCP();
-
+        audioSource = new I2SAudio();
         pinMode(TFT_BL, OUTPUT);
         setScreenBrightness(0);
-        attachInterrupt(SIM_INT_PIN, simInterrupt, RISING);
+        //attachInterrupt(SIM_INT_PIN, simInterrupt, RISING);
         keypad_exists = checkI2Cdevices(MCP23017_ADDR);
         if (keypad_exists) { ESP_LOGI("KEYPAD", "MCP23017 Initalized"); }
         else { ESP_LOGE("KEYPAD", "MCP23017 cannot be initalized"); }

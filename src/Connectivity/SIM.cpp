@@ -293,7 +293,7 @@ bool _checkSim() {
     else { return true; }
 }
 
-void simInterrupt() { ESP_LOGI("SIM", "INTERRUPT"); }
+void simInterrupt() {return; }
 // Check if someone calling (Function subject to change. I need to use interrupts for that)
 void checkVoiceCall() {
     if (isCalling && !ongoingCall) {

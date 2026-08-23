@@ -1,8 +1,8 @@
 #include "Settings.h"
 #include <Screens/ImageViewer.h>
-#include <System/properties.h>
 #include <System/AudioPlayer.h>
 #include <System/LanguageSystem.h>
+#include <System/properties.h>
 #include <algorithm>
 #include <cctype>
 const int lastImage = 42;
@@ -132,9 +132,12 @@ void systemSettings() {
     }
 }
 
+void Customize() {}
+
 void lookAndFeelSettings() {
     NString options[] = {
         getTranslation(TextKey::LM_LAF_CHANGE_THEME),
+        "Customize" // UNTRANSLATED
     };
     int selection = LISTMENU_NULL;
     while (selection != LISTMENU_EXIT) {
@@ -142,7 +145,7 @@ void lookAndFeelSettings() {
         res.DrawImage(R_SETTING_MENU_L_HEADER);
         selection = choiceMenu(options, ArraySize(options), false);
         switch (selection) {
-        case 0:
+        case 0: {
             NString filepath = fileBrowser("/", "|.nph|.NPH|");
             if (VFS.exists(filepath)) {
                 NFile* resource = VFS.open(filepath);
@@ -153,6 +156,8 @@ void lookAndFeelSettings() {
                 property_set(PROPERTIES_KEY_RESPATH, filepath.c_str());
             }
             break;
+        }
+        case 1: Customize(); break;
         }
     }
 }
@@ -537,23 +542,23 @@ void ringtoneSelector(bool isMail) {
     std::vector<mOption> options;
     options.push_back(mOption("Mute"));
     for (std::string ringstr : ringtones) {
-        printf("%s\n",ringstr.c_str());
+        printf("%s\n", ringstr.c_str());
         options.push_back(mOption(
             ringstr.substr(0, ringstr.find_last_of(".")),
             selectedRingtonePath->stdstr() == ringstr ? Image(R_FILE_MANAGER_ICONS) : Image(),
             LM_ICO_SELECTED_RING));
     }
     int selected = listMenu(options, options.size(), false, LM_TYPE::LM_SETTINGS,
-                            isMail ? "Mail Ringtone" : "Phone Ringtone",true);
+                            isMail ? "Mail Ringtone" : "Phone Ringtone", true);
 
     if (selected == 0) { *selectedRingtonePath = ""; }
     else {
+        if (selected < 0) { return; }
         std::string selectedRingtone = ringtones.at(selected - 1);
         NString     choice[2]        = {"Preview", "Apply"};
         int         selectedChoice   = choiceMenu(choice, 2, true);
         if (selectedChoice == 0) { AudioPlayer(path + selectedRingtone); }
-        else if (selectedChoice == 1) { *selectedRingtonePath = ringtones.at(selected - 1); 
-        }
+        else if (selectedChoice == 1) { *selectedRingtonePath = ringtones.at(selected - 1); }
     }
 }
 

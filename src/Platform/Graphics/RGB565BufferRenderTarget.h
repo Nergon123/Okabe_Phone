@@ -12,7 +12,13 @@ class RGB565BufferRenderTarget : public RenderTarget {
     RGB565BufferRenderTarget(int16_t w, int16_t h)
         : RenderTarget(RENDER_TARGET_TYPE_BUFFER, w, h, nullptr) {
         bufferSize = static_cast<size_t>(w) * static_cast<size_t>(h);
-        buffer = (bufferSize > 0) ? (uint16_t *)ps_malloc(bufferSize * sizeof(uint16_t)) : nullptr;
+
+        buffer = (uint16_t *)ps_malloc(bufferSize * sizeof(uint16_t));
+
+        if (!buffer) {
+            ESP_LOGE("BUFFER", "PSRAM allocation failed!");
+            abort();
+        }
         if (buffer) { std::memset(buffer, 0, bufferSize * sizeof(uint16_t)); }
 
         vp = {0, 0, w, h};
