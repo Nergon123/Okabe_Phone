@@ -18,6 +18,6 @@ void SetUpTime() {
 // and updates the system time
 // @param time The time to be saved
 void SaveTime(time_t time) {
-    property_set_long(PROPERTY_KEY_TIME, time);
-    hw->timeSet(time);
+   // property_set_long(PROPERTY_KEY_TIME, time);
+   // hw->timeSet(time);
 }

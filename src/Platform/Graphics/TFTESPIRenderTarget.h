@@ -9,7 +9,7 @@
 class TFTESPIRenderTarget : public RenderTarget {
   public:
     TFT_eSPI      _tft;
-    RenderTarget* bufferTargetToFlip;
+    RenderTarget* bufferTargetToFlip = nullptr;
     bool          _useBuffer = false;
     TFTESPIRenderTarget(int w, int h, bool useBuffer = false)
         : RenderTarget(RENDER_TARGET_TYPE_SCREEN, w, h, nullptr), _useBuffer(useBuffer) {};
@@ -21,7 +21,13 @@ class TFTESPIRenderTarget : public RenderTarget {
         hw->setScreenBrightness(0);
         _tft.init();
         _tft.fillScreen(TFT_BLACK);
+        ESP_LOGI("INIT","Initialized TFT_eSPI");
         _tft.endWrite();
+#ifdef INV_DISP
+        _tft.invertDisplay(true);
+#else
+        _tft.invertDisplay(false);
+#endif
         hw->setScreenBrightness(currentBrightness);
     }
 

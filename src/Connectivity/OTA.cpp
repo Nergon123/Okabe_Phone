@@ -1,8 +1,7 @@
 #include "OTA.h"
 #include <System/LanguageSystem.h>
 #ifdef ARDUINO
-WebServer server(80);
-WebOTA    ota(server);
+
 
 void WebOTATask(void* param) {
     WebServer* server = (WebServer*)param;
@@ -15,8 +14,11 @@ void WebOTATask(void* param) {
 #endif
 
 void OTAactivity() {
+
     return; // no space for second partition atm
 #ifdef ARDUINO
+    WebServer server(80);
+WebOTA    ota(server);
     if (WiFi.status() != WL_CONNECTED && WiFi.getMode() != WIFI_MODE_AP &&
         WiFi.getMode() != WIFI_MODE_APSTA) {
         InfoWindow(getTranslation(TextKey::IW_WIFI_EN_NEEDED));

@@ -12,6 +12,7 @@
 #include "init.h"
 #include <Platform/Audio/AudioGen.h>
 #include <System/LanguageSystem.h>
+#include <System/AudioPlayer.h>
 #ifdef IDF_VER
 TaskHandle_t *TaskLoop_Handle;
 
@@ -23,6 +24,7 @@ void TaskLoop(void *) {
     }
 }
 extern "C" void app_main(void) {
+
     initArduino();
     xTaskCreate(TaskLoop, "TaskLoop", 20 * 1024, NULL, 2, TaskLoop_Handle);
     vTaskDelete(NULL);
@@ -86,6 +88,8 @@ int start() {
     currentWallpaper.id = property_get_long(PROPERTIES_KEY_WALLPAPER_ID,0);
     progressBar(100, 100, 250);
     if (buttonsHelding(false) == '#') { AT_test(); }
+    
+
     currentRenderTarget->setUseBuffer(true);
     millSleep = hw->millis();
     return 0;
