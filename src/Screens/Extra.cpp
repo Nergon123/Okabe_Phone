@@ -3,6 +3,7 @@
 #include <BuiltinPackages.h>
 #include <Screens/ImageViewer.h>
 #include <Screens/TaskManager.h>
+#include <System/FileFunctions.h>
 #include <System/LanguageSystem.h>
 /*
  * ## Executes application from sdcard
@@ -79,8 +80,11 @@ void e() {
     while (choice != LISTMENU_EXIT) {
         choice =
             listMenu(menu, ArraySize(menu), false, LM_SETTINGS, getTranslation(TextKey::LM_EXTRA));
+
         switch (choice) {
-        case 0: ESP_LOGI("E", "PATH: %s", fileBrowser().c_str()); break;
+        case 0: {
+            FileOpen(fileBrowser());
+        } break;
         case 1: ImageViewer(fileBrowser("/", "|.png|.jpg|.jpeg|.bmp|.tga|.pic|.gif|")); break;
         case 2: setTime(); break;
         case 3: TaskManager(); break;

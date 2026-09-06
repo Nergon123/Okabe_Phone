@@ -55,7 +55,7 @@ class DEV_LINUX : public iHW {
         timeOffset = t - now;
     }
     time_t timeGet() override {
-        ESP_LOGI("TIME", "time %lu %lu", time(nullptr), timeOffset);
+        //  ESP_LOGI("TIME", "time %lu %lu", time(nullptr), timeOffset);
         return time(nullptr) + timeOffset;
     }
     CPU_SPEED getCPUSpeed() override {
