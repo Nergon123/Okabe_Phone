@@ -23,7 +23,8 @@ uint16_t* resizeRGB565buffer(uint16_t* buffer, int inputW, int inputH, int targe
     for (int j = 0; j < inputH; j++) {
         for (int i = 0; i < inputW; i++) {
             int      idx        = (j * inputW + i);
-            uint16_t pixel      = buffer[idx] >>8 | (buffer[idx] & 0xFF) << 8; // convert back to RGB565
+            uint16_t pixel      = buffer[idx] >> 8 | (buffer[idx] & 0xFF)
+                                                         << 8; // convert back to RGB565
             uint8_t  r          = ((pixel >> 11) & 0x1F) << 3;
             uint8_t  g          = ((pixel >> 5) & 0x3F) << 2;
             uint8_t  b          = (pixel & 0x1F) << 3;
@@ -106,7 +107,10 @@ image_data displayPNG(const NString path, int w, int h, bool onlyParams) {
     if (!img) {
         ESP_LOGE("IMG", "Failed to decode %s", path.c_str());
         if (stbi_failure_reason()) { ESP_LOGE("IMG", "Reason: %s", stbi_failure_reason()); }
-        else { ESP_LOGE("IMG", "Reason: unknown error"); }
+        else {
+            ESP_LOGE("IMG", "Reason: unknown error");
+            return {-1, -1, "Unknown Error", nullptr};
+        }
         return {-1, -1, stbi_failure_reason(), nullptr};
     }
     if (onlyParams) {
