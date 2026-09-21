@@ -1,10 +1,10 @@
 #include "RGB565BufferRenderTarget.h"
 #include "SDL2RenderTarget.h"
-#include "TFTESPIRenderTarget.h"
 #ifndef PC
+#include "IDFRenderTarget.h"
 RenderTarget *tft_target = nullptr;
-RenderTarget *setupTFTESPIRenderTarget() {
-    if (!tft_target) { return tft_target = new TFTESPIRenderTarget(240, 320, true); }
+RenderTarget *setupIDFRenderTarget() {
+    if (!tft_target) { return tft_target = new IDFRenderTarget(); }
     else { return tft_target; }
 };
 #else

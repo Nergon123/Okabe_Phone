@@ -1,6 +1,7 @@
-#include "gfxfont.h"
+#include <Fonts/gfxfont.h>
+#include <Fonts/allfonts.h>
 #include <Platform/FileSystem/VFS.h>
-#include <Platform/NString.h>
+#include <NString.h>
 #include <deque>
 struct FontHolder {
     NString                    path;

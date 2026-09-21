@@ -616,7 +616,7 @@ void sysError(NString reason) {
 
     while (buttonsHelding(false) == -1);
 #ifndef PC
-    ESP.restart();
+    hw->reboot();
 #endif
     for (;;);
 }

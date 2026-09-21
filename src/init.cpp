@@ -2,15 +2,13 @@
 #include "System/ResourceSystem.h"
 #ifdef PC
 #include "Platform/Graphics/SDL2RenderTarget.h"
-#else
-#include "Platform/Graphics/TFTESPIRenderTarget.h"
+
 #endif
 #include <System/LanguageSystem.h>
 #include <System/properties.h>
 // Function to initialize the storage
 void storageInit() {
     hw->initStorage();
-
     char prop_val[PROPERTY_VALUE_MAX];
     property_get(PROPERTIES_KEY_RESPATH, prop_val, resPath.c_str());
     resPath = NString(prop_val);

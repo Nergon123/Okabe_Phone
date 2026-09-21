@@ -2,6 +2,7 @@
 #include "Platform/Graphics/RGB565BufferRenderTarget.h"
 #include "Platform/Graphics/RenderTargets.h"
 #include "System/Memory.h"
+#include <map>
 #include "System/ResourceSystem.h"
 int last_minute = 0;
 // ## Draw status bar
@@ -14,9 +15,6 @@ void drawStatusBar(bool force) {
     tm     sbtime      = *gmtime(&currentTime);
     if (sbtime.tm_min != last_minute) {
         last_minute = sbtime.tm_min;
-// ehhhh.....? trying to get write cycles dry out lmao
-#warning Maybe consider changing this...
-        SaveTime(currentTime);
         sBarChanged = true;
     }
     if (enableRAMMonitor && sbtime.tm_sec % 10 == 0) { sBarChanged = true; }

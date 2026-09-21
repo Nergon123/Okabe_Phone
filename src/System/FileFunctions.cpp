@@ -11,7 +11,10 @@ enum class FILE_FORMATS {
     THEME
 };
 
-bool LaunchApp(const NString& file) {}
+bool LaunchApp(const NString& file) {
+    (void)file;
+    return false; // Application-file launching is not implemented yet.
+}
 bool PlayAudio(const NString& file) {
     AudioPlayer(file);
     return true;

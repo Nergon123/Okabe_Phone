@@ -1,4 +1,4 @@
-#include <Platform/NString.h>
+#include <NString.h>
 #pragma once
 enum ImageMode {
     IMG_CENTERED = 0,

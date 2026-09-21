@@ -5,22 +5,21 @@
 #include <freertos/task.h>
 #endif
 void ListTasks() {
-#ifdef INC_FREERTOS_H
-    UBaseType_t  taskCount = uxTaskGetNumberOfTasks();
-    TaskStatus_t tasks[taskCount];
-    uint32_t     totalRunTime[taskCount];
-    uxTaskGetSystemState(tasks, taskCount, totalRunTime);
-    // drawHeader(getTranslation(TextKey::LM_TASKS_RUNNING), LM_SETTINGS);
+#if !defined(PC) && configUSE_TRACE_FACILITY
+    std::vector<TaskStatus_t> snapshot(uxTaskGetNumberOfTasks() + 4);
+    configRUN_TIME_COUNTER_TYPE totalRunTime = 0;
+    UBaseType_t count = uxTaskGetSystemState(snapshot.data(), snapshot.size(), &totalRunTime);
     std::vector<mOption> taskList;
-    for (UBaseType_t i = 0; i < taskCount; i++) {
-        mOption option = mOption("");
-        option.label   = NString::format("%s (ID:%d) CPU:%d%% PRIO:%d ST:%d", tasks[i].pcTaskName,
-                                         tasks[i].xTaskNumber, totalRunTime[i],
-                                         tasks[i].uxCurrentPriority, tasks[i].eCurrentState);
-        taskList.push_back(option);
+    for (UBaseType_t i = 0; i < count; ++i) {
+        const auto& task = snapshot[i];
+        taskList.emplace_back(NString::format("%s (ID:%u) PRIO:%u ST:%d", task.pcTaskName,
+            unsigned(task.xTaskNumber), unsigned(task.uxCurrentPriority), int(task.eCurrentState)));
     }
-    listMenu(taskList, taskList.size(), true, LM_SETTINGS,
-             getTranslation(TextKey::LM_TASKS_RUNNING), false, 0);
+    if (!taskList.empty()) {
+        listMenu(taskList, taskList.size(), true, LM_SETTINGS,
+                 getTranslation(TextKey::LM_TASKS_RUNNING), false, 0);
+        return;
+    }
 #endif
     InfoWindow(getTranslation(TextKey::IW_TASK_LIST_NA));
 }

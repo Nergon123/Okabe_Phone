@@ -1,5 +1,7 @@
 #include "SIM.h"
 #ifndef PC
+#include <op_peripherals.h>
+#include <freertos/semphr.h>
 #define SIM_BAUD_RATE 115200
 static const char* TAG = "SMS_PDU";
 static uint8_t     hexNibble(char c) {
@@ -196,26 +198,22 @@ std::vector<Message> parseMessages() {
  * @return Response from the SIM card module
  */
 NString sendATCommand(NString command, uint32_t timeout, bool background) {
-    if (SimSerial.baudRate() != SIM_BAUD_RATE) { SimSerial.updateBaudRate(SIM_BAUD_RATE); }
-    bool  _simIsBusy = simIsBusy;
-    ulong timer      = millis();
-    while (_simIsBusy) {
-        if (millis() - timer > 10000) { break; }
-        hw->delay(50);
-        _simIsBusy = simIsBusy;
-    }
+    static SemaphoreHandle_t mutex = xSemaphoreCreateMutex();
+    if (!mutex || xSemaphoreTake(mutex, pdMS_TO_TICKS(10000)) != pdTRUE) return "ERROR: modem busy";
     simIsBusy = true;
-    SimSerial.println(command.c_str()); // Send the AT command
-
-    NString  response  = "";
+    NString request = command + "\r\n";
+    NString response;
+    if (okabe::writeModem(request.c_str(), request.length()) < 0) {
+        simIsBusy = false;
+        xSemaphoreGive(mutex);
+        return "ERROR: modem unavailable";
+    }
     uint32_t startTime = hw->millis();
-
-    // Wait for response or timeout
     while (hw->millis() - startTime < timeout) {
-        while (SimSerial.available()) {
-            char c = SimSerial.read(); // Read a single character
-            response += c;             // Append it to the response
-        }
+        char data[128];
+        int count = okabe::readModem(data, sizeof(data), 10);
+        if (count < 0) break;
+        if (count) response += NString(std::string(data, count));
     }
 
     if (response.indexOf("+CLIP:") != -1) {
@@ -248,6 +246,7 @@ NString sendATCommand(NString command, uint32_t timeout, bool background) {
     }
 
     simIsBusy = false;
+    xSemaphoreGive(mutex);
     return response;
 }
 
@@ -363,40 +362,20 @@ void AT_test() {
     tft.fillScreen(0);
     changeFont(0);
     tft.setCursor(0, 0);
-    tft.println("AT COMMANDS CONSOLE\n\nWaiting for connection...\n\nIf you got here by mistake "
-                "\ntry to press RESET \nand make sure # button didn't stuck...");
-    while (true) {
-        if (Serial.available()) {
-            tft.fillScreen(0);
-            tft.setCursor(0, 0);
-            tft.setTextSize(2);
-
-            tft.setTextColor(0xF800);
-            tft.println("\nAT COMMANDS CONSOLE\n (TO EXIT TYPE :q)\n");
-            tft.setTextColor(0xFFFF);
-            tft.setTextSize(1);
-            NString req;
-
-            tft.println("REQUEST:");
-
-            char t = Serial.read();
-            req += t;
-            tft.print(t);
-            while (t != '\n') {
-                if (Serial.available()) {
-                    t = Serial.read();
-                    req += t;
-                    tft.print(t);
-                }
-            }
-            req.replace('\n', '\0');
-
-            if (req.indexOf(":q") != -1) { break; }
-            NString ans = sendATCommand(req);
-
-            tft.println("\nANSWER: " + ans);
-            Serial.println(ans.c_str());
-        }
+    tft.println("AT COMMANDS CONSOLE (:q to exit)");
+    currentRenderTarget->present();
+    NString request;
+    for (;;) {
+        char c = hw->getCharInput();
+        if (!c) { hw->delay(10); continue; }
+        if (c == '\r') continue;
+        if (c != '\n') { request += c; continue; }
+        if (request == ":q") break;
+        NString answer = sendATCommand(request);
+        tft.println(answer);
+        currentRenderTarget->present();
+        printf("%s\n", answer.c_str());
+        request.clear();
     }
 }
 // Get cellular signal level (from 0 as "unavaliable" to 4)
@@ -427,7 +406,7 @@ int getSignalLevel() {
 void populateContacts() {
     NString response = sendATCommand("AT+CPBR=1,100"); // Query contacts from index 1 to 100
 
-    Serial.println(response.c_str());
+    printf("%s\n", response.c_str());
     // Process the response
     int startIndex = 0;
     int endIndex   = 0;

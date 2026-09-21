@@ -2,8 +2,9 @@
 #include "stdlib.h"
 #include <Platform/FileSystem/FileSystem.h>
 #include <Platform/Graphics/RenderTargets.h>
-#include <Platform/NString.h>
+#include <NString.h>
 #include <functional>
+#include <ctime>
 #include <vector>
 enum CPU_SPEED { CPU_IDLE, CPU_DEFAULT, CPU_FAST };
 struct HttpAnswer {
@@ -64,31 +65,7 @@ class iHW {
     };
     virtual RenderTarget* GetScreen() { return nullptr; };
 };
-#ifdef PC
-#include <chrono>
-#include <sys/time.h>
-#include <time.h>
-
-inline void analogWrite(int pin, int value) {
-    // No-op on PC
-    (void)pin;
-    (void)value;
+template <typename T, typename L, typename H>
+inline T constrain(T value, L low, H high) {
+    return value < low ? static_cast<T>(low) : value > high ? static_cast<T>(high) : value;
 }
-
-inline int constrain(int value, int min, int max) {
-    if (value < min) { return min; }
-    if (value > max) { return max; }
-    return value;
-}
-
-inline int settimeofday(const struct timeval* tv, const void* tz) {
-    (void)tv;
-    (void)tz;
-    return 0; // Stub for PC
-}
-
-#define TFT_BL 4 // Dummy value for PC
-
-#else
-#include <Arduino.h>
-#endif

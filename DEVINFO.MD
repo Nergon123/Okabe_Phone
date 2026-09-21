@@ -4,7 +4,6 @@ Oh, so you want to compile that from source.
 Or even do some changes and see what will it do?
 Thats all here.
 
-Actually nope, documentation will be at Wiki
 
 ## Setting up workspace
 1. First of all, you need [PlatfromIO](https://platformio.org/platformio-ide) and IDE that supports it.

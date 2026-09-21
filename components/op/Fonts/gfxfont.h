@@ -1,6 +1,5 @@
 // Adopted by Bodmer to support TFT_eSPI library.
 
-#include <Defines.h>
 #include <stdint.h>
 #ifndef _GFXFONT_H_
 #define _GFXFONT_H_
@@ -42,12 +41,5 @@ typedef struct {          // Data stored for FONT AS A WHOLE:
 } GFXfontPacked;
 #pragma pack(pop)
 
-#include "FreeMono9pt7b.h"
-#include "FreeMono9pt8bCyr.h"
-#include "FreeSans12pt7b.h"
-#include "FreeSans12pt8bCyr.h"
-#include "FreeSans9pt7b.h"
-#include "FreeSans9pt8bCyr.h"
-#include "FreeSansBold9pt7b.h"
-#include "FreeSansBold9pt8bCyr.h"
+
 #endif // _GFXFONT_H_

@@ -1,5 +1,4 @@
 #pragma once
-#ifdef PC
 #include "../FileSystem.h"
 #include <Defines.h>
 
@@ -8,7 +7,6 @@ extern "C" {
 #include <sys/stat.h>
 #include <dirent.h>
 }
-// namespace fs = std::filesystem;
 
 class Std2File : public IFile {
   FILE *_f;
@@ -17,13 +15,13 @@ class Std2File : public IFile {
   struct stat m_stat;
   bool m_changed;
   std::string  m_filePath;
-  // size_t pos;
 
   void updateStat();
 
   public:
     Std2File(const std::string& path, const char* mode);
     virtual ~Std2File();
+    bool isOpen() const { return _f || _d; }
     
     size_t read(void* buf, size_t len) override;
     size_t write(const void* buf, size_t len) override;
@@ -48,10 +46,6 @@ class Std2File : public IFile {
 
 class Std2FileSystem : public IFileSystem {
     std::string    root;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-private-field"
-    FileDeviceType fstype;
-#pragma GCC diagnostic pop
 
   public:
     explicit Std2FileSystem(const std::string& rootPath, FileDeviceType type);
@@ -68,4 +62,3 @@ class Std2FileSystem : public IFileSystem {
 
     std::vector<std::string> listDir(const std::string& path) override;
 };
-#endif

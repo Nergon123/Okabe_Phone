@@ -630,14 +630,14 @@ static int cache_flush(TCHAR *buffer, int *size, INI_FILETYPE *rfp, INI_FILETYPE
 
 static int close_rename(INI_FILETYPE *rfp, INI_FILETYPE *wfp, const TCHAR *filename,
                         TCHAR *buffer) {
-    (void)ini_close(rfp);
-    (void)ini_close(wfp);
-    (void)ini_tempname(buffer, filename, INI_BUFFERSIZE);
-#if defined ini_remove || defined INI_REMOVE
-    // (void)ini_remove(filename);
-#endif
-    (void)ini_rename(buffer, filename);
-    return 1;
+    int read_ok = ini_close(rfp);
+    int write_ok = ini_close(wfp);
+    ini_tempname(buffer, filename, INI_BUFFERSIZE);
+    if (!read_ok || !write_ok) {
+        (void)ini_remove(buffer);
+        return 0;
+    }
+    return ini_rename(buffer, filename);
 }
 
 /** ini_puts()
@@ -657,15 +657,17 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
     TCHAR       *sp, *ep;
     TCHAR        LocalBuffer[INI_BUFFERSIZE];
     int          len, match, flag, cachelen;
-    printf("__IDBG: puts in\n");
     assert(Filename != NULL);
+    if (!Filename || !*Filename || strlen(Filename) >= INI_BUFFERSIZE ||
+        Filename[strlen(Filename) - 1] == '~') return 0;
     if (!ini_openread(Filename, &rfp)) {
+        if (errno != ENOENT) return 0;
         /* If the .ini file doesn't exist, make a new file */
         if (Key != NULL && Value != NULL) {
             if (!ini_openwrite(Filename, &wfp)) { return 0; }
             writesection(LocalBuffer, Section, &wfp);
             writekey(LocalBuffer, Key, Value, &wfp);
-            (void)ini_close(&wfp);
+            return ini_close(&wfp);
         }
         return 1;
     }
@@ -675,16 +677,13 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
      * the INI file.
      */
     if (Key != NULL && Value != NULL) {
-        printf("__IDBG: puts not erase\n");
         match =
             getkeystring(&rfp, Section, Key, -1, -1, LocalBuffer, sizearray(LocalBuffer), &head);
         if (match) {
             /* if the current setting is identical to the one to write, there is
              * nothing to do.
              */
-            printf("__IDBG: puts cmp: (%s) to (%s)\n", LocalBuffer, Value);
             if (_tcscmp(LocalBuffer, Value) == 0) {
-                printf("__IDBG: puts value same!\n");
                 (void)ini_close(&rfp);
                 return 1;
             }
@@ -712,7 +711,6 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
         /* key not found, or different value & length -> proceed */
     }
     else if (Key != NULL && Value == NULL) {
-        printf("__IDBG: puts key not found or different\n");
         /* Conversely, for a request to delete a setting; if that setting isn't
            present, just return */
         match =
@@ -722,7 +720,6 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
             return 1;
         }
         /* key found -> proceed to delete it */
-        printf("__IDBG: puts key found, proc to del\n");
     }
 
     /* Get a temporary file name to copy to. Use the existing name, but with
@@ -731,35 +728,27 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
 
     (void)ini_close(&rfp);
     ini_tempname(LocalBuffer, Filename, INI_BUFFERSIZE);
-    printf("__IDBG: create tmpfile: %s\n", LocalBuffer);
     if (!ini_openwrite(LocalBuffer, &wfp)) { return 0; }
     /* In the case of (advisory) file locks, ini_openwrite() may have been blocked
      * on the open, and after the block is lifted, the original file may have been
      * renamed, which is why the original file was closed and is now reopened */
     if (!ini_openread(Filename, &rfp)) {
-        /* If the .ini file doesn't exist any more, make a new file */
-        printf("__IDBG: puts ini not exist, make new\n");
-        assert(Key != NULL && Value != NULL);
-        writesection(LocalBuffer, Section, &wfp);
-        writekey(LocalBuffer, Key, Value, &wfp);
         (void)ini_close(&wfp);
-        return 1;
+        (void)ini_remove(LocalBuffer);
+        return 0;
     }
 
     (void)ini_tell(&rfp, &mark);
-    printf("__IDBG: read old ini size: %i\n", mark);
     cachelen = 0;
 
     /* Move through the file one line at a time until a section is
      * matched or until EOF. Copy to temp file as it is read.
      */
-    printf("__IDBG: puts search sections\n");
     len = (Section != NULL) ? (int)_tcslen(Section) : 0;
     if (len > 0) {
         do {
             if (!ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp)) {
                 /* Failed to find section, so add one to the end */
-                printf("__IDBG: failed to find sec, add to end\n");
                 flag = cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
                 if (Key != NULL && Value != NULL) {
                     if (!flag) {
@@ -778,7 +767,6 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
             match = (*sp == '[' && ep != NULL);
             if (match) {
                 /* A section was found, skip leading and trailing whitespace */
-                printf("__IDBG: puts section found\n");
                 assert(sp != NULL && *sp == '[');
                 sp = skipleading(sp + 1);
                 assert(ep != NULL && *ep == ']');
@@ -813,12 +801,10 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
      * upon leaving the section's area. Copy the file as it is read
      * and create an entry if one is not found.
      */
-    printf("__IDBG: puts search entry\n");
     len = (Key != NULL) ? (int)_tcslen(Key) : 0;
     for (;;) {
         if (!ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp)) {
             /* EOF without an entry so make one */
-            printf("__IDBG: puts entry eof, make new\n");
             flag = cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);
             if (Key != NULL && Value != NULL) {
                 if (!flag) {
@@ -833,7 +819,6 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
         sp = skipleading(LocalBuffer);
         ep = _tcschr(sp, '='); /* Parse out the equal sign */
         if (ep == NULL) { ep = _tcschr(sp, ':'); }
-        if (ep != NULL && sp != NULL) { printf("__IDBG: puts entry: sp=%s, ep=%s\n", sp, ep); }
         match = (ep != NULL && len > 0 && (int)(skiptrailing(ep, sp) - sp) == len &&
                  _tcsnicmp(sp, Key, len) == 0);
         if ((Key != NULL && match) || *sp == '[') {
@@ -851,7 +836,6 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
                 cache_accum(LocalBuffer, &cachelen, INI_BUFFERSIZE);
             }
         }
-        printf("__IDBG: puts entry walk\n");
     }
     /* the key was found, or we just dropped on the next section (meaning that it
      * wasn't found); in both cases we need to write the key, but in the latter
@@ -875,7 +859,6 @@ int ini_puts(const TCHAR *Section, const TCHAR *Key, const TCHAR *Value, const T
         (void)ini_tell(&rfp, &mark);
     }
     /* Copy the rest of the INI file */
-    printf("__IDBG: puts start copy rest\n");
     while (ini_read(LocalBuffer, INI_BUFFERSIZE, &rfp)) {
         if (!cache_accum(LocalBuffer, &cachelen, INI_BUFFERSIZE)) {
             cache_flush(LocalBuffer, &cachelen, &rfp, &wfp, &mark);

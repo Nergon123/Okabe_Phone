@@ -17,3 +17,9 @@ PLAN.MD
 build/
 *.old
 *.mp3
+sdkconfig
+sdkconfig.proto
+sdkconfig.s3
+managed_components/
+
+.serial/

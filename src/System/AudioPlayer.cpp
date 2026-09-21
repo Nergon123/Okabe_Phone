@@ -27,6 +27,7 @@ void AudioPlayer(NString path) {
     currentRenderTarget->setUseBuffer(false);
     MP3Player *player = new MP3Player(audioSource);
     audioSource->init();
+    audioSource->setVolume(0.1);
     NString filename = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
     if(!player->init(path)){
         filename = "Could not open file...";

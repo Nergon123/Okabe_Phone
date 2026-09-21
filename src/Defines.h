@@ -41,6 +41,11 @@
 
 #else
 #include <esp_log.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <op_board.h>
+#include <Platform/Compat/esp_memory.h>
+#define PROGMEM
 #endif
 
 #define NI_delay(old_millis, ms) (hw->millis() - old_millis < ms)
@@ -56,7 +61,7 @@ typedef unsigned long ulong;
 #define SYSTEM_DIR "/spiffs/"
 #define WALLPAPER_DIR "/sd/Wallpapers/"
 
-#define SimSerial Serial1
+
 
 #define lines_to_draw_wo_psram 3
 

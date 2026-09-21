@@ -1,7 +1,7 @@
 #ifndef _H_LUAVM
 #define _H_LUAVM
 
-#include "../../Platform/NString.h"
+#include <NString.h>
 #include "lua/lua.hpp"
 #include <GlobalVariables.h>
 #include <Platform/FileSystem/VFS.h>

@@ -2,7 +2,7 @@
 #define _H_STATICPACKAGE
 
 #include "BasePackage.h"
-#include <Platform/NString.h>
+#include <NString.h>
 
 #define CREATE_SPKG(name, id, main_fn)                                                            \
     extern const char spkgClass_##name##_id[] = id;                                               \

@@ -4,7 +4,7 @@
 #include "BasePackage.h"
 #include <GlobalVariables.h>
 #include <Platform/FileSystem/FileSystem.h>
-#include <Platform/NString.h>
+#include <NString.h>
 #include <System/Ini/INIReader.h>
 #include <System/Zip/ZipFileProvider.h>
 

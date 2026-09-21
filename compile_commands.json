@@ -1,0 +1,566 @@
+[
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/App/PkgManagerApp.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/App/PkgManagerApp.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/App/PkgManagerApp.cpp",
+        "output": ".pio/build/linux/src/App/PkgManagerApp.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/CAPI/okabe_fs.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/CAPI/okabe_fs.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/CAPI/okabe_fs.cpp",
+        "output": ".pio/build/linux/src/CAPI/okabe_fs.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Connectivity/OTA.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Connectivity/OTA.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Connectivity/OTA.cpp",
+        "output": ".pio/build/linux/src/Connectivity/OTA.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Connectivity/SIM.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Connectivity/SIM.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Connectivity/SIM.cpp",
+        "output": ".pio/build/linux/src/Connectivity/SIM.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Connectivity/WiFi.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Connectivity/WiFi.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Connectivity/WiFi.cpp",
+        "output": ".pio/build/linux/src/Connectivity/WiFi.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/GlobalVariables.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/GlobalVariables.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/GlobalVariables.cpp",
+        "output": ".pio/build/linux/src/GlobalVariables.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Input/Input.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Input/Input.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Input/Input.cpp",
+        "output": ".pio/build/linux/src/Input/Input.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Audio/AudioGen.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Audio/AudioGen.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Audio/AudioGen.cpp",
+        "output": ".pio/build/linux/src/Platform/Audio/AudioGen.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Audio/I2S/I2SAudio.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Audio/I2S/I2SAudio.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Audio/I2S/I2SAudio.cpp",
+        "output": ".pio/build/linux/src/Platform/Audio/I2S/I2SAudio.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Audio/SDLAudio.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Audio/SDLAudio.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Audio/SDLAudio.cpp",
+        "output": ".pio/build/linux/src/Platform/Audio/SDLAudio.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Compat/memory.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Compat/memory.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Compat/memory.cpp",
+        "output": ".pio/build/linux/src/Platform/Compat/memory.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/FileSystem/Other/Std2Fs.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/FileSystem/Other/Std2Fs.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/FileSystem/Other/Std2Fs.cpp",
+        "output": ".pio/build/linux/src/Platform/FileSystem/Other/Std2Fs.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Graphics/Display.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Graphics/Display.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Graphics/Display.cpp",
+        "output": ".pio/build/linux/src/Platform/Graphics/Display.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Graphics/Fonts/FontLoader.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Graphics/Fonts/FontLoader.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Graphics/Fonts/FontLoader.cpp",
+        "output": ".pio/build/linux/src/Platform/Graphics/Fonts/FontLoader.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Graphics/ImageProcessor.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Graphics/ImageProcessor.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Graphics/ImageProcessor.cpp",
+        "output": ".pio/build/linux/src/Platform/Graphics/ImageProcessor.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Graphics/RenderTargets.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Graphics/RenderTargets.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Graphics/RenderTargets.cpp",
+        "output": ".pio/build/linux/src/Platform/Graphics/RenderTargets.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Hardware/Drivers/Battery/IP5306.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Hardware/Drivers/Battery/IP5306.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Hardware/Drivers/Battery/IP5306.cpp",
+        "output": ".pio/build/linux/src/Platform/Hardware/Drivers/Battery/IP5306.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Hardware/Hardware.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Hardware/Hardware.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Hardware/Hardware.cpp",
+        "output": ".pio/build/linux/src/Platform/Hardware/Hardware.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Platform/Hardware/Profiles/ESP32.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Platform/Hardware/Profiles/ESP32.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Platform/Hardware/Profiles/ESP32.cpp",
+        "output": ".pio/build/linux/src/Platform/Hardware/Profiles/ESP32.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Screens/Extra.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Screens/Extra.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Screens/Extra.cpp",
+        "output": ".pio/build/linux/src/Screens/Extra.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Screens/ImageViewer.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Screens/ImageViewer.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Screens/ImageViewer.cpp",
+        "output": ".pio/build/linux/src/Screens/ImageViewer.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Screens/Main.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Screens/Main.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Screens/Main.cpp",
+        "output": ".pio/build/linux/src/Screens/Main.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Screens/Messages.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Screens/Messages.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Screens/Messages.cpp",
+        "output": ".pio/build/linux/src/Screens/Messages.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Screens/Phone.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Screens/Phone.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Screens/Phone.cpp",
+        "output": ".pio/build/linux/src/Screens/Phone.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Screens/Settings.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Screens/Settings.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Screens/Settings.cpp",
+        "output": ".pio/build/linux/src/Screens/Settings.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/Screens/TaskManager.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/Screens/TaskManager.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/Screens/TaskManager.cpp",
+        "output": ".pio/build/linux/src/Screens/TaskManager.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/AudioPlayer.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/AudioPlayer.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/AudioPlayer.cpp",
+        "output": ".pio/build/linux/src/System/AudioPlayer.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/CLI/CLI.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/CLI/CLI.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/CLI/CLI.cpp",
+        "output": ".pio/build/linux/src/System/CLI/CLI.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/FileFunctions.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/FileFunctions.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/FileFunctions.cpp",
+        "output": ".pio/build/linux/src/System/FileFunctions.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Files.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Files.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Files.cpp",
+        "output": ".pio/build/linux/src/System/Files.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/FontManagement.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/FontManagement.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/FontManagement.cpp",
+        "output": ".pio/build/linux/src/System/FontManagement.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Generic.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Generic.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Generic.cpp",
+        "output": ".pio/build/linux/src/System/Generic.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Ini/INIReader.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Ini/INIReader.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Ini/INIReader.cpp",
+        "output": ".pio/build/linux/src/System/Ini/INIReader.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Ini/ini.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Ini/ini.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Ini/ini.c",
+        "output": ".pio/build/linux/src/System/Ini/ini.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Ini2/minIni.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Ini2/minIni.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Ini2/minIni.c",
+        "output": ".pio/build/linux/src/System/Ini2/minIni.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/LanguageSystem.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LanguageSystem.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LanguageSystem.cpp",
+        "output": ".pio/build/linux/src/System/LanguageSystem.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/LuaVM/LuaOkabeAPI.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/LuaOkabeAPI.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/LuaOkabeAPI.cpp",
+        "output": ".pio/build/linux/src/System/LuaVM/LuaOkabeAPI.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/LuaVM/LuaOkabeSystemLib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/LuaOkabeSystemLib.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/LuaOkabeSystemLib.cpp",
+        "output": ".pio/build/linux/src/System/LuaVM/LuaOkabeSystemLib.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/LuaVM/LuaOkabeTftLib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/LuaOkabeTftLib.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/LuaOkabeTftLib.cpp",
+        "output": ".pio/build/linux/src/System/LuaVM/LuaOkabeTftLib.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/LuaVM/LuaVM.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/LuaVM.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/LuaVM.cpp",
+        "output": ".pio/build/linux/src/System/LuaVM/LuaVM.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lapi.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lapi.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lapi.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lapi.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lauxlib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lauxlib.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lauxlib.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lauxlib.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lbaselib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lbaselib.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lbaselib.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lbaselib.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lcode.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lcode.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lcode.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lcode.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/ldblib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/ldblib.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/ldblib.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/ldblib.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/ldebug.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/ldebug.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/ldebug.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/ldebug.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/ldo.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/ldo.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/ldo.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/ldo.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/ldump.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/ldump.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/ldump.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/ldump.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lfunc.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lfunc.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lfunc.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lfunc.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lgc.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lgc.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lgc.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lgc.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/linit.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/linit.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/linit.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/linit.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/llex.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/llex.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/llex.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/llex.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lmathlib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lmathlib.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lmathlib.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lmathlib.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lmem.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lmem.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lmem.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lmem.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/loadlib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/loadlib.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/loadlib.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/loadlib.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lobject.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lobject.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lobject.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lobject.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lopcodes.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lopcodes.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lopcodes.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lopcodes.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lparser.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lparser.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lparser.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lparser.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lstate.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lstate.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lstate.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lstate.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lstring.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lstring.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lstring.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lstring.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lstrlib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lstrlib.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lstrlib.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lstrlib.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/ltable.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/ltable.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/ltable.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/ltable.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/ltablib.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/ltablib.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/ltablib.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/ltablib.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/ltm.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/ltm.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/ltm.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/ltm.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lundump.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lundump.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lundump.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lundump.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lvm.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lvm.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lvm.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lvm.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/LuaVM/lua/lzio.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/LuaVM/lua/lzio.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/LuaVM/lua/lzio.c",
+        "output": ".pio/build/linux/src/System/LuaVM/lua/lzio.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/MP3Player.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/MP3Player.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/MP3Player.cpp",
+        "output": ".pio/build/linux/src/System/MP3Player.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Memory.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Memory.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Memory.cpp",
+        "output": ".pio/build/linux/src/System/Memory.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Pkg/LuaPackage.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Pkg/LuaPackage.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Pkg/LuaPackage.cpp",
+        "output": ".pio/build/linux/src/System/Pkg/LuaPackage.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Pkg/PackageManager.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Pkg/PackageManager.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Pkg/PackageManager.cpp",
+        "output": ".pio/build/linux/src/System/Pkg/PackageManager.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Pkg/PackageStorage.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Pkg/PackageStorage.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Pkg/PackageStorage.cpp",
+        "output": ".pio/build/linux/src/System/Pkg/PackageStorage.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Pkg/ZipPackage.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Pkg/ZipPackage.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Pkg/ZipPackage.cpp",
+        "output": ".pio/build/linux/src/System/Pkg/ZipPackage.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/ResourceSystem.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/ResourceSystem.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/ResourceSystem.cpp",
+        "output": ".pio/build/linux/src/System/ResourceSystem.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Tasks.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Tasks.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Tasks.cpp",
+        "output": ".pio/build/linux/src/System/Tasks.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/TextManipulation.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/TextManipulation.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/TextManipulation.cpp",
+        "output": ".pio/build/linux/src/System/TextManipulation.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Time.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Time.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Time.cpp",
+        "output": ".pio/build/linux/src/System/Time.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/UTF.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/UTF.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/UTF.cpp",
+        "output": ".pio/build/linux/src/System/UTF.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Zip/ZipFileProvider.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/ZipFileProvider.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/ZipFileProvider.cpp",
+        "output": ".pio/build/linux/src/System/Zip/ZipFileProvider.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/System/Zip/unzipLIB.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unzipLIB.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unzipLIB.cpp",
+        "output": ".pio/build/linux/src/System/Zip/unzipLIB.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Zip/unziplib_c/adler32.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unziplib_c/adler32.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unziplib_c/adler32.c",
+        "output": ".pio/build/linux/src/System/Zip/unziplib_c/adler32.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Zip/unziplib_c/crc32.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unziplib_c/crc32.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unziplib_c/crc32.c",
+        "output": ".pio/build/linux/src/System/Zip/unziplib_c/crc32.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Zip/unziplib_c/infback.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unziplib_c/infback.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unziplib_c/infback.c",
+        "output": ".pio/build/linux/src/System/Zip/unziplib_c/infback.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Zip/unziplib_c/inffast.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unziplib_c/inffast.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unziplib_c/inffast.c",
+        "output": ".pio/build/linux/src/System/Zip/unziplib_c/inffast.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Zip/unziplib_c/inflate.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unziplib_c/inflate.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unziplib_c/inflate.c",
+        "output": ".pio/build/linux/src/System/Zip/unziplib_c/inflate.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Zip/unziplib_c/inftrees.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unziplib_c/inftrees.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unziplib_c/inftrees.c",
+        "output": ".pio/build/linux/src/System/Zip/unziplib_c/inftrees.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Zip/unziplib_c/unzip.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unziplib_c/unzip.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unziplib_c/unzip.c",
+        "output": ".pio/build/linux/src/System/Zip/unziplib_c/unzip.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/Zip/unziplib_c/zutil.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/Zip/unziplib_c/zutil.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/Zip/unziplib_c/zutil.c",
+        "output": ".pio/build/linux/src/System/Zip/unziplib_c/zutil.o"
+    },
+    {
+        "command": "/usr/bin/gcc -o .pio/build/linux/src/System/properties.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/System/properties.c",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/System/properties.c",
+        "output": ".pio/build/linux/src/System/properties.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/UI/ListMenu.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/UI/ListMenu.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/UI/ListMenu.cpp",
+        "output": ".pio/build/linux/src/UI/ListMenu.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/UI/Notifications.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/UI/Notifications.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/UI/Notifications.cpp",
+        "output": ".pio/build/linux/src/UI/Notifications.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/UI/UIElements.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/UI/UIElements.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/UI/UIElements.cpp",
+        "output": ".pio/build/linux/src/UI/UIElements.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/init.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/init.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/init.cpp",
+        "output": ".pio/build/linux/src/init.o"
+    },
+    {
+        "command": "/usr/bin/g++ -o .pio/build/linux/src/main.o -c -fsanitize=address -fno-omit-frame-pointer -Wall -Wextra -Og -g2 -ggdb2 -DPLATFORMIO=60200 -DEMU -DPC -D__PLATFORMIO_BUILD_DEBUG__ -Isrc src/main.cpp",
+        "directory": "/home/nergon/repo/Okabe_Phone",
+        "file": "src/main.cpp",
+        "output": ".pio/build/linux/src/main.o"
+    }
+]

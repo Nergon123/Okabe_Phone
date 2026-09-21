@@ -4,15 +4,12 @@
 #ifdef PC
 #include <thread>
 #else
-#include <Arduino.h>
-#include <MCP23017.h>
-#include <TFT_eSPI.h>
 #endif
 #include "Platform/Audio/Audio.h"
 #include "Platform/FileSystem/VFS.h"
 #include "Platform/Graphics/ImageProcessor.h"
 #include "Platform/Hardware/Hardware.h"
-#include "Platform/NString.h"
+#include <NString.h>
 #include "Platform/Audio/Audio.h"
 
 #include <vector>

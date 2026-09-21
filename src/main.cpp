@@ -1,7 +1,9 @@
+#ifndef OKABE_RECOVERY
+
 #include "Screens/Main.h"
 #include "BuiltinPackages.h"
 #include "GlobalVariables.h"
-#include "Platform/Graphics/Fonts/FontLoader.h"
+#include <Platform/Graphics/Fonts/FontLoader.h>
 #include "Platform/Hardware/Hardware.h"
 #include "Platform/Hardware/Profiles/ESP32.h"
 #include "Platform/Hardware/Profiles/Linux.h"
@@ -13,28 +15,11 @@
 #include <Platform/Audio/AudioGen.h>
 #include <System/LanguageSystem.h>
 #include <System/AudioPlayer.h>
-#ifdef IDF_VER
-TaskHandle_t *TaskLoop_Handle;
-
-void TaskLoop(void *) {
-    setup();
-    while (true) {
-        loop();
-        vTaskDelay(1);
-    }
-}
-extern "C" void app_main(void) {
-
-    initArduino();
-    xTaskCreate(TaskLoop, "TaskLoop", 20 * 1024, NULL, 2, TaskLoop_Handle);
-    vTaskDelete(NULL);
-}
-#endif
 
 int start() {
 #ifdef PC
     hw = new DEV_LINUX();
-#elif defined(ESP32)
+#else
     hw = new DEV_ESP32();
 #endif
 
@@ -132,4 +117,19 @@ int main(int argc, char **argv) {
     while (true) { loop(); }
     return 0;
 }
+#endif
+#ifndef PC
+extern "C" void app_main() {
+    // The UI needs more stack than the IDF main task's default.
+    auto run = [](void*) {
+        if (start() == 0) {
+            for (;;) { loop(); vTaskDelay(1); }
+        }
+        vTaskDelete(nullptr);
+    };
+    if (xTaskCreate(run, "Main Thread", 40 * 1024, nullptr, 2, nullptr) != pdPASS) {
+        ESP_LOGE("MAIN", "Unable to create Main Thread");
+    }
+}
+#endif
 #endif

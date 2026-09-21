@@ -1,7 +1,7 @@
 #ifndef _H_BASEPACKAGE
 #define _H_BASEPACKAGE
 
-#include <Platform/NString.h>
+#include <NString.h>
 
 #define PKG_MANIFEST_MAX_SIZE (1024)
 

@@ -31,7 +31,7 @@ void execute_application() {
     tft.setTextColor(0xFFFF);
     tft.setCursor(30, 190);
     tft.println("BOOTING INTO APPLICATION...");
-    NFile* file = VFS.open(file_path.c_str(), FILE_READ);
+    NFile* file = VFS.open(file_path.c_str(), "rb");
     if (!file) {
         ESP_LOGE("EXEC", "Failed to open file!");
         return;
@@ -64,7 +64,7 @@ void execute_application() {
 
     file->close();
     esp_ota_set_boot_partition(partition);
-    ESP.restart();
+    hw->reboot();
 #endif
 }
 

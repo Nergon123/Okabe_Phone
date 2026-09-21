@@ -1,10 +1,14 @@
 #pragma once
 
 #include "../Audio.h"
-#include "driver/i2s.h"
-#include <esp_heap_caps.h>
+#include "driver/i2s_std.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+#include <atomic>
 class I2SAudio : public AudioSource {
 public:
+    ~I2SAudio() override;
     void init() override;
     void play(AudioStream* stream) override;
     void stop() override;
@@ -18,7 +22,10 @@ private:
 
     AudioStream* current = nullptr;
 
-    float volume = 1.0f;
+    std::atomic<uint32_t> volumeGain{32768};
 
-    i2s_port_t port = I2S_NUM_0;
+    i2s_chan_handle_t txChannel = nullptr;
+    bool channelEnabled = false;
+    SemaphoreHandle_t taskDone = nullptr;
+    std::atomic<bool> stopRequested{false};
 };

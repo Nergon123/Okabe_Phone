@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Platform/FileSystem/VFS.h>
-#include <Platform/NString.h>
+#include <NString.h>
 #include <stddef.h>
 #include <stdint.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <GlobalVariables.h>
-#include <Platform/NString.h>
+#include <NString.h>
 struct image_data {
     int         srcwidth;
     int         srcheight;

@@ -1,5 +1,5 @@
 
-#include <Platform/NString.h>
+#include <NString.h>
 #pragma once
 enum class TextKey {
     UNKNOWN_STRING, // "[Text Error]"

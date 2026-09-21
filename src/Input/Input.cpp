@@ -51,8 +51,6 @@ void numberInput(char first) {
     number += first;
 
     int c          = 127;
-    int spinOffset = 0;
-    int spinTimer  = 20;
 
     tft.setTextColor(TFT_WHITE);
     changeFont(1);
@@ -395,7 +393,7 @@ int buttonsHelding(bool _idle) {
             break;
         case 'l': ESP_LOGI(ITAG, "Restart");
 #ifndef PC
-            ESP.restart();
+            hw->reboot();
 #endif
             break;
         default:

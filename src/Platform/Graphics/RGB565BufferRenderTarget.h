@@ -1,9 +1,7 @@
 #pragma once
 #include "RenderTargets.h"
-#ifndef PC
-#include <Arduino.h>
-#endif
 #include <cstdint>
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 
@@ -32,11 +30,10 @@ class RGB565BufferRenderTarget : public RenderTarget {
     }
 
     void setViewport(Viewport newVp) override {
-        // clamp viewport to buffer
-        if (newVp.x < 0) { newVp.x = 0; }
-        if (newVp.y < 0) { newVp.y = 0; }
-        if (newVp.x + newVp.w > width) { newVp.w = width - newVp.x; }
-        if (newVp.y + newVp.h > height) { newVp.h = height - newVp.y; }
+        newVp.x = std::clamp<int>(newVp.x, 0, width);
+        newVp.y = std::clamp<int>(newVp.y, 0, height);
+        newVp.w = std::clamp<int>(newVp.w, 0, width - newVp.x);
+        newVp.h = std::clamp<int>(newVp.h, 0, height - newVp.y);
         vp = newVp;
     }
 

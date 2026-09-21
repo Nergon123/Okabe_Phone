@@ -1,5 +1,5 @@
 #pragma once
-#include <Platform/NString.h>
+#include <NString.h>
 #include <random>
 #include <vector>
 enum WaveformType { WAVE_SINE, WAVE_SQUARE, WAVE_TRIANGLE, WAVE_NOISE };

@@ -9,7 +9,6 @@
 #include <Connectivity/OTA.h>
 #ifndef PC
 #include "esp_ota_ops.h"
-#include <Arduino.h>
 #endif
 void e();
 void execute_application();

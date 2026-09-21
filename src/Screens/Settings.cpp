@@ -5,6 +5,7 @@
 #include <System/properties.h>
 #include <algorithm>
 #include <cctype>
+#include <map>
 const int lastImage = 42;
 int       getDaysInMonth(int year, int month);
 

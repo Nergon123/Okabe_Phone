@@ -1,9 +1,10 @@
 #ifndef TFT_ESPI_STUB_H
 #define TFT_ESPI_STUB_H
 #include "Defines.h"
-#include "Fonts/font5x7.h"
-#include "Fonts/gfxfont.h"
-#include "Platform/NString.h"
+#include <Fonts/font5x7.h>
+#include <Fonts/gfxfont.h>
+#include <Fonts/allfonts.h>
+#include <NString.h>
 #include "RenderTargets.h"
 #include <stdarg.h>
 struct fontFile_t {

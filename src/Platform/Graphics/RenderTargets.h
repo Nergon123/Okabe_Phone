@@ -116,5 +116,5 @@ class RenderTarget {
 #ifdef PC
 RenderTarget *setupSDL2RenderTarget();
 #else
-RenderTarget *setupTFTESPIRenderTarget();
+RenderTarget *setupIDFRenderTarget();
 #endif

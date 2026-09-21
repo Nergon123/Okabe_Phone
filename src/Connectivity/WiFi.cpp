@@ -1,203 +1,194 @@
+#include "_WiFi.h"
 #include "System/Generic.h"
 #include "UI/UIElements.h"
-#include "_WiFi.h"
 #include <System/LanguageSystem.h>
-#ifdef WiFi_h
+#ifndef PC
+#include <esp_wifi.h>
+#include <esp_event.h>
+#include <esp_netif.h>
+#include <freertos/event_groups.h>
+#include <nvs.h>
+#include <atomic>
+#include <cstring>
 
-void WifiPrompt(NString ssid, uint8_t encryptionType, NString password = NString()) {
+namespace {
+EventGroupHandle_t wifiEvents;
+esp_netif_t* station = nullptr;
+esp_netif_t* hotspot = nullptr;
+bool initialized = false;
+std::atomic<bool> reconnect{true}, connecting{false};
+std::atomic<bool> autoconnect{false};
+constexpr EventBits_t connectedBit = BIT0, failedBit = BIT1;
+void eventHandler(void*, esp_event_base_t base, int32_t id, void*) {
+    if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
+        connecting = false;
+        xEventGroupClearBits(wifiEvents, failedBit);
+        xEventGroupSetBits(wifiEvents, connectedBit);
+    } else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {
+        xEventGroupClearBits(wifiEvents, connectedBit);
+        xEventGroupSetBits(wifiEvents, failedBit);
+        if (reconnect && !connecting) esp_wifi_connect();
+    } else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_START && autoconnect) {
+        wifi_config_t config = {};
+        if (esp_wifi_get_config(WIFI_IF_STA, &config) == ESP_OK && config.sta.ssid[0]) esp_wifi_connect();
+    }
+}
+bool check(esp_err_t err) {
+    if (err == ESP_OK) return true;
+    InfoWindow(NString(esp_err_to_name(err)));
+    return false;
+}
+void saveSettings() {
+    nvs_handle_t handle;
+    if (nvs_open("okabe_wifi", NVS_READWRITE, &handle) != ESP_OK) return;
+    nvs_set_u8(handle, "autoconnect", autoconnect);
+    nvs_set_u8(handle, "reconnect", reconnect);
+    nvs_commit(handle);
+    nvs_close(handle);
+}
+bool initWifi() {
+    if (initialized) return true;
+    ESP_ERROR_CHECK(esp_netif_init());
+    esp_err_t err = esp_event_loop_create_default();
+    if (err != ESP_ERR_INVALID_STATE && !check(err)) return false;
+    station = esp_netif_create_default_wifi_sta();
+    hotspot = esp_netif_create_default_wifi_ap();
+    wifiEvents = xEventGroupCreate();
+    if (!station || !hotspot || !wifiEvents) return false;
+    wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
+    if (!check(esp_wifi_init(&config))) return false;
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, eventHandler, nullptr));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, eventHandler, nullptr));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
+    ESP_ERROR_CHECK(esp_netif_set_hostname(station, HOSTNAME));
+    ESP_ERROR_CHECK(esp_netif_set_hostname(hotspot, HOSTNAME));
+    nvs_handle_t handle;
+    if (nvs_open("okabe_wifi", NVS_READONLY, &handle) == ESP_OK) {
+        uint8_t value = 0;
+        if (nvs_get_u8(handle, "autoconnect", &value) == ESP_OK) autoconnect = value;
+        if (nvs_get_u8(handle, "reconnect", &value) == ESP_OK) reconnect = value;
+        nvs_close(handle);
+    }
+    initialized = true;
+    return true;
+}
+bool setMode(wifi_mode_t mode) {
+    // Suppress reconnection while deliberately stopping/reconfiguring the driver.
+    connecting = true;
+    esp_wifi_stop();
+    xEventGroupClearBits(wifiEvents, connectedBit | failedBit);
+    if (!check(esp_wifi_set_mode(mode))) { connecting = false; return false; }
+    if (mode & WIFI_MODE_AP) {
+        wifi_config_t ap = {};
+        strcpy(reinterpret_cast<char*>(ap.ap.ssid), HOSTNAME);
+        ap.ap.ssid_len = strlen(HOSTNAME);
+        ap.ap.channel = 1;
+        ap.ap.max_connection = 4;
+        ap.ap.authmode = WIFI_AUTH_OPEN;
+        if (!check(esp_wifi_set_config(WIFI_IF_AP, &ap))) { connecting = false; return false; }
+    }
+    bool ok = mode == WIFI_MODE_NULL || check(esp_wifi_start());
+    connecting = false;
+    return ok;
+}
+void prompt(const wifi_ap_record_t& ap) {
+    NString ssid(reinterpret_cast<const char*>(ap.ssid)), password;
     std::vector<FIELD> fields = {
         FIELD(getTranslation(TextKey::WIFI_SSID), ssid, false),
-        FIELD(getTranslation(TextKey::WIFI_PASSWORD), password, false),
-    };
-    if (InputFieldS(getTranslation(TextKey::WIFI_CONNECT_TITLE), fields, LM_SETTINGS, 0,
-                    getTranslation(TextKey::WIFI_CONNECT_BUTTON),
-                    getTranslation(TextKey::CANCEL_BUTTON))) {
-        WiFi.begin(ssid.c_str(), password.c_str());
-        InfoWindow(getTranslation(TextKey::IW_WIFI_CONNECTING), IW_TITLE::INFO);
-        if ((WiFiGenericClass::getMode() & WIFI_MODE_STA) == 0) {
-            InfoWindow(getTranslation(TextKey::IW_WIFI_ISNT_EN));
-            return;
-        }
-        unsigned long start = millis();
-        while (
-            ((!WiFi.status() || WiFi.status() >= WL_DISCONNECTED) && (millis() - start) < 10000)) {
-            if (buttonsHelding() != -1) { break; }
-            delay(100);
-        }
-        wl_status_t result = WiFi.status();
-        drawStatusBar(true);
-        NString errorResult;
-        bool    isError = result != WL_CONNECTED;
-        switch (result) {
-        case WL_IDLE_STATUS: errorResult = getTranslation(TextKey::IW_WIFI_ERR_IDLE); break;
-        case WL_NO_SSID_AVAIL: errorResult = getTranslation(TextKey::IW_WIFI_ERR_NO_SSID); break;
-        case WL_SCAN_COMPLETED:
-            errorResult = getTranslation(TextKey::IW_WIFI_ERR_SCAN_COMPLETED);
-            break;
-        case WL_CONNECTED: errorResult = getTranslation(TextKey::IW_WIFI_CONNECTED); break;
-        case WL_CONNECT_FAILED:
-            errorResult = getTranslation(TextKey::IW_WIFI_ERR_CONN_FAIL);
-            break;
-        case WL_CONNECTION_LOST:
-            errorResult = getTranslation(TextKey::IW_WIFI_ERR_CONN_LOST);
-            break;
-        case WL_DISCONNECTED:
-            errorResult = getTranslation(TextKey::IW_WIFI_ERR_DISCONNECTED);
-            break;
-        case WL_NO_SHIELD: errorResult = getTranslation(TextKey::IW_WIFI_ERR_NO_SHIELD); break;
-        default:
-            errorResult =
-                NString::format(getTranslation(TextKey::IW_WIFI_UNKNOWN).c_str(), result);
-        }
-        InfoWindow(errorResult, isError ? IW_TITLE::ERROR : IW_TITLE::INFO);
+        FIELD(getTranslation(TextKey::WIFI_PASSWORD), password, false)};
+    if (!InputFieldS(getTranslation(TextKey::WIFI_CONNECT_TITLE), fields, LM_SETTINGS, 0,
+                    getTranslation(TextKey::WIFI_CONNECT_BUTTON), getTranslation(TextKey::CANCEL_BUTTON))) return;
+    wifi_config_t config = {};
+    if (ssid.length() > sizeof(config.sta.ssid) || password.length() >= sizeof(config.sta.password)) {
+        InfoWindow("SSID or password is too long"); return;
     }
+    memcpy(config.sta.ssid, ssid.c_str(), ssid.length());
+    memcpy(config.sta.password, password.c_str(), password.length());
+    connecting = true;
+    esp_wifi_disconnect();
+    xEventGroupClearBits(wifiEvents, connectedBit | failedBit);
+    esp_err_t err = esp_wifi_set_config(WIFI_IF_STA, &config);
+    if (err == ESP_OK) err = esp_wifi_connect();
+    if (!check(err)) { connecting = false; return; }
+    InfoWindow(getTranslation(TextKey::IW_WIFI_CONNECTING), IW_TITLE::INFO);
+    // Wait for DHCP completion, not just radio association.
+    auto bits = xEventGroupWaitBits(wifiEvents, connectedBit, pdFALSE, pdFALSE, pdMS_TO_TICKS(10000));
+    connecting = false;
+    InfoWindow(getTranslation(bits & connectedBit ? TextKey::IW_WIFI_CONNECTED : TextKey::IW_WIFI_ERR_CONN_FAIL));
+    drawStatusBar(true);
+}
+void scan() {
+    wifi_mode_t mode;
+    esp_wifi_get_mode(&mode);
+    if (!(mode & WIFI_MODE_STA)) { InfoWindow(getTranslation(TextKey::IW_WIFI_EN_NEEDED)); return; }
+    InfoWindow(getTranslation(TextKey::IW_WIFI_SCANNING), IW_TITLE::INFO);
+    if (!check(esp_wifi_scan_start(nullptr, true))) return;
+    uint16_t count = 0;
+    esp_wifi_scan_get_ap_num(&count);
+    std::vector<wifi_ap_record_t> records(count);
+    if (!count) { esp_wifi_clear_ap_list(); return; }
+    if (!check(esp_wifi_scan_get_ap_records(&count, records.data()))) return;
+    std::vector<mOption> options;
+    for (const auto& ap : records) {
+        int strength = ap.rssi >= -50 ? 4 : ap.rssi >= -60 ? 3 : ap.rssi >= -70 ? 2 : ap.rssi >= -80 ? 1 : 0;
+        options.emplace_back(reinterpret_cast<const char*>(ap.ssid), Image(R_FILE_MANAGER_ICONS), LM_ICO_WIRELESS_0 + strength);
+    }
+    int choice = listMenu(options, options.size(), false, LM_SETTINGS, getTranslation(TextKey::LM_WIFI));
+    if (choice >= 0 && choice < count) prompt(records[choice]);
+}
+void wifiSettings() {
+    for (;;) {
+        std::vector<mOption> options = {
+            mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTOCONNECT), Image(R_FILE_MANAGER_ICONS), autoconnect ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED),
+            mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTORECONNECT), Image(R_FILE_MANAGER_ICONS), reconnect ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED),
+            mOption(getTranslation(TextKey::WIFI_SET_HOSTNAME))};
+        int choice = listMenu(options, options.size(), false, LM_SETTINGS, getTranslation(TextKey::LM_WIFI_SETTINGS));
+        if (choice < 0) return;
+        if (choice == 0) { autoconnect = !autoconnect; saveSettings(); }
+        if (choice == 1) { reconnect = !reconnect; saveSettings(); }
+        if (choice == 2) {
+            const char* value = nullptr;
+            esp_netif_get_hostname(station, &value);
+            NString name(value);
+            std::vector<FIELD> fields = {FIELD(getTranslation(TextKey::WIFI_HOSTNAME_FIELD), name, false)};
+            if (InputFieldS(getTranslation(TextKey::WIFI_SET_HOSTNAME), fields)) check(esp_netif_set_hostname(station, name.c_str()));
+        }
+    }
+}
 }
 #endif
-// List available WiFi networks
-void WiFiList() {
-#ifdef WiFi_h
-    if (WiFi.getMode() == WIFI_MODE_STA || WiFi.getMode() == WIFI_MODE_APSTA) {
-        while (true) {
-            InfoWindow(getTranslation(TextKey::IW_WIFI_SCANNING),
-                       IW_TITLE::INFO);
-            int count = WiFi.scanNetworks();
-            if (count == 0) { return; }
-            uint8_t              enc[count];
-            uint8_t             *l;
-            int32_t              RSSI, d;
-            std::vector<mOption> list;
-            for (int i = 0; i < count; i++) {
-                String name;
-                WiFi.getNetworkInfo(i, name, enc[i], RSSI, l, d);
-                ESP_LOGI("WI-FI", "RSSI %d", RSSI);
-                uint8_t _RSSI = 0;
-                if (RSSI >= -50) { _RSSI = 4; }
-                else if (RSSI >= -60) { _RSSI = 3; }
-                else if (RSSI >= -70) { _RSSI = 2; }
-                else if (RSSI >= -80) { _RSSI = 1; }
-                ESP_LOGI("WI-FI", "RSSI %d", _RSSI);
-
-                list.push_back(
-                    mOption(name.c_str(), Image(R_FILE_MANAGER_ICONS), LM_ICO_WIRELESS_0 + _RSSI));
-            }
-            if (list.empty()) { return; }
-            int ch = listMenu(list, count, false, LM_SETTINGS, getTranslation(TextKey::LM_WIFI));
-            if (ch == -1) { return; }
-            else {
-                WifiPrompt(list.at(ch).label, enc[ch]);
-                return;
-            }
-        }
+void initializeWiFi() {
+#ifndef PC
+    // Avoid allocating the Wi-Fi stack on boot when auto-connect is disabled.
+    nvs_handle_t handle;
+    uint8_t enabled = 0;
+    if (nvs_open("okabe_wifi", NVS_READONLY, &handle) == ESP_OK) {
+        nvs_get_u8(handle, "autoconnect", &enabled);
+        nvs_close(handle);
     }
-    else { InfoWindow(getTranslation(TextKey::IW_WIFI_EN_NEEDED)); }
+    if (enabled && initWifi()) setMode(WIFI_MODE_STA);
 #endif
 }
-
-#define WIFI_BIT_AP  0b01
-#define WIFI_BIT_STA 0b10
-#ifdef WiFi_h
-static wifi_mode_t bitsToWifiMode(uint8_t bits) {
-    if ((bits & WIFI_BIT_AP) && (bits & WIFI_BIT_STA)) { return WIFI_MODE_APSTA; }
-    if (bits & WIFI_BIT_AP) { return WIFI_MODE_AP; }
-    if (bits & WIFI_BIT_STA) { return WIFI_MODE_STA; }
-    return WIFI_MODE_NULL;
-}
-
-void setHostname(bool Ap) {
-    NString            hostname = WiFi.getHostname();
-    std::vector<FIELD> fields   = {
-        FIELD(getTranslation(TextKey::WIFI_HOSTNAME_FIELD), hostname, false)};
-    if (InputFieldS(getTranslation(TextKey::WIFI_SET_HOSTNAME), fields)) {
-        if (Ap) { WiFi.softAPsetHostname(hostname.c_str()); }
-        else { WiFi.setHostname(hostname.c_str()); };
-    }
-}
-void WiFiSettings() {
-    std::vector<mOption> options = {mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTOCONNECT),
-                                            Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
-                                    mOption(getTranslation(TextKey::WIFI_TOGGLE_AUTORECONNECT),
-                                            Image(R_FILE_MANAGER_ICONS), LM_ICO_CHECK_UNCHECKED),
-                                    mOption(getTranslation(TextKey::WIFI_SET_HOSTNAME))};
-    int                  choice  = LISTMENU_NULL;
-    while (choice != LISTMENU_EXIT) {
-        options.at(0).icon_index =
-            WiFi.getAutoConnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        options.at(1).icon_index =
-            WiFi.getAutoReconnect() ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        choice = listMenu(options, options.size(), false, LM_SETTINGS,
-                          getTranslation(TextKey::LM_WIFI_SETTINGS));
-        switch (choice) {
-        case 0: WiFi.setAutoConnect(!WiFi.getAutoConnect()); break;
-        case 1: WiFi.setAutoReconnect(!WiFi.getAutoReconnect()); break;
-        case 2: setHostname(false); break;
-        }
-    }
-}
-void HotspotSettings() {
-    return; ///////////// TODO
-    std::vector<mOption> options = {
-        mOption("Change Properties"),
-    };
-
-    int choice = LISTMENU_NULL;
-    while (choice != LISTMENU_EXIT) {
-
-        listMenu(options, options.size(), false, LM_SETTINGS,
-                 getTranslation(TextKey::LM_WIFI_SETTINGS), false, choice);
-        switch (choice) {
-        case 0: break;
-        }
-    }
-}
-#endif
-
 void WiFiMenu() {
-#ifdef WiFi_h
-    std::vector<mOption> options = {
-        mOption(getTranslation(TextKey::LM_WIFI), Image(R_FILE_MANAGER_ICONS),
-                LM_ICO_CHECK_UNCHECKED),
-        mOption(getTranslation(TextKey::WIFI_HOTSPOT_TOGGLE), Image(R_FILE_MANAGER_ICONS),
-                LM_ICO_CHECK_UNCHECKED),
-        mOption(getTranslation(TextKey::LM_WIFI_SETTINGS)),
-        mOption(getTranslation(TextKey::WIFI_HOTSPOT_SETTINGS)),
-        mOption(getTranslation(TextKey::WIFI_SCAN_BUTTON)),
-    };
-    int choice = 0;
-    while (choice != LISTMENU_EXIT) {
-        uint8_t wifimode;
-
-        switch (WiFi.getMode()) {
-        case WIFI_MODE_NULL: wifimode = 0; break;
-        case WIFI_MODE_AP: wifimode = WIFI_BIT_AP; break;
-        case WIFI_MODE_STA: wifimode = WIFI_BIT_STA; break;
-        case WIFI_MODE_APSTA: wifimode = WIFI_BIT_AP | WIFI_BIT_STA; break;
-        default: wifimode = 0; break;
-        }
-        options.at(1).icon_index =
-            wifimode & WIFI_BIT_AP ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        options.at(0).icon_index =
-            wifimode & WIFI_BIT_STA ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED;
-        choice = listMenu(options, options.size(), false, LM_SETTINGS,
-                          getTranslation(TextKey::LM_WIFI), 1, choice);
-        switch (choice) {
-        case 0: // toggle Wi-Fi
-            wifimode ^= WIFI_BIT_STA;
-            WiFi.mode(bitsToWifiMode(wifimode));
-            drawStatusBar(true);
-            break;
-
-        case 1: // toggle Hotspot
-            wifimode ^= WIFI_BIT_AP;
-            WiFi.mode(bitsToWifiMode(wifimode));
-            drawStatusBar(true);
-            break;
-        case 2: WiFiSettings(); break;
-        case 3: HotspotSettings(); break;
-        case 4: WiFiList(); break;
-        }
+#ifndef PC
+    if (!initWifi()) return;
+    for (;;) {
+        wifi_mode_t mode = WIFI_MODE_NULL;
+        esp_wifi_get_mode(&mode);
+        std::vector<mOption> options = {
+            mOption(getTranslation(TextKey::LM_WIFI), Image(R_FILE_MANAGER_ICONS), mode & WIFI_MODE_STA ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED),
+            mOption(getTranslation(TextKey::WIFI_HOTSPOT_TOGGLE), Image(R_FILE_MANAGER_ICONS), mode & WIFI_MODE_AP ? LM_ICO_CHECK_CHECKED : LM_ICO_CHECK_UNCHECKED),
+            mOption(getTranslation(TextKey::LM_WIFI_SETTINGS)),
+            mOption(getTranslation(TextKey::WIFI_SCAN_BUTTON))};
+        int choice = listMenu(options, options.size(), false, LM_SETTINGS, getTranslation(TextKey::LM_WIFI));
+        if (choice < 0) return;
+        if (choice == 0) setMode(static_cast<wifi_mode_t>(mode ^ WIFI_MODE_STA));
+        if (choice == 1) setMode(static_cast<wifi_mode_t>(mode ^ WIFI_MODE_AP));
+        if (choice == 2) wifiSettings();
+        if (choice == 3) scan();
+        drawStatusBar(true);
     }
 #else
     InfoWindow(getTranslation(TextKey::IW_NOT_SUPPORTED));
-
 #endif
 }
